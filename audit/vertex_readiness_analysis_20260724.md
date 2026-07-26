@@ -1702,6 +1702,23 @@ include local mutations, Cloud Build, and Vertex submissions.
      which Ruff and focused 23-test QA passed. A replacement remains closed
      pending a new image, unique r2 prefixes, fresh staging/spec/cardinality,
      and budget gates.
+235. Corrected Cloud Build `f0fd292a-e8d2-4775-8974-4403eef0f494`
+     succeeded in 3m21s; independent registry digest is
+     `sha256:bbcb57e9...a382b`. Build context 69 files / 288,831 bytes had zero
+     forbidden content. Fresh budget reserve gives $26.09 worst case /
+     $73.91 remaining.
+236. Generation-zero r2 overlay has 4 objects / 29,415,631 bytes. Independent
+     verifier `2cdec270...58440` passes merged 209 objects /
+     5,973,774,654 bytes, real exact config/data/geometry/split/assignment/
+     checkpoint hashes, zero forbidden/collision, and 26,624/4,096/0
+     train/validation/test. R2 output is empty and matching-job cardinality
+     zero; exactly one corrected calibration submission is authorized.
+237. Corrected calibration pipeline `579739779445293056` / custom
+     `5885120877976092672` was accepted exactly once. Independent server spec
+     matches the entire authorized r19/on-demand-one-T4/input/output/config/
+     checkpoint/64-batch/clip/CUDA/disk/SA/timeout contract. Exact local SDK
+     observer PID 5416 was stopped after acceptance; fresh server state remains
+     pending. One 600-second timer is the only poller.
 
 ## Implementation QA disposition
 

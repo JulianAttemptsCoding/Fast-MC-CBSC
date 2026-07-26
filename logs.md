@@ -2971,3 +2971,58 @@ so that module was mechanically formatted; Ruff then passed and the focused
 calibration/hardening suite passed `23/23`. No cloud resubmission is authorized
 until a new immutable image, unique r2 input/output prefixes, fresh staging
 verification, exact job cardinality, and budget reserve all pass.
+
+## 2026-07-26 20:35 Asia/Taipei — corrected calibration image build authorized
+
+Fresh budget gate: `$23.89` accounted + `$0.50` build/storage contingency +
+`$1.70` two-hour corrected calibration reserve = `$26.09` worst credible
+account, leaving `$73.91`. No `r19-loss-calibration-memory` tag exists.
+
+The upload context is 69 allowlisted files / 288,831 bytes with zero legacy,
+audit, dashboard, tests, ROOT, checkpoint, Git, bytecode, or dependency-cache
+content. Exact correction SHAs and the unchanged Docker/package/stage hashes
+were rechecked. Exactly one r19 Cloud Build is authorized; no replacement
+Vertex job is authorized until its immutable digest and new r2 staging are
+independently verified.
+
+## 2026-07-26 20:40 Asia/Taipei — corrected calibration r2 pre-submit passes
+
+Cloud Build `f0fd292a-e8d2-4775-8974-4403eef0f494` succeeded in 3m21s.
+Independent Artifact Registry inspection resolves r19 to immutable digest:
+
+`us-central1-docker.pkg.dev/asiop-zdc-1/cbsc-zdc/cbsc-zdc@sha256:bbcb57e9fa5489e913bb7f48f243289d961e7a2987a1532efeaab8cc945a382b`
+
+The four approved calibration inputs were copied from preserved r1 input to
+new r2 paths with destination generation precondition zero. Exact r2 overlay:
+4 objects / 29,415,631 bytes; frozen config SHA `6a15bf93...c929c`, split
+manifest `a4d09675...6b0b3`, assignments `084f0dfd...d3714`, accepted joint
+best `03c79608...1adb7` generation `1785068839757442`.
+
+Independent merged staging verification
+`audit/calibration_joint_r2_staging_verification.json`, SHA
+`2cdec270b0dbbbeb82d6892fab4465a1a430c134950284704edbdc30f7358440`,
+passes 209 objects / 5,973,774,654 bytes, real data, exact dataset/geometry/
+split/config/checkpoint hashes, zero forbidden paths, zero collision, and
+train/validation/test selection `26624/4096/0`. The unique r2 output is empty
+and exact r2 custom-job cardinality is zero.
+
+Worst credible account remains `$26.09`, leaving `$73.91`. Exactly one
+corrected r2 submission is authorized with the same 64 train-only batches,
+clip `[0.25,4.0]`, FP32/CUDA, on-demand T4, machine/disk/service account, and
+7,200-second timeout. No other calibration or training job is authorized.
+
+## 2026-07-26 20:43 Asia/Taipei — corrected calibration r2 submitted once
+
+Vertex accepted pipeline `579739779445293056` and backing custom job
+`5885120877976092672`. Exact display-name cardinality is one. Independent
+server describe—not submitter output—confirms the complete authorized r19
+digest, prep/r2-overlay/r2-output/config/checkpoint arguments, five-family
+memory-bounded code, 64 batches, clip bounds, CUDA, one replica, on-demand T4,
+`n1-standard-8`, 100 GB `pd-ssd`, service account, and 7,200-second timeout.
+
+Initial state is `JOB_STATE_PENDING`. After exact server acceptance, local SDK
+observer PID `5416` was identity-checked and stopped; a fresh describe proves
+the server job remains pending. No duplicate exists. The next poll uses a
+600-second timer. Based on r1 provisioning plus the additional bounded family
+forwards, first terminal evidence is conservatively expected 20–45 minutes
+after allocation, with the two-hour timeout as hard bound.
