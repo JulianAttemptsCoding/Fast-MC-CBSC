@@ -3187,3 +3187,11 @@ nonexistent historical paths (`test_loss_weight_calibration.py`, then
 `test_loss_calibration.py`) and ran zero tests; neither mutated state. The
 correct `PYTHONPATH=src` suite using `test_loss_weights.py` passes 8/8 with one
 known nonfatal Transformer warning.
+
+Before any result was visible, `docs/A100_VIABILITY_PROTOCOL.md` froze the
+hard-fail gates, same-weight-family loss comparison rule, wave-1 Pareto
+tolerances, maximum-two continuation rule, two-additional-epoch recovery plan,
+and exact A100 GO/CONDITIONAL-GO/NO-GO thresholds. Official NVIDIA A100/T4
+specifications and Google GPU pricing were rechecked. Hardware peaks are not
+used as a claimed speedup: any GO still requires a 256-batch plus 8/8 empirical
+benchmark on the target A100 stack.

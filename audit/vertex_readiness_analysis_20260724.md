@@ -1783,6 +1783,11 @@ include local mutations, Cloud Build, and Vertex submissions.
      historical test filenames and are preserved as command errors; corrected
      `PYTHONPATH=src` calibration/viability suite passes 8 tests with one known
      nonfatal Transformer warning.
+251. Before results, `docs/A100_VIABILITY_PROTOCOL.md` froze hard gates,
+     same-weight-family comparisons, Pareto tolerances, maximum-two
+     continuation, two additional epochs, and exact GO/CONDITIONAL-GO/NO-GO
+     rules. Official NVIDIA and Google sources were rechecked; no A100 speedup
+     is claimed without a target-stack 256-batch plus 8/8 benchmark.
 
 ## Implementation QA disposition
 
