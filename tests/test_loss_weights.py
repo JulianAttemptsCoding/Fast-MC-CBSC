@@ -1,5 +1,11 @@
+from pathlib import Path
+
 import torch
 
+from cbsc_zdc.data.dataset import ShardedSparseDataset, load_geometry
+from cbsc_zdc.data.synthetic import create_synthetic_dataset
+from cbsc_zdc.models.system import CBSCZDC
+from cbsc_zdc.training.trainer import compute_component_losses
 from cbsc_zdc.training.weights import calibrate_loss_weights, weighted_total
 
 
@@ -83,3 +89,84 @@ def test_calibration_can_release_independent_loss_group_graphs():
     assert observed == ["a", "b", "a", "b"]
     assert report["measured_components"] == ["a", "b"]
     assert report["batches_consumed"] == 2
+
+
+def test_grouped_production_losses_match_joint_values_and_gradients(
+    tmp_path: Path,
+):
+    made = create_synthetic_dataset(
+        tmp_path,
+        n_events=8,
+        n_layers=4,
+        nodes_per_layer=4,
+        seed=17,
+    )
+    geometry = load_geometry(made["geometry"])
+    config = {
+        "data": {"target_mode": "raw_deposit", "threshold_gev": 0.0},
+        "model": {
+            "condition_dim": 24,
+            "hidden_dim": 24,
+            "response_hidden": 32,
+            "response_components": 2,
+            "response_scale_gev": 10.0,
+            "profile_hidden": 24,
+            "count_hidden": 32,
+            "graph_blocks": 1,
+            "attention_heads": 4,
+            "attention_layers": 1,
+            "layer_context": "bidirectional",
+            "dropout": 0.0,
+        },
+    }
+    model = CBSCZDC(geometry, config).train()
+    dataset = ShardedSparseDataset(
+        made["manifest"],
+        n_nodes=16,
+    )
+    batch = {
+        key: torch.stack([dataset[0][key], dataset[1][key]])
+        for key in dataset[0]
+    }
+    params = list(model.condition.parameters())
+
+    def values_and_norms(groups):
+        values = {}
+        norms = {}
+        for losses in groups:
+            items = list(losses.items())
+            for index, (name, loss) in enumerate(items):
+                values[name] = loss.detach()
+                gradients = torch.autograd.grad(
+                    loss,
+                    params,
+                    retain_graph=index < len(items) - 1,
+                    allow_unused=True,
+                )
+                norms[name] = torch.sqrt(
+                    sum(
+                        (
+                            gradient.detach().square().sum()
+                            for gradient in gradients
+                            if gradient is not None
+                        ),
+                        start=torch.tensor(0.0),
+                    )
+                )
+        return values, norms
+
+    torch.manual_seed(123)
+    joint_values, joint_norms = values_and_norms(
+        (compute_component_losses(model, batch, "joint")[0],)
+    )
+    torch.manual_seed(123)
+    grouped_values, grouped_norms = values_and_norms(
+        (
+            compute_component_losses(model, batch, stage)[0]
+            for stage in ("response", "profile", "count", "support", "share")
+        )
+    )
+    assert grouped_values.keys() == joint_values.keys()
+    for name in joint_values:
+        assert torch.allclose(grouped_values[name], joint_values[name])
+        assert torch.allclose(grouped_norms[name], joint_norms[name])

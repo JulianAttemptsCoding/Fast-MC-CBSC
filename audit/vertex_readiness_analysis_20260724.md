@@ -1719,6 +1719,14 @@ include local mutations, Cloud Build, and Vertex submissions.
      checkpoint/64-batch/clip/CUDA/disk/SA/timeout contract. Exact local SDK
      observer PID 5416 was stopped after acceptance; fresh server state remains
      pending. One 600-second timer is the only poller.
+238. Post-submit synthetic regression (not physics validation) proves identical
+     all-nine loss values and shared-encoder gradient norms between the
+     original joint graph and memory-bounded grouped graphs under the same
+     model/batch/RNG; test SHA `6bb93ca2...d8fea`, Ruff pass, 5 tests pass.
+     Up to five on-demand T4s may later run independent, predeclared validation
+     variants concurrently, but calibration/dependent gates remain serial and
+     every parallel wave needs a combined worst-case budget reservation and
+     unique generation-zero prefixes.
 
 ## Implementation QA disposition
 

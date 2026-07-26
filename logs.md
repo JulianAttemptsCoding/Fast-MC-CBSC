@@ -3026,3 +3026,19 @@ the server job remains pending. No duplicate exists. The next poll uses a
 600-second timer. Based on r1 provisioning plus the additional bounded family
 forwards, first terminal evidence is conservatively expected 20–45 minutes
 after allocation, with the two-hour timeout as hard bound.
+
+Post-submission regression QA added a production-loss equivalence test using a
+synthetic geometry only; it is explicitly not physics validation. With the
+same model, batch, and RNG seed it computes all nine losses and shared-
+condition-encoder gradient norms through the original joint graph and through
+the new response→profile→count→support→share grouping. Every component value
+and gradient norm matches. Ruff passes and the loss-weight suite passes `5/5`
+with only the known Transformer warning. Test SHA:
+`6bb93ca2e1eee1369f95792eb629bf5769cd8c953a91d0036bbee6d9177d8fea`.
+
+Up to five on-demand T4s are available for time-efficient independent work.
+They may be used concurrently only after calibration, for predeclared
+independent validation/optimizer/throughput variants with unique empty
+generation-zero prefixes and a combined worst-case budget reservation.
+Dependent gates, calibration retries, and protocol-freezing steps remain
+serial; parallel capacity is never used to duplicate a job or bypass evidence.
