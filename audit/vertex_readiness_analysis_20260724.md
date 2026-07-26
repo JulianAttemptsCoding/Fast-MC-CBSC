@@ -1828,6 +1828,11 @@ include local mutations, Cloud Build, and Vertex submissions.
      from the 75-file/300 KiB allowlist. Independent registry digest is r20
      `sha256:8b4a94c0...9048f`. No job uses it yet. Accounted spend is `$25.04`;
      remaining after live-wave worst reserve and contingency is `$61.96`.
+261. Pre-result continuation generator `a52e586d...1334` accepts only selected
+     pass reports, binds exact paired best/last, preserves weights/LR/batch,
+     runs exactly epochs 1-2, and enables only scheduler restart. It emits
+     unfrozen templates and refuses overwrite/unselected input. Ruff/compile
+     and combined 19 tests pass; no config/job mutation.
 
 ## Implementation QA disposition
 

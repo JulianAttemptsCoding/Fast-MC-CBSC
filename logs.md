@@ -3281,3 +3281,12 @@ Cloud Build `46b06a98-3741-4e6e-8df8-be175260b86e` succeeded from
 No job uses this image yet. Conservative accounted spend becomes `$25.04`;
 live-wave worst reserve `$8.50` plus remaining contingency `$4.50` still leaves
 `$61.96`.
+
+Pre-result continuation generator SHA `a52e586d...1334` consumes only the
+accepted wave analysis and selected verifier reports, refuses overwrite or an
+unselected result, preserves each selected weight/LR/batch contract, binds
+exact best/last hashes, sets total epochs to three (therefore exactly epochs
+1–2 remain), and enables only the explicit scheduler restart. It produces
+unfrozen templates only; no config is frozen or job submitted. Ruff/compile
+pass and the combined continuation/analyzer/config/loss suite passes 19/19
+with one known Transformer warning.
