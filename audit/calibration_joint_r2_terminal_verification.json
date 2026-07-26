@@ -1,0 +1,79 @@
+{
+  "bytes": 75643,
+  "checkpoint": {
+    "best_metric": 9.491409611736874,
+    "epoch": 2,
+    "path": "/tmp/cbsc_zdc_calibration/input/checkpoints/joint_best.pt",
+    "provenance": {
+      "geometry_sha256": "c6c02f3c84f5e02e70d2ca3fb894dd8cae899e1afc9100e34334d8ee5c922bf1",
+      "manifest_sha256": "5a6d963247091e91c0787dd763b46e3b1189f62785d9cab1d8fda4e76ca08096",
+      "seed": 20260723,
+      "splits_sha256": "a4d0967597bee525843d81647bd259deee7c2e908d25d2b1df78a8179526b0b3"
+    },
+    "sha256": "03c7960861d6f6f3012a8e4469421d51e33d1a8dad7fc8ec8c8406d547f1adb7",
+    "stage": "joint"
+  },
+  "files": 6,
+  "gradient_norm_median": {
+    "active": 3.183528184890747,
+    "count": 11.951508522033691,
+    "first_layer": 0.7913233637809753,
+    "profile_flow": 11.052169799804688,
+    "response": 15.722942352294922,
+    "share_flow": 3.8403966426849365,
+    "support_bce": 1.2905476093292236,
+    "support_rank": 1.1564929485321045,
+    "visible": 0.2186482548713684
+  },
+  "pass": true,
+  "preflight": {
+    "geometry_hash": "e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b",
+    "group_by": "copied_event_hash_split_train_validation_only",
+    "hashes": {
+      "dataset_manifest_sha256": "5a6d963247091e91c0787dd763b46e3b1189f62785d9cab1d8fda4e76ca08096",
+      "geometry_manifest_sha256": "616b14bd006fb00acb963dc2b8b21fa0bc80d041a890b580d80ff31a11daa5d2",
+      "geometry_npz_sha256": "c6c02f3c84f5e02e70d2ca3fb894dd8cae899e1afc9100e34334d8ee5c922bf1",
+      "split_assignment_sha256": "084f0dfd86e488c63bb41ea50d6783ad22eb57a322288c075a94b1ec12dd3714",
+      "split_manifest_sha256": "a4d0967597bee525843d81647bd259deee7c2e908d25d2b1df78a8179526b0b3"
+    },
+    "pass": true,
+    "selection_counts": {
+      "test": 0,
+      "train": 26624,
+      "validation": 4096
+    },
+    "synthetic": false,
+    "verified_shards": 187,
+    "verify_shards": true
+  },
+  "proposed_weights": {
+    "active": 0.5367704371463009,
+    "count": 0.16090104449935363,
+    "first_layer": 2.159450729859089,
+    "profile_flow": 0.16090104449935363,
+    "response": 0.16090104449935363,
+    "share_flow": 0.44496024094966563,
+    "support_bce": 1.3241075363035668,
+    "support_rank": 1.4775912102536604,
+    "visible": 2.574416711989658
+  },
+  "resources": {
+    "device": "cuda",
+    "device_name": "Tesla T4",
+    "headroom_fraction": 0.6116111326808685,
+    "minimum_headroom_fraction": 0.15,
+    "pass": true,
+    "peak_memory_bytes": 6080549888,
+    "total_memory_bytes": 15655829504
+  },
+  "scientific_status": "train-only gradient-scale proposal; validation selection and physics fidelity not established",
+  "sha256": {
+    "environment.json": "c2e4bdcf9bec6f4290fddf5fcaf10a60c684f3e5822c6df836b8c9e25fe113a1",
+    "reports/calibration_resources.json": "3b1fb5fecffbfc3501124a3b552b4d7659d891c12c97d8359ea3d42a0143c606",
+    "reports/loss_weight_calibration.json": "280e1b7f08bdc3bf3d8b8d075ce21379123a8ba16c7bc852f9290107537d6ac3",
+    "runtime_config.yaml": "88cb3cb73873ff1d256dc7cb549d9975d43d3b10ede076a21d59b21d9c618f30",
+    "staged_input_manifest.json": "fcfd0fcb130d530746926e84c7f66ac9752fdb017cbb1b79a913fbfb63f11db6",
+    "vertex_calibration_result.json": "c2f264aff52b1cb7a93d89b5148a492209e9bd182ecc27ba4c417a8ae32fd4a0"
+  },
+  "staged_count": 209
+}

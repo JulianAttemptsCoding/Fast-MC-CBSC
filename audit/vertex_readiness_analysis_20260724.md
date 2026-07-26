@@ -1742,6 +1742,47 @@ include local mutations, Cloud Build, and Vertex submissions.
      `epochs`; independent parsing proves 16 accepted snapshots, latest
      `joint-resume-r2:joint:0000`, fixed selection hash
      `f7052919...59b6`, and zero test events. No dashboard mutation occurred.
+242. Calibration r2 job `5885120877976092672` succeeded in 10m34s. Strict
+     independent verification of six objects / 75,643 bytes passes: exact
+     209-object real staging, checkpoint `03c79608...adb7`, 64/64 train-only
+     batches, all nine finite gradients with 64 observations, zero test, and
+     T4 peak 6.081 GB / 15.656 GB (61.161% headroom). Verification SHA is
+     `be5f135a...0945`; scientific status remains train-only proposal.
+243. Accepted mean-one calibration weights range from `0.1609010445` for
+     response/profile/count to `2.574416712` for visible. They compensate
+     measured shared-encoder gradient scales and must be validation-screened;
+     no single aggregate weighted loss is a fidelity claim.
+244. Evidence-copy QA preserved a flattened first mirror and then created an
+     exact-path non-overwriting mirror that passed. Dashboard lint/build/two
+     HTML tests and HTTP 200 pass; interactive visual QA is unclaimed because
+     the browser bridge failed with local path error 3. The manifest trend
+     object itself is correct.
+245. Conservative accounted budget is `$24.54`; five two-hour T4 reserves are
+     `$8.50`, plus `$5.00` contingency, leaving `$61.96`. The predeclared
+     five-way one-epoch A100-viability wave therefore fits the `$100` ceiling.
+246. Five frozen configs passed exact matrix QA (report `7ae19f73...34f4`):
+     default; calibrated LR `3e-5/1e-4/3e-4`; calibrated LR `1e-4` effective
+     batch 12. All bind checkpoint `03c79608...adb7`, identical production
+     provenance, FP32, seed 20260723, one epoch, fixed 50x5 validation, and
+     zero test.
+247. Ten new GCS prefixes and five display names were empty. Generation-zero
+     config overlays plus the immutable calibration checkpoint/split overlay
+     each pass 210-object real-staging verification; report hashes are
+     `f1f28b73...b3e2`, `816dfde6...f919`, `153afbe5...5a1c`,
+     `af24e406...7818`, and `51c43885...f359`.
+248. Exactly five on-demand T4 jobs accepted: default `1645340269597425664`,
+     calibrated LR3e-5 `2259914492966076416`, calibrated LR1e-4
+     `5596221998754693120`, calibrated LR3e-4 `8082035270226018304`, and
+     half-batch `4196752603805122560`. Server specs independently match r19,
+     one T4/n1-standard-8/one replica/100GB pd-ssd/7200s/exact overlays,
+     configs, outputs, and SA. Initial state is pending; no duplicate exists.
+249. Exact submitter processes were identity-checked and stopped after server
+     acceptance; jobs remained pending. Poll allocation after 300s, then use
+     `start + 4200s` as conservative first-epoch/terminal timer.
+250. Post-submit Ruff/compile pass. Two zero-test invocations used nonexistent
+     historical test filenames and are preserved as command errors; corrected
+     `PYTHONPATH=src` calibration/viability suite passes 8 tests with one known
+     nonfatal Transformer warning.
 
 ## Implementation QA disposition
 

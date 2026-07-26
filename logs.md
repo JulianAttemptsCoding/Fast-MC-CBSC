@@ -3083,3 +3083,107 @@ schema actually uses `epochs`. A fresh parse proves `schema_version=3`,
 `epochs=16`, latest ID `joint-resume-r2:joint:0000`, fixed selection SHA
 `f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6`,
 and `test_events_used=0`. This is the exact accepted pre-viability inventory.
+
+## 2026-07-26 20:56 Asia/Taipei — calibration r2 accepted
+
+Corrected train-only calibration custom job `5885120877976092672` succeeded
+from `12:35:18Z` through `12:45:52Z`. Its unique output contains exactly six
+objects / 75,643 bytes and no `vertex_failure.json`. Independent verifier
+`audit/calibration_joint_r2_terminal_verification.json`, SHA-256
+`be5f135ae8ff82c2759fcdab4eb0eecbf24fd75b147c63920abb67ad805a0945`,
+recomputed every gate:
+
+- all 209 staged real-production objects and hashes match;
+- exact checkpoint SHA
+  `03c7960861d6f6f3012a8e4469421d51e33d1a8dad7fc8ec8c8406d547f1adb7`;
+- 64/64 train-only batches, all nine components, 64 finite observations each,
+  zero test events;
+- fixed group order `response→profile→count→support→share`;
+- Tesla T4 peak 6,080,549,888 / 15,655,829,504 bytes, 61.161% headroom;
+- 202.245 seconds measured calibration compute.
+
+The accepted mean-one weights are visible `2.574416712`, response
+`0.1609010445`, first-layer `2.159450730`, active `0.5367704371`,
+profile-flow `0.1609010445`, count `0.1609010445`, support-BCE
+`1.324107536`, support-rank `1.477591210`, share-flow `0.4449602409`.
+These balance shared-encoder gradient scale; they are a train-only proposal,
+not a validation selection and not physics validation.
+
+The first local `gcloud storage cp --recursive` mirror flattened the two report
+paths. All bytes and hashes were preserved under
+`audit/calibration_joint_r2_terminal/`, but that layout was not accepted.
+A second non-overwriting exact-path mirror under
+`audit/calibration_joint_r2_terminal_exact/` passed the strict verifier. A
+multi-command freeze call printed only four records before returning; the
+fifth file was independently found present and hashable, so no config was
+re-frozen or overwritten.
+
+Dashboard QA during calibration: ESLint passes, production build passes, two
+rendered-HTML contract tests pass, and root/manifest HTTP responses are 200.
+The apparent string-valued trend was only shallow diagnostic serialization;
+the actual schema-3 manifest stores trend objects. Browser-level visual QA is
+not claimed because the desktop browser bridge failed to initialize with local
+path error 3.
+
+Budget update: prior accounted `$23.89` + conservative r19 build `$0.50` +
+rounded calibration r2 `$0.15` = `$24.54`; hard-budget remainder `$75.46`.
+Five two-hour one-T4 hard-timeout reserves total `$8.50`. Including a separate
+`$5.00` build/storage/management contingency leaves `$61.96`, so the complete
+one-epoch viability wave fits without weakening any gate.
+
+## 2026-07-26 21:04 Asia/Taipei — five-way viability wave submitted
+
+The accepted calibration report generated exactly five new unfrozen templates.
+They were frozen only through `cbsc-zdc freeze-config`; a new independent
+verifier (script SHA `979fd69c...aa68`, report SHA `7ae19f73...34f4`) proves
+all five share exact production artifact provenance, checkpoint
+`03c79608...adb7`, joint FP32/seed 20260723/one epoch/update-50 snapshots,
+0–300 GeV training, 50–250 GeV validation, fixed validation 50×5
+visualization, and fully trainable encoder. Frozen config hashes:
+
+- default control: `5a798127...a997`;
+- calibrated LR `3e-5`: `45db1a13...64d4`;
+- calibrated LR `1e-4`: `e7befc0d...da3`;
+- calibrated LR `3e-4`: `8efa643d...c2d`;
+- calibrated LR `1e-4`, effective batch 12: `3518e3f1...5eb4`.
+
+All ten new input/output prefixes and all matching display names were empty
+before mutation. Each unique input received only its new config with
+generation-match zero; the exact immutable calibration input is a shared
+read-only checkpoint/split overlay. Five independent merged-staging reports
+pass at 210 real objects, one exact checkpoint, no collision, and no forbidden
+or test path. Their SHA-256 values are respectively `f1f28b73...b3e2`,
+`816dfde6...f919`, `153afbe5...5a1c`, `af24e406...7818`, and
+`51c43885...f359`.
+
+Exactly five server-side jobs were accepted in parallel:
+
+- default control: pipeline `8444361734973554688`, custom job
+  `1645340269597425664`;
+- calibrated LR `3e-5`: pipeline `2423049033179201536`, custom job
+  `2259914492966076416`;
+- calibrated LR `1e-4`: pipeline `5510266577741676544`, custom job
+  `5596221998754693120`;
+- calibrated LR `3e-4`: pipeline `4715381243510784000`, custom job
+  `8082035270226018304`;
+- calibrated LR `1e-4` half-batch: pipeline `2461329630011850752`, custom job
+  `4196752603805122560`.
+
+Independent server listing confirms each is one replica, on-demand
+`n1-standard-8`, one `NVIDIA_TESLA_T4`, 100 GB `pd-ssd`, 7,200-second timeout,
+exact r19 digest `bbcb57e9...382b`, exact config/output, two overlays, and the
+approved service account. All five are initially pending. After identity
+checking their complete submitter command lines, local SDK observers were
+stopped; a fresh server listing proves all five jobs remain pending.
+
+Allocation is polled after 300 seconds. Once start times exist, the next-epoch
+timer is `start + 4,200 seconds`: 3,878 seconds previously measured for joint
+training plus approximately 322 seconds for validation, fixed visualization,
+checkpoint publication, and postflight. A100 viability selection remains
+closed until all five immutable epoch outputs are independently verified.
+
+Post-submit local QA: Ruff and compile checks pass. Two test invocations named
+nonexistent historical paths (`test_loss_weight_calibration.py`, then
+`test_loss_calibration.py`) and ran zero tests; neither mutated state. The
+correct `PYTHONPATH=src` suite using `test_loss_weights.py` passes 8/8 with one
+known nonfatal Transformer warning.
