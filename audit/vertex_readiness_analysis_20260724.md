@@ -1839,6 +1839,19 @@ include local mutations, Cloud Build, and Vertex submissions.
      hit that initialization boundary. This is a preserved desktop bridge
      limitation, not dashboard or training evidence. No alternate browser
      driver was used and no Vertex state changed.
+263. Localhost `/` and `/data/manifest.json` both return HTTP 200. A shallow
+     probe initially read nonexistent `snapshots` and falsely printed zero;
+     direct schema inspection proves schema-3 `epochs=16`, fixed selection
+     `f7052919...9b6`, latest `joint-resume-r2:joint:0000`. No artifact changed.
+264. A 22:00 local identity/state-only check confirms all five exact viability
+     jobs remain `JOB_STATE_RUNNING` with original start times. No metric was
+     read, no partial selection was made, and the terminal timer/estimate are
+     unchanged.
+265. Immutable optimizer-boundary progress now shows batch-6 updates
+     `900/900/850/900` of 1110 and half-batch `1700/2219`. Rate projections
+     leave 670–887s of training plus validation/viz/postflight, tightening the
+     safe terminal window to 22:20–22:30. Partial train means are finite health
+     evidence only and are excluded from selection.
 
 ## Implementation QA disposition
 

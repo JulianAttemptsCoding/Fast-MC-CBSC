@@ -3303,3 +3303,31 @@ same initialization boundary. This is preserved as a browser-bridge
 environment limitation, not a dashboard pass or a model failure. The existing
 ESLint/build/rendered-HTML and HTTP-200 checks remain the accepted nonvisual
 site QA; no alternate browser driver was substituted.
+
+A separate read-only localhost probe returned HTTP 200 for both `/` and
+`/data/manifest.json`. Its first summary incorrectly reported zero snapshots
+because it queried a nonexistent `snapshots` property. Direct schema
+inspection corrected the diagnostic: schema 3 stores the records under
+`epochs`, with 16 accepted epochs, fixed selection
+`f7052919...9b6`, and latest `joint-resume-r2:joint:0000`. No dashboard
+artifact was changed.
+
+At 22:00 local, one read-only five-job health check confirmed every exact
+custom job remains `JOB_STATE_RUNNING` with its original start time:
+default `1645340269597425664`, calibrated LR3e-5
+`2259914492966076416`, calibrated LR1e-4 `5596221998754693120`,
+calibrated LR3e-4 `8082035270226018304`, and half-batch
+`4196752603805122560`. No result metric was read and no partial candidate was
+selected. The 22:25–22:35 terminal estimate and existing 3,000-second timer
+remain unchanged.
+
+The same immutable progress stream refined the ETA without opening validation:
+default, calibrated LR3e-5, calibrated LR1e-4, and calibrated LR3e-4 are at
+updates `900/1110`, `900/1110`, `850/1110`, and `900/1110`; half-batch is at
+`1700/2219`. All records are epoch 0 and optimizer-boundary true. Measured
+elapsed-rate projections leave roughly 670–887 seconds of training, after
+which validation, fixed 50×5 generation, artifact publication, and postflight
+still run. The safe terminal window tightens to 22:20–22:30. Partial means
+(`9.5673` default; calibrated `5.0661/5.0975/5.2289/5.1150`) are recorded only
+as finite health evidence and remain forbidden for cross-family or final
+selection.
