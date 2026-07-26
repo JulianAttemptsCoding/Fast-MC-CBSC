@@ -1833,6 +1833,12 @@ include local mutations, Cloud Build, and Vertex submissions.
      runs exactly epochs 1-2, and enables only scheduler restart. It emits
      unfrozen templates and refuses overwrite/unselected input. Ruff/compile
      and combined 19 tests pass; no config/job mutation.
+262. At 21:54 local, the five-job terminal timer remained active with the
+     22:25–22:35 estimate. A browser-level localhost retry failed before page
+     discovery with the same kernel-asset `os error 3`; even state inspection
+     hit that initialization boundary. This is a preserved desktop bridge
+     limitation, not dashboard or training evidence. No alternate browser
+     driver was used and no Vertex state changed.
 
 ## Implementation QA disposition
 

@@ -3290,3 +3290,16 @@ exact best/last hashes, sets total epochs to three (therefore exactly epochs
 unfrozen templates only; no config is frozen or job submitted. Ruff/compile
 pass and the combined continuation/analyzer/config/loss suite passes 19/19
 with one known Transformer warning.
+
+## 2026-07-26 21:54 Asia/Taipei — dashboard browser retry preserved
+
+The five Vertex jobs remain under the existing 3,000-second timer; no job was
+polled or resubmitted early. The terminal estimate remains 22:25–22:35 local.
+The in-app browser bridge was retried against `http://localhost:3001/` only
+after re-reading its operating contract and discovering the required runtime.
+Initialization again failed before page discovery with the identical local
+kernel-asset error, `os error 3`. A follow-up state inspection failed at the
+same initialization boundary. This is preserved as a browser-bridge
+environment limitation, not a dashboard pass or a model failure. The existing
+ESLint/build/rendered-HTML and HTTP-200 checks remain the accepted nonvisual
+site QA; no alternate browser driver was substituted.
