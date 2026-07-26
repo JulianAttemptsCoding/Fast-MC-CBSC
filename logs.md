@@ -2823,3 +2823,30 @@ The GitHub remote requested by the user,
 publication therefore needs no history rewrite or merge. Publication QA must
 still exclude credentials, ROOT data, checkpoint mirrors, dependency caches,
 and other generated large artifacts before an initial commit.
+
+## 2026-07-26 20:16 Asia/Taipei — reproducible repository published
+
+The previously empty remote
+`https://github.com/JulianAttemptsCoding/Fast-MC-CBSC.git` now has initial
+`main` commit `73e6455729bd9fbac0801db5de7a7d5236b029d4`. Independent
+`git ls-remote` returned the same SHA for `refs/heads/main`, and local `main`
+tracks `origin/main`.
+
+Publication QA covered 298 files / 5.12 MiB. No tracked nested `.git` path,
+raw `.root` file, model checkpoint, likely secret filename, or likely private
+key/API-token content was found. The generated multi-hundred-megabyte
+dashboard epoch payloads, Vertex output mirrors, package dependencies, build
+bundles, caches, and credentials are ignored; compact verification JSON/Markdown,
+source, tests, frozen/template configurations, dashboard code, and human
+`logs.md` remain versioned. The empty, commitless dashboard-local Git metadata
+was moved—not deleted—to recoverable temporary backup
+`C:\Users\Julia\AppData\Local\Temp\fast-mc-cbsc-dashboard-git-20260726-200751\.git`
+before initializing the repository root, avoiding an accidental gitlink.
+
+The optional `gh auth status` check failed because GitHub CLI is not installed.
+No mutation occurred in that failed check. Git Credential Manager subsequently
+authenticated the ordinary `git push`, and remote-SHA equality is the
+authoritative verification. `git diff --cached --check` reported inherited
+Markdown trailing spaces used in supplied/historical documents; these were not
+silently rewritten because they are evidence files, and they do not affect
+source execution or repository integrity.
