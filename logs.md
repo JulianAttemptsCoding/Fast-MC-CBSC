@@ -3215,3 +3215,11 @@ used shallow nested copies, not because of the metric code; replacing the
 fixture's nested Geant4 object independently produced the intended one-zero
 counterexample. Final verifier SHA is `92a47237...88c6`; Ruff passes and the
 corrected suite passes 9/9.
+
+Pre-result wave analyzer SHA `84f77f4b...ce66` implements the frozen
+same-weight-family rule, toleranced Pareto dominance, deterministic worst-rank
+tie break, and maximum-two continuation. Its first cross-family unit test
+incorrectly made the default row better on response as well as incomparable
+aggregate loss, so dominance was legitimately true. Equalizing every
+non-aggregate metric isolated the intended counterexample. Ruff passes and the
+combined analyzer/verifier suite passes 12/12.

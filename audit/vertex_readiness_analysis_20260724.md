@@ -1800,6 +1800,11 @@ include local mutations, Cloud Build, and Vertex submissions.
      copying in its synthetic fixture; replacing the nested fixture object
      supplied the intended counterexample. Final verifier `92a47237...88c6`;
      Ruff and corrected 9-test suite pass.
+255. Pre-result analyzer `84f77f4b...ce66` implements weight-family-safe
+     comparisons, toleranced Pareto dominance, deterministic tie breaking, and
+     maximum-two continuation. Its first cross-family test accidentally
+     improved response too; equalizing non-aggregate metrics isolated loss
+     incomparability. Ruff and combined 12 tests pass.
 
 ## Implementation QA disposition
 
