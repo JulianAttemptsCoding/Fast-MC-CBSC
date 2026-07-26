@@ -1737,6 +1737,11 @@ include local mutations, Cloud Build, and Vertex submissions.
      `58eab82d...f23a5` pass Ruff/compile and combined 8 tests. R2 allocated at
      20:35:18 local. Existing 600s calibration timer remains; later measured
      epoch timer is 4200s from 3878s training plus terminal overhead.
+241. Dashboard inventory correction: an initial read-only query used the
+     nonexistent `snapshots` field and printed zero. The schema-3 field is
+     `epochs`; independent parsing proves 16 accepted snapshots, latest
+     `joint-resume-r2:joint:0000`, fixed selection hash
+     `f7052919...59b6`, and zero test events. No dashboard mutation occurred.
 
 ## Implementation QA disposition
 

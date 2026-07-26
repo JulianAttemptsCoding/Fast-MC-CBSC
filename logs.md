@@ -3074,3 +3074,12 @@ one epoch, FP32, fixed visualization, zero test, update-50 recovery snapshots,
 and wave limit five. They do not freeze a config or submit a job. Ruff,
 compileall, and the combined calibration/viability tests pass `8/8` with one
 known Transformer warning.
+
+### Dashboard inventory correction
+
+A read-only diagnostic initially queried a nonexistent `snapshots` property
+and therefore printed zero; it did not modify the dashboard. The manifest
+schema actually uses `epochs`. A fresh parse proves `schema_version=3`,
+`epochs=16`, latest ID `joint-resume-r2:joint:0000`, fixed selection SHA
+`f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6`,
+and `test_events_used=0`. This is the exact accepted pre-viability inventory.
