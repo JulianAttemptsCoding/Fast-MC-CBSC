@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cbsc-zdc-fastmc"
+version = "0.3.0"
+description = "Auditable CLI-first FastMC for 65-layer, 6790-channel neutron ZDC showers"
+requires-python = ">=3.10"
+dependencies = [
+  "torch>=2.2",
+  "numpy>=1.26",
+  "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+root = ["uproot>=5", "awkward>=2"]
+eval = ["scikit-learn>=1.3"]
+cloud = ["google-cloud-aiplatform>=1.60", "google-cloud-storage>=2.16"]
+dev = ["pytest>=8", "coverage>=7", "ruff>=0.5"]
+all = [
+  "uproot>=5", "awkward>=2", "scikit-learn>=1.3",
+  "google-cloud-aiplatform>=1.60", "google-cloud-storage>=2.16",
+  "pytest>=8", "coverage>=7", "ruff>=0.5"
+]
+
+[project.scripts]
+cbsc-zdc = "cbsc_zdc.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

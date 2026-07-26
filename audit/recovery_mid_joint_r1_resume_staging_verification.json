@@ -1,0 +1,40 @@
+{
+  "base_uri": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5",
+  "checkpoints": [
+    {
+      "field": "resume_progress_from",
+      "generation": "1785058955301638",
+      "relative_path": "checkpoints/progress.pt",
+      "sha256": "9730d737663188c85a0bbc2388d8f15f02b07d1d2c65ead7018f9dd86374abbc",
+      "size": 29366676
+    }
+  ],
+  "config_sha256": "b50e9c94e988b44c5cdfdd0ba36c05d9967a7dbdd12e8ae13218c65a56ec4cc4",
+  "forbidden_path_count": 0,
+  "hashes": {
+    "dataset_manifest_sha256": "5a6d963247091e91c0787dd763b46e3b1189f62785d9cab1d8fda4e76ca08096",
+    "geometry_manifest_sha256": "616b14bd006fb00acb963dc2b8b21fa0bc80d041a890b580d80ff31a11daa5d2",
+    "split_assignment_sha256": "084f0dfd86e488c63bb41ea50d6783ad22eb57a322288c075a94b1ec12dd3714",
+    "split_manifest_sha256": "a4d0967597bee525843d81647bd259deee7c2e908d25d2b1df78a8179526b0b3"
+  },
+  "merged_bytes": 5973779017,
+  "merged_object_count": 209,
+  "overlay_uris": [
+    "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/recovery-mid-20260726-r1-joint-resume-input"
+  ],
+  "pass": true,
+  "required_paths": [
+    "artifacts/data/dataset_manifest.json",
+    "artifacts/geometry/geometry.npz",
+    "artifacts/geometry/geometry_manifest.json",
+    "artifacts/training_pilot_splits.json",
+    "artifacts/training_pilot_splits_assignments.npz",
+    "configs/frozen_pilot_joint_mid_epoch_resume_fp32.yaml"
+  ],
+  "source_object_counts": {
+    "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5": 205,
+    "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/recovery-mid-20260726-r1-joint-resume-input": 4
+  },
+  "stage": "joint",
+  "synthetic": false
+}

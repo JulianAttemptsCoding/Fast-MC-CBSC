@@ -1,0 +1,2 @@
+epoch,stage,train_loss,validation_loss,learning_rate,seconds,examples_per_second,cuda_peak_memory_bytes,train_visible,train_response,train_first_layer,train_active,train_profile_flow,train_count,train_support_bce,train_support_rank,train_share_flow
+0,joint,11.42332288953993,11.047998428344727,1e-06,9.968009699950926,15.951027816594397,,0.8234229220284356,3.1269264221191406,1.3822342819637723,0.7488163246048821,2.2162528302934437,1.3519666857189603,0.7139192952050103,0.7009928027788798,2.288052691353692

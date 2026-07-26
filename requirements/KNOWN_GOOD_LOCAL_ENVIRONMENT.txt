@@ -1,0 +1,10 @@
+Repository QA environment (not a universal lock file)
+Generated: 2026-07-24
+Python: 3.13.5
+PyTorch: 2.10.0+cpu
+NumPy: 2.3.5
+PyYAML: 6.0.3
+pytest: 9.0.2
+Result: 18 passed, 2 documented Transformer nested-tensor performance warnings
+
+Production recommendation: Python 3.10-3.12 with a CUDA-enabled PyTorch build supported by the selected Vertex image. Freeze the complete environment after the first successful target-hardware pilot.

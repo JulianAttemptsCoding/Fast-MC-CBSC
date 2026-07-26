@@ -1,0 +1,60 @@
+{
+  "custom_job_id": "3541091829929738240",
+  "pipeline_job_id": "2118880136471248896",
+  "state": "JOB_STATE_FAILED",
+  "start_time": "2026-07-26T09:48:33Z",
+  "end_time": "2026-07-26T09:57:36Z",
+  "output_prefix": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/recovery-mid-20260726-r1-joint-resume-output",
+  "object_count": 6,
+  "total_bytes": 74412,
+  "epoch_artifact_count": 0,
+  "checkpoint_artifact_count": 0,
+  "failure": {
+    "exception_type": "ValueError",
+    "message": "mid-epoch training contract changed",
+    "vertex_failure_sha256": "b9bc041d4989981c8281c142e37c10102d707fd89fb9f2c131dd95f83cc2d624"
+  },
+  "preflight": {
+    "pass": true,
+    "synthetic": false,
+    "verified_shards": 187,
+    "train_events": 26624,
+    "validation_events": 4096,
+    "test_events": 0,
+    "sha256": "643953a0d7e06904cf0242b09421f8952719b39f118f05d3e325ee27e173e2f5"
+  },
+  "objects": [
+    {
+      "relative": "environment.json",
+      "bytes": 501,
+      "sha256": "6781ef121b93eb855d29eeb602df5be19e83304b308c01619f8f5a4dfcdc3f8c"
+    },
+    {
+      "relative": "reports/preflight.json",
+      "bytes": 837,
+      "sha256": "643953a0d7e06904cf0242b09421f8952719b39f118f05d3e325ee27e173e2f5"
+    },
+    {
+      "relative": "resolved_config.json",
+      "bytes": 3542,
+      "sha256": "6ceae3bfdaac50f8be66b75edfc7919c6c604a1aafc7d108cf388c2aaef5e9a9"
+    },
+    {
+      "relative": "runtime_config.yaml",
+      "bytes": 2920,
+      "sha256": "6ad8f8e7538aa0fbd273547bb125e649d0eaf4f3604b9db07e00d9a5f62992ff"
+    },
+    {
+      "relative": "staged_input_manifest.json",
+      "bytes": 65267,
+      "sha256": "9c52db49f04e9727e4c14cca6c1fdd981334efa7f2bdae574f5becd37ffef13c"
+    },
+    {
+      "relative": "vertex_failure.json",
+      "bytes": 1345,
+      "sha256": "b9bc041d4989981c8281c142e37c10102d707fd89fb9f2c131dd95f83cc2d624"
+    }
+  ],
+  "pass": true,
+  "disposition": "failed_closed_before_epoch; preserve evidence; fix and re-QA validator before any replacement"
+}

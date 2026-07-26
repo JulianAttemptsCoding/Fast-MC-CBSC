@@ -1,0 +1,32 @@
+tree: events
+neutron_pdg: 2112
+generator_status_value: 1
+cell_id_sentinels: [-100]
+energy_unit_to_gev: 1.0
+position_unit_to_mm: 1.0
+momentum_unit_to_gev: 1.0
+mass_unit_to_gev: 1.0
+primary:
+  pdg: MCParticles/MCParticles.PDG
+  generator_status: MCParticles/MCParticles.generatorStatus
+  mass: MCParticles/MCParticles.mass
+  momentum_x: MCParticles/MCParticles.momentum.x
+  momentum_y: MCParticles/MCParticles.momentum.y
+  momentum_z: MCParticles/MCParticles.momentum.z
+  vertex_x: MCParticles/MCParticles.vertex.x
+  vertex_y: MCParticles/MCParticles.vertex.y
+  vertex_z: MCParticles/MCParticles.vertex.z
+ecal:
+  name: EcalFarForwardZDCHits
+  cell_id: EcalFarForwardZDCHits/EcalFarForwardZDCHits.cellID
+  energy: EcalFarForwardZDCHits/EcalFarForwardZDCHits.energy
+  position_x: EcalFarForwardZDCHits/EcalFarForwardZDCHits.position.x
+  position_y: EcalFarForwardZDCHits/EcalFarForwardZDCHits.position.y
+  position_z: EcalFarForwardZDCHits/EcalFarForwardZDCHits.position.z
+hcal:
+  name: HcalFarForwardZDCHits
+  cell_id: HcalFarForwardZDCHits/HcalFarForwardZDCHits.cellID
+  energy: HcalFarForwardZDCHits/HcalFarForwardZDCHits.energy
+  position_x: HcalFarForwardZDCHits/HcalFarForwardZDCHits.position.x
+  position_y: HcalFarForwardZDCHits/HcalFarForwardZDCHits.position.y
+  position_z: HcalFarForwardZDCHits/HcalFarForwardZDCHits.position.z

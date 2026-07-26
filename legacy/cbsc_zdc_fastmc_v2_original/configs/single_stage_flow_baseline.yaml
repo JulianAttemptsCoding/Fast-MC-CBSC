@@ -1,0 +1,12 @@
+project: {name: single-stage-flow-baseline}
+condition: {raw: [E,px,py,pz], derived: [logE,ux,uy,uz]}
+model:
+  type: single_stage_parallel_flow
+  n_nodes: 6790
+  state_channels: 2
+  hidden_dim: 96
+  message_blocks: 4
+  steps: 8
+notes:
+  - "Controlled baseline based on the supplied proposal; same data, split, geometry and evaluation."
+  - "No separate start/profile stage."

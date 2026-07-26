@@ -1,0 +1,12 @@
+.git
+.venv
+__pycache__
+*.pyc
+runs
+artifacts
+fixtures
+legacy
+audit
+paper
+tests
+dashboard

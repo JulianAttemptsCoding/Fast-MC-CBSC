@@ -1,0 +1,92 @@
+project:
+  name: cbsc-zdc-v2-2-full-0-300
+  run_dir: runs/stage_count_seed20260723
+data:
+  manifest: UNFROZEN
+  splits: UNFROZEN
+  target_mode: raw_deposit
+  threshold_gev: 0.0
+  train_kinetic_gev:
+  - 0.0
+  - 300.0
+  evaluation_kinetic_gev:
+  - 50.0
+  - 250.0
+  split_fraction:
+  - 0.8
+  - 0.1
+  - 0.1
+  response_cap_ratio: 2.0
+  response_cap_absolute_gev: 500.0
+geometry:
+  path: UNFROZEN
+  n_nodes: 6790
+  n_layers: 65
+model:
+  condition_dim: 128
+  hidden_dim: 96
+  response_hidden: 192
+  response_components: 4
+  response_scale_gev: 10.0
+  profile_hidden: 128
+  count_hidden: 192
+  graph_blocks: 3
+  attention_heads: 4
+  attention_layers: 2
+  layer_context: bidirectional
+  dropout: 0.0
+training:
+  stage: count
+  seed: 20260723
+  device: cuda
+  batch_size: 4
+  gradient_accumulation: 8
+  num_workers: 4
+  epochs: 30
+  learning_rate: 0.0001
+  min_learning_rate: 1.0e-06
+  betas:
+  - 0.9
+  - 0.999
+  eps: 1.0e-08
+  weight_decay: 0.01
+  gradient_clip_norm: 1.0
+  amp: true
+  deterministic_debug: false
+  early_stopping_patience: 8
+  initialize_from: runs/stage_profile_seed20260723/checkpoints/best.pt
+  resume_from: null
+  train_condition_encoder: false
+loss_weights:
+  visible: 1.0
+  response: 1.0
+  first_layer: 0.5
+  active: 0.5
+  profile_flow: 1.0
+  count: 0.75
+  support_bce: 1.0
+  support_rank: 0.25
+  share_flow: 1.0
+evaluation:
+  energy_bin_edges_gev:
+  - 50
+  - 75
+  - 100
+  - 125
+  - 150
+  - 175
+  - 200
+  - 225
+  - 250.0001
+  profile_steps: 8
+  share_steps: 8
+  closure_tolerance_gev: 2.0e-05
+  visualization:
+    enabled: true
+    split: validation
+    sample_count: 50
+    draws_per_condition: 5
+    selection_seed: 20260725
+    generation_seed: 20260725
+    required: true
+provenance: {}

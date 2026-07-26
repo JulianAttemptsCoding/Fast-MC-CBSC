@@ -1,0 +1,55 @@
+# Python caches and local test output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.json
+
+# Local environments and secrets
+.venv/
+venv/
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*credentials*.json
+*service-account*.json
+
+# Raw detector data and model checkpoints stay in controlled storage
+*.root
+*.pt
+*.pth
+*.ckpt
+*.npy
+*.npz
+*.parquet
+*.arrow
+
+# Downloaded Vertex output trees; retain the compact top-level audit summaries
+/audit/*/
+
+# Generated dashboard payloads and runtime output
+/dashboard/public/data/*.json
+!/dashboard/public/data/geometry.json
+!/dashboard/public/data/manifest.json
+/dashboard/site_*.log
+/dashboard/site_*.err
+/dashboard/vertex_sync*.log
+/dashboard/vertex_sync*.err.log
+
+# JavaScript dependencies and generated bundles
+/dashboard/node_modules/
+/dashboard/dist/
+/dashboard/.vinext/
+/dashboard/.next/
+/dashboard/.wrangler/
+/dashboard/outputs/
+/dashboard/work/
+
+# OS and editor metadata
+.DS_Store
+Thumbs.db
+*.swp
+*~

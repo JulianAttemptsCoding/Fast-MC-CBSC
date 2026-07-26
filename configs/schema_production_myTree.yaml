@@ -1,0 +1,43 @@
+# Production contract for:
+# gs://asiop-zdc-1-zdc-reco-us-central1/data/
+#   myTree_20251117_765k_0to300GeV_neutron_All.root
+#
+# Evidence collected 2026-07-24:
+# - latest tree cycle is `myTree` with 764,940 entries;
+# - primary vectors contain exactly one neutron in the bounded inspection sample;
+# - mcPar_energy equals sqrt(|p|^2 + mass^2), so range cuts remain kinetic;
+# - hit energies are in GeV and positions are in mm;
+# - HCAL cell IDs are local to each hcal_LayerID and therefore require a
+#   composite (layer_id, cell_id) channel identity.
+tree: myTree
+neutron_pdg: 2112
+cell_id_sentinels: [-100]
+energy_unit_to_gev: 1.0
+position_unit_to_mm: 1.0
+momentum_unit_to_gev: 1.0
+mass_unit_to_gev: 1.0
+event_total_energy: energySum_ZDC
+primary:
+  pdg: mcPar_PDG
+  mass: mcPar_mass
+  momentum_x: mcPar_momX
+  momentum_y: mcPar_momY
+  momentum_z: mcPar_momZ
+  vertex_x: mcPar_vtxX
+  vertex_y: mcPar_vtxY
+  vertex_z: mcPar_vtxZ
+ecal:
+  name: ecal
+  cell_id: ecal_cellID
+  energy: ecal_energy
+  position_x: ecal_posX
+  position_y: ecal_posY
+  position_z: ecal_posZ
+hcal:
+  name: hcal
+  cell_id: hcal_cellID
+  layer_id: hcal_LayerID
+  energy: hcal_energy
+  position_x: hcal_posX
+  position_y: hcal_posY
+  position_z: hcal_posZ

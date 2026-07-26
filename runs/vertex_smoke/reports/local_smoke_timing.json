@@ -1,0 +1,10 @@
+{
+  "batch_size": 2,
+  "device": "cpu",
+  "iterations": 2,
+  "milliseconds_per_batch": 18.034450011327863,
+  "milliseconds_per_event": 9.017225005663931,
+  "profile_steps": 1,
+  "share_steps": 1,
+  "total_seconds": 0.036068900022655725
+}

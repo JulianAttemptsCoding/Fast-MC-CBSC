@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cbsc-zdc-fastmc"
+version = "0.1.0"
+description = "Constrained budgeted stochastic cascade reference implementation for neutron ZDC FastMC"
+requires-python = ">=3.10"
+dependencies = ["torch>=2.2", "numpy>=1.26", "pyyaml>=6"]
+
+[project.optional-dependencies]
+root = ["uproot>=5", "awkward>=2"]
+dev = ["pytest>=8", "ruff>=0.5"]
+
+[tool.setuptools.packages.find]
+where=["src"]

@@ -1,0 +1,11 @@
+# Provisional predeclared primary-domain gates for the first controlled study.
+# They are not universal detector requirements. Calibrate their reasonableness
+# against truth-half statistical floors on validation, then freeze before test.
+min_total_evaluation_events: 10000
+min_events_per_energy_bin: 500
+max_abs_mean_bias_fraction: 0.05
+max_abs_resolution_difference_fraction: 0.10
+max_zero_fraction_absolute_difference: 0.01
+max_response_wasserstein_normalized: 0.15
+max_hit_count_wasserstein_normalized: 0.15
+max_high_level_c2st_auc: 0.65

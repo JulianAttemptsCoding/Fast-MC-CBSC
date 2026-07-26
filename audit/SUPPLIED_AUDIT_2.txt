@@ -1,0 +1,2130 @@
+CBSC-ZDC AUDITOR SPECIFICATION
+FULL INDEPENDENT AUDIT, RESEARCH CHECK, QA LOG, AND REVISION PLAN
+================================================================
+
+Audited artifact
+----------------
+File: CBSC_ZDC_Auditor_Specification_LaTeX(1).pdf
+SHA-256: a2277c239fee70de876ce25bcdcac83d655a54305b8149aa100b0a28a0830b76
+Size: 408,713 bytes
+Pages: 26
+Page size: A4
+PDF creation date recorded in metadata: 23 July 2026
+Audit date: 23 July 2026
+
+Scope and evidence boundary
+---------------------------
+This audit uses only:
+1. the uploaded PDF named above;
+2. fresh checks of primary papers, official documentation, and cited repositories;
+3. direct PDF rendering, text extraction, metadata inspection, and layout/preflight tests.
+
+No prior conversation history was used as evidence.
+
+This file is a chronological, externally auditable record of review actions, evidence,
+findings, concise rationales, counterexamples, and recommended corrections. It is not a
+transcript of private hidden reasoning.
+
+================================================================
+EXECUTIVE VERDICT
+================================================================
+
+VERDICT: NOT YET IMPLEMENTATION-READY AS A FROZEN AUDITOR SPECIFICATION.
+
+The document is substantially stronger than an ordinary architecture proposal. Its main
+physics correction is sound; its exact-support decoder theorem is algebraically correct under
+its stated assumptions; it clearly separates structural validity from empirical Geant4
+fidelity; and the PDF is professionally typeset.
+
+However, six blocking issues prevent the current text from serving as a complete,
+internally consistent implementation contract:
+
+B1. Thresholded-readout energy accounting is internally inconsistent.
+B2. The shared event latent z is not given a valid marginal likelihood or trainable inference
+    mechanism and will generally be ignored under the written losses.
+B3. The support CFM and independent Gumbel-Top-k introduce uncalibrated double
+    stochasticity and a truth-to-sample mismatch.
+B4. The protocol contains no predeclared numerical success, non-inferiority, or failure gates.
+B5. The incident-energy convention conflates Geant4 kinetic energy with relativistic total
+    energy.
+B6. The reserve variable is unobserved, forced positive by softmax, and scientifically
+    non-identifiable under the stated target.
+
+The specification should therefore be described as a strong but unfinished research design,
+not yet as an exact implementation contract. After correcting B1-B6 and the major items below,
+the project would be suitable for implementation as a controlled experimental scaffold.
+
+Ordinal readiness assessment
+----------------------------
+Scientific motivation:                 STRONG
+Core anti-dust algebra:                STRONG, conditional on corrected budget semantics
+Conditional generative formulation:   NEEDS MAJOR REVISION
+Data contract:                         PROMISING BUT INCOMPLETE
+Evaluation design:                     BROAD BUT NOT FALSIFIABLE ENOUGH
+Reproducibility claim:                 NOT YET AUDITABLE FROM THIS PDF ALONE
+Bibliographic accuracy:                NEEDS CORRECTION
+Visual/typesetting quality:            STRONG
+Implementation readiness:             BLOCKED
+
+Finding count
+-------------
+Blockers:           6
+Major findings:    18
+Moderate findings: 17
+Minor/editorial:   16
+Verified strengths: 18
+
+================================================================
+SEVERITY DEFINITIONS
+================================================================
+
+BLOCKER
+A contradiction, missing mathematical object, or missing experimental rule that can make two
+conforming implementations scientifically different, invalidate a claimed invariant, or prevent
+the stated model from being trained as described.
+
+MAJOR
+A defect likely to bias results, undermine reproducibility, or materially weaken the paper's
+scientific claim, but which can be repaired without replacing the full project.
+
+MODERATE
+A meaningful ambiguity, incomplete control, or reporting omission that should be fixed before
+training or external review.
+
+MINOR
+A presentational, citation-format, accessibility, or local clarity problem that does not by itself
+invalidate the experiment.
+
+================================================================
+CHRONOLOGICAL AUDIT LOG
+================================================================
+
+STEP 001 — Artifact identity and integrity
+Action:
+- Read the exact uploaded PDF path.
+- Computed SHA-256.
+- Inspected PDF metadata and page geometry.
+
+Result:
+- File is readable, unencrypted, 26 pages, PDF 1.7, A4.
+- SHA-256 is recorded above.
+- The artifact is not tagged for accessibility and is not linearized/optimized.
+
+QA disposition:
+- File identity is reproducible.
+- Accessibility tagging is a minor deficiency, not a scientific blocker.
+
+STEP 002 — Structural PDF preflight
+Action:
+- Ran PDF inspection and preflight checks.
+- Checked page boxes, font embedding, text bounds, links/annotations, outlines, and obvious
+  malformed objects.
+
+Result:
+- All fonts are embedded.
+- No out-of-bounds text or clipping warnings were detected.
+- 64 outline/bookmark items and 214 annotations were present.
+- No encryption, JavaScript, forms, or suspicious page rotations were present.
+
+QA disposition:
+- Mechanical PDF integrity passed.
+
+STEP 003 — Full-page rendering
+Action:
+- Rendered all 26 pages at 160 dpi.
+- Reviewed contact sheets and individual pages for clipping, overlap, broken glyphs, poor
+  contrast, excessive whitespace, table overflow, and illegible equations.
+
+Result:
+- No clipped equations, overlapping text, black boxes, missing glyphs, or broken tables were
+  observed.
+- Body text is approximately 10.9 pt; references and compact tables are approximately 8 pt;
+  math subscripts reach approximately 6 pt.
+- The visual hierarchy is consistent and professional.
+- The code block begins on page 19 and continues on page 20 without an explicit
+  “continued” marker; this is mildly awkward.
+- The abstract on page 1 is dense, but still readable.
+- Page 18 is information-dense but remains legible.
+- Reference URLs wrap heavily on pages 24-26, but remain interpretable.
+
+QA disposition:
+- Visual QA passed with minor presentation improvements recommended.
+
+STEP 004 — Text extraction and searchability
+Action:
+- Extracted the complete text and compared representative extracted sections against rendered
+  pages.
+
+Result:
+- Content is searchable and extractable.
+- Some discretionary-hyphen or encoding artifacts appear in extracted text, for example
+  split words and a replacement-like character around line breaks. These artifacts do not appear
+  visually in the rendered PDF.
+
+QA disposition:
+- Human reading passes.
+- Copy/paste and machine-accessibility quality should be improved in the source build.
+
+STEP 005 — Scope and claim audit, pages 1 and 4
+Action:
+- Compared the abstract, assurance statement, research question, and enumerated claims.
+
+Result:
+- The document appropriately states that it is a research design, not a trained or validated
+  simulator.
+- The claim “implementing this specification exactly should work” is narrower than a fidelity
+  guarantee, but remains too strong because multiple central objects are not yet uniquely defined.
+- “Approximate” and “computationally useful” in Equation (1) have no operational thresholds.
+
+QA disposition:
+- The non-fidelity disclaimer is strong.
+- The exact-implementation assurance must be weakened until the blockers are fixed.
+- A predeclared success criterion is required.
+
+STEP 006 — Physics basis audit, pages 4-5
+Action:
+- Checked the rejection of layerwise monotone deposited energy against hadronic-shower
+  physics and Geant4's official hadronic-process description.
+
+Evidence:
+- Geant4 describes a hadronic process as combining a cross section, which determines whether
+  and when an interaction occurs, with a final-state model.
+- Event-level neutron showers can therefore begin at different depths and have non-monotone
+  longitudinal deposits.
+
+Result:
+- Claim C1 is scientifically sound.
+- Equation (2), D_(l+1) <= D_l, is correctly rejected as a universal event-level constraint.
+- The replacement idea—non-increasing remaining accounting budget—is appropriate.
+- Reference [9] concerns electromagnetic, not hadronic, showers and is not strong evidence for
+  the neutron-specific claim.
+
+QA disposition:
+- Core physics correction passed.
+- Replace or supplement [9] with directly relevant hadronic calorimeter literature.
+
+STEP 007 — Condition and energy convention audit, pages 5-6
+Action:
+- Checked Equations (3)-(9), the 0-300 GeV support statement, and Geant4 particle-gun
+  conventions.
+
+Result:
+- Equation (4), E^2-|p|^2=m_n^2, uses relativistic total energy.
+- Geant4's G4ParticleGun “particle energy” interface is conventionally kinetic energy.
+- A neutron cannot have total energy approaching 0 GeV because E_total >= m_n.
+- The document therefore needs separate symbols:
+    K_inc  = incident kinetic energy;
+    E_tot  = K_inc + m_n;
+    |p|    = sqrt(E_tot^2-m_n^2).
+- The 0-300 GeV support and 50-250 GeV reporting ranges must say whether they refer to
+  kinetic energy or total energy.
+- Entry formulas divide by p_z without declaring p_z != 0, the direction toward the detector,
+  coordinate units, or the valid detector-plane intersection.
+
+QA disposition:
+- BLOCKER B5 confirmed.
+- Add an explicit energy/units convention and geometric domain checks before any converter or
+  model is frozen.
+
+STEP 008 — Static geometry contract audit, page 6
+Action:
+- Examined the claimed 400 ECAL, 6,390 HCAL, 6,790 total channels, 65 layers, node metadata,
+  and graph-edge requirements.
+
+Result:
+- The counts are asserted but cannot be independently verified from the PDF.
+- The document does not provide the actual channel map, layer map, geometry hash value,
+  edge-construction algorithm, edge counts by type, degree distribution, connected components,
+  or intentional-isolation list.
+- “Physical adjacency or overlap” is a principle, not an executable definition.
+
+QA disposition:
+- Major reproducibility gap.
+- The geometry manifest must be a versioned artifact referenced by hash and accompanied by
+  deterministic construction tests.
+
+STEP 009 — Raw versus thresholded target-mode audit, pages 6, 9, and 11
+Action:
+- Traced the definitions of thresholded truth, subthreshold residual U_l, layer budget D_l,
+  count feasibility, decoder output, and event accounting.
+
+Result:
+- Equation (11) defines U_l as the sum of all raw deposits satisfying 0 < Y_i < tau.
+- Equation (25) constrains K_l using D_l/tau.
+- Equation (37) allocates the entire layer budget B=D_l to selected cells whenever B>=tau.
+- The unresolved branch assigns U_l=B only if the entire layer budget is below tau.
+- Therefore, a real thresholded layer that contains both above-threshold and subthreshold raw
+  deposits cannot be represented correctly.
+
+Concrete counterexample:
+- tau = 1 GeV;
+- raw layer cells = (2.0, 0.4, 0, ...);
+- D_l interpreted as raw layer energy = 2.4 GeV;
+- truth thresholded output is (2.0, 0, ...), and U_l=0.4 GeV.
+- With K=1, Equation (37) emits one selected cell with 2.4 GeV and U_l=0.
+- The thresholded truth and the raw accounting are both wrong.
+
+QA disposition:
+- BLOCKER B1 confirmed.
+- Equation (39) is algebraically correct only under the decoder's own U definition, not under
+  the truth definition in Equation (11).
+
+STEP 010 — Minimum correction for target modes
+Action:
+- Constructed mutually consistent alternatives and checked their identities.
+
+Recommended freeze:
+MODE A — raw-deposit model
+- tau = 0.
+- T_raw = sum_i Y_i_raw.
+- No subthreshold residual variable is needed.
+- Exact support uses strict positivity.
+
+MODE B — thresholded-readout-only model
+- Y_i^(tau) = Y_i_raw 1{Y_i_raw >= tau}.
+- T_tau = sum_i Y_i^(tau).
+- The profile budgets allocate T_tau only.
+- No U_l is included in the core target because subthreshold raw energy is not part of the
+  modeled readout.
+
+MODE C — joint raw-accounting plus thresholded readout
+For every layer:
+- B_l_raw >= 0;
+- 0 <= U_l <= B_l_raw;
+- B_l_plus = B_l_raw - U_l;
+- K_l = 0 if B_l_plus=0;
+- otherwise 1 <= K_l <= min(N_l, floor(B_l_plus/tau));
+- decoded selected energies sum to B_l_plus, not B_l_raw;
+- event identity:
+    sum_i Yhat_i + sum_l U_l + R_res = T_raw.
+
+QA disposition:
+- Any one mode can be made valid.
+- The current text mixes MODE B and MODE C and must be rewritten.
+
+STEP 011 — Visible hurdle and first-visible semantics, pages 7-8
+Action:
+- Checked V, first-visible layer S, active mask A, and thresholded-mode edge cases.
+
+Result:
+- In raw mode, V and first-positive layer can be defined consistently.
+- In thresholded mode, an event can have positive raw deposits but zero thresholded readout.
+- A layer can contain only subthreshold raw deposits before the first resolved hit.
+- Under the current mixed convention, V, S, and A can refer to different notions of
+  “visible.”
+
+QA disposition:
+- Major semantic ambiguity.
+- Define separate raw-response and resolved-readout indicators if MODE C is used.
+- If S means first resolved visible layer, enforce K_S >= 1 and B_S_plus >= tau.
+- Otherwise rename S to first raw-positive layer and do not call it visible after thresholding.
+
+STEP 012 — Factorization audit, page 7, Equation (12)
+Action:
+- Parsed the joint factorization and checked notation, normalization, latent treatment, and
+  dependency claims.
+
+Result:
+- S is used both for the first-visible-layer random variable and for the selected cell set.
+- The shared latent z appears in conditionals, but p(z) and the integral over z are absent.
+- The displayed expression is therefore not the marginal p_theta(Y|c,G).
+- The threshold/mode is not shown in the conditioning.
+- Several deterministic constraints are not represented as indicators or deterministic maps.
+
+QA disposition:
+- BLOCKER B2 and a notation defect confirmed.
+- Use distinct symbols, for example L0 for first visible layer and H_l for selected sets.
+- Write:
+    p_theta(Y|c,G) = integral p(z) p_theta(Y, auxiliaries | z,c,G) dz.
+- Then specify how z is inferred or trained.
+
+STEP 013 — Shared-latent trainability audit
+Action:
+- Compared the stated role of z with the componentwise BCE/NLL/CFM training losses.
+
+Result:
+- If z is sampled independently of each training target and no encoder q_phi(z|Y,c) or
+  invertible latent map is provided, the expected proper-scoring-rule optimum is generally to
+  ignore z.
+- Sampling a common random vector does not by itself preserve dependence between learned
+  stage outputs.
+- Stagewise teacher-forced conditioning may preserve some dependence without z, but that is
+  different from the stated mechanism.
+
+QA disposition:
+- BLOCKER B2 confirmed.
+- Choose exactly one:
+  1. remove z and use explicit ancestral dependence;
+  2. add amortized posterior inference and an ELBO/joint latent objective;
+  3. use a joint invertible/transport model with a defined latent-to-output map;
+  4. train a coupled multi-output model with shared noise whose target coupling is identified.
+
+STEP 014 — Total-response model audit, page 8
+Action:
+- Checked the visible hurdle, beta-mixture response fraction, endpoint behavior, and support
+  assumptions.
+
+Result:
+- A beta mixture on (0,1) is a reasonable bounded conditional density after a data audit.
+- It cannot represent a point mass at rho=1 without an explicit atom.
+- It cannot represent legitimate T/E>1.
+- Whether T/E<=1 is valid depends on the exact scoring and whether E is kinetic or total.
+- The use of z inherits the trainability issue above.
+
+QA disposition:
+- Mathematical form passed conditionally.
+- Data-contract and energy-convention blockers must be cleared first.
+
+STEP 015 — First-visible hazard audit, page 8
+Action:
+- Checked Equations (17)-(18).
+
+Result:
+- The discrete hazard formula is correct for an in-detector start distribution after
+  conditioning on S<L.
+- Renormalizing across detector layers discards the “no in-detector start” probability.
+- This is acceptable only because V is intended to handle no visible response, but the relation
+  must be explicit.
+- A terminal hazard h_(L-1)=1 or a clearly defined conditional distribution would be simpler.
+
+QA disposition:
+- Moderate clarification required, not a blocker.
+
+STEP 016 — Active support and masked simplex audit, pages 8-9
+Action:
+- Checked Equations (19)-(22), inactive masks, exact zeros, and reserve semantics.
+
+Result:
+- Masking inactive logits to negative infinity before softmax correctly yields zero layer
+  allocations in exact real arithmetic.
+- A softmax over active layers plus reserve makes every finite-logit component strictly
+  positive.
+- Thus R_res is forced positive for every visible event unless its logit is exactly negative
+  infinity.
+- If T is total modeled readout response, a positive reserve contradicts that meaning.
+- If reserve means leakage or unrecorded energy, a truth target is required.
+- If reserve is merely slack, T and D become non-identifiable.
+
+QA disposition:
+- BLOCKER B6 confirmed.
+- Remove reserve from the simplex unless an observed target is available.
+- If an atom at zero reserve is needed, add a reserve hurdle and a supervised target.
+
+STEP 017 — Monotone remaining-budget proposition, page 9
+Action:
+- Re-derived Proposition 5.1.
+
+Result:
+- Given T>=0, D_l>=0, and sum_l D_l + R_res=T:
+    R_l = T - sum_(j<=l) D_j
+  satisfies:
+    R_(l+1)=R_l-D_(l+1)<=R_l;
+    R_l=R_res+sum_(j>l)D_j>=R_res>=0.
+- The proposition imposes no relation between D_(l+1) and D_l.
+
+QA disposition:
+- Proof passed.
+- This is one of the strongest parts of the specification.
+- Its scientific interpretation still depends on fixing R_res.
+
+STEP 018 — Count model audit, page 9
+Action:
+- Checked categorical support and threshold feasibility.
+
+Result:
+- A categorical count over 0,...,N_l avoids a Poisson mean-variance restriction and permits
+  exact feasibility masks.
+- With irregular N_l, a padded categorical head requires explicit invalid-class masking.
+- Equation (25) is correct only if D_l is the resolved budget that will be allocated to cells.
+- It is incorrect if D_l includes U_l.
+
+QA disposition:
+- Count-model idea passed.
+- Budget semantics must be corrected.
+- Add calibration metrics and class-imbalance handling.
+
+STEP 019 — Continuous support-state audit, pages 9-10
+Action:
+- Checked Equations (26)-(28).
+
+Result:
+- s_i* maps binary support to only two finite constants.
+- r_i* is centered log residual energy on selected cells and zero elsewhere.
+- Missing conditions:
+  - 0 < epsilon < 1/2;
+  - Y_i-tau must be nonnegative;
+  - layers with B=K tau have zero residual share and no identifiable relative shares.
+- log(Y_i-tau+epsilon) is dimensionally invalid unless epsilon has energy units.
+- The target distribution contains discrete atoms and lower-dimensional structure.
+
+QA disposition:
+- Major mathematical revision required.
+- Use dimensionless transforms, e.g. log((Y_i-tau)/E0 + epsilon).
+- Define the zero-residual case separately.
+- Add dequantization/jitter or avoid a continuous flow for binary support.
+
+STEP 020 — Conditional flow-matching objective audit, page 10
+Action:
+- Checked Equations (29)-(34) against standard straight-line conditional flow matching.
+
+Result:
+- X_t=(1-t)X_0+tX_1 and u_t=X_1-X_0 are the standard straight interpolation and target
+  velocity.
+- The velocity field must consume t; the document correctly requires that.
+- W is not defined.
+- The endpoint target is singular because support has atoms and unselected share values are
+  deterministic zeros.
+- A smooth ODE flow from a full-dimensional Gaussian cannot ordinarily create exact atoms or a
+  lower-dimensional distribution with a regular invertible field.
+
+QA disposition:
+- Core CFM algebra passed.
+- Target representation needs dequantization or structural separation.
+
+STEP 021 — Support stochasticity audit, pages 9-12
+Action:
+- Traced all stochastic sources that affect selected support.
+
+Result:
+- The flow begins from random Gaussian X(0), so final support scores are random.
+- Equation (35) then adds independent Gumbel noise before Top-k.
+- The training target s_i* is a deterministic binary code and no likelihood for the combined
+  flow-plus-Gumbel subset distribution is defined.
+- This produces double stochasticity whose calibration is not controlled by the written losses.
+
+QA disposition:
+- BLOCKER B3 confirmed.
+
+Recommended alternatives:
+A. Graph support logits + Gumbel-Top-k:
+   - make support logits deterministic conditional on c,D,K,G;
+   - train with a set likelihood/relaxation or supervised ranking;
+   - use Gumbel as the sole support sampling noise;
+   - use CFM only for positive energy shares.
+
+B. Stochastic priority flow + deterministic Top-k:
+   - dequantize target priorities;
+   - let the flow provide the only support randomness;
+   - use deterministic Top-k at generation;
+   - do not add independent Gumbel noise.
+
+STEP 022 — Exact anti-dust decoder audit, page 11
+Action:
+- Re-derived Equation (37), Theorem 8.1, and Corollary 8.2.
+
+Result:
+For a resolved layer with B>=K tau, K>=1, selected set size K, positive weights summing to 1:
+- unselected outputs are exactly zero;
+- selected outputs are at least tau;
+- the layer sum is B;
+- exactly K cells are positive;
+- no output lies strictly between 0 and tau.
+
+QA disposition:
+- The theorem is correct in real arithmetic.
+- It is a genuine structural strength.
+- It remains valid only if B is the resolved budget, not a raw budget that includes U.
+
+STEP 023 — Floating-point exactness audit
+Action:
+- Compared theorem language with the float32 implementation contract.
+
+Result:
+- In IEEE floating point, softmax normalization and summation do not guarantee bit-exact
+  equality.
+- “Exact accounting” must mean either:
+  1. a declared numerical tolerance;
+  2. float64 or compensated accumulation;
+  3. an explicit residual correction to one selected cell;
+  4. integer/fixed-point accounting in detector units.
+- Top-k tie behavior and deterministic ordering must also be specified.
+
+QA disposition:
+- Major implementation-contract correction.
+- Keep the theorem as a real-arithmetic statement, but define production numerical invariants
+  separately.
+
+STEP 024 — Discrete-support training audit, page 12
+Action:
+- Reviewed BCE/ranking, straight-through/relaxed subsets, sparsemax/entmax, and hard-concrete
+  alternatives.
+
+Result:
+- The document correctly states that hard Top-k alone is not a differentiable training
+  objective.
+- The options are not equivalent and lead to materially different models.
+- “Recommended known options” is insufficient for an exact implementation contract.
+- Binary BCE does not itself optimize a fixed-size subset likelihood or set-level topology.
+
+QA disposition:
+- Major freeze required.
+- Select a primary loss, relaxation temperature schedule, estimator, and generated-support
+  exposure plan before training.
+
+STEP 025 — Full objective audit, pages 12-13
+Action:
+- Checked Equations (41)-(47) and the prose definition of L_D and L_aux.
+
+Result:
+- The modular decomposition is sensible for diagnostics.
+- L_D is allowed to be a simplex likelihood, a profile CFM, or distributional terms; these are
+  different experiments.
+- L_sup is also not frozen.
+- Masking, reduction normalization, class weights, and per-stage gradient routing are unspecified.
+- With a latent z, the sum is not a valid joint latent-variable likelihood as written.
+
+QA disposition:
+- Major reproducibility problem.
+- Publish one reference objective and reserve alternatives for labeled ablations.
+
+STEP 026 — Raw ROOT audit plan, page 13
+Action:
+- Checked the requested branch, unit, channel, sentinel, summary-total, support, vertex, and
+  provenance reports.
+
+Result:
+- This is a strong pretraining checklist.
+- It correctly refuses to fabricate unavailable event statistics.
+- The PDF does not contain the branch map or any decoded data result, so none of the numerical
+  target assumptions are presently established.
+
+QA disposition:
+- Plan passed.
+- Implementation readiness remains conditional on Stage 0 evidence.
+
+STEP 027 — Canonical tensor audit, page 13
+Action:
+- Checked shapes, dtypes, thresholded/raw coexistence, and metadata.
+
+Result:
+- Core shapes are clear.
+- float32 storage may be acceptable, but sums and conversion should be audited in float64.
+- `first_visible int64` needs a sentinel for no-response events.
+- `active_layer bool` must specify whether it is raw-active or thresholded-resolved.
+- `subthreshold` is meaningful only under corrected MODE C.
+- Event provenance should include generator configuration, Geant4 version, physics list,
+  production cuts, material/geometry version, and scoring code hash.
+
+QA disposition:
+- Major clarifications required.
+
+STEP 028 — Data splitting audit, pages 13-14
+Action:
+- Reviewed group-based splitting, row-hash fallback, normalization isolation, and test-set use.
+
+Result:
+- Group-based splitting is the correct default.
+- Row-index hashing is a weak fallback if neighboring events share seeds, files, or generator
+  state.
+- Duplicate search must include exact and near-duplicate shower/condition checks.
+- The specification should define leakage tests and split acceptance thresholds, not only
+  recommend them.
+
+QA disposition:
+- Strong principle; moderate operational detail missing.
+
+STEP 029 — Training-range experiment audit, page 14
+Action:
+- Checked the 50-250 versus 0-300 GeV matched experiment.
+
+Result:
+- The comparison is scientifically useful.
+- The document correctly separates wider single-particle support from pileup.
+- The final design needs stratification and sufficient validation/test density near 50 and
+  250 GeV boundaries.
+- It should also report whether energy is sampled uniformly, log-uniformly, or according to the
+  generator distribution.
+
+QA disposition:
+- Passed with moderate additions.
+
+STEP 030 — Staged implementation audit, pages 14-15
+Action:
+- Checked stages 0-8 and the statement that reports are not pass/fail gates.
+
+Result:
+- The staged decomposition is excellent for fault localization.
+- However, declaring no user-imposed gates conflicts with the paper's “auditable” and
+  “falsifiable” framing.
+- A project can otherwise proceed despite an invalid response model, uncalibrated count model,
+  or failed free-running transition.
+
+QA disposition:
+- BLOCKER B4 confirmed.
+- Add prerequisite gates for structural validity and predeclared scientific decision rules.
+
+STEP 031 — Minimal gate proposal
+Action:
+- Designed gates that separate software validity from empirical superiority.
+
+Required structural gates:
+- zero NaN/Inf/negative outputs in at least 10^6 generated events;
+- invalid-channel energy exactly zero under defined numerical convention;
+- support count equals requested count in every layer/event;
+- accounting residual below declared absolute and relative tolerances;
+- deterministic replay for fixed seed and controlled diversity across seeds;
+- no split-manifest overlap;
+- condition permutation test detects dependence.
+
+Required statistical decision rules:
+- name a small primary metric set before training;
+- define equivalence/non-inferiority margins against the best baseline;
+- report confidence intervals across independent training seeds;
+- lock the test set and analysis code;
+- classify results as pass, fail, or inconclusive.
+
+QA disposition:
+- These gates are necessary for a falsifiable protocol.
+- Numerical margins must come from detector/reconstruction requirements or a pilot, not be
+  invented in the final test analysis.
+
+STEP 032 — Vertex execution plan audit, page 15
+Action:
+- Checked run manifests, checkpoints, RNG state, and changed-artifact uploads.
+
+Result:
+- Directory structure is sensible.
+- Missing:
+  - container image digest;
+  - Python/CUDA/cuDNN/PyTorch/PyG versions;
+  - exact command line;
+  - resolved package lock;
+  - data and code access policy;
+  - training seed list;
+  - failed/preempted-job semantics;
+  - atomic checkpoint write and checksum verification.
+
+QA disposition:
+- Moderate reproducibility additions required.
+
+STEP 033 — Precision plan audit, page 15
+Action:
+- Reviewed float32 reference and mixed-precision introduction.
+
+Result:
+- Beginning with float32 is prudent.
+- Graph reductions, profile sums, and accounting assertions may need float64 accumulation.
+- “Output equivalence” needs numerical thresholds and distributional criteria.
+- Mixed-precision timing must not be compared against float32 fidelity without disclosing the
+  precision change.
+
+QA disposition:
+- Moderate correction.
+
+STEP 034 — Baseline audit, pages 15-16
+Action:
+- Checked direct ZDC references and internal baseline ladder.
+
+Result:
+- Native reproduction before adaptation is methodologically correct.
+- The empirical/template baseline is essential.
+- Non-graph, graph, mixture, serial, single-stage, and sparse comparisons cover useful inductive
+  biases.
+- “Same optimization steps” is not universally fair because different architectures converge at
+  different rates and have different per-step costs.
+- External ALICE ZDC representations differ materially from the proposed 6,790-channel detector.
+
+QA disposition:
+- Strong baseline design.
+- Add two comparison regimes:
+  1. equal compute budget;
+  2. independently tuned, best validated configuration under a common tuning budget.
+- Distinguish native reproduction, port, and conceptual baseline.
+
+STEP 035 — Software/algebraic QA audit, page 16
+Action:
+- Checked every listed assertion.
+
+Result:
+- The list is strong and directly relevant.
+- `T<=E` must be conditioned on corrected energy semantics and audited scoring.
+- “Exact” equality needs floating-point tolerances/correction.
+- Explicit time dependence should test output sensitivity or nonzero time-embedding path, not
+  merely function signature usage.
+- Valid nodes may be intentionally isolated; this requires documented exceptions.
+
+QA disposition:
+- Passed after numerical and geometry clarifications.
+
+STEP 036 — Distributional evaluation audit, pages 17-18
+Action:
+- Reviewed one-dimensional observables, C2STs, graph classifiers, physics distances,
+  precision/recall, memorization, truth-half floors, repeated-condition ensembles, and downstream
+  reconstruction.
+
+Result:
+- This is broader and more credible than relying on average per-cell distances.
+- It correctly warns that many empty channels can create false reassurance.
+- It correctly includes downstream and amplification studies.
+- Missing:
+  - exact primary metrics;
+  - metric implementations and feature extractor hashes;
+  - multiple-testing control;
+  - sample-size/power calculations;
+  - independent training seeds;
+  - anchor p4 design;
+  - tail minimum event counts;
+  - uncertainty decomposition.
+
+QA disposition:
+- Strong metric catalogue, but BLOCKER B4 remains because the decision rule is absent.
+
+STEP 037 — Repeated-condition design audit
+Action:
+- Tested whether the supplied data description is sufficient to estimate p(Y|p4,G).
+
+Result:
+- Random continuous non-pencil-beam p4 data may contain few or no exact duplicate conditions.
+- Conditional variance and tail closure at fixed p4 require dedicated repeated-condition Geant4
+  ensembles or carefully declared local neighborhoods.
+- The PDF recommends repeated-condition ensembles but does not define or guarantee the data.
+
+QA disposition:
+- Major data-design requirement.
+- Predefine anchor energies, angles/directions, sample counts, and interpolation/OOD regions.
+- Do not call nearest-energy/angle events “fixed-condition truth.”
+
+STEP 038 — Downstream study audit, page 17
+Action:
+- Checked reconstruction freezing and train/test direction swaps.
+
+Result:
+- Freezing reconstruction before comparison is correct.
+- Train-on-Geant4/test-on-FastMC and train-on-FastMC/test-on-Geant4 are useful domain-shift
+  probes.
+- The reconstruction model, hyperparameters, training data, calibration, and uncertainty must be
+  frozen and versioned.
+- A downstream model can hide or amplify specific simulator defects; report direct shower metrics
+  in parallel.
+
+QA disposition:
+- Passed with moderate controls.
+
+STEP 039 — Failure-mode table audit, page 18
+Action:
+- Mapped each listed failure to earlier equations and proposed diagnostics.
+
+Result:
+- The table is useful and unusually concrete.
+- Missing failure modes:
+  - latent collapse/latent ignorance;
+  - inconsistent target mode;
+  - energy-variable confusion;
+  - reserve non-identifiability;
+  - double support randomness;
+  - singular/dequantization mismatch;
+  - multiple-comparison overfitting;
+  - training-seed instability;
+  - exactness failure from floating point.
+
+QA disposition:
+- Expand the table after correcting the architecture.
+
+STEP 040 — Tensor interface and hyperparameter audit, pages 18-19
+Action:
+- Checked all shapes and initial settings.
+
+Result:
+- The tensor interface is clear at a high level.
+- Counts with varying N_l require explicit padded class masks.
+- Edge feature definitions are not executable.
+- Hyperparameters omit optimizer, learning rate, schedule, batch size, weight decay, gradient
+  clipping, training steps, early stopping, seed list, relaxation temperature, solver step sizes,
+  adaptive tolerances, and validation cadence.
+- “50k-100k pilot” is a range, not a frozen matched pilot.
+
+QA disposition:
+- Major implementation-contract incompleteness.
+
+STEP 041 — Pseudocode audit, pages 19-20
+Action:
+- Traced random-number generation, solver update, count/support generation, and invariants.
+
+Result:
+- `Normal(...).sample(seed)` is not a complete RNG contract.
+- Reusing the same seed for z and X can unintentionally couple streams depending on
+  implementation.
+- Gumbel randomness is not assigned a stream.
+- Batched event determinism, device determinism, and distributed worker behavior are undefined.
+- `solver_step(X, velocity)` omits dt unless encapsulated.
+- The code split across pages 19-20 is visually awkward.
+
+QA disposition:
+- Major RNG and solver-contract revision.
+- Use named counter-based substreams derived from (global_seed, event_id, stage_id, sample_id).
+- Record solver grid and step sizes explicitly.
+
+STEP 042 — Supplied-scaffold evidence audit, page 20
+Action:
+- Examined the claims “30 passed” and “100% statement/branch coverage.”
+
+Result:
+- The PDF does not provide:
+  - repository URL or archive;
+  - commit hash;
+  - test command;
+  - environment lock;
+  - coverage command/configuration;
+  - coverage report;
+  - source denominator;
+  - CI log.
+- Therefore these claims cannot be independently reproduced from the PDF alone.
+- Unit-test coverage does not validate data conversion, geometry, physics fidelity, or numerical
+  behavior at scale; the document correctly says this.
+
+QA disposition:
+- Major evidence-availability issue.
+- Replace “latest local command result” with a signed/hashed evidence bundle or a public immutable
+  commit and CI artifact.
+
+STEP 043 — Literature-depth statement audit, pages 20-21
+Action:
+- Compared the “600 works” statement with the actual 45-reference bibliography and the
+  evidence-depth disclaimer.
+
+Result:
+- The disclaimer appropriately avoids claiming 600 full-text replications.
+- The 600-work catalogue is not included or linked by immutable identifier, so it cannot support
+  this standalone PDF.
+- Several broad synthesis claims are plausible, but need precise source mapping.
+
+QA disposition:
+- Moderate evidence-traceability problem.
+- Include the catalogue hash/DOI/repository path or remove it from the standalone claim set.
+
+STEP 044 — General-judge explanation audit, page 21
+Action:
+- Checked accessibility and scientific accuracy.
+
+Result:
+- Clear and appropriately nontechnical.
+- “Accurate but expensive” for detailed simulation should be softened to “high-fidelity,
+  configurable, and computationally expensive”; Geant4 is not exact experimental truth.
+- “The selected cells share the layer's energy exactly” inherits floating-point and budget-mode
+  qualifications.
+
+QA disposition:
+- Minor wording correction.
+
+STEP 045 — Computational-HEP explanation audit, pages 21-22
+Action:
+- Checked whether the five-minute technical explanation faithfully matches the formal model.
+
+Result:
+- It is concise and strong.
+- It repeats the unresolved beta-mixture, reserve, support-CFM, and threshold-budget issues.
+- “Counts are categorical with exact geometry- and threshold-feasibility masks” is not fully
+  specified in the implementation section.
+
+QA disposition:
+- Revise after B1-B6; otherwise retain.
+
+STEP 046 — Conclusion audit, page 22
+Action:
+- Compared the conclusion with the demonstrated status.
+
+Result:
+- “The proposed experiment is worth implementing” is supportable as a research judgment.
+- “If implemented exactly” is not yet meaningful because the objective, target mode, latent
+  training, reserve, and support stochasticity are not frozen.
+- A negative result can indeed be scientifically useful if the decision rules and baselines are
+  predeclared.
+
+QA disposition:
+- Replace the assurance with:
+  “After the prerequisite data, geometry, target, latent, support, and evaluation contracts are
+  frozen, implementing the reference configuration will yield a falsifiable experiment.”
+
+STEP 047 — Claim-to-evidence map audit, pages 22-23
+Action:
+- Cross-checked each claim category.
+
+Result:
+- The map is valuable.
+- “Exact decoder invariants hold” should say “over real arithmetic under the stated feasible-budget
+  assumptions; production checks use specified numerical tolerances.”
+- Internal references [5]-[7] are unavailable from the standalone PDF.
+- The map should include the energy convention, threshold mode, latent trainability, and reserve
+  interpretation as prerequisite assumptions.
+
+QA disposition:
+- Major map update.
+
+STEP 048 — Chronological corrections appendix audit, page 23
+Action:
+- Checked whether the listed design corrections capture the remaining defects.
+
+Result:
+- The appendix records useful prior corrections.
+- It does not record the unresolved target-mode contradiction, latent training gap, support
+  double randomness, reserve non-identifiability, kinetic/total-energy ambiguity, or absence of
+  decision thresholds.
+
+QA disposition:
+- Add these as new corrections after they are resolved.
+
+STEP 049 — Auditor checklist audit, pages 23-24
+Action:
+- Tested whether an auditor following only the checklist could approve the experiment.
+
+Result:
+- The checklist is strong but insufficient to detect all current blockers.
+- It lacks:
+  - kinetic versus total incident-energy confirmation;
+  - raw/thresholded/joint budget identity;
+  - latent inference/collapse check;
+  - single source of support randomness;
+  - reserve target identifiability;
+  - fixed primary metrics/margins;
+  - independent training seeds;
+  - floating-point accounting tolerance;
+  - immutable test/coverage evidence.
+
+QA disposition:
+- Expand before external use.
+
+STEP 050 — Bibliography metadata pass
+Action:
+- Checked all 45 references at the level of title, authorship, identifier, broad relevance, and
+  source type using primary records where available.
+
+Result:
+- Most identifiers resolve and the bibliography covers the intended methodological space.
+- At least four entries contain material metadata errors, one entry has wrong authors, and
+  several entries are incomplete or weakly matched to the claim.
+- Details are recorded in the bibliography audit below.
+
+QA disposition:
+- Bibliography must be corrected before circulation.
+
+STEP 051 — Citation [12] verification
+Evidence:
+- arXiv:2306.13606.
+
+Result:
+- The actual title is “Machine Learning methods for simulating particle response in the Zero
+  Degree Calorimeter at the ALICE experiment, CERN.”
+- The listed “M. Wojnar et al.” authorship is wrong.
+- Primary authors are Jan Dubiński, Kamil Deja, Sandro Wenzel, Przemysław Rokita, and
+  Tomasz Trzciński.
+
+QA disposition:
+- Major bibliographic correction.
+
+STEP 052 — Citation [18] verification
+Evidence:
+- arXiv:2305.11934.
+
+Result:
+- Actual title: “Inductive Simulation of Calorimeter Showers with Normalizing Flows.”
+- Authors: Matthew R. Buckley, Claudius Krause, Ian Pang, David Shih.
+- The current “E. Buhmann et al.” attribution and title are wrong.
+
+QA disposition:
+- Major bibliographic correction.
+
+STEP 053 — Citation [24] verification
+Evidence:
+- arXiv:2402.11575.
+
+Result:
+- Actual title: “CaloGraph: Graph-based diffusion model for fast shower generation in
+  calorimeters with irregular geometry.”
+- Authors: Dmitrii Kobylianskii, Nathalie Soybelman, Etienne Dreyer, Eilam Gross.
+- The current “S. Schnake et al.” attribution and shortened title are wrong.
+
+QA disposition:
+- Major bibliographic correction.
+
+STEP 054 — Citation [28] verification
+Evidence:
+- arXiv:2403.15782.
+
+Result:
+- The paper is “CaloPointFlow II: Generating Calorimeter Showers as Point Clouds.”
+- Authors are Simon Schnake, Dirk Krücker, and Kerstin Borras.
+- The current “C. Krause et al.” attribution is wrong.
+
+QA disposition:
+- Major bibliographic correction.
+
+STEP 055 — Citation [42] verification
+Evidence:
+- arXiv:2202.07352.
+
+Result:
+- arXiv:2202.07352 is “Calomplification -- The Power of Generative Calorimeter Models”
+  by Sebastian Bieringer et al.
+- It is not “Generative Networks for Precision Enthusiasts” by A. Butter et al.
+- “Generative Networks for Precision Enthusiasts” is a different work and identifier.
+
+QA disposition:
+- Major bibliographic correction.
+
+STEP 056 — Repository and external-baseline verification
+Action:
+- Checked the cited ZDC repositories and paper/repository pairing.
+
+Result:
+- `m-wojnar/faster_zdc` is a real flow-matching ZDC repository associated with the cited
+  study.
+- `m-wojnar/zdc` is a real repository for earlier ALICE ZDC generative work.
+- The ExpertSim repository exists.
+- Code availability, license, commit pin, dependencies, and native reproduction commands still
+  need to be frozen in the experimental protocol.
+
+QA disposition:
+- External baseline choices are credible.
+- Reproduction evidence remains future work.
+
+STEP 057 — Counterexample and adversarial QA pass
+Action:
+- Searched for constructions that satisfy the written algebra while violating intended physics.
+
+Counterexamples found:
+1. Threshold mixture:
+   A resolved hit plus subthreshold raw deposits causes Equation (37) to absorb U into the
+   selected cell.
+2. Count-valid but occupancy-wrong:
+   K=N_l satisfies algebraic constraints but can be physically implausible; the document already
+   recognizes this.
+3. Reserve absorption:
+   The model can move response into an unobserved R_res and improve cell-level losses without
+   a truth target.
+4. Latent collapse:
+   z can be ignored while all component proper losses are optimized.
+5. Double support noise:
+   flow randomness plus Gumbel randomness broadens support without a calibrated target.
+6. Condition ignorance:
+   pooled distributions can look plausible while p4 dependence is weak; the document includes
+   a permutation test but not a pass threshold.
+7. Metric shopping:
+   a large metric catalogue without primary endpoints permits selective success claims.
+8. Floating-point “exactness”:
+   small summation residuals violate literal exact equality despite a mathematically correct
+   decoder.
+
+QA disposition:
+- Confirms all six blockers and several major findings.
+
+STEP 058 — Internal-consistency iteration
+Action:
+- Rechecked the proposed corrections against the factorization, decoder theorem, canonical
+  tensors, pseudocode, and event identity.
+
+Result:
+- Correcting only Equation (39) is insufficient.
+- B1 requires coordinated changes to Sections 3.4, 4, 5.1-5.5, 6, 7.2, 8.2, 9, 10.2,
+  13.1-13.3, 15.1, 15.3, and the explanations/conclusion.
+- Removing reserve changes Equations (12), (21)-(23), (39), the tensor interface, and
+  pseudocode.
+- Removing z simplifies Equations (12)-(18) and the training objective; retaining z requires a
+  new inference section and objective.
+- Choosing one support-randomness path changes Sections 7.2-7.5 and 8.2-8.4.
+
+QA disposition:
+- Corrections must be applied globally, not as local wording patches.
+
+STEP 059 — Final visual/content cross-check
+Action:
+- Revisited every rendered page after the mathematical and source audit to check whether any
+  finding arose only from extraction artifacts.
+
+Result:
+- The substantive contradictions are present in the visible PDF, not extraction errors.
+- The PDF's professional appearance may make the specification seem more complete than it is;
+  the readiness label should therefore be explicit on page 1.
+
+QA disposition:
+- Add a visible “Status: design under audit; not implementation-frozen” line until B1-B6 are
+  closed.
+
+STEP 060 — Final verdict freeze
+Decision:
+- Preserve the central research idea.
+- Do not begin full training from this version as the sole contract.
+- Permit only Stage 0 data/geometry audits and small disposable prototypes until B1-B6 are
+  resolved and a revised specification is frozen.
+
+================================================================
+DETAILED FINDINGS AND REQUIRED CORRECTIONS
+================================================================
+
+BLOCKER B1 — Thresholded-readout accounting contradiction
+Location:
+- Section 3.4, Equations (10)-(11), page 6.
+- Section 6, Equation (25), page 9.
+- Section 8.2, Equation (37), page 11.
+- Corollary 8.2, Equation (39), page 11.
+- Canonical tensors and pseudocode, pages 13 and 19-20.
+
+Why it matters:
+- The written model cannot represent a layer containing both resolved and subthreshold energy.
+- Counts can be declared feasible using energy that should not be allocated to resolved cells.
+- The claimed event identity does not match the truth definition.
+
+Required correction:
+- Freeze raw-only, thresholded-only, or joint mode.
+- In joint mode, define B_plus=D_raw-U before count feasibility and decoding.
+- Redefine first-visible and active-layer variables consistently.
+
+Acceptance test:
+- Construct synthetic layers with:
+  1. only zeros;
+  2. only subthreshold hits;
+  3. one resolved plus subthreshold hits;
+  4. multiple resolved hits plus subthreshold hits;
+  5. B_plus=K tau;
+  6. B_plus just below and just above K tau.
+- Verify exact target reconstruction and accounting under the declared numerical tolerance.
+
+BLOCKER B2 — Untrained or ignored shared latent
+Location:
+- Section 4, Equation (12), page 7.
+- All stage models and objective, pages 7-13.
+
+Why it matters:
+- Independent random z with no posterior or invertible training path is not identified by the
+  component losses.
+- The stated event-level dependence mechanism is therefore unsupported.
+
+Required correction:
+- Remove z, or add a complete latent-variable training formulation.
+- If using an ELBO, define q_phi, prior, posterior inputs, KL term, discrete auxiliary treatment,
+  and generation procedure.
+- Add latent-collapse diagnostics if retained.
+
+Acceptance test:
+- Compare output distributions under z permutation and z resampling at fixed p4.
+- Measure mutual-information proxies or output sensitivity.
+- Confirm that removing z changes validated joint dependence if z is claimed to matter.
+
+BLOCKER B3 — Double stochastic support mechanism
+Location:
+- Continuous state and CFM, pages 9-10.
+- Gumbel-Top-k decoder, page 11.
+- Support training, page 12.
+
+Why it matters:
+- Two independent noise sources govern support without a joint calibrated objective.
+- The support endpoint is singular and the training target does not define the generated subset
+  distribution.
+
+Required correction:
+- Use either deterministic support logits plus Gumbel-Top-k, or stochastic flow priorities plus
+  deterministic Top-k.
+- Define dequantization if a continuous flow models support.
+
+Acceptance test:
+- At fixed c,D,K,G, compare requested and realized inclusion probabilities to held-out truth.
+- Verify count exactly K.
+- Report subset calibration, per-cell inclusion calibration, pairwise inclusion, and morphology.
+
+BLOCKER B4 — No falsifiable primary decision rule
+Location:
+- Equation (1), pages 4 and 14-18.
+- Stage sequence explicitly labels reports as non-gates.
+
+Why it matters:
+- A broad metric menu permits post hoc success claims.
+- “Approximate” and “useful” are undefined.
+
+Required correction:
+- Predeclare:
+  - primary fidelity metrics;
+  - primary speed metric;
+  - margins or target requirements;
+  - confidence level;
+  - number of training seeds;
+  - test sample size;
+  - decision rule for pass/fail/inconclusive;
+  - multiplicity handling for secondary metrics.
+
+Acceptance test:
+- A blinded analyst given only locked outputs and the analysis script must reach the same verdict.
+
+BLOCKER B5 — Kinetic versus total energy conflation
+Location:
+- Sections 1.1 and 3.1; Equations (3)-(5); response fraction; pseudocode.
+
+Why it matters:
+- Mass-shell validation and Geant4 generator energy can refer to different quantities.
+- T/E support and reported energy ranges become ambiguous.
+
+Required correction:
+- Use K_inc for kinetic energy and E_tot=K_inc+m_n.
+- Record source branches and units.
+- Define whether response fraction uses K_inc or E_tot and justify it from the scoring contract.
+- Validate momentum using E_tot.
+
+Acceptance test:
+- For every event, reconstruct E_tot from p and m_n and compare to the stored total-energy branch.
+- Compare K_inc to the generator setting.
+- Fail conversion on unit or convention mismatch.
+
+BLOCKER B6 — Reserve non-identifiability
+Location:
+- Equations (12), (21)-(23), (39); tensor interface; pseudocode.
+
+Why it matters:
+- Softmax forces positive reserve.
+- No truth target identifies it.
+- It can absorb errors and alter the meaning of T.
+
+Required correction:
+- Remove reserve if T is total modeled response.
+- Otherwise define an observed reserve/leakage target and a zero-inflated model.
+
+Acceptance test:
+- Show the exact branch/derivation that supervises reserve.
+- Demonstrate closure against truth.
+- Report reserve calibration and zero mass.
+
+MAJOR M1 — Duplicate symbol S
+Correction:
+- Use L0 for first-visible layer and H_l or C_l for selected cell sets.
+
+MAJOR M2 — Singular CFM target
+Correction:
+- Dequantize binary priorities and zero share channels, or separate discrete support from
+  continuous share flow.
+
+MAJOR M3 — Dimensionful logarithms
+Correction:
+- Replace log(Y-tau+epsilon) by log((Y-tau)/E0+epsilon).
+- Replace log(1+D_l) by log1p(D_l/E0).
+- State E0 and units.
+
+MAJOR M4 — Zero residual share case
+Correction:
+- If B_plus=K tau, all selected energies equal tau and share logits are unidentifiable.
+- Exclude share loss or define a canonical uniform target.
+
+MAJOR M5 — Floating-point “exactness”
+Correction:
+- State real-arithmetic theorem separately from numerical invariants.
+- Define tolerances and residual-correction algorithm.
+
+MAJOR M6 — Incomplete geometry artifact
+Correction:
+- Supply channel and layer maps, deterministic edge builder, hashes, graph statistics, and tests.
+
+MAJOR M7 — Incomplete fixed-condition validation data
+Correction:
+- Generate or identify repeated-p4 anchor ensembles.
+- Freeze anchors, event counts, and OOD regions.
+
+MAJOR M8 — No independent training-seed protocol
+Correction:
+- Predeclare at least a small, feasible set of independent training seeds and confidence method.
+- Do not use only generator seeds from one trained network as uncertainty.
+
+MAJOR M9 — Unfrozen profile and support objectives
+Correction:
+- Select one reference L_D and one reference L_sup.
+- Put alternatives in ablations.
+
+MAJOR M10 — Unfrozen optimization protocol
+Correction:
+- Specify optimizer, LR, schedule, batch, clipping, weight decay, stage duration, stopping, and
+  tuning budget.
+
+MAJOR M11 — Incomplete RNG contract
+Correction:
+- Use explicit, independent, reproducible substreams.
+- Define distributed and batched replay.
+
+MAJOR M12 — Unverifiable scaffold claims
+Correction:
+- Attach or link immutable source, commit, environment, commands, tests, and coverage reports.
+
+MAJOR M13 — Baseline fairness
+Correction:
+- Report equal-compute and independently tuned comparisons.
+- Keep data, output contract, and evaluation fixed.
+
+MAJOR M14 — Bibliographic metadata errors
+Correction:
+- Fix [12], [18], [24], [28], and [42]; complete several others.
+
+MAJOR M15 — Threshold-dependent S and A semantics
+Correction:
+- Define raw-positive, thresholded-resolved, and active-budget states separately.
+
+MAJOR M16 — p_z and detector-intercept domain
+Correction:
+- Require direction toward detector, |p_z|>epsilon, units, and accepted intersection.
+
+MAJOR M17 — Test-set and metric implementation immutability
+Correction:
+- Hash manifests, metric code, feature extractors, reconstruction model, and report template.
+
+MAJOR M18 — Truth/Geant4 terminology
+Correction:
+- Use “Geant4 reference” or “simulation reference,” not experimental truth, except where
+  “truth” is explicitly defined as the supervised simulation target.
+
+================================================================
+EQUATION-BY-EQUATION AUDIT
+================================================================
+
+Eq. (1)
+Status: conceptually valid, operationally incomplete.
+Issue: no metric, tolerance, or utility threshold defines “approximate” or “computationally useful.”
+
+Eq. (2)
+Status: correctly rejected as a universal event-level constraint.
+Strength: late-start and growth behavior make layerwise monotonicity inappropriate.
+
+Eq. (3)
+Status: acceptable interface if E is explicitly total energy.
+Issue: dataset/generator may use kinetic energy.
+
+Eq. (4)
+Status: correct mass-shell equation for total energy.
+Issue: invalid if E is the Geant4 kinetic-energy setting.
+
+Eq. (5)
+Status: mathematically acceptable.
+Requirements: E0>0, |p|>0, units/convention fixed, normalization statistics training-only.
+
+Eq. (6)
+Status: clear asserted dimensions.
+Issue: channel counts require an external geometry artifact.
+
+Eq. (7)
+Status: useful metadata schema.
+Issue: optional ellipsis prevents exact implementation; freeze required fields and units.
+
+Eqs. (8)-(9)
+Status: correct straight-line plane intersection under assumptions.
+Requirements: fixed vertex, p_z nonzero, detector direction, compatible units, valid plane crossing.
+
+Eqs. (10)-(11)
+Status: valid definitions by themselves.
+Issue: contradicted by later decoder/accounting when resolved and subthreshold deposits coexist.
+
+Eq. (12)
+Status: not a complete probability model.
+Issues: z prior/marginalization omitted; S overloaded; threshold mode omitted; deterministic
+constraints implicit; stage likelihood/training not defined.
+
+Eq. (13)
+Status: valid Bernoulli hurdle.
+Issue: visible semantics depend on target mode.
+
+Eqs. (14)-(16)
+Status: valid bounded mixture density on (0,1).
+Requirements: support audit, endpoint atom if needed, correct E convention, trained latent mechanism.
+
+Eqs. (17)-(18)
+Status: correct conditional discrete hazard construction.
+Clarify: no-start tail versus conditioning on S<L; terminal hazard.
+
+Eq. (19)
+Status: structurally valid.
+Issue: “active” and “visible” semantics differ across raw/threshold modes.
+
+Eqs. (20)-(22)
+Status: masked simplex is algebraically valid.
+Issue: reserve is forced positive and lacks an observed target.
+
+Eq. (23)
+Status: proposition and proof correct under assumptions.
+
+Eq. (24)
+Status: valid categorical count.
+Requirements: class masking for variable N_l; calibration; imbalance handling.
+
+Eq. (25)
+Status: valid only if D_l is the resolved thresholded budget.
+Issue: invalid under current raw-plus-residual interpretation.
+
+Eq. (26)
+Status: reasonable state declaration.
+Issue: discrete/continuous roles need separation.
+
+Eq. (27)
+Status: finite binary coding if 0<epsilon<1/2.
+Issue: creates two atoms; continuous-flow endpoint is singular without dequantization.
+
+Eq. (28)
+Status: incomplete.
+Issues: dimensionful log; zero-residual case; unselected zeros; target singularity.
+
+Eqs. (29)-(33)
+Status: standard straight-path CFM algebra.
+Issues: W undefined; endpoint regularity not addressed; latent/support training mismatch.
+
+Eq. (34)
+Status: valid ODE statement.
+Requirements: solver, step sizes/tolerances, precision, divergence/failure policy.
+
+Eq. (35)
+Status: valid Gumbel-Top-k subset sampling for fixed K.
+Issue: redundant/uncontrolled when flow output is already stochastic.
+
+Eq. (36)
+Status: valid normalized positive shares on a selected set.
+
+Eq. (37)
+Status: decoder formula correct when B is resolved budget and B>=K tau.
+
+Eq. (38)
+Status: proof correct in real arithmetic.
+
+Eq. (39)
+Status: algebraically correct under the decoder's residual convention.
+Issue: inconsistent with Equation (11) for mixed resolved/subthreshold layers.
+
+Eq. (40)
+Status: valid target count for a frozen threshold.
+Clarify: equality convention at tau, floating-point quantization, raw strict positivity.
+
+Eq. (41)
+Status: useful modular engineering objective, not a complete latent likelihood.
+Issue: multiple central terms are unfrozen.
+
+Eqs. (42)-(47)
+Status: standard components.
+Requirements: masks, reductions, weights, normalization, posterior/latent treatment, primary support
+loss.
+
+================================================================
+SECTION-BY-SECTION AUDIT
+================================================================
+
+Abstract
+Pass:
+- Correctly disclaims trained or validated performance.
+- Clearly identifies anti-dust objective and residual-budget correction.
+Revise:
+- Remove “should work” until the contract is complete.
+- Shorten the component inventory; foreground the testable research question and primary
+  falsification rule.
+
+Section 1
+Pass:
+- Good scope and nonclaims.
+Revise:
+- Define numerical success and utility.
+- Internal evidence [5]-[7] must be supplied.
+
+Section 2
+Pass:
+- Sound physical rejection of monotone deposits.
+Revise:
+- Use stronger hadronic-specific citations.
+- Avoid implying Geant4 is experimental truth.
+
+Section 3
+Pass:
+- Sole raw p4 condition is clear.
+- Condition-manifold warning is important.
+Revise:
+- Fix energy convention, p_z domain, target mode, and geometry artifact.
+
+Section 4
+Pass:
+- Hierarchical decomposition is scientifically interpretable.
+Revise:
+- Repair probability model, latent training, notation, and threshold conditioning.
+
+Section 5
+Pass:
+- Hurdle, hazard, active support, and masked simplex are plausible components.
+- Proposition 5.1 is correct.
+Revise:
+- Reserve semantics; first-visible mode; latent mechanism.
+
+Section 6
+Pass:
+- Finite categorical counts are a strong choice.
+Revise:
+- Use resolved budget and freeze masking/calibration.
+
+Section 7
+Pass:
+- Parallel field addresses serial latency and invalid slot correspondence.
+- Explicit time conditioning is correctly required.
+Revise:
+- Separate discrete support from continuous flow or dequantize.
+- Fix dimensionful transforms and undefined W.
+
+Section 8
+Pass:
+- The anti-dust failure is well identified.
+- Decoder theorem is correct under assumptions.
+Revise:
+- Correct budget semantics and choose one support-randomness mechanism.
+- Define numerical exactness.
+
+Section 9
+Pass:
+- Modular losses aid diagnosis.
+Revise:
+- Freeze primary objective and latent formulation.
+
+Section 10
+Pass:
+- Excellent provenance checklist and split principles.
+Revise:
+- Add actual branch/geometry artifacts and converter acceptance results.
+
+Section 11
+Pass:
+- Staging and run layout are useful.
+Revise:
+- Add gates, full environment/container metadata, RNG contract, and numerical criteria.
+
+Section 12
+Pass:
+- Strong breadth of baselines.
+Revise:
+- Equal-compute plus tuned-budget comparison; pin native repositories and licenses.
+
+Section 13
+Pass:
+- Excellent metric diversity and downstream emphasis.
+Revise:
+- Primary endpoints, margins, sample sizes, independent training seeds, multiplicity control,
+  anchor design, immutable metric implementations.
+
+Section 14
+Pass:
+- Clear failure-to-diagnosis mapping.
+Revise:
+- Add all six blockers and numerical/statistical failure modes.
+
+Section 15
+Pass:
+- Helpful tensor table and pseudocode.
+Revise:
+- Complete geometry, optimization, RNG, solver, mode, and numerical contracts.
+
+Section 16
+Pass:
+- Correctly distinguishes coverage from fidelity.
+Revise:
+- Make test/coverage claims independently reproducible.
+
+Section 17
+Pass:
+- Honest limitation on the 600-work catalogue.
+Revise:
+- Supply immutable catalogue/evidence-depth artifact or reduce the claim.
+
+Sections 18-19
+Pass:
+- Both explanations are effective for their audiences.
+Revise:
+- Propagate corrected semantics and soften Geant4 “accuracy” language.
+
+Section 20 and Appendices
+Pass:
+- Useful conclusion, claim map, chronology, and checklist.
+Revise:
+- Do not claim exact implementation until blockers close.
+- Expand evidence map and auditor checklist.
+
+================================================================
+BIBLIOGRAPHY AUDIT: REFERENCES [1]-[45]
+================================================================
+
+Legend:
+OK = metadata and broad use verified.
+FIX = material metadata error.
+COMPLETE = broadly correct but incomplete publication metadata or citation details.
+WEAK FIT = real source but weak support for the nearby claim.
+INTERNAL = not independently auditable from the standalone PDF.
+
+[1] Agostinelli et al., Geant4 toolkit.
+Status: OK.
+Use: foundational toolkit citation.
+Link: https://doi.org/10.1016/S0168-9002(03)01368-8
+
+[2] Allison et al., Geant4 developments and applications.
+Status: OK.
+Link: https://doi.org/10.1109/TNS.2006.869826
+
+[3] Allison et al., Recent developments in Geant4.
+Status: OK.
+Link: https://doi.org/10.1016/j.nima.2016.06.125
+
+[4] Geant4 Physics Reference Manual, hadronic physics.
+Status: OK; cite a version/revision, not only “master,” for reproducibility.
+Link: https://geant4.web.cern.ch/documentation/pipelines/master/prm_html/PhysicsReferenceManual/hadronic/index.html
+
+[5] Internal audit of legacy HurdleGraph.
+Status: INTERNAL.
+Required: attach file, hash, date, author/auditor, and evidence package.
+
+[6] Internal audit of HGF-ZDC.
+Status: INTERNAL.
+Required: attach file, hash, date, author/auditor, and evidence package.
+
+[7] Internal single-stage graph-flow proposal.
+Status: INTERNAL.
+Required: attach file, hash, date, and implementation relation.
+
+[8] Kulchitsky and Vinogradov, longitudinal hadronic shower profiles.
+Status: OK.
+Link: https://arxiv.org/abs/hep-ex/0001027
+
+[9] Grindhammer and Peters, parameterized electromagnetic showers.
+Status: WEAK FIT for neutron hadronic non-monotonicity.
+Link: https://arxiv.org/abs/hep-ex/0001020
+
+[10] ALICE ZDC Technical Design Report.
+Status: OK.
+Link: https://cds.cern.ch/record/381433
+
+[11] Dmitrieva and Pshenichnov, ZDC multinucleon performance.
+Status: COMPLETE publication volume/pages/DOI if available.
+Link: https://arxiv.org/abs/1805.01792
+
+[12] ALICE ZDC machine-learning paper.
+Status: FIX.
+Correct title:
+“Machine Learning methods for simulating particle response in the Zero Degree Calorimeter at
+the ALICE experiment, CERN.”
+Correct authors:
+Jan Dubiński, Kamil Deja, Sandro Wenzel, Przemysław Rokita, Tomasz Trzciński.
+Link: https://arxiv.org/abs/2306.13606
+
+[13] Kita et al., generative diffusion for CERN simulations.
+Status: OK.
+Link: https://arxiv.org/abs/2406.03233
+
+[14] Wojnar, ZDC flow matching.
+Status: OK; update publication metadata if now published.
+Link: https://arxiv.org/abs/2507.18811
+Repository: https://github.com/m-wojnar/faster_zdc
+
+[15] ExpertSim.
+Status: OK at preprint/repository level; pin version and license.
+Link: https://arxiv.org/abs/2508.20991
+Repository: https://github.com/patrick-bedkowski/expertsim-mix-of-generative-experts
+
+[16] Inverse autoregressive flows for ZDC.
+Status: OK at preprint level.
+Link: https://arxiv.org/abs/2512.20346
+
+[17] CaloFlow.
+Status: OK.
+Link: https://arxiv.org/abs/2106.05285
+DOI: https://doi.org/10.1103/PhysRevD.107.113003
+
+[18] iCaloFlow / Inductive CaloFlow.
+Status: FIX.
+Correct title:
+“Inductive Simulation of Calorimeter Showers with Normalizing Flows.”
+Correct authors:
+Matthew R. Buckley, Claudius Krause, Ian Pang, David Shih.
+Link: https://arxiv.org/abs/2305.11934
+
+[19] L2LFlows.
+Status: OK.
+Link: https://arxiv.org/abs/2302.11594
+
+[20] Convolutional L2LFlows.
+Status: COMPLETE title.
+The title should include “Using Convolutional Normalizing Flows.”
+Link: https://arxiv.org/abs/2405.20407
+
+[21] CaloDREAM.
+Status: OK.
+Link: https://arxiv.org/abs/2405.09629
+Journal record: https://doi.org/10.21468/SciPostPhys.18.3.088
+
+[22] Flow Matching for Generative Modeling.
+Status: OK.
+Link: https://arxiv.org/abs/2210.02747
+
+[23] Minibatch optimal-transport conditional flow matching.
+Status: OK; complete final venue if applicable.
+Link: https://arxiv.org/abs/2302.00482
+
+[24] CaloGraph.
+Status: FIX.
+Correct title:
+“CaloGraph: Graph-based diffusion model for fast shower generation in calorimeters with
+irregular geometry.”
+Correct authors:
+Dmitrii Kobylianskii, Nathalie Soybelman, Etienne Dreyer, Eilam Gross.
+Link: https://arxiv.org/abs/2402.11575
+
+[25] Geometry-adapted calorimeter diffusion.
+Status: OK.
+Link: https://arxiv.org/abs/2308.03876
+
+[26] faster_zdc repository.
+Status: OK but redundant with [14]; consolidate paper and code into one reference or clearly
+separate them.
+Link: https://github.com/m-wojnar/faster_zdc
+
+[27] SARM.
+Status: OK.
+Link: https://arxiv.org/abs/2009.14017
+
+[28] CaloPointFlow II.
+Status: FIX authors.
+Correct authors:
+Simon Schnake, Dirk Krücker, Kerstin Borras.
+Link: https://arxiv.org/abs/2403.15782
+
+[29] CaloClouds.
+Status: OK.
+Link: https://arxiv.org/abs/2305.04847
+
+[30] Gumbel-Top-k trick.
+Status: OK.
+Link: https://arxiv.org/abs/1903.06059
+
+[31] Reparameterizable subset sampling.
+Status: OK; add conference/venue details.
+Link: https://arxiv.org/abs/1901.10517
+
+[32] Sparsemax.
+Status: OK.
+Link: https://arxiv.org/abs/1602.02068
+
+[33] Entmax / sparse sequence-to-sequence models.
+Status: OK.
+Link: https://arxiv.org/abs/1905.05702
+
+[34] Hard-concrete / L0 regularization.
+Status: OK.
+Link: https://arxiv.org/abs/1712.01312
+
+[35] Earlier ZDC repository.
+Status: OK; pin commit, license, and environment.
+Link: https://github.com/m-wojnar/zdc
+
+[36] CaloClouds II.
+Status: OK.
+Link: https://arxiv.org/abs/2309.05704
+
+[37] AtlFast3.
+Status: OK.
+Link: https://arxiv.org/abs/2109.02551
+
+[38] Evaluating Generative Models in HEP.
+Status: COMPLETE with journal metadata.
+Link: https://arxiv.org/abs/2211.10295
+DOI: https://doi.org/10.1103/PhysRevD.107.076017
+
+[39] Precision and recall for generative models.
+Status: OK.
+Link: https://arxiv.org/abs/1806.00035
+
+[40] Improved precision and recall.
+Status: OK; restore diacritics in Kynkäänniemi.
+Link: https://arxiv.org/abs/1904.06991
+
+[41] Full-physics benchmark.
+Status: COMPLETE exact title and publication status.
+The record begins “A First Full Physics Benchmark...”
+Link: https://arxiv.org/abs/2511.17293
+
+[42] Calomplification.
+Status: FIX ENTIRE ENTRY.
+Correct title:
+“Calomplification -- The Power of Generative Calorimeter Models.”
+Correct first author:
+Sebastian Bieringer; coauthors include Anja Butter et al.
+Link: https://arxiv.org/abs/2202.07352
+Do not label this identifier as “Generative Networks for Precision Enthusiasts.”
+
+[43] CaloChallenge 2022.
+Status: OK at identifier level; update final publication metadata if available.
+Link: https://arxiv.org/abs/2410.21611
+
+[44] CaloFlow II.
+Status: OK.
+Link: https://arxiv.org/abs/2110.11377
+DOI: https://doi.org/10.1103/PhysRevD.107.113004
+
+[45] CaloScore v2.
+Status: OK.
+Link: https://arxiv.org/abs/2308.03847
+
+Bibliography summary:
+- Material fixes: [12], [18], [24], [28], [42].
+- Incomplete or update-needed: [4], [11], [14]-[16], [20], [23], [31], [35], [38],
+  [40], [41], [43].
+- Weakly matched evidence: [9].
+- Unavailable internal evidence: [5]-[7].
+
+================================================================
+VISUAL AND ACCESSIBILITY QA
+================================================================
+
+Page 1
+- Strong title hierarchy and clear status language.
+- Abstract is dense; reduce component inventory and move some detail to the introduction.
+- Assurance box is useful but currently overclaims implementation completeness.
+
+Pages 2-3
+- Table of contents is clear.
+- Long section titles fit without collision.
+
+Pages 4-10
+- Equations and prose are consistently aligned.
+- Page density is high but acceptable.
+- Figure 1 is understandable, though the compressed boxes and arrows could use slightly larger
+  type and cleaner line breaks.
+
+Page 11
+- Decoder theorem and proof are visually strong.
+- This page communicates the principal algebraic contribution effectively.
+
+Pages 12-18
+- Lists and tables fit within margins.
+- Page 18 is dense; consider a slightly larger row spacing or splitting the failure-mode table.
+
+Pages 19-20
+- Tensor table is readable.
+- Pseudocode is split across pages without a continuation label.
+- Keep the code box together, shorten it, or label “continued on next page.”
+
+Pages 21-23
+- Audience-specific explanations and appendices are readable.
+- Long paragraphs could use modest paragraph spacing for scanability.
+
+Pages 24-26
+- References are compact but legible.
+- URLs wrap heavily.
+- Correct metadata errors before final distribution.
+- Use DOI/arXiv hyperlinks and suppress redundant displayed URLs where style permits.
+
+Global visual checks
+- No clipping: PASS.
+- No overlap: PASS.
+- Embedded fonts: PASS.
+- Contrast: PASS.
+- Consistent headers/footers: PASS.
+- Bookmarks/outlines: PASS.
+- Searchable text: PASS with extraction artifacts.
+- Tagged PDF accessibility: FAIL.
+- Logical reading order/accessibility verification: NOT ESTABLISHED.
+- PDF optimization/linearization: NOT PRESENT.
+
+================================================================
+VERIFIED STRENGTHS
+================================================================
+
+1. The document explicitly avoids claiming trained or validated performance.
+2. It correctly treats Geant4 output as a configured simulation reference, not automatic
+   experimental truth.
+3. It rejects an unphysical universal monotone deposited-energy constraint.
+4. Proposition 5.1 is correct.
+5. The exact-support decoder theorem is correct under its assumptions.
+6. The document identifies low-energy “dust” as a genuine structural failure.
+7. It treats count fidelity as a central observable rather than an implementation detail.
+8. It distinguishes truth-conditioned and free-running stages.
+9. It recognizes exposure bias.
+10. It requires graph edges to derive from geometry rather than array-slot coincidence.
+11. It requires explicit time dependence in the flow field.
+12. It emphasizes provenance, units, branch maps, sentinels, and geometry hashes.
+13. It prefers group-based data splitting.
+14. It separates primary and stress energy domains.
+15. It proposes both low-level and downstream validation.
+16. It includes truth-half statistical floors and memorization checks.
+17. It includes simple and non-graph baselines rather than comparing only against weak models.
+18. The PDF is mechanically and visually well produced.
+
+================================================================
+RECOMMENDED REVISION ORDER
+================================================================
+
+P0 — Freeze semantics before code
+1. Declare kinetic versus total incident energy.
+2. Select raw-only, thresholded-only, or joint target mode.
+3. Remove or supervise reserve.
+4. Remove z or define a complete trainable latent model.
+5. Select one support-randomness mechanism.
+6. Rewrite the probability factorization and symbols.
+
+P1 — Freeze executable contracts
+7. Supply geometry/channel/edge artifacts and hashes.
+8. Freeze profile, count, support, and flow losses.
+9. Freeze numerical exactness rules.
+10. Freeze RNG and solver behavior.
+11. Freeze optimizer/training/tuning protocol.
+12. Supply immutable scaffold/test/coverage evidence.
+
+P2 — Freeze scientific decision rules
+13. Define repeated-p4 anchor data.
+14. Predeclare primary fidelity and speed endpoints.
+15. Define margins and pass/fail/inconclusive rules.
+16. Define sample sizes, training seeds, confidence intervals, and multiplicity control.
+17. Freeze reconstruction and metric implementations.
+
+P3 — Correct presentation and references
+18. Fix bibliography metadata.
+19. Update claim-to-evidence map and checklist.
+20. Revise abstract, assurance statement, failure table, explanations, and conclusion.
+21. Add accessibility tagging and improve page 19-20 code flow.
+
+================================================================
+MINIMUM-CREDIBLE IMPLEMENTATION GATES
+================================================================
+
+Do not start expensive full-model training until all Stage 0 gates pass:
+
+DATA
+- Units and energy convention verified.
+- Channel codec and geometry version verified.
+- Raw/thresholded/joint target identity verified on every event.
+- Invalid/sentinel energy fully accounted.
+- Split leakage checks passed.
+- Repeated-condition anchor plan frozen.
+
+SOFTWARE
+- Immutable repository commit and environment.
+- Geometry/edge tests.
+- Decoder property tests including mixed threshold cases.
+- RNG replay tests in single-device, batched, and distributed settings.
+- Numerical accounting tolerance tests.
+- Million-sample tail/finite-value smoke test for the cheap upstream model.
+
+MODEL
+- Latent formulation or no-latent formulation frozen.
+- One support-randomness mechanism frozen.
+- All losses and masks frozen.
+- Free-running validation path operational.
+
+EVALUATION
+- Primary metrics and margins frozen.
+- Test manifest locked.
+- Baseline tuning budgets frozen.
+- Training seed list frozen.
+- Analysis code and report template hashed.
+
+================================================================
+FINAL AUDIT CONCLUSION
+================================================================
+
+The central idea should be preserved:
+- model visible response explicitly;
+- model non-monotone longitudinal deposits through a conserved remaining budget;
+- generate finite counts and exact support;
+- allocate selected-cell energy with an anti-dust decoder;
+- compare hierarchy, graph structure, and parallel flow against competent matched baselines.
+
+The current PDF nevertheless contains mutually incompatible threshold accounting, an
+unidentified reserve, an untrained shared latent, a double-random support mechanism, an
+ambiguous energy convention, and no numerical decision rule. These are not cosmetic defects.
+They affect the mathematical target, training distribution, generated support, and interpretation
+of every eventual result.
+
+The correct status is:
+
+“Strong research design with a valid core decoder theorem, but not yet a frozen implementation
+contract. Stage 0 audit work and disposable prototypes may proceed; full training and any
+performance claim should wait for a revised specification closing B1-B6.”
+
+================================================================
+SOURCE LOG
+================================================================
+
+Primary artifact
+- Uploaded PDF:
+  CBSC_ZDC_Auditor_Specification_LaTeX(1).pdf
+  SHA-256: a2277c239fee70de876ce25bcdcac83d655a54305b8149aa100b0a28a0830b76
+
+Official documentation
+- Geant4 hadronic physics:
+  https://geant4.web.cern.ch/documentation/pipelines/master/prm_html/PhysicsReferenceManual/hadronic/index.html
+- Geant4 event/particle-gun application guide:
+  https://geant4.web.cern.ch/documentation/pipelines/master/bfad_html/ForApplicationDevelopers/GettingStarted/eventDef.html
+- Geant4 user-interface guidance showing kinetic-energy semantics:
+  https://geant4.web.cern.ch/documentation/dev/bfad_html/ForApplicationDevelopers/Control/userInterfaceCommand.html
+- Geant4 units:
+  https://geant4.web.cern.ch/documentation/pipelines/master/bfad_html/ForApplicationDevelopers/Fundamentals/unitSystem.html
+
+Core papers and records checked
+- https://doi.org/10.1016/S0168-9002(03)01368-8
+- https://doi.org/10.1109/TNS.2006.869826
+- https://doi.org/10.1016/j.nima.2016.06.125
+- https://arxiv.org/abs/hep-ex/0001027
+- https://arxiv.org/abs/hep-ex/0001020
+- https://cds.cern.ch/record/381433
+- https://arxiv.org/abs/1805.01792
+- https://arxiv.org/abs/2306.13606
+- https://arxiv.org/abs/2406.03233
+- https://arxiv.org/abs/2507.18811
+- https://arxiv.org/abs/2508.20991
+- https://arxiv.org/abs/2512.20346
+- https://arxiv.org/abs/2106.05285
+- https://arxiv.org/abs/2305.11934
+- https://arxiv.org/abs/2302.11594
+- https://arxiv.org/abs/2405.20407
+- https://arxiv.org/abs/2405.09629
+- https://arxiv.org/abs/2210.02747
+- https://arxiv.org/abs/2302.00482
+- https://arxiv.org/abs/2402.11575
+- https://arxiv.org/abs/2308.03876
+- https://arxiv.org/abs/2009.14017
+- https://arxiv.org/abs/2403.15782
+- https://arxiv.org/abs/2305.04847
+- https://arxiv.org/abs/1903.06059
+- https://arxiv.org/abs/1901.10517
+- https://arxiv.org/abs/1602.02068
+- https://arxiv.org/abs/1905.05702
+- https://arxiv.org/abs/1712.01312
+- https://arxiv.org/abs/2309.05704
+- https://arxiv.org/abs/2109.02551
+- https://arxiv.org/abs/2211.10295
+- https://arxiv.org/abs/1806.00035
+- https://arxiv.org/abs/1904.06991
+- https://arxiv.org/abs/2511.17293
+- https://arxiv.org/abs/2202.07352
+- https://arxiv.org/abs/2410.21611
+- https://arxiv.org/abs/2110.11377
+- https://arxiv.org/abs/2308.03847
+
+Repositories checked
+- https://github.com/m-wojnar/faster_zdc
+- https://github.com/m-wojnar/zdc
+- https://github.com/patrick-bedkowski/expertsim-mix-of-generative-experts
+
+Internal sources cited by the PDF but not supplied
+- [5] Independent Audit of the Legacy Recurrent HurdleGraph Model.
+- [6] Independent Audit of HGF-ZDC.
+- [7] Proposal: Single-Stage Graph Flow Baseline.
+Disposition:
+- These were not used as independently verified evidence in this audit.
+
+================================================================
+MECHANICAL QA RECORD
+================================================================
+
+Commands/check classes executed
+- SHA-256 file hashing.
+- PDF metadata inspection.
+- PDF preflight.
+- Full text extraction.
+- Full 26-page raster rendering.
+- Contact-sheet visual review.
+- Font embedding and text-bound inspection.
+- Outline and annotation inspection.
+- Equation-by-equation consistency review.
+- Citation identifier/title/author checks against primary records.
+- Adversarial counterexample construction.
+- Global correction-propagation review.
+
+Mechanical results
+- Pages: 26
+- All pages rendered: yes
+- Fonts embedded: yes
+- Out-of-bounds text detected: no
+- Preflight warnings: none
+- Encryption: no
+- Tagged PDF: no
+- Searchable text: yes
+- Visual clipping/overlap: none observed
+- Final audit log encoding: UTF-8
+
+END OF AUDIT

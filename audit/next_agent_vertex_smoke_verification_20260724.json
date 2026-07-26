@@ -1,0 +1,274 @@
+{
+  "verification_agent_run_date": "2026-07-25",
+  "scope": "independent read-only reproduction of the production-data-derived FP32 Vertex structural smoke verification; no preparation, coordinator, smoke, or final training job was submitted; test data was not opened",
+  "disposition": {
+    "structural_smoke": "GO",
+    "validation_only_component_loss_lr_work": "GO",
+    "physics_validation": "NOT_ESTABLISHED",
+    "final_training": "BLOCKED"
+  },
+  "identities_used": {
+    "project": "asiop-zdc-1",
+    "project_number": "39719277374",
+    "region": "us-central1",
+    "service_account": "39719277374-compute@developer.gserviceaccount.com",
+    "root_uri": "gs://asiop-zdc-1-zdc-reco-us-central1/data/myTree_20251117_765k_0to300GeV_neutron_All.root",
+    "root_generation": "1783683550292251",
+    "root_size": 25022001408,
+    "root_crc32c": "lCVUvQ==",
+    "root_sha256": "b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533",
+    "root_tree": "myTree",
+    "root_entries": 764940,
+    "prepare_job": "projects/39719277374/locations/us-central1/customJobs/1981826012068970496",
+    "prepare_prefix": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5",
+    "smoke_pipeline": "projects/39719277374/locations/us-central1/trainingPipelines/5105571531929419776",
+    "smoke_job": "projects/39719277374/locations/us-central1/customJobs/4964365651620659200",
+    "smoke_input": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5-fp32-r2",
+    "smoke_output": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/smoke-20260724-r2-fp32",
+    "smoke_image": "us-central1-docker.pkg.dev/asiop-zdc-1/cbsc-zdc/cbsc-zdc@sha256:45ff337d8c4b1b34e936a24926a8fa495aebfb06187e75965fab9624d1f402f1",
+    "smoke_frozen_config_sha256": "e75f1bda7140a00b9caf04bf9ee574c034879e7a935dfe32a42a983680511f31",
+    "smoke_template_sha256": "bb09dff2040906d98d5df5e116a344c12d7212836090d66ee33cbcd6f7fc9633",
+    "geometry_hash": "e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b"
+  },
+  "step4_local_code_verification": {
+    "command": "PYTHONPATH=src python -m pytest -q",
+    "result": "25 passed, 2 warnings",
+    "warnings": "documented PyTorch TransformerEncoder nested-tensor performance warnings (norm_first=True); nonfatal",
+    "compileall_command": "python -m compileall -q src vertex tests",
+    "compileall_result": "pass, exit 0"
+  },
+  "step5_preparation_reverification": {
+    "describe_command": "gcloud ai custom-jobs describe 1981826012068970496 --project asiop-zdc-1 --region us-central1",
+    "describe_state": "JOB_STATE_SUCCEEDED",
+    "describe_confirmed_fields": {
+      "displayName": "cbsc-v2-2-full-root-prep-20260724-r5",
+      "root_uri_arg_matches": true,
+      "expected_generation_arg_matches": true,
+      "expected_size_arg_matches": true,
+      "expected_crc32c_arg_matches": true,
+      "output_prefix_arg": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5",
+      "service_account_matches": true,
+      "machineType": "n1-highmem-8",
+      "scheduling_strategy": "ON_DEMAND",
+      "bootDiskType": "pd-ssd",
+      "bootDiskSizeGb": 200
+    },
+    "verify_prepare_output_command": "python vertex/verify_prepare_output.py --prefix gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5 --expected-generation 1783683550292251 --expected-size 25022001408 --expected-crc32c lCVUvQ== --expected-entries 764940 --output audit/next_agent_verified_prepare_r5.json",
+    "independent_reproduction_output_file": "audit/next_agent_verified_prepare_r5.json",
+    "result": {
+      "pass": true,
+      "entries": 764940,
+      "n_nodes": 6790,
+      "n_layers": 65,
+      "n_shards": 187,
+      "verified_shards": 187,
+      "geometry_hash": "e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b",
+      "ganged_channel_count": 2400,
+      "max_physical_positions_per_channel": 4,
+      "event_total_residual_max_gev": 1.3500311979441904e-13,
+      "modeled_readout_residual_max_gev": 1.1368683772161603e-13,
+      "excluded_sentinel_event_count": 738898,
+      "excluded_sentinel_energy_total_gev": 13251.328791066537,
+      "excluded_sentinel_energy_max_gev": 1.647373832954901,
+      "split_counts": {"train": 612482, "validation": 76158, "test": 76300},
+      "pilot_counts": {"train": 338, "validation": 104, "test": 0, "excluded": 764498},
+      "pilot_selection_counts": {"train": 338, "validation": 64, "test": 0},
+      "source_identity_matches_expected": true
+    },
+    "match_to_prior_agent_baseline": "exact match to audit/vertex_readiness_analysis_20260724.md item 84 and audit/agent_vertex_smoke_analysis_20260724.json preparation block"
+  },
+  "step6_smoke_job_description": {
+    "describe_command": "gcloud ai custom-jobs describe 4964365651620659200 --project asiop-zdc-1 --region us-central1",
+    "state": "JOB_STATE_SUCCEEDED",
+    "createTime": "2026-07-24T16:21:21.071610Z",
+    "startTime": "2026-07-24T16:24:13Z",
+    "endTime": "2026-07-24T16:40:48Z",
+    "scheduling_strategy": "ON_DEMAND",
+    "machineType": "n1-standard-8",
+    "acceleratorType": "NVIDIA_TESLA_T4",
+    "acceleratorCount": 1,
+    "replicaCount": 1,
+    "bootDiskType": "pd-ssd",
+    "bootDiskSizeGb": 100,
+    "imageUri": "us-central1-docker.pkg.dev/asiop-zdc-1/cbsc-zdc/cbsc-zdc@sha256:45ff337d8c4b1b34e936a24926a8fa495aebfb06187e75965fab9624d1f402f1",
+    "input_prefix_arg": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5-fp32-r2",
+    "output_prefix_arg": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/smoke-20260724-r2-fp32",
+    "config_relative_arg": "configs/frozen_production_full_architecture_smoke_fp32.yaml",
+    "device_arg": "cuda",
+    "serviceAccount": "39719277374-compute@developer.gserviceaccount.com",
+    "prompt_assertion_script_result": "ALL ASSERTIONS PASSED (state, ON_DEMAND, machine type, accelerator, replica count, image digest all verified programmatically)"
+  },
+  "step7_artifact_listing_and_download": {
+    "gcs_listing_command": "gcloud storage ls -l -r gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/smoke-20260724-r2-fp32/**",
+    "gcs_object_count": 16,
+    "gcs_total_bytes": 58800504,
+    "vertex_failure_json_present": false,
+    "local_copy_path": "audit/vertex_smoke_fp32_r2",
+    "local_copy_preexisting": true,
+    "local_file_count": 16,
+    "local_files_match_required_list": true
+  },
+  "step7_hash_verification": {
+    "method": "sha256sum over every file in audit/vertex_smoke_fp32_r2, compared to output_artifacts.sha256 in audit/agent_vertex_smoke_analysis_20260724.json",
+    "mismatches": 0,
+    "hashes": {
+      "checkpoints/best.pt": {"size": 29361952, "sha256": "3c8fa13eaf79615bb27f1834f28adde834e6bb29955c1a347d5a408c2b5bb1af", "match": true},
+      "checkpoints/last.pt": {"size": 29361952, "sha256": "c2f132b253fe6f4ee283c8273dc90d7d7dc9ea434fc857f13852d6c372a1eb95", "match": true},
+      "environment.json": {"size": 501, "sha256": "4d30db44d795d87ca03e5687c71343ac54601b80a1a10ad188010282163bcc14", "match": true},
+      "logs/history.csv": {"size": 513, "sha256": "29286325b68b6aa1486002d1cf95af9322d0ae3e2ff0ff13b234f9c783fcc466", "match": true},
+      "reports/invariant_epoch_0000.json": {"size": 297, "sha256": "0e5a5e3a304693bfc57c90e4b0645c518de83b07fc8c22dfaaf72e70984c30b9", "match": true},
+      "reports/preflight.json": {"size": 833, "sha256": "2eb8e251c37d10ddd913a69e2fc964b4919710e15b7ab7ee0fbe35fbdbce24bb", "match": true},
+      "reports/smoke_invariants.json": {"size": 299, "sha256": "854e0d17edfc3642842835811a685944113ee1ba211d9560c606f929517f47aa", "match": true},
+      "reports/smoke_resources.json": {"size": 221, "sha256": "e7b1ff13ed86b0b0db1c81d11fbd0ebfd2f86c00096260ffdf66687dcb3dff2c", "match": true},
+      "reports/smoke_samples.npz": {"size": 8423, "sha256": "c86a2d3b2a26e328e5c01937a012151d468e80f597f070a162e265c6ca8c2506", "match": true},
+      "reports/smoke_timing.json": {"size": 239, "sha256": "426ebe3451ffdfc5229e7ae6f06c345cd56e310150956d11021f3183367ce262", "match": true},
+      "reports/smoke_validation.json": {"size": 10558, "sha256": "a6fa1886efbbdf2b3407fe1d0d3945821c427754bd4fdbefa06134fa7e99a55a", "match": true},
+      "reports/training_summary.json": {"size": 243, "sha256": "b4163dd353b1ae344bf72af3585c35b6be874d4e2f707b96f341f79a1678fbdb", "match": true},
+      "resolved_config.json": {"size": 3003, "sha256": "c7ee2f52c8f4a39293bd2c60752e367c2b7282db66bbc76900e79b6b88c5a988", "match": true},
+      "runtime_config.yaml": {"size": 2461, "sha256": "042365a1959b83dbb19f259d6fe1257b045688f87c9ba5ed5e3b6c272f11c429", "match": true},
+      "staged_input_manifest.json": {"size": 47679, "sha256": "f3851cc43842dfd2ff8b9d8222ccd565a4f99c4c6e4ff0b7c4b0df389f66d28b", "match": true},
+      "vertex_result.json": {"size": 1330, "sha256": "dfb0b75aacb43a76db1b081b4fc2491eab51f2ee6a39e3356a3be537989c91c2", "match": true}
+    }
+  },
+  "step8_report_analysis": {
+    "environment_json": {
+      "cuda_available": true,
+      "cuda_device_count": 1,
+      "cuda_device_name": "Tesla T4",
+      "cuda_device_total_memory_bytes": 15655829504,
+      "cuda_version": "12.4",
+      "cudnn_version": 90100,
+      "torch": "2.6.0+cu124",
+      "python": "3.11.11"
+    },
+    "preflight_json": {
+      "pass": true,
+      "verified_shards": 187,
+      "geometry_hash": "e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b",
+      "selection_counts": {"train": 338, "validation": 64, "test": 0}
+    },
+    "smoke_resources_json": {
+      "pass": true,
+      "device_name": "Tesla T4",
+      "total_memory_bytes": 15655829504,
+      "peak_memory_bytes": 7848525312,
+      "headroom_fraction": 0.49868352168789687,
+      "minimum_headroom_fraction": 0.15
+    },
+    "invariant_epoch_0000_json_(epoch_candidate)": {
+      "pass": true,
+      "nonfinite": 0, "negative": 0, "outside_valid_support": 0,
+      "support_mask_mismatch": 0, "count_mismatch_max": 0,
+      "requested_realized_mismatch_max": 0, "dust_cells": 0,
+      "layer_closure_max_gev": 4.76837158203125e-07,
+      "event_closure_max_gev": 9.5367431640625e-07
+    },
+    "smoke_invariants_json_(postflight_fixed_conditions)": {
+      "pass": true,
+      "nonfinite": 0, "negative": 0, "outside_valid_support": 0,
+      "support_mask_mismatch": 0, "count_mismatch_max": 0,
+      "requested_realized_mismatch_max": 0, "dust_cells": 0,
+      "layer_closure_max_gev": 4.76837158203125e-07,
+      "event_closure_max_gev": 2.384185791015625e-07
+    },
+    "training_summary_json": {
+      "stage": "joint",
+      "updates": 84,
+      "best_validation_loss": 20.07763433456421,
+      "best_checkpoint": "checkpoints/best.pt",
+      "last_checkpoint": "checkpoints/last.pt"
+    },
+    "history_csv_row_epoch0": {
+      "epoch": 0, "stage": "joint",
+      "train_loss": 24.04530804497855,
+      "validation_loss": 20.07763433456421,
+      "learning_rate": 1e-06,
+      "seconds": 57.4816040180001,
+      "examples_per_second": 5.880142104144429,
+      "updates_implied": 84,
+      "cuda_peak_memory_bytes": 7848525312
+    },
+    "smoke_timing_json": {
+      "device": "cuda:0",
+      "batch_size": 2,
+      "profile_steps": 1,
+      "share_steps": 1,
+      "iterations": 2,
+      "milliseconds_per_batch": 198.08304499997575,
+      "milliseconds_per_event": 99.04152249998788
+    },
+    "vertex_result_json_checkpoint_reload_evidence": {
+      "smoke_postflight.pass": true,
+      "postflight_constructed_fresh_model_and_loaded_best_pt": true,
+      "postflight_resources_pass": true,
+      "postflight_invariants_pass": true,
+      "postflight_validation_events": 64,
+      "interpretation": "vertex_result.json.smoke_postflight built a new model instance, loaded checkpoints/best.pt (hash-verified above), sampled fixed conditions, ran invariants, and ran validation-only evaluation; a corrupted or non-reloadable checkpoint would have failed this path. This proves checkpoint save/reload round-trip."
+    }
+  },
+  "step9_scientific_boundary_diagnostics": {
+    "source": "reports/smoke_validation.json",
+    "n_events": 64,
+    "high_level_c2st_auc": 1.0,
+    "truth_zero_fraction": 0.015625,
+    "generated_zero_fraction": 0.296875,
+    "response_wasserstein_gev": 1.9464981603243996,
+    "response_wasserstein_normalized": 0.4034199118614197,
+    "hit_count_wasserstein": 722.809523809524,
+    "hit_count_wasserstein_normalized": 1.0333642292132128,
+    "additional_distributional_evidence_observed": {
+      "depth_centroid_layer": {"truth_mean": 12.365173380017168, "generated_mean": 31.602926513231342, "wasserstein": 21.340985352266692},
+      "ecal_fraction": {"truth_mean": 0.2453339950779886, "generated_mean": 3.0212150137013988e-05, "wasserstein": 0.2417056891518395},
+      "radial_rms_mm": {"truth_mean": 85.87969017028809, "generated_mean": 166.6028208732605, "wasserstein": 117.11537176465232},
+      "late_fraction": {"truth_mean": 0.011233151302124626, "generated_mean": 0.3898491896958671, "wasserstein": 0.37803123900768826}
+    },
+    "interpretation": "These are poor one-epoch diagnostics, consistent with a structural connectivity smoke rather than a trained model. This smoke passed software, target-hardware, checkpoint, resource, and structural gates only. It did not validate Geant4 fidelity. These values must not be used to tune any acceptance gate.",
+    "timing_scope_caveat": "The timing (99.04152249998788 ms/event) used batch 2, 1 profile step, 1 share step, 2 iterations. This is a one-step solver/decode connectivity smoke, not the required final 8-profile-step/8-share-step production performance benchmark."
+  },
+  "preserved_failed_gates_and_attempts": [
+    {
+      "id": "prep-r1",
+      "job": "projects/39719277374/locations/us-central1/customJobs/5551984247922753536",
+      "gate": "geometry position consistency",
+      "outcome": "failed; exact failure cell (1,1,2) position varies by 46.9354 mm peak-to-peak; exposed legitimate ganged HCAL readout geometry; corrected by freezing unweighted centroid of distinct stable physical centers",
+      "prefix_status": "preserved, not reused"
+    },
+    {
+      "id": "prep-r2-r3",
+      "jobs": ["projects/39719277374/locations/us-central1/customJobs/3440077497662701568", "projects/39719277374/locations/us-central1/customJobs/2318329346726559744"],
+      "gate": "conversion execution",
+      "outcome": "native SIGSEGV localized by faulthandler to structured-NumPy HCAL map_collection allocation; corrected by replacing structured-key mapping with plain uint64 searches grouped by (subdetector, layer_id)",
+      "prefix_status": "preserved, not reused"
+    },
+    {
+      "id": "prep-r4",
+      "job": "projects/39719277374/locations/us-central1/customJobs/8852770931064438784",
+      "gate": "event accounting",
+      "outcome": "failed with exact entry-0 residual 0.0194756 GeV; root cause: sentinel non-readout deposits (cell ID -100) were omitted from the closure comparison; corrected to two separate strict closures (all-hits vs energySum_ZDC, and mapped-nodes vs non-sentinel readout), both within 1e-6 GeV",
+      "prefix_status": "preserved, not reused"
+    },
+    {
+      "id": "coordinator-r1",
+      "job": "projects/39719277374/locations/us-central1/customJobs/9206444239301378048",
+      "gate": "pilot count verification",
+      "outcome": "failed before smoke submission because the verifier incorrectly rejected the legitimate excluded=764498 count; corrected to require all four exact counts including excluded=total_entries-442; smoke prefix remained empty, no T4 was submitted",
+      "prefix_status": "orchestration_failure.json preserved"
+    },
+    {
+      "id": "t4-smoke-amp",
+      "pipeline": "projects/39719277374/locations/us-central1/trainingPipelines/7972253432239095808",
+      "custom_job": "projects/39719277374/locations/us-central1/customJobs/5080522458025426944",
+      "gate": "finite gradient at epoch 0 step 0",
+      "outcome": "finite forward loss but nonfinite AMP gradient norm at epoch 0 step 0; no optimizer update or checkpoint accepted; corrected by a new unfrozen template with training.amp=false only (no frozen-config hand-edit), refrozen to a new hash, resubmitted under a new prefix",
+      "prefix_status": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/smoke-20260724-r1 preserved, not reused"
+    },
+    {
+      "id": "fp32-staging-flatten",
+      "prefix": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5-fp32",
+      "gate": "directory hierarchy",
+      "outcome": "wildcard gcloud storage cp flattened the shard hierarchy into an unusable prefix; corrected with gcloud storage rsync --recursive into a new prefix prep-20260724-r5-fp32-r2",
+      "prefix_status": "preserved and excluded from use"
+    }
+  ],
+  "next_permitted_phase_note": "A concrete evidence-backed proposal for the next train/validation-only Vertex phase follows in this verification's companion markdown report. No preparation, coordinator, smoke, or final training job was submitted by this run, and test data was not opened. Explicit authorization is required before submitting any new validation-only jobs."
+}

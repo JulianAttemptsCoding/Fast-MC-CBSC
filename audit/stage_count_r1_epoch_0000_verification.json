@@ -1,0 +1,124 @@
+{
+  "bytes": 41508493,
+  "checkpoint": {
+    "best_changed_tensors": [
+      "counts.layer_embedding.weight",
+      "counts.net.0.weight",
+      "counts.net.0.bias",
+      "counts.net.2.weight",
+      "counts.net.2.bias",
+      "counts.net.4.weight",
+      "counts.net.4.bias"
+    ],
+    "best_epoch": 0,
+    "best_sha256": "09fb3478357e3d4058191de32af2d52003bc17ebefce9ddc6afba79d22bbd599",
+    "frozen_tensor_mismatches": [],
+    "last_changed_tensors": [
+      "counts.layer_embedding.weight",
+      "counts.net.0.weight",
+      "counts.net.0.bias",
+      "counts.net.2.weight",
+      "counts.net.2.bias",
+      "counts.net.4.weight",
+      "counts.net.4.bias"
+    ],
+    "last_epoch": 0,
+    "last_optimizer_steps": [
+      1110
+    ],
+    "last_scheduler_step": 1110,
+    "last_sha256": "69f6f062c2a1676f9eeaa2f41815f37e3faa5676992949eb6e7ef04a90b20af3",
+    "source_sha256": "ef29d9d330e4d68080a8538bd21245a59284330b4ea2d0a5c1bc042723d4ee24"
+  },
+  "epoch": 0,
+  "files": 13,
+  "history": [
+    {
+      "cuda_peak_memory_bytes": "402456064",
+      "epoch": "0",
+      "examples_per_second": "10.433535476044282",
+      "learning_rate": "7.524999999999993e-05",
+      "seconds": "2551.77164645",
+      "stage": "count",
+      "train_count": "3.799753980107852",
+      "train_loss": "2.849815485094323",
+      "validation_loss": "2.8435218547134062"
+    }
+  ],
+  "invariants": {
+    "count_mismatch_max": 0,
+    "dust_cells": 0,
+    "event_closure_max_gev": 2.384185791015625e-07,
+    "layer_closure_max_gev": 1.9073486328125e-06,
+    "negative": 0,
+    "nonfinite": 0,
+    "outside_valid_support": 0,
+    "pass": true,
+    "requested_realized_mismatch_max": 0,
+    "support_mask_mismatch": 0
+  },
+  "loss_trend": {
+    "best_validation_loss": 2.8435218547134062,
+    "first_validation_loss": 2.8435218547134062,
+    "improved_from_first": true,
+    "last_minus_first": 0.0,
+    "last_validation_loss": 2.8435218547134062
+  },
+  "pass": true,
+  "postflight": null,
+  "sha256": {
+    "checkpoints/best.pt": "09fb3478357e3d4058191de32af2d52003bc17ebefce9ddc6afba79d22bbd599",
+    "checkpoints/last.pt": "69f6f062c2a1676f9eeaa2f41815f37e3faa5676992949eb6e7ef04a90b20af3",
+    "environment.json": "d93a1c309eb72f3c8e0457063d36b2350ff3c08ae2835b86392c2ab5d8fd057b",
+    "logs/history.csv": "f5690e690590a3deed9b43bc58f6fc09e8161c56e173c6a672d768e8794f6bc1",
+    "reports/invariant_epoch_0000.json": "aa96a2e42afaf989602c2cc2f3f3456994c20bb608f339c1cc6628c32cd8ad51",
+    "reports/preflight.json": "643953a0d7e06904cf0242b09421f8952719b39f118f05d3e325ee27e173e2f5",
+    "reports/progress_epoch_0000.json": "c6a74508b0ad942bf6d0cdc774231bf52a5deaca330ab0c47c98fc72810b7fc1",
+    "reports/visualization/epoch_0000.json": "de28f47b6044480e5517b75aa74bad4b724b6ce68c46891382cbbb90e0991d40",
+    "reports/visualization/geometry.json": "e91920b4d913321051f969544ce37cefce81314ae4e7a622e43755a64d4640fb",
+    "reports/visualization/manifest.json": "f065bfefae981c66efd92730d4006ff1e8892d8767d46c98078e9efea0bdba29",
+    "resolved_config.json": "784bd844b83e45a8ad168c2be48295deaafac471d0f6c69c45e3225362f1d746",
+    "runtime_config.yaml": "cd8bafad21aafa6714e89af4906664668d08bb4784f7d2fe011fabe8733defba",
+    "staged_input_manifest.json": "f967d4dc327bd849d48a96da1ab08c342e7a3b9fb602625c695f71597b56a4ef"
+  },
+  "stage": "count",
+  "terminal": false,
+  "visualization": {
+    "cross_epoch_contract": null,
+    "elapsed_seconds": 253.99137019199998,
+    "qa": {
+      "generated_negative": 0,
+      "generated_nonfinite": 0,
+      "groups_with_exact_draw_count": 50,
+      "invariants": {
+        "count_mismatch_max": 0,
+        "dust_cells": 0,
+        "event_closure_max_gev": 3.814697265625e-06,
+        "layer_closure_max_gev": 4.76837158203125e-06,
+        "negative": 0,
+        "nonfinite": 0,
+        "outside_valid_support": 0,
+        "pass": true,
+        "requested_realized_mismatch_max": 0,
+        "support_mask_mismatch": 0
+      },
+      "mass_shell_relative_residual_max": 4.7572159791434365e-08,
+      "pass": true,
+      "selection_unique": true,
+      "test_events_used": 0,
+      "truth_negative": 0,
+      "truth_nonfinite": 0
+    },
+    "selection_sha256": "f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6",
+    "sha256": "de28f47b6044480e5517b75aa74bad4b724b6ce68c46891382cbbb90e0991d40",
+    "trend": {
+      "generated_hit_count_mean": 1610.188,
+      "generated_response_mean_gev": 4.751119604364037,
+      "hit_count_bias_fraction": -0.06735786108150683,
+      "mean_longitudinal_profile_relative_l1": 0.2696941705242223,
+      "response_bias_fraction": 0.12704282116864707,
+      "truth_hit_count_mean": 1726.48,
+      "truth_response_mean_gev": 4.215562634468078
+    }
+  }
+}

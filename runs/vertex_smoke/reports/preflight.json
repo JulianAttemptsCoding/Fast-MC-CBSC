@@ -1,0 +1,20 @@
+{
+  "geometry_hash": "b1ddc92892e153958f0063e7be7e63602428f4e84760de3b20630d4bb94c405e",
+  "group_by": "event_hash",
+  "hashes": {
+    "dataset_manifest_sha256": "a02946baeb91c247cd86cfebb073b3f1a2fae1fc43674895377244a73546079e",
+    "geometry_manifest_sha256": "d517c637c3af14279e7239ab93bc3b6af77284bd8d8f28fea9f43cc4d8f27797",
+    "geometry_npz_sha256": "20822b42568dcc83b0f3dac2acdba62e5a2de664516f652a67684d710d512f88",
+    "split_assignment_sha256": "0b27d399b8f1eb8b9e5ad27caa0e7e7bbcb44b80a133325931c7787899fcc54a",
+    "split_manifest_sha256": "3dfc9aba13dbfc4259913230cd8cad5e765277dffbbf8efa96cf9364d8c0f5e0"
+  },
+  "pass": true,
+  "selection_counts": {
+    "test": 17,
+    "train": 159,
+    "validation": 6
+  },
+  "synthetic": true,
+  "verified_shards": 3,
+  "verify_shards": true
+}

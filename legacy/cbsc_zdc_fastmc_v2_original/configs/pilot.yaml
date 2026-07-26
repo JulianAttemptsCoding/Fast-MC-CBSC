@@ -1,0 +1,21 @@
+project:
+  name: cbsc-zdc-pilot
+  primary_energy_gev: [50,250]
+  training_support_gev: [0,300]
+detector:
+  n_nodes: 6790
+  n_layers: 65
+model:
+  condition_dim: 128
+  event_latent_dim: 32
+  spatial_hidden_dim: 96
+  spatial_mode: parallel
+  response_codec: bounded_raw_deposit
+sampling:
+  steps: 8
+training:
+  batch_size: 8
+  gradient_accumulation: 4
+  precision: float32
+  report_every_steps: 1000
+  qa_every_epoch: true

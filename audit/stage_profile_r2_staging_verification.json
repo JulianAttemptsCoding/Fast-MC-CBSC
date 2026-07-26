@@ -1,0 +1,40 @@
+{
+  "base_uri": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5",
+  "checkpoints": [
+    {
+      "field": "initialize_from",
+      "generation": "1784991378051223",
+      "relative_path": "checkpoints/response_best.pt",
+      "sha256": "d378de58ce310b9454620db3811e9cbba6760ba426fd7b3e4dd467c709119463",
+      "size": 14336500
+    }
+  ],
+  "config_sha256": "6dbbe30d3e42ee9cd39318673a11bf73af471d72258c6f084fb68613f165b117",
+  "forbidden_path_count": 0,
+  "hashes": {
+    "dataset_manifest_sha256": "5a6d963247091e91c0787dd763b46e3b1189f62785d9cab1d8fda4e76ca08096",
+    "geometry_manifest_sha256": "616b14bd006fb00acb963dc2b8b21fa0bc80d041a890b580d80ff31a11daa5d2",
+    "split_assignment_sha256": "084f0dfd86e488c63bb41ea50d6783ad22eb57a322288c075a94b1ec12dd3714",
+    "split_manifest_sha256": "a4d0967597bee525843d81647bd259deee7c2e908d25d2b1df78a8179526b0b3"
+  },
+  "merged_bytes": 5958748764,
+  "merged_object_count": 209,
+  "overlay_uris": [
+    "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/stage-20260725-r2-profile-input"
+  ],
+  "pass": true,
+  "required_paths": [
+    "artifacts/data/dataset_manifest.json",
+    "artifacts/geometry/geometry.npz",
+    "artifacts/geometry/geometry_manifest.json",
+    "artifacts/training_pilot_splits.json",
+    "artifacts/training_pilot_splits_assignments.npz",
+    "configs/frozen_pilot_stage_profile_fp32.yaml"
+  ],
+  "source_object_counts": {
+    "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5": 205,
+    "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/stage-20260725-r2-profile-input": 4
+  },
+  "stage": "profile",
+  "synthetic": false
+}

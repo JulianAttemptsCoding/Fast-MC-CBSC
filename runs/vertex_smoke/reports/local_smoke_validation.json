@@ -1,0 +1,228 @@
+{
+  "distribution_metrics": {
+    "depth_centroid_layer": {
+      "generated_mean": 0.4633963301400467,
+      "truth_mean": 2.2035447002179587,
+      "wasserstein": 1.8284551357929553
+    },
+    "ecal_fraction": {
+      "generated_mean": 0.036603668351795876,
+      "truth_mean": 0.0,
+      "wasserstein": 0.02196220101107752
+    },
+    "hit_count": {
+      "generated_mean": 1.0,
+      "truth_mean": 7.666666666666667,
+      "wasserstein": 6.800000000000001
+    },
+    "late_fraction": {
+      "generated_mean": 0.0,
+      "truth_mean": 0.41379542129850705,
+      "wasserstein": 0.40190166488485013
+    },
+    "mean_longitudinal_profile": {
+      "generated": [
+        0.6399167229731878,
+        2.2738019625345864,
+        0.6794221997261047,
+        0.0
+      ],
+      "relative_l1": 0.9656510000544453,
+      "truth": [
+        0.0,
+        15.513401073714098,
+        24.568367588023346,
+        27.265386799971264
+      ]
+    },
+    "positive_cell_energy_gev": {
+      "generated_mean": 3.5931408405303955,
+      "truth_mean": 8.784411430358887,
+      "wasserstein": 5.643800931488289
+    },
+    "radial_rms_mm": {
+      "generated_mean": 1.6432511806488037,
+      "truth_mean": 6.6142691771189375,
+      "wasserstein": 5.158125448226929
+    },
+    "top1_fraction": {
+      "generated_mean": 0.2169214685757955,
+      "truth_mean": 0.3197631786266963,
+      "wasserstein": 0.2614549487829208
+    },
+    "total_response_gev": {
+      "generated_mean": 3.5931407610575357,
+      "truth_mean": 67.34715461730957,
+      "wasserstein": 63.93869266510009
+    },
+    "truth_half_floor": {
+      "depth_centroid_layer": {
+        "wasserstein": 0.19560220316463206
+      },
+      "ecal_fraction": {
+        "wasserstein": 0.0
+      },
+      "hit_count": {
+        "wasserstein": 3.5
+      },
+      "late_fraction": {
+        "wasserstein": 0.13835879927629433
+      },
+      "radial_rms_mm": {
+        "wasserstein": 0.2785881757736206
+      },
+      "top1_fraction": {
+        "wasserstein": 0.08119987696409225
+      },
+      "total_response_gev": {
+        "wasserstein": 41.33925724029541
+      },
+      "x_centroid_mm": {
+        "wasserstein": 1.2091630846261978
+      },
+      "y_centroid_mm": {
+        "wasserstein": 1.6312033422291279
+      }
+    },
+    "x_centroid_mm": {
+      "generated_mean": 0.13396557172139487,
+      "truth_mean": 0.17676070829232535,
+      "wasserstein": 1.4545996725559234
+    },
+    "y_centroid_mm": {
+      "generated_mean": 0.4572910740971565,
+      "truth_mean": 0.4649823233485222,
+      "wasserstein": 1.0106073930859567
+    }
+  },
+  "generated_zero_fraction": 0.6666666666666666,
+  "high_level_c2st_auc": null,
+  "hit_count_wasserstein": 6.800000000000001,
+  "hit_count_wasserstein_normalized": 2.530308585619853,
+  "invariants": {
+    "count_mismatch_max": 0,
+    "dust_cells": 0,
+    "event_closure_max_gev": 0.0,
+    "layer_closure_max_gev": 2.384185791015625e-07,
+    "negative": 0,
+    "nonfinite": 0,
+    "outside_valid_support": 0,
+    "pass": true,
+    "requested_realized_mismatch_max": 0,
+    "support_mask_mismatch": 0
+  },
+  "n_events": 6,
+  "preflight": {
+    "geometry_hash": "b1ddc92892e153958f0063e7be7e63602428f4e84760de3b20630d4bb94c405e",
+    "group_by": "event_hash",
+    "hashes": {
+      "dataset_manifest_sha256": "a02946baeb91c247cd86cfebb073b3f1a2fae1fc43674895377244a73546079e",
+      "geometry_manifest_sha256": "d517c637c3af14279e7239ab93bc3b6af77284bd8d8f28fea9f43cc4d8f27797",
+      "geometry_npz_sha256": "20822b42568dcc83b0f3dac2acdba62e5a2de664516f652a67684d710d512f88",
+      "split_assignment_sha256": "0b27d399b8f1eb8b9e5ad27caa0e7e7bbcb44b80a133325931c7787899fcc54a",
+      "split_manifest_sha256": "3dfc9aba13dbfc4259913230cd8cad5e765277dffbbf8efa96cf9364d8c0f5e0"
+    },
+    "pass": true,
+    "selection_counts": {
+      "test": 17,
+      "train": 159,
+      "validation": 6
+    },
+    "synthetic": true,
+    "verified_shards": 3,
+    "verify_shards": true
+  },
+  "response_bins": [
+    {
+      "generated_mean": null,
+      "generated_std": null,
+      "high": 75.0,
+      "low": 50.0,
+      "mean_bias_fraction": null,
+      "n": 0,
+      "resolution_difference_fraction": null,
+      "truth_mean": null,
+      "truth_std": null
+    },
+    {
+      "generated_mean": 0.0,
+      "generated_std": 0.0,
+      "high": 100.0,
+      "low": 75.0,
+      "mean_bias_fraction": -1.0,
+      "n": 2,
+      "resolution_difference_fraction": -1.0,
+      "truth_mean": 22.413469314575195,
+      "truth_std": 9.305700302124023
+    },
+    {
+      "generated_mean": null,
+      "generated_std": null,
+      "high": 125.0,
+      "low": 100.0,
+      "mean_bias_fraction": null,
+      "n": 0,
+      "resolution_difference_fraction": null,
+      "truth_mean": null,
+      "truth_std": null
+    },
+    {
+      "generated_mean": null,
+      "generated_std": null,
+      "high": 150.0,
+      "low": 125.0,
+      "mean_bias_fraction": null,
+      "n": 1,
+      "resolution_difference_fraction": null,
+      "truth_mean": null,
+      "truth_std": null
+    },
+    {
+      "generated_mean": null,
+      "generated_std": null,
+      "high": 175.0,
+      "low": 150.0,
+      "mean_bias_fraction": null,
+      "n": 0,
+      "resolution_difference_fraction": null,
+      "truth_mean": null,
+      "truth_std": null
+    },
+    {
+      "generated_mean": null,
+      "generated_std": null,
+      "high": 200.0,
+      "low": 175.0,
+      "mean_bias_fraction": null,
+      "n": 1,
+      "resolution_difference_fraction": null,
+      "truth_mean": null,
+      "truth_std": null
+    },
+    {
+      "generated_mean": null,
+      "generated_std": null,
+      "high": 225.0,
+      "low": 200.0,
+      "mean_bias_fraction": null,
+      "n": 1,
+      "resolution_difference_fraction": null,
+      "truth_mean": null,
+      "truth_std": null
+    },
+    {
+      "generated_mean": null,
+      "generated_std": null,
+      "high": 250.0001,
+      "low": 225.0,
+      "mean_bias_fraction": null,
+      "n": 1,
+      "resolution_difference_fraction": null,
+      "truth_mean": null,
+      "truth_std": null
+    }
+  ],
+  "response_wasserstein_gev": 63.93869266510009,
+  "response_wasserstein_normalized": 1.615885853767395,
+  "truth_zero_fraction": 0.0
+}

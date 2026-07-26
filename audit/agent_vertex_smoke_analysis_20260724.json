@@ -1,0 +1,328 @@
+{
+  "analysis_version": 1,
+  "analysis_date": "2026-07-24",
+  "scope": "production-data-derived one-epoch target-hardware structural smoke",
+  "decision": {
+    "structural_smoke": "GO",
+    "validation_only_component_loss_lr_work": "GO",
+    "physics_validation": "NOT_ESTABLISHED",
+    "final_training": "BLOCKED",
+    "test_evaluation": "FORBIDDEN"
+  },
+  "vertex": {
+    "project": "asiop-zdc-1",
+    "project_number": "39719277374",
+    "region": "us-central1",
+    "training_pipeline": "projects/39719277374/locations/us-central1/trainingPipelines/5105571531929419776",
+    "custom_job": "projects/39719277374/locations/us-central1/customJobs/4964365651620659200",
+    "display_name": "cbsc-v2-2-production-geometry-smoke-fp32-20260724-r2-custom-job",
+    "state": "JOB_STATE_SUCCEEDED",
+    "create_time": "2026-07-24T16:21:21.071610Z",
+    "start_time": "2026-07-24T16:24:13Z",
+    "end_time": "2026-07-24T16:40:48Z",
+    "scheduling_strategy": "ON_DEMAND",
+    "machine_type": "n1-standard-8",
+    "accelerator_type": "NVIDIA_TESLA_T4",
+    "accelerator_count": 1,
+    "replica_count": 1,
+    "boot_disk_type": "pd-ssd",
+    "boot_disk_size_gb": 100,
+    "service_account": "39719277374-compute@developer.gserviceaccount.com",
+    "image": "us-central1-docker.pkg.dev/asiop-zdc-1/cbsc-zdc/cbsc-zdc@sha256:45ff337d8c4b1b34e936a24926a8fa495aebfb06187e75965fab9624d1f402f1",
+    "input_prefix": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5-fp32-r2",
+    "output_prefix": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/smoke-20260724-r2-fp32",
+    "config_relative": "configs/frozen_production_full_architecture_smoke_fp32.yaml"
+  },
+  "source": {
+    "uri": "gs://asiop-zdc-1-zdc-reco-us-central1/data/myTree_20251117_765k_0to300GeV_neutron_All.root",
+    "generation": "1783683550292251",
+    "size_bytes": 25022001408,
+    "crc32c": "lCVUvQ==",
+    "sha256": "b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533",
+    "tree": "myTree",
+    "entries": 764940
+  },
+  "preparation": {
+    "job": "projects/39719277374/locations/us-central1/customJobs/1981826012068970496",
+    "verified_prefix": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5",
+    "verification_report": "audit/verified_prepare_r5.json",
+    "pass": true,
+    "n_shards": 187,
+    "verified_shards": 187,
+    "event_total_residual_max_gev": 1.3500311979441904e-13,
+    "modeled_readout_residual_max_gev": 1.1368683772161603e-13,
+    "excluded_sentinel_event_count": 738898,
+    "excluded_sentinel_energy_total_gev": 13251.328791066537,
+    "excluded_sentinel_energy_max_gev": 1.647373832954901
+  },
+  "geometry": {
+    "geometry_hash": "e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b",
+    "geometry_npz_sha256": "c6c02f3c84f5e02e70d2ca3fb894dd8cae899e1afc9100e34334d8ee5c922bf1",
+    "geometry_manifest_sha256": "616b14bd006fb00acb963dc2b8b21fa0bc80d041a890b580d80ff31a11daa5d2",
+    "n_nodes": 6790,
+    "n_layers": 65,
+    "ganged_channel_count": 2400,
+    "max_physical_positions_per_channel": 4,
+    "position_contract": "unweighted centroid of distinct stable physical centers"
+  },
+  "splits": {
+    "full_counts": {
+      "train": 612482,
+      "validation": 76158,
+      "test": 76300
+    },
+    "pilot_assignment_counts": {
+      "train": 338,
+      "validation": 104,
+      "test": 0,
+      "excluded": 764498
+    },
+    "pilot_selection_counts": {
+      "train": 338,
+      "validation": 64,
+      "test": 0
+    },
+    "group_by": "copied_event_hash_split_train_validation_only",
+    "split_manifest_sha256": "2a797c588405c4122543c91728b51b7a3efbf24a0d114330667a43c71ea02ea6",
+    "split_assignment_sha256": "ee7572c628867939b11810cb5c7ac492db552f6ea6bf6209f13f92000eca759a",
+    "dataset_manifest_sha256": "5a6d963247091e91c0787dd763b46e3b1189f62785d9cab1d8fda4e76ca08096",
+    "audit_sha256": "2f727d73180642bb8b29f688b0ac20223e33a6c9630790658a0031d8e996f9ac"
+  },
+  "frozen_configuration": {
+    "template_sha256": "bb09dff2040906d98d5df5e116a344c12d7212836090d66ee33cbcd6f7fc9633",
+    "frozen_config_sha256": "e75f1bda7140a00b9caf04bf9ee574c034879e7a935dfe32a42a983680511f31",
+    "gcs_generation": "1784910038186271",
+    "gcs_crc32c": "Ix7F9w==",
+    "amp": false,
+    "stage": "joint",
+    "epochs": 1,
+    "batch_size": 4,
+    "seed": 20260723,
+    "target_mode": "raw_deposit",
+    "threshold_gev": 0.0,
+    "train_kinetic_gev": [
+      0.0,
+      300.0
+    ],
+    "evaluation_kinetic_gev": [
+      50.0,
+      250.0
+    ],
+    "runtime_semantic_diff_pass": true,
+    "runtime_only_changes": [
+      "data.manifest",
+      "data.splits",
+      "geometry.path",
+      "project.run_dir",
+      "provenance.vertex_staged_config_source"
+    ]
+  },
+  "staging": {
+    "object_count": 207,
+    "total_bytes": 5944363214,
+    "shard_count": 187,
+    "legacy_path_count": 0,
+    "test_named_path_count": 0
+  },
+  "environment": {
+    "cuda_available": true,
+    "cuda_device_count": 1,
+    "cuda_device_name": "Tesla T4",
+    "cuda_device_total_memory_bytes": 15655829504,
+    "cuda_version": "12.4",
+    "cudnn_version": 90100,
+    "torch": "2.6.0+cu124",
+    "python": "3.11.11",
+    "numpy": "2.2.2"
+  },
+  "training": {
+    "epoch": 0,
+    "stage": "joint",
+    "train_loss": 24.04530804497855,
+    "validation_loss": 20.07763433456421,
+    "learning_rate_end": 1e-06,
+    "seconds": 57.4816040180001,
+    "examples_per_second": 5.880142104144429,
+    "updates": 84,
+    "finite_loss": true,
+    "finite_gradients": true,
+    "best_checkpoint_reloaded_in_postflight": true,
+    "checkpoint_format_version": 2,
+    "checkpoint_epoch": 0,
+    "checkpoint_stage": "joint",
+    "checkpoint_model_tensor_count": 207,
+    "checkpoint_contains_optimizer_scheduler_scaler": true
+  },
+  "resources": {
+    "pass": true,
+    "device_name": "Tesla T4",
+    "total_memory_bytes": 15655829504,
+    "peak_memory_bytes": 7848525312,
+    "headroom_fraction": 0.49868352168789687,
+    "minimum_headroom_fraction": 0.15
+  },
+  "invariants": {
+    "epoch_candidate": {
+      "pass": true,
+      "nonfinite": 0,
+      "negative": 0,
+      "outside_valid_support": 0,
+      "support_mask_mismatch": 0,
+      "count_mismatch_max": 0,
+      "requested_realized_mismatch_max": 0,
+      "dust_cells": 0,
+      "layer_closure_max_gev": 4.76837158203125e-07,
+      "event_closure_max_gev": 9.5367431640625e-07
+    },
+    "postflight_fixed_conditions": {
+      "conditions_kinetic_gev": [
+        0.0,
+        50.0,
+        150.0,
+        250.0,
+        300.0
+      ],
+      "pass": true,
+      "nonfinite": 0,
+      "negative": 0,
+      "outside_valid_support": 0,
+      "support_mask_mismatch": 0,
+      "count_mismatch_max": 0,
+      "requested_realized_mismatch_max": 0,
+      "dust_cells": 0,
+      "layer_closure_max_gev": 4.76837158203125e-07,
+      "event_closure_max_gev": 2.384185791015625e-07,
+      "independent_array_layer_recompute_max_abs_gev": 4.76837158203125e-07,
+      "independent_array_event_layer_cell_max_abs_gev": 1.1920928955078125e-07
+    },
+    "validation": {
+      "pass": true,
+      "n_events": 64,
+      "nonfinite": 0,
+      "negative": 0,
+      "outside_valid_support": 0,
+      "support_mask_mismatch": 0,
+      "count_mismatch_max": 0,
+      "requested_realized_mismatch_max": 0,
+      "dust_cells": 0,
+      "layer_closure_max_gev": 9.5367431640625e-07,
+      "event_closure_max_gev": 3.814697265625e-06
+    }
+  },
+  "timing": {
+    "scope": "postflight structural smoke only",
+    "device": "cuda:0",
+    "batch_size": 2,
+    "warmup": 1,
+    "iterations": 2,
+    "profile_steps": 1,
+    "share_steps": 1,
+    "milliseconds_per_batch": 198.08304499997575,
+    "milliseconds_per_event": 99.04152249998788,
+    "includes_sampler_solver_and_decode": true,
+    "production_performance_claim_allowed": false
+  },
+  "validation_diagnostics": {
+    "n_events": 64,
+    "high_level_c2st_auc": 1.0,
+    "truth_zero_fraction": 0.015625,
+    "generated_zero_fraction": 0.296875,
+    "response_wasserstein_gev": 1.9464981603243996,
+    "response_wasserstein_normalized": 0.4034199118614197,
+    "hit_count_wasserstein": 722.809523809524,
+    "hit_count_wasserstein_normalized": 1.0333642292132128,
+    "interpretation": "Poor one-epoch validation diagnostics; structural smoke only. These values are not a gate-tuning input and not physics validation."
+  },
+  "output_artifacts": {
+    "object_count": 16,
+    "total_bytes": 58800504,
+    "vertex_failure_present": false,
+    "sha256": {
+      "checkpoints/best.pt": "3c8fa13eaf79615bb27f1834f28adde834e6bb29955c1a347d5a408c2b5bb1af",
+      "checkpoints/last.pt": "c2f132b253fe6f4ee283c8273dc90d7d7dc9ea434fc857f13852d6c372a1eb95",
+      "environment.json": "4d30db44d795d87ca03e5687c71343ac54601b80a1a10ad188010282163bcc14",
+      "logs/history.csv": "29286325b68b6aa1486002d1cf95af9322d0ae3e2ff0ff13b234f9c783fcc466",
+      "reports/invariant_epoch_0000.json": "0e5a5e3a304693bfc57c90e4b0645c518de83b07fc8c22dfaaf72e70984c30b9",
+      "reports/preflight.json": "2eb8e251c37d10ddd913a69e2fc964b4919710e15b7ab7ee0fbe35fbdbce24bb",
+      "reports/smoke_invariants.json": "854e0d17edfc3642842835811a685944113ee1ba211d9560c606f929517f47aa",
+      "reports/smoke_resources.json": "e7b1ff13ed86b0b0db1c81d11fbd0ebfd2f86c00096260ffdf66687dcb3dff2c",
+      "reports/smoke_samples.npz": "c86a2d3b2a26e328e5c01937a012151d468e80f597f070a162e265c6ca8c2506",
+      "reports/smoke_timing.json": "426ebe3451ffdfc5229e7ae6f06c345cd56e310150956d11021f3183367ce262",
+      "reports/smoke_validation.json": "a6fa1886efbbdf2b3407fe1d0d3945821c427754bd4fdbefa06134fa7e99a55a",
+      "reports/training_summary.json": "b4163dd353b1ae344bf72af3585c35b6be874d4e2f707b96f341f79a1678fbdb",
+      "resolved_config.json": "c7ee2f52c8f4a39293bd2c60752e367c2b7282db66bbc76900e79b6b88c5a988",
+      "runtime_config.yaml": "042365a1959b83dbb19f259d6fe1257b045688f87c9ba5ed5e3b6c272f11c429",
+      "staged_input_manifest.json": "f3851cc43842dfd2ff8b9d8222ccd565a4f99c4c6e4ff0b7c4b0df389f66d28b",
+      "vertex_result.json": "dfb0b75aacb43a76db1b081b4fc2491eab51f2ee6a39e3356a3be537989c91c2"
+    }
+  },
+  "failed_attempts_and_gates": [
+    {
+      "kind": "preparation",
+      "job": "projects/39719277374/locations/us-central1/customJobs/5551984247922753536",
+      "gate": "geometry position consistency",
+      "outcome": "failed; exposed legitimate ganged HCAL readouts"
+    },
+    {
+      "kind": "preparation",
+      "jobs": [
+        "projects/39719277374/locations/us-central1/customJobs/3440077497662701568",
+        "projects/39719277374/locations/us-central1/customJobs/2318329346726559744"
+      ],
+      "gate": "conversion execution",
+      "outcome": "native SIGSEGV localized to structured NumPy HCAL mapping; failed prefixes preserved"
+    },
+    {
+      "kind": "preparation",
+      "job": "projects/39719277374/locations/us-central1/customJobs/8852770931064438784",
+      "gate": "event accounting",
+      "outcome": "failed because the old comparison omitted sentinel non-readout deposits; separate strict closures implemented"
+    },
+    {
+      "kind": "orchestration",
+      "job": "projects/39719277374/locations/us-central1/customJobs/9206444239301378048",
+      "gate": "pilot count verification",
+      "outcome": "failed before smoke submission because verifier rejected the legitimate excluded count"
+    },
+    {
+      "kind": "training",
+      "pipeline": "projects/39719277374/locations/us-central1/trainingPipelines/7972253432239095808",
+      "custom_job": "projects/39719277374/locations/us-central1/customJobs/5080522458025426944",
+      "gate": "finite gradient at epoch 0 step 0",
+      "outcome": "failed under AMP; finite forward loss but nonfinite gradient norm; no optimizer update or checkpoint accepted"
+    },
+    {
+      "kind": "staging",
+      "prefix": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5-fp32",
+      "gate": "directory hierarchy",
+      "outcome": "wildcard copy flattened hierarchy; prefix preserved and excluded"
+    },
+    {
+      "kind": "local_invocation",
+      "gate": "test collection",
+      "outcome": "two invocations omitted PYTHONPATH=src and failed import collection; corrected invocation passed without weakening code"
+    },
+    {
+      "kind": "submission_validation",
+      "gate": "Vertex resource creation",
+      "outcome": "50 GB disk and e2-standard-2 coordinator specifications were rejected before any resource or GCS object was created"
+    }
+  ],
+  "independent_local_verification": {
+    "pytest": "25 passed, 2 documented Transformer warnings",
+    "compileall": "passed",
+    "required_output_objects_present": true,
+    "unexpected_output_objects_present": false,
+    "config_semantic_diff_pass": true,
+    "fixed_condition_array_recheck_pass": true
+  },
+  "required_next_gates": [
+    "Run component diagnostics in exact order response -> profile -> count -> support -> share -> joint and obey shared-encoder rules.",
+    "Run train-only gradient-norm loss calibration for at most 64 batches.",
+    "Run validation-only loss sensitivity and learning-rate/weight-decay/effective-batch studies.",
+    "Run truth-half statistical-floor study and freeze acceptance gates.",
+    "Pilot full validation-evaluation memory and streaming behavior.",
+    "Freeze all final configs and three seeds for each matched support condition before opening test.",
+    "Do not launch the six final runs or test evaluation from this smoke handoff."
+  ]
+}

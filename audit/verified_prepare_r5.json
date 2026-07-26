@@ -1,0 +1,42 @@
+{
+  "entries": 764940,
+  "event_total_residual_max_gev": 1.3500311979441904e-13,
+  "excluded_sentinel_energy_max_gev": 1.647373832954901,
+  "excluded_sentinel_energy_total_gev": 13251.328791066537,
+  "excluded_sentinel_event_count": 738898,
+  "ganged_channel_count": 2400,
+  "geometry_hash": "e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b",
+  "max_physical_positions_per_channel": 4,
+  "modeled_readout_residual_max_gev": 1.1368683772161603e-13,
+  "n_layers": 65,
+  "n_nodes": 6790,
+  "n_shards": 187,
+  "pass": true,
+  "pilot_counts": {
+    "excluded": 764498,
+    "test": 0,
+    "train": 338,
+    "validation": 104
+  },
+  "pilot_selection_counts": {
+    "test": 0,
+    "train": 338,
+    "validation": 64
+  },
+  "prefix": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5",
+  "source_identity": {
+    "bucket": "asiop-zdc-1-zdc-reco-us-central1",
+    "crc32c": "lCVUvQ==",
+    "generation": "1783683550292251",
+    "local_sha256": "b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533",
+    "name": "data/myTree_20251117_765k_0to300GeV_neutron_All.root",
+    "size": 25022001408,
+    "uri": "gs://asiop-zdc-1-zdc-reco-us-central1/data/myTree_20251117_765k_0to300GeV_neutron_All.root"
+  },
+  "split_counts": {
+    "test": 76300,
+    "train": 612482,
+    "validation": 76158
+  },
+  "verified_shards": 187
+}

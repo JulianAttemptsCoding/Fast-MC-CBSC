@@ -1,0 +1,109 @@
+{
+  "data": {
+    "evaluation_kinetic_gev": [
+      50.0,
+      250.0
+    ],
+    "manifest": "C:\\Users\\Julia\\AppData\\Local\\Temp\\cbsc_vertex_smoke_20260724\\artifacts\\data\\dataset_manifest.json",
+    "response_cap_absolute_gev": 219.70670594604508,
+    "response_cap_ratio": 0.9115686348632118,
+    "split_fraction": [
+      0.8,
+      0.1,
+      0.1
+    ],
+    "splits": "C:\\Users\\Julia\\AppData\\Local\\Temp\\cbsc_vertex_smoke_20260724\\artifacts\\splits.json",
+    "target_mode": "raw_deposit",
+    "threshold_gev": 0.0,
+    "train_kinetic_gev": [
+      0.0,
+      300.0
+    ]
+  },
+  "evaluation": {
+    "closure_tolerance_gev": 2e-05,
+    "energy_bin_edges_gev": [
+      50,
+      75,
+      100,
+      125,
+      150,
+      175,
+      200,
+      225,
+      250.0001
+    ],
+    "profile_steps": 1,
+    "share_steps": 1
+  },
+  "geometry": {
+    "geometry_hash": "b1ddc92892e153958f0063e7be7e63602428f4e84760de3b20630d4bb94c405e",
+    "n_layers": 4,
+    "n_nodes": 16,
+    "path": "C:\\Users\\Julia\\AppData\\Local\\Temp\\cbsc_vertex_smoke_20260724\\artifacts\\geometry"
+  },
+  "loss_weights": {
+    "active": 0.5,
+    "count": 0.75,
+    "first_layer": 0.5,
+    "profile_flow": 1.0,
+    "response": 1.0,
+    "share_flow": 1.0,
+    "support_bce": 1.0,
+    "support_rank": 0.25,
+    "visible": 1.0
+  },
+  "model": {
+    "attention_heads": 1,
+    "attention_layers": 1,
+    "condition_dim": 16,
+    "count_hidden": 24,
+    "dropout": 0.0,
+    "graph_blocks": 1,
+    "hidden_dim": 16,
+    "layer_context": "bidirectional",
+    "profile_hidden": 16,
+    "response_components": 2,
+    "response_hidden": 24,
+    "response_scale_gev": 10.0
+  },
+  "project": {
+    "name": "cbsc-zdc-v2-2-vertex-smoke",
+    "run_dir": "runs/vertex_smoke"
+  },
+  "provenance": {
+    "audit_sha256": "396444c26f80fe5610edf8f001c703fbe1ab6255d7f48b71351c63124a656d25",
+    "config_path": "C:\\Users\\Julia\\AppData\\Local\\Temp\\cbsc_vertex_smoke_20260724\\configs\\frozen_vertex_smoke.yaml",
+    "config_sha256": "a5b824702e351a853390854fddb7f91f28cdb066514dd96c06b1c2e4087903cd",
+    "dataset_geometry_hash": "b1ddc92892e153958f0063e7be7e63602428f4e84760de3b20630d4bb94c405e",
+    "dataset_manifest_sha256": "a02946baeb91c247cd86cfebb073b3f1a2fae1fc43674895377244a73546079e",
+    "geometry_manifest_sha256": "d517c637c3af14279e7239ab93bc3b6af77284bd8d8f28fea9f43cc4d8f27797",
+    "split_assignment_sha256": "0b27d399b8f1eb8b9e5ad27caa0e7e7bbcb44b80a133325931c7787899fcc54a",
+    "split_manifest_sha256": "3dfc9aba13dbfc4259913230cd8cad5e765277dffbbf8efa96cf9364d8c0f5e0",
+    "template_sha256": "ff82ba22c7c193a5a6eecb5010fbf94fb8edfc694262857a4cb8521b74a60678"
+  },
+  "training": {
+    "amp": true,
+    "batch_size": 16,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "deterministic_debug": false,
+    "device": "cpu",
+    "early_stopping_patience": 2,
+    "epochs": 1,
+    "eps": 1e-08,
+    "gradient_accumulation": 1,
+    "gradient_clip_norm": 1.0,
+    "initialize_from": null,
+    "learning_rate": 0.0001,
+    "min_learning_rate": 1e-06,
+    "num_workers": 2,
+    "resume_from": null,
+    "seed": 20260724,
+    "stage": "joint",
+    "train_condition_encoder": true,
+    "weight_decay": 0.01
+  }
+}

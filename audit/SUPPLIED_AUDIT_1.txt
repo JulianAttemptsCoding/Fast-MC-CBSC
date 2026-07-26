@@ -1,0 +1,933 @@
+================================================================================
+CBSC-ZDC AUDITOR SPECIFICATION -- INDEPENDENT AUDIT LOG
+Artefact audited : CBSC_ZDC_Auditor_Specification_LaTeX.pdf (dated 23 July 2026)
+Auditor          : Claude (Opus 4.8), acting as independent reviewer
+Audit date       : 23 July 2026
+Log type         : chronological -- sources, thoughts, ideas, dead ends, verdicts
+Method           : bibliography verification -> algebraic QA -> numerical QA ->
+                   re-QA of each finding -> severity triage
+================================================================================
+
+
+--------------------------------------------------------------------------------
+[T00] SCOPE DECISION
+--------------------------------------------------------------------------------
+Thought: The document explicitly disclaims fidelity ("research design, not a
+fidelity claim"). So the audit must NOT be graded on "does it reproduce Geant4."
+It must be graded on the three things it *does* assert:
+  (a) the stated invariants are actually implied by the stated construction;
+  (b) the cited evidence supports the claims mapped to it (Appendix A);
+  (c) the specified training procedure can actually learn the specified model.
+(c) is the one an auditor is most likely to skip, because it is stated in prose
+across Sec 4 and Sec 9 rather than in a theorem. Prioritise it.
+
+Idea: the document is unusually self-critical, which creates a specific failure
+mode -- a reader may treat the extensive caveating as evidence of rigour and stop
+checking. Audit assumption: every proved statement is true and every *unproved*
+statement is suspect until re-derived. That split turned out to be exactly right
+(all four theorems/propositions hold; four blocking defects are all in unproved
+prose).
+
+
+--------------------------------------------------------------------------------
+[T01] MEMORY / PRIOR-CONTEXT CHECK
+--------------------------------------------------------------------------------
+Action : searched stored memory and past conversations for ZDC / HGF-ZDC /
+         HurdleGraph / ASIoP.
+Result : no prior context. This project is new to the record. Refs [5], [6], [7]
+         (internal audits of the legacy HurdleGraph model, HGF-ZDC, and the
+         single-stage graph-flow proposal) are therefore NOT verifiable by me.
+Verdict: Appendix A rows citing [5]/[6]/[7] are unaudited. Every claim about
+         what previous models did wrong is taken on the document's word. Flag
+         this explicitly rather than silently accepting it.
+
+
+--------------------------------------------------------------------------------
+[T02] BIBLIOGRAPHY VERIFICATION -- ROUND 1 (ZDC-specific references)
+--------------------------------------------------------------------------------
+Source: https://arxiv.org/abs/2507.18811
+  "Even Faster Simulations with Flow Matching: A Study of Zero Degree Calorimeter
+  Responses", Maksymilian Wojnar, submitted 24 Jul 2025.
+  -> ref [14] VERIFIED (ID, title, author, year all correct).
+  Extracted facts useful to the audit:
+    - ALICE ZN detector resolution 44 x 44; ZP 56 x 30.
+    - ZDCs sit 112.5 m from the interaction point.
+    - Reported ZN Wasserstein 1.27 at 0.46 ms/sample; ZP 1.30 vs prior best 2.08.
+  Thought: 44*44 = 1936 pixels, a single 2-D image, no longitudinal segmentation.
+  The specification's target is 6790 channels across 65 layers. So Sec 2.2's
+  claim that the ALICE work is "not a drop-in representation" is CORRECT and now
+  quantified: 3.5x the channel count and a fundamentally different topology
+  (2-D image vs ragged 3-D layered graph). Good -- this claim survives.
+  Idea: 0.46 ms/sample is the number the project's latency claims will be
+  measured against by any referee. Worth stating in the spec as the explicit
+  latency bar.
+
+Source: https://arxiv.org/abs/2512.20346
+  "Inverse Autoregressive Flows for Zero Degree Calorimeter fast simulation".
+  -> ref [16] VERIFIED (ID and title correct; teacher-student NF framework;
+  claims 421x speedup over existing NF implementations for ZDC).
+
+Source: https://arxiv.org/abs/2508.20991 ; dblp.org/pid/93/233.html
+  ExpertSim, Patryk Bedkowski, Jan Dubinski, Filip Szatkowski, Kamil Deja,
+  Przemyslaw Rokita, Tomasz Trzcinski. Also published ECAI 2025, pp. 2049-2056.
+  -> ref [15] VERIFIED (first author correct).
+  Note: the spec cites arXiv only; the ECAI venue is missing but that is cosmetic.
+
+Source: https://arxiv.org/abs/2406.03233 ; arxiv.org/html/2406.03233
+  "Generative Diffusion Models for Fast Simulations of Particle Collisions at
+  CERN", M. Kita, J. Dubinski, P. Rokita, K. Deja.
+  -> ref [13] VERIFIED.
+  Extracted fact: the ALICE neutron ZDC is a quartz-fibre spaghetti calorimeter
+  reading Cherenkov light. Thought: that is a *very* different response mechanism
+  from a sampling calorimeter with 65 depth layers. Reinforces that the ALICE
+  baselines are methodological, not physical, comparisons -- Sec 2.2 is right to
+  say so, and Sec 12.1's instruction to reproduce them "on their native
+  representations" is the correct protocol.
+
+Source: https://arxiv.org/abs/2306.13606 ; dblp; researchgate; SciPost ref lists
+  arXiv 2306.13606 = "Machine Learning methods for simulating particle response
+  in the Zero Degree Calorimeter at the ALICE experiment, CERN",
+  by Jan Dubinski, Kamil Deja, Sandro Wenzel, Przemyslaw Rokita, Tomasz Trzcinski.
+  -> ref [12] IS WRONG ON BOTH COUNTS.
+     Spec says: "M. Wojnar et al., 'Machine Learning Methods for Simulating
+     Particle Detector Responses: The ALICE Zero Degree Calorimeter Case'".
+     Neither the author list nor the title matches arXiv 2306.13606.
+  DEFECT M1-a recorded.
+
+Source: https://link.springer.com/article/10.1007/s41781-025-00130-x
+  Wojnar, M., Majerz, E. & Dzwinel, W., "Fast Simulation of the Zero Degree
+  Calorimeter Responses with Generative Neural Networks", Comput. Softw. Big Sci.
+  9, 1 (2025).
+  Thought: this looks like the paper ref [12] was *trying* to be -- a real
+  Wojnar-first-author peer-reviewed ZDC paper. It is not cited anywhere in the
+  specification. So [12] appears to be a conflation of two distinct papers.
+  Idea: this is a genuinely missing reference, not just a formatting fix -- it is
+  the peer-reviewed anchor of the whole ALICE ZDC generative line and belongs in
+  Sec 12.1's priority list alongside the repos.
+  DEFECT E8 recorded.
+
+
+--------------------------------------------------------------------------------
+[T03] BIBLIOGRAPHY VERIFICATION -- ROUND 2 (calorimeter-ML core)
+--------------------------------------------------------------------------------
+Thought before searching: refs [18], [19], [24], [28] all attribute papers to
+"E. Buhmann et al." / "S. Schnake et al." / "C. Krause et al." The Buhmann,
+Krause, Schnake and Diefenbacher groups all work in this area, so a citation
+manager (or an LLM-assisted bibliography) could plausibly have cross-contaminated
+them. Test that hypothesis directly.
+
+Source: arxiv.org/abs/2305.11934 + multiple independent reference lists
+  (CaloHadronic 2506.21720; Convolutional L2LFlows 2405.20407; ParaFlow 2503.21461)
+  arXiv 2305.11934 = M. R. Buckley, C. Krause, I. Pang, D. Shih,
+  "Inductive simulation of calorimeter showers with normalizing flows",
+  Phys. Rev. D 109 (2024) 033006.
+  -> ref [18] attributes this to "E. Buhmann et al." WRONG.
+     Spec's title ("iCaloFlow: Fast and Inductive Simulation...") is also not the
+     published title, and the PRD journal reference is missing.
+  DEFECT M1-b recorded.
+
+Source: arxiv.org/abs/2302.11594 + IOP/Springer/SciPost reference lists
+  arXiv 2302.11594 = S. Diefenbacher, E. Eren, F. Gaede, G. Kasieczka, C. Krause,
+  I. Shekhzadeh, D. Shih, "L2LFlows: generating high-fidelity 3D calorimeter
+  images", JINST 18 (2023) P10017.
+  -> ref [19] lists "E. Buhmann, S. Diefenbacher, E. Eren, G. Kasieczka,
+     A. Korol, S. Pitz, D. Shih". Buhmann, Korol and Pitz are not authors;
+     Gaede, Krause and Shekhzadeh are omitted. WRONG. JINST ref missing.
+  DEFECT M1-c recorded.
+
+Source: arxiv.org/pdf/2402.11575 + PIPPIN 2406.13074 + 2406.12898 ref lists
+  arXiv 2402.11575 = D. Kobylianskii, N. Soybelman, E. Dreyer, E. Gross,
+  "CaloGraph: Graph-based diffusion model for fast shower generation in
+  calorimeters with irregular geometry".
+  -> ref [24] attributes this to "S. Schnake et al." WRONG. Title truncated to
+     "CaloGraph: Graph-based Calorimeter Simulation", which drops the very phrase
+     ("irregular geometry") that makes it the most relevant citation in the
+     document for a 6790-channel ragged detector.
+  DEFECT M1-d recorded.
+
+Source: arxiv.org/abs/2403.15782 + 2406.12898 + 2506.21720 ref lists
+  arXiv 2403.15782 = S. Schnake, D. Krucker, K. Borras, "CaloPointFlow II
+  Generating Calorimeter Showers as Point Clouds".
+  -> ref [28] attributes this to "C. Krause et al." WRONG.
+  DEFECT M1-e recorded.
+
+Thought: [24] and [28] are a clean *swap* -- Schnake is put on the Kobylianskii
+paper and Krause is put on the Schnake paper. That is a signature of automated
+bibliography assembly without verification, not of a human misremembering.
+Idea: this materially damages Sec 17. Sec 17 already concedes the 600-work
+catalogue is a discovery map, not 600 full-text reviews -- but it asserts that
+"the present specification relies on a smaller core bibliography whose claims
+were checked against primary papers." Six defects in ~20 checked entries of that
+supposedly-verified core contradicts that sentence directly. Sec 17 must be
+rewritten, not just the .bib file.
+
+
+--------------------------------------------------------------------------------
+[T04] BIBLIOGRAPHY VERIFICATION -- ROUND 3 (physics + benchmark references)
+--------------------------------------------------------------------------------
+Source: geant4.web.cern.ch PhysicsReferenceManual (Gflash parameterisations page);
+        arxiv.org/pdf/2110.05505; sciencedirect HF GFlash; ar5iv hep-ex/0001020
+  Two DISTINCT works exist and the spec merges them:
+    (i)  G. Grindhammer & S. Peters, "The Parameterized simulation of
+         electromagnetic showers in homogeneous and sampling calorimeters",
+         MC'93 Tallahassee conference proceeding, arXiv:hep-ex/0001020.
+    (ii) G. Grindhammer, M. Rudowicz & S. Peters, "The Fast Simulation of
+         Electromagnetic and Hadronic Showers", Nucl. Instrum. Meth. A290 (1990)
+         469-488, doi:10.1016/0168-9002(90)90566-O.
+  -> ref [9] takes the TITLE of (i), the JOURNAL/VOLUME/PAGES of (ii), the
+     arXiv ID of (i), and drops Rudowicz. WRONG -- a merged phantom reference.
+  DEFECT M1-f recorded.
+  Note: (ii) is arguably the better citation for the spec's actual claim, since
+  it is the one that covers *hadronic* showers.
+
+Source: arxiv.org/abs/hep-ex/0001027
+  Y. A. Kulchitsky & V. B. Vinogradov, "On the Parameterization of the
+  Longitudinal Hadronic Shower Profiles in Combined Calorimetry",
+  Nucl. Instrum. Meth. A455 (2000) 499-501.
+  -> ref [8] VERIFIED (authors, title, ID). Journal reference omitted -- cosmetic.
+  Substantive check: the paper's eq (1) is a two-component (X0 / lambda_I)
+  gamma-times-confluent-hypergeometric profile that explicitly handles
+  non-compensation in a *combined* EM+hadronic calorimeter. That is precisely the
+  ECAL+HCAL geometry here. Sec 2.1's use of this citation is APPROPRIATE and the
+  claim it supports (average profiles are smooth; event-level profiles are not
+  monotone) is correct.
+
+Source: arxiv.org/abs/1805.01792
+  Dmitrieva & Pshenichnov, "On the performance of Zero Degree Calorimeters in
+  detecting multinucleon events". -> ref [11] VERIFIED.
+
+Source: arxiv.org/abs/2511.17293
+  "A First Full Physics Benchmark for Highly Granular Calorimeter Surrogates",
+  T. Buss, H. Day-Hall, F. Gaede, G. Kasieczka, K. Kruger, A. Korol, T. Madlener,
+  P. McKeown, submitted 21 Nov 2025, DESY-25-172.
+  -> ref [41] VERIFIED ("A First..." vs spec's "The First..." -- cosmetic).
+  KEY SUBSTANTIVE FINDING: the paper's headline conclusion is that point-cloud
+  models achieve a more favourable speed/accuracy balance than regular-grid
+  models on post-reconstruction benchmarks.
+  Idea: Sec 12.2 lists P1 (sparse point-cloud) as "Optional comparison". Given
+  that the spec itself cites [41] in Sec 13.4 to justify reconstruction-level
+  evaluation, it cannot then demote the baseline that [41] found to win. P1 must
+  be promoted to a required rung of the ladder.
+  RECOMMENDATION M6 recorded.
+
+Source: arxiv.org/abs/2410.21611 (via ParaFlow / Springer ref lists)
+  CaloChallenge 2022 -- C. Krause, M. Faucci Giannelli, G. Kasieczka, B. Nachman,
+  D. Salamani, D. Shih et al. -> ref [43] "C. Krause et al." VERIFIED.
+
+Source: arxiv.org/html/2506.21720v2 (CaloHadronic reference list)
+  CaloDREAM = SciPost Phys. 18, 088. -> ref [21] VERIFIED (volume and page).
+
+Round-3 verdict: refs [1]-[4], [8], [10], [11], [13], [14], [15], [16], [17],
+[20]-[23], [25]-[27], [29]-[45] show no defects on the checks performed.
+Six defective entries: [9], [12], [18], [19], [24], [28].
+
+
+--------------------------------------------------------------------------------
+[T05] DATA-CONTRACT QA -- KINETIC vs TOTAL ENERGY
+--------------------------------------------------------------------------------
+Thought while reading eq (4)-(5) and Sec 3.5: the spec validates
+E^2 - p^2 = m_n^2 and then defines rho = T/E in [0,1]. Both statements assume E
+is TOTAL energy. But Geant4's primary generator does not use total energy.
+
+Source: G4ParticleGun.hh (multiple mirrors: apc.u-paris.fr, hurel.hanyang.ac.kr,
+        ecce-eic.github.io) and CERN Indico "Detector Simulation / Primary
+        particles" (Pokorski & Ribon).
+  Confirmed: SetParticleEnergy(G4double aKineticEnergy); the UI command
+  /gun/energy is documented as "Set kinetic energy". SetParticleMomentum() sets
+  direction and "particle_energy(Kinetic Energy)".
+  => If the ROOT branch stores the gun energy, it is KINETIC energy, and eq (4)
+  fails identically by construction (it would need E_tot = T_kin + m_n).
+
+Arithmetic: m_n = 939.565 MeV.
+  at T_kin =  50 GeV : E_tot/T_kin - 1 = 1.879 %
+  at T_kin = 250 GeV : E_tot/T_kin - 1 = 0.376 %
+Thought: a 0.4-1.9 % ambiguity in the denominator of rho is the same order as the
+energy-scale closure a calorimeter paper is trying to demonstrate. So this is not
+pedantry -- it silently biases the headline observable across the reporting range,
+and it biases it *energy-dependently*, which will look like a non-linearity.
+DEFECT M2 recorded. Sec 10.1 item 1 ("units") must be sharpened to "kinetic vs
+total energy convention", and eq (4)/(5) must state which E is meant.
+
+Second thought on the same section: Sec 3.5 asks whether "legitimate T > E events"
+occur. For neutrons, invisible energy (nuclear binding, neutrinos, escaping
+neutrons) normally makes T well below T_kin -- so rho << 1 and bounded support is
+safe at 50-250 GeV. BUT the R2 training-range experiment (Sec 10.4) extends down
+toward 0 GeV, where radiative capture (n,gamma) releases the neutron separation
+energy, of order 6-8 MeV, which can exceed the incident kinetic energy of a slow
+neutron. So T > E_kin is not merely a hypothetical accounting artefact -- there is
+a concrete physical mechanism for it at the low end of the R2 support. Sec 3.5 is
+right to make the bound conditional; the audit should name the mechanism so the
+data auditor knows what to look for and does not dismiss low-energy overflow as a
+bug.
+IDEA E-phys recorded.
+
+Third thought: Sec 3.5 says rho = T/E in [0,1], but does not say what value rho
+actually takes. If Y is raw Geant4 deposit in the *active* material of a sampling
+calorimeter, rho is set by the sampling fraction and will sit at a few percent,
+not near 1. A 4-component Beta mixture on [0,1] then has to represent a narrow
+spike near the left edge, requiring extreme alpha/beta and giving bad
+conditioning. Recommend modelling a standardised rho' = rho / rho_bar(E), or a
+logit-normal on rho, and reporting the empirical rho support in the Stage 0
+data-contract report. Not a defect in the algebra, a defect in the parameterisation.
+IDEA E-rho recorded.
+
+
+--------------------------------------------------------------------------------
+[T06] ALGEBRAIC QA -- PROPOSITION 5.1
+--------------------------------------------------------------------------------
+Re-derived independently. With R_l = T - sum_{j<=l} D_j:
+  R_{l+1} = R_l - D_{l+1} <= R_l   since D_{l+1} >= 0.       [holds]
+  R_l = R_res + sum_{j>l} D_j >= R_res >= 0.                  [holds]
+  No inequality between D_{l+1} and D_l is implied.            [holds]
+VERDICT: Proposition 5.1 is CORRECT. It is also nearly trivial, which is fine --
+the value is rhetorical (it replaces the rejected constraint eq (2)) not technical.
+Claim C1 (monotone-deposit is physically wrong for neutron-induced hadronic
+showers) is CORRECT and well supported by [8] plus the stochastic-first-interaction
+argument. This is the document's strongest and most defensible content.
+
+
+--------------------------------------------------------------------------------
+[T07] ALGEBRAIC QA -- THEOREM 8.1 AND COROLLARY 8.2
+--------------------------------------------------------------------------------
+Re-derived, then verified numerically (script /home/claude/qa_cbsc.py, CHECK 1):
+  65 layers, Dirichlet-drawn masked simplex + reserve, tau = 1e-3, random K:
+    max |sum_cells - D_l|          = 4.44e-16
+    max |#positive cells - K|      = 0
+    cells with 0 < Y < tau         = 0
+    |sum Y + sum U + R_res - T|    = 0.00e+00
+VERDICT: Theorem 8.1 (i)-(v) and Corollary 8.2 hold EXACTLY as stated. Claim C3
+is CORRECT. The proofs are sound and the hypothesis B >= K*tau is guaranteed by
+eq (25)'s upper limit floor(D_l/tau). No defect here.
+
+Thought: this is the part everyone will check, and it is right. Which means an
+auditor who stops here signs off on the document. The defects are all in the
+parts that were NOT written as theorems. Keep going.
+
+
+--------------------------------------------------------------------------------
+[T08] BLOCKING DEFECT B1 -- THE SHARED LATENT z CANNOT BE LEARNED
+--------------------------------------------------------------------------------
+Setup: eq (12) factorises the joint with a shared event latent z ~ N(0,I) entering
+EVERY factor. Sec 4 states its purpose: "to preserve event-level dependence among
+response, start depth, occupancy, and morphology rather than sampling all stages
+independently." That is the entire justification for z's existence.
+
+Now read Sec 9. Every head is trained by a conditional likelihood or a regression:
+  L_V   = BCE(V, pi_V)                        eq (42)
+  L_rho = -log p(rho | V=1, c, z)             eq (43)
+  L_S   = -log p(S  | V=1, c, z, T)           eq (44)
+  L_A   = BCE(A, pi_A)                        eq (45)
+  L_K   = sum_l CE(K_l, eta_l)                eq (46)
+  L_FM  = E|| v_theta(X_t,t,c,z,G,D,K) - u_t ||^2_W    eq (33)
+and z is drawn from the prior, INDEPENDENTLY of the data, at training time. The
+document never specifies any other procedure -- there is no encoder q(z | event),
+no KL term, no ELBO, no adversarial or score-based term in eq (41).
+
+Proof that z is then ignored at the optimum:
+  For any head, the objective is E_{x ~ p_data(.|c)} E_{z ~ N(0,I)} [-log p_th(x|c,z)]
+  = E_z [ KL( p_data(.|c) || p_th(.|c,z) ) ] + const.
+  KL >= 0 with equality iff p_th(.|c,z) = p_data(.|c). Since the outer expectation
+  is over z drawn independently of x, the global minimiser sets
+  p_th(.|c,z) = p_data(.|c) for almost every z -- i.e. it MARGINALISES z AWAY.
+  The same argument applies to L_FM: the regression target u_t = X_1 - X_0 does
+  not depend on z, so the optimal velocity field averages over z.
+
+Numerical illustration (CHECK 7), family N(a + b z, s^2), x indep of z, 2e5 draws:
+    b = 0.00 -> E[-log p] = 0.4979   <-- minimum
+    b = 0.25 -> 0.5288
+    b = 0.50 -> 0.6222
+    b = 1.00 -> 0.9967
+  Analytic: E[(x - a - bz)^2] = Var(x) + (E[x] - a)^2 + b^2, minimised at b = 0.
+
+CONSEQUENCE: the mechanism the factorization advertises does not exist under the
+specified training. At convergence each stage samples from its own conditional
+marginal, which is exactly the "sampling all stages independently" behaviour
+Sec 4 says z is there to prevent. In practice you would not even see this fail
+loudly -- every component loss would look healthy, per-observable 1-D histograms
+would look fine, and only the JOINT diagnostics of Sec 13.2 item 6 (correlations
+among response, start depth, hit count, width, ECAL fraction, late energy) would
+be wrong. That is a slow, expensive failure discovered at Stage 6.
+
+Re-QA (is there a reading under which this is fine?):
+  - Could the chain itself carry the correlation without z? YES, partially: eq (12)
+    already conditions D on (T,S,A), K on D, support on K. That is a genuine
+    autoregressive dependence and it is trained correctly. So the cascade is not
+    broken -- it just does not need, and does not get, z.
+  - Could z be intended as a *sampling-time only* diversity knob? If so, the
+    factorization must not claim it preserves event-level dependence, and the
+    conditioning of every head on z is misleading.
+  - Is there any objective in eq (41) under which z is identified? No.
+CONFIRMED as blocking.
+
+FIXES (any one, must be chosen before Stage 1):
+  F1. Drop z entirely. Rely on the existing autoregressive conditioning. Cheapest,
+      loses nothing that is currently being learned, and makes the factorization
+      honest. RECOMMENDED as the default.
+  F2. Keep z and add an inference network q_phi(z | event, c) with a KL term,
+      i.e. turn the cascade into a hierarchical VAE. Principled, but adds
+      posterior-collapse risk and a new tuning surface.
+  F3. Keep z and train the whole cascade under a distributional objective
+      (MMD / adversarial / score-based on joint summary statistics) in which z is
+      identified. Most expensive.
+  Whichever is chosen, add a POSITIVE CONTROL to Sec 13: fix c, draw many z, and
+  test whether the joint (T, S, K_tot, width) distribution differs from the
+  z-marginalised product of marginals. If it does not, z is dead. This test is
+  cheap and would have caught the defect at Stage 2.
+
+
+--------------------------------------------------------------------------------
+[T09] BLOCKING DEFECT B2 -- THE RESERVE IS AN UNSUPERVISED ENERGY SINK
+--------------------------------------------------------------------------------
+eq (20)-(22): q_res is always a component of the softmax, so w_res > 0 strictly.
+Therefore sum_l D_l = T(1 - w_res) < T, ALWAYS and by construction.
+
+But T is defined in eq (16) as T = V*E*rho, with rho fitted (eq 14) to the truth
+total response. So the total response of a DECODED event is not T; it is
+T(1 - w_res) minus any subthreshold residual. The response model and the decoder
+disagree about what "total response" means.
+
+Now check eq (41) for a term that pins w_res: L_V, L_rho, L_S, L_A, L_D, L_K,
+L_FM, L_sup, L_aux. L_D is described only as "a masked-simplex likelihood, profile
+flow-matching loss, or a set of conditional distributional terms" -- and Remark 5.2
+says the reserve's interpretation "must be frozen" but never says what it is
+supervised AGAINST. There is no truth quantity for w_res anywhere in Sec 10.2's
+canonical tensor list.
+
+Numerical scale (CHECK 6), 40 active layers:
+    q_res = -2 -> w_res = 2.27e-3 -> 0.227 % total-response deficit
+    q_res = -4 -> w_res = 2.38e-4 -> 0.024 %
+    q_res = -6 -> w_res = 3.53e-5 -> 0.004 %
+Thought: the magnitude is set entirely by an unconstrained logit. It could be
+0.02 % or 5 %. For a calorimeter energy-scale claim, an uncontrolled few-tenths of
+a percent is already at the level people argue about.
+
+Sharper point: Sec 1.3 says HGF-ZDC's documented failure was "a large response
+bias." This construction reintroduces a response bias by a different route, and
+Corollary 8.2 will certify the event as perfectly conserved while it happens,
+because the identity is stated in terms of the model's own R_res rather than any
+truth quantity. Verified in CHECK 1: |sum Y + sum U + R_res - T| = 0 exactly,
+with a non-zero R_res. The QA gate passes and the physics is still wrong.
+
+FIXES:
+  F1. Define T as the truth in-detector scored total, remove q_res from the
+      simplex, and put leakage OUTSIDE T. Cleanest.
+  F2. Keep the reserve but give it a truth target from the Geant4 scorer (energy
+      in excluded/invalid channels, or out-of-acceptance leakage), add an explicit
+      L_res term to eq (41), and add reserve to Sec 10.2's canonical tensors and
+      to Sec 13.1's QA list.
+  Either way, Sec 13.1 must gain a check comparing the DECODED total against the
+  SAMPLED T, not just the internal identity.
+
+
+--------------------------------------------------------------------------------
+[T10] BLOCKING DEFECT B3 -- DECODER CANNOT REPRESENT (K_l > 0 AND U_l > 0)
+--------------------------------------------------------------------------------
+Read eq (11) and Theorem 8.1 side by side.
+
+TRUTH semantics, eq (10)-(11):
+  Y_i^(tau) = Y_i * 1{Y_i >= tau};  U_l = sum_{i in l} Y_i * 1{0 < Y_i < tau}.
+  K*_l = #{i in l : Y_i >= tau} (eq 40).
+  Nothing couples K*_l and U_l. A layer with 5 resolved cells and 90 subthreshold
+  cells has K*_l = 5 AND U_l > 0. This is the GENERIC configuration in a granular
+  hadronic calorimeter -- the subthreshold tail is where most of the cells are.
+
+MODEL semantics, Sec 8.2 + Theorem 8.1:
+  If B = D_l >= tau : K >= 1, ALL of B is distributed to the K resolved cells,
+                      and U_l = 0.
+  If B < tau        : K = 0, all cells zero, U_l = B.
+  => model U_l > 0 IFF K_l = 0. The joint configuration (K_l > 0, U_l > 0) is
+     UNREACHABLE.
+
+Consequence quantified (CHECK 3), realistic layer with 5 resolved cells
+(12.0, 6.1, 3.4, 1.8, 1.1 MeV) plus a 90-cell subthreshold tail, tau = 1 MeV:
+    truth D_l = 0.06518 GeV, K* = 5, U* = 0.04078 GeV
+      -> 62.6 % of the layer's raw energy is subthreshold
+    truth resolved energy               = 0.02440 GeV
+    model resolved energy (correct K=5) = 0.06518 GeV
+    -> resolved-cell energies inflated by 167.1 %, model U forced to 0.
+
+So the decoder does not delete the subthreshold energy, and it does not record it
+either -- it PUSHES IT INTO THE SURVIVING CELLS. This is the mirror image of the
+dust failure the decoder was designed to prevent: instead of spreading a little
+energy over many empty cells, it piles a lot of energy onto few occupied cells.
+The positive-hit spectrum, the maximum-cell fraction, the top-k fractions and R50
+(all listed in Sec 13.2 item 5) will all be biased, in a correlated way.
+
+WHY IT WILL NOT BE CAUGHT: every gate in Sec 13.1 still passes. Corollary 8.2
+holds; per-layer resolved energy equals D_l - U_l by construction; there is no
+dust; the count is exact. The QA suite validates the model against ITS OWN
+bookkeeping rather than against eq (11)'s truth decomposition.
+
+Note on scope: in raw-deposit mode (tau = 0) this defect vanishes, since U == 0
+by definition. But raw mode is also the mode where the anti-dust decoder buys the
+least (Geant4 raw deposits are exactly zero outside the shower and non-zero inside
+it, so occupancy is not really the problem). The defect therefore lands precisely
+on the mode where the document's central contribution is supposed to matter.
+
+FIX (preserves every invariant in Theorem 8.1):
+  Introduce a per-layer resolved fraction phi_l in [0,1], generated alongside K_l
+  and conditioned on (c, D_l, K_l, l). Decode with B_resolved = phi_l * D_l and
+  set U_l = (1 - phi_l) * D_l. Theorem 8.1 goes through verbatim with B replaced
+  by phi_l*D_l; the feasibility condition becomes phi_l*D_l >= K*tau; Corollary 8.2
+  is unchanged. Supervise phi_l against the truth resolved fraction, which is
+  directly computable from eq (10)-(11) and already implied by the canonical tensor
+  list (cell_energy_raw, cell_energy_tau, subthreshold). Add "generated vs truth
+  U_l distribution by layer" to Sec 13.2.
+
+
+--------------------------------------------------------------------------------
+[T11] BLOCKING DEFECT B4 -- eq (25) EXCLUDES A PHYSICALLY ORDINARY TRUTH
+--------------------------------------------------------------------------------
+eq (25) as written:
+    K_l = 0                                if 0 <= D_l < tau
+    K_l in {1, ..., min(N_l, floor(D_l/tau))}   if D_l >= tau
+So K_l = 0 is FORBIDDEN whenever D_l >= tau.
+
+Counterexample (CHECK 2): a layer whose raw energy is 10*tau spread over 40 cells
+at 0.25*tau each. Truth K* = 0 (no cell clears threshold), truth U* = 10*tau.
+    eq (25) allowed counts = 1..10; K* = 0 is EXCLUDED.
+    The masked categorical (eq 24) assigns P(K_l = 0) = 0, so
+    L_K = -log 0 = +inf.
+This is not an exotic edge case. It is the standard "diffuse halo layer" -- a
+layer far from the shower core, or the tail of a late shower, where energy is
+present but spread thin. Such layers are common at the edges of the longitudinal
+profile, exactly the region Sec 13.2 item 3 wants to measure ("late-energy
+fraction").
+
+Two separate consequences:
+  (a) Training instability: a NaN/inf in L_K on the first such event. Depending on
+      the masking implementation this may present as a silent NaN propagating
+      through eq (41), which is much worse than a crash.
+  (b) Even with the NaN patched away, the model is structurally incapable of
+      generating a diffuse sub-threshold layer, so the generated longitudinal
+      support will be systematically too "crisp."
+
+Related: eq (25) is also undefined at tau = 0, since floor(D_l / 0) does not
+exist. Sec 6 handles raw-deposit mode in prose immediately afterwards, but the
+equation itself is a landmine for anyone implementing from the contract.
+
+FIX: allow K_l = 0 for every D_l, i.e. support {0, 1, ..., min(N_l,
+floor(D_l/tau))}, and route the whole budget to U_l when K_l = 0. This composes
+correctly with the phi_l fix from T10 (K_l = 0 is just phi_l = 0). Write eq (25)
+with an explicit tau > 0 guard and a separate raw-mode line.
+
+
+--------------------------------------------------------------------------------
+[T12] MAJOR -- CAUSAL LAYER MASK IS UNJUSTIFIED IN A PARALLEL FIELD
+--------------------------------------------------------------------------------
+Sec 7.4 step 5 imposes a causal layer mask so layer l attends only to 0..l, and
+Sec 3.2 requires longitudinal graph edges to point shallow->deep, with a
+bidirectional graph relegated to "an ablation."
+
+Thought: causal masking earns its keep in an AUTOREGRESSIVE model, where it
+implements a factorisation p(x) = prod_l p(x_l | x_<l) and is required for the
+likelihood to be valid. This model is NOT autoregressive over layers. It is a
+single velocity field integrated in flow time t, updating all nodes simultaneously
+(Sec 7.1: "The proposed field updates all nodes at every numerical integration
+step"). There is no layer-index factorisation to protect. The mask therefore does
+not enforce any probabilistic property -- it only removes capacity.
+
+Worse, the removed capacity is capacity you want. Conditioned on (T, D, K), the
+correlations between layers are SYMMETRIC: knowing that layer 50 is unusually
+active is informative about layer 20 (it says the shower started late), and the
+model is explicitly conditioned on the whole profile D anyway, so no causal
+information barrier is even being maintained. The mask blocks a path the
+conditioning has already opened.
+
+Also note the mask operates on POOLED layer tokens (step 4), so it constrains only
+aggregate longitudinal information; cell-level longitudinal structure travels
+exclusively over the directed graph edges. Which leads to the next point.
+
+RECOMMENDATION: make bidirectional layer attention and bidirectional longitudinal
+edges the DEFAULT, and demote the causal variant to the ablation. If causality is
+retained for physical-intuition reasons, the spec must state what probabilistic
+property it enforces -- and I do not believe there is one.
+
+
+--------------------------------------------------------------------------------
+[T13] MAJOR -- THE STATED ADVANTAGE OVER LAYER-AUTOREGRESSION IS OVERSTATED
+--------------------------------------------------------------------------------
+Sec 7.1 rejects a 65-call rollout on three grounds: (i) invalid index
+correspondence across irregular layers, (ii) accumulated free-running error,
+(iii) serial latency.
+
+(ii) and (iii) are legitimate and well argued. (i) is not. The parallel model
+carries cell-level longitudinal dependence ONLY through the directed longitudinal
+graph edges, and Sec 3.2 requires those edges to be built "from audited physical
+adjacency or overlap." Constructing a physically valid shallow->deep edge set
+across irregular layers is the SAME problem as constructing a valid cross-layer
+slot correspondence for an autoregressive model. The architecture does not
+dissolve the difficulty; it relocates it into the geometry builder.
+
+This matters because Sec 1.3 lists "invalid cross-layer slot correspondence" as a
+documented failure of the legacy HurdleGraph model, and Sec 14 lists "Invalid
+graph / readout-index edges" as a failure mode. So the project already knows this
+is its historical weak point -- and Sec 7.1 implies the new architecture is immune
+to it when it is not.
+
+RECOMMENDATION: reword Sec 7.1 to claim (ii) and (iii) only, and elevate the
+geometry builder to a Stage 0 deliverable with its own acceptance gate (degree
+distribution, isolated-node census, edge-length distribution, and a visual check
+that longitudinal edges connect physically overlapping cells).
+
+
+--------------------------------------------------------------------------------
+[T14] MAJOR -- GUMBEL-TOP-k DOUBLE-COUNTS STOCHASTICITY
+--------------------------------------------------------------------------------
+eq (35) draws S_l = TopK(a_i + g_i) with g_i ~ Gumbel(0,1), citing Kool et al.
+[30] (verified: 1903.06059, correct). The Gumbel-Top-k trick samples a size-K
+subset without replacement from a categorical distribution whose LOGITS are a_i.
+
+But where do a_i come from? From the flow's support channel s at t = 1. And s at
+t = 1 is already a SAMPLE from the generative model -- the randomness has already
+been injected through X_0 ~ N(0,I) and integrated along the ODE. The supervised
+target for that channel (eq 27) is a near-deterministic two-point value
++/- logit(eps), i.e. the field is trained to output a realised binary mask, not a
+distribution's logits.
+
+So the pipeline draws once (the flow), then draws again (Gumbel) from a quantity
+that is not a logit. The two stochastic layers are composed without a stated joint
+semantics, and the result is over-dispersion: occupancy patterns will be more
+spatially random than truth, which will show up as inflated transverse RMS/R90 and
+degraded geometry-aware C2ST -- and will be easy to misdiagnose as a graph or
+conditioning problem.
+
+Note this is also inconsistent with eq (27)'s own encoding: if s were meant to be
+logits, its target would not be a two-point function of the binary mask M_i.
+
+RECOMMENDATION: make DETERMINISTIC Top-K over the flow's support channel the
+primary decoder (the flow already carries the event randomness), and treat
+Gumbel-Top-k with an explicit temperature as an ablation. If Gumbel is kept as
+primary, retrain the support channel to produce calibrated logits (e.g. supervise
+against a soft target or a ranking loss) and state the resulting sampling
+semantics explicitly.
+
+
+--------------------------------------------------------------------------------
+[T15] MAJOR -- eq (28) TARGET IS UNBOUNDED FOR NEAR-THRESHOLD CELLS
+--------------------------------------------------------------------------------
+eq (28): r*_i = M_i * [ log(Y_i - tau + eps) - mean_j log(Y_j - tau + eps) ].
+As Y_i -> tau+, log(Y_i - tau + eps) -> log(eps), so r*_i -> large negative.
+
+Measured spread (CHECK 5), 5-cell layer with one cell at tau + 1e-9:
+    eps = 1e-3  -> r* in [ -1.22,  1.26], spread  2.48
+    eps = 1e-6  -> r* in [ -6.46,  2.84], spread  9.30
+    eps = 1e-12 -> r* in [-11.99,  4.22], spread 16.21
+L_FM (eq 33) is a SQUARED-error velocity loss. A single cell sitting just above
+threshold therefore contributes O(r*^2) ~ 10^2 while typical cells contribute
+O(1). The loss becomes dominated by the least physically important cells --
+exactly the ones whose energies are nearly determined by the threshold floor
+anyway.
+
+Tension: eps also controls the round-trip accuracy (see T16), so it cannot simply
+be raised. The spec's own instruction that "the decoder and target transform must
+be versioned together" is right but insufficient -- it needs a stated criterion.
+
+RECOMMENDATION: (a) set eps to a physically meaningful scale (e.g. a fixed
+fraction of the MIP energy in the active medium) rather than a numerical epsilon;
+(b) winsorise r* at a stated quantile and report the clipped fraction;
+(c) report an eps sensitivity scan as a Stage 4 deliverable; (d) use the weight
+matrix W in eq (33), which the spec already allows, to down-weight the share
+channel for near-threshold cells.
+
+
+--------------------------------------------------------------------------------
+[T16] POSITIVE FINDING -- THE ENCODE/DECODE PAIR IS EXACTLY SELF-INVERSE
+--------------------------------------------------------------------------------
+Checked whether eq (28)'s centred-log-share encoding actually inverts through
+eq (36) softmax + eq (37) decode. It does, and the document never claims it.
+
+Algebra: softmax(r*)_i = (Y_i - tau + eps) / sum_j (Y_j - tau + eps).
+Decoding Yhat_i = tau + (B - K tau) * w_i with B = sum_j Y_j recovers Y_i exactly
+as eps -> 0, because sum_j (Y_j - tau) = B - K tau.
+Numerical (CHECK 4), 5-cell layer, eps = 1e-12: max |Y - Yhat| = 1.8e-12.
+
+VERDICT: CONFIRMED CORRECT, and it is a real design virtue -- the target transform
+and the decoder are a matched pair, so a perfectly-trained share channel decodes
+to exactly the truth. This should be stated as a lemma in Sec 8 (it is the
+sharpest available answer to "is the encoding lossy?") and it also makes the
+eps-tail tension of T15 explicit and honest rather than hidden.
+
+
+--------------------------------------------------------------------------------
+[T17] MODERATE -- NOTATION COLLISION INSIDE eq (12)
+--------------------------------------------------------------------------------
+Sec 4 defines S = first visible layer (a scalar) AND S_l = the selected cell set
+in layer l, then writes both into the same factorization:
+    ... p(S | T, V, c, z) p(A | S, T, V, c, z) ... p(S | K, D, A, c, z, G) ...
+The script/roman distinction does not survive plain-text extraction and will not
+survive an implementer's variable naming either. Sec 15.1's tensor interface does
+not disambiguate them.
+RECOMMENDATION: rename the selected-cell set to Omega_l or Sel_l throughout.
+Trivial to fix, non-trivial if missed -- this is precisely the class of error that
+produced the legacy model's "invalid cross-layer slot correspondence."
+
+Related, same section: p(Y | S, K, D, c, z, G) is a POINT MASS -- Y is a
+deterministic function of the selected set, the share weights, D, K and tau. And
+the selected set and the share weights are not two independent draws; they are the
+two channels of ONE CFM sample (eq 26). So the last two factors of eq (12) should
+be a single joint factor. As written the factorization suggests an independence
+that the implementation does not have.
+
+
+--------------------------------------------------------------------------------
+[T18] MODERATE -- RAGGED LAYERS ARE NEVER DECLARED
+--------------------------------------------------------------------------------
+CHECK 8: 400 + 6390 = 6790, consistent with eq (6). But Sec 19 says the geometry
+is "one ECAL and 64 HCAL layers", and 6390 / 64 = 99.84375 -- not an integer.
+So either the HCAL layers are ragged (different N_l per layer) or the stated
+layer split is wrong.
+
+If ragged (most likely), then:
+  - the categorical count support in eq (24) is ragged and eq (25)'s min(N_l, .)
+    needs a per-layer N_l table;
+  - Sec 15.1's "Counts K [B, 65]" needs an accompanying N_l vector and a validity
+    mask, which it does not have;
+  - layer-token pooling in Sec 7.4 step 4 mixes a 400-node token with ~100-node
+    tokens, so the pooled statistics are not comparable across tokens unless the
+    pooling normalises for node count. Sec 7.4 does not say it does.
+Also: a single 400-channel ECAL "layer" means the ECAL has NO depth segmentation,
+so S (first visible layer) collapses the entire ECAL into one bin and the
+longitudinal profile has no ECAL shape at all. That is a substantive modelling
+limitation and should be stated in Sec 3.2, not left for the reader to infer.
+
+Capacity note (same check): node-state tensor at hidden width 96, batch 256 is
+0.67 GB fp32 per copy for 6790 nodes. With 2 graph blocks plus a transformer that
+is a few GB of activations -- comfortably feasible on a single modern accelerator.
+The Sec 15.2 pilot hyperparameters are NOT unreasonable in scale. No defect.
+
+
+--------------------------------------------------------------------------------
+[T19] MODERATE -- MASKED SOFTMAX WITH -inf UNDER MIXED PRECISION
+--------------------------------------------------------------------------------
+eq (20) sets inactive layers to -inf before the softmax of eq (21). Under
+autocast/fp16, -inf inputs produce NaN in several standard reduction paths, and
+if ALL layers were masked (V = 0 events, or a degenerate A) the softmax is 0/0.
+Sec 11.3 already records that "earlier project work found several graph/autocast
+dtype and accumulation failures [6]", so this is a known-live risk in this
+codebase specifically.
+RECOMMENDATION: specify a large finite negative sentinel (e.g. -1e4 in the compute
+dtype) plus an explicit all-masked guard, and add "no NaN in masked softmax under
+the target precision" to the Sec 13.1 assertion list.
+
+
+--------------------------------------------------------------------------------
+[T20] MODERATE -- THE SURVIVAL MODEL IS RENORMALISED INTO NON-IDENTIFIABILITY
+--------------------------------------------------------------------------------
+eq (17)-(18) define discrete hazards h_l and the product-form p~_l, then the text
+normalises p~_l across detector layers to obtain p(S = l | S < L).
+Note V = 1 already implies a visible response occurred, hence S < L. So the
+conditioning is automatic, and the renormalisation makes the L hazards
+over-parameterised by exactly one degree of freedom relative to the L-1 free
+probabilities being modelled. More importantly, after renormalisation the h_l are
+no longer hazards in the survival sense -- the "discrete-time survival" reading in
+Sec 5.3 and Sec 19 no longer holds.
+Not a numerical defect; a semantic one. Either drop the renormalisation and let
+the leakage/no-interaction mass live at l = L (which is the honest survival
+formulation and pairs naturally with the hurdle V), or keep the renormalisation
+and stop calling it a survival model.
+
+
+--------------------------------------------------------------------------------
+[T21] MODERATE -- UNDER-SPECIFIED TRAINING PATHS (SEC 8.4, SEC 9, STAGE 5)
+--------------------------------------------------------------------------------
+(a) The support channel appears in BOTH L_FM (eq 33, as a CFM regression channel)
+    and L_sup (eq 47, as BCE on sigma(s)). It cannot be both without saying what
+    "s" is in eq (47): the flow state at t = 1 (which requires solving the ODE
+    inside the training loop -- expensive and unstated), or a separate readout
+    head (cheap, but then the spec must define it). As written, an implementer has
+    to guess, and the two choices have very different cost and behaviour.
+(b) Stage 5 exposes the spatial model to GENERATED counts and GENERATED support.
+    But eq (28)'s target r* is defined only ON THE TRUTH SUPPORT. When the
+    generated support differs from truth, the regression target is undefined. The
+    spec needs to say what replaces it -- a matching rule (optimal transport
+    between generated and truth support), a distributional loss, or a
+    truth-support-restricted loss with the mismatch reported separately. Sec 11.1
+    Stage 5 currently promises a diagnostic without an objective.
+(c) L_D is defined as "may be a masked-simplex likelihood, profile flow-matching
+    loss, or a set of conditional distributional terms" -- three materially
+    different estimators. This is the loss that controls the longitudinal profile,
+    i.e. the document's headline physics correction. It should be pinned down.
+(d) No lambda values, and no protocol for choosing them beyond "on a frozen
+    validation protocol." With nine weighted terms this is the single largest
+    unspecified surface in the document.
+
+
+--------------------------------------------------------------------------------
+[T22] MINOR -- REDUNDANT SUPERVISION ON ~99 % OF NODES
+--------------------------------------------------------------------------------
+eq (28) carries the factor M_i, so r*_i = 0 for every UNSELECTED cell. Those cells
+are then included in L_FM's share channel, forcing the field to reproduce an exact
+0 on the overwhelming majority of the 6790 nodes -- information already carried by
+the support channel's -logit(eps). This wastes a large share of the velocity-loss
+budget on a redundant constraint and dilutes the gradient on the cells that matter.
+RECOMMENDATION: use the weight matrix W (already permitted in eq 33) to mask the
+share channel to the selected set, and state that masking explicitly in Sec 7.3.
+
+
+--------------------------------------------------------------------------------
+[T23] MINOR -- EVALUATION PROTOCOL GAPS
+--------------------------------------------------------------------------------
+Sec 13 is unusually thorough (classifier two-sample tests, coverage/precision-
+recall, memorisation checks, truth-half statistical floors, frozen feature
+extractor). Two things are still missing:
+  (a) No statistical power / sample-size calculation. "Report paired/bootstrap
+      uncertainty" tells you how to quantify what you found, not how many events
+      you need to detect a bias of a stated size. For a project whose declared
+      failure mode is a response bias, the minimum detectable bias per observable
+      should be declared in Stage 0 alongside the frozen analysis plan.
+  (b) No seed-replication protocol for TRAINING. Sec 13.1 requires deterministic
+      replay under a fixed seed, which tests reproducibility, not variance across
+      seeds. Baseline-ladder comparisons (Sec 12.2) between B1/G1/S1 are
+      meaningless without n-seed training replicates, since architecture
+      differences here are likely to be smaller than seed variance.
+
+
+--------------------------------------------------------------------------------
+[T24] RE-QA PASS -- CLAIMS C1-C4 AGAINST FINDINGS
+--------------------------------------------------------------------------------
+C1 (monotone deposits are physically wrong; monotone remaining budget is right):
+    UPHELD. Correct physics, correctly cited ([8] verified), Prop 5.1 verified.
+C2 (assembled from known published components, no new primitive):
+    UPHELD, with the caveat that six of the citations establishing which
+    components are being reused are misattributed (T03, T04).
+C3 (decoder guarantees nonnegativity, exact zeros off support, threshold
+    consistency, exact accounting):
+    UPHELD AS STATED, but the guarantee is narrower than a reader will take it to
+    be. It guarantees consistency of the model with ITS OWN accounting variables.
+    It does not guarantee consistency with eq (11)'s truth decomposition (T10),
+    and eq (25)'s feasibility set is not the truth's feasibility set (T11).
+    RECOMMEND restating C3 as: "the decoder is internally exact; external
+    agreement with the truth threshold decomposition is a separate, currently
+    unestablished property."
+C4 (protocol separates implementation validity from empirical fidelity):
+    UPHELD in intent, WEAKENED in execution -- because B2 and B3 are both defects
+    that the implementation-validity gates certify as PASSING. The separation is
+    only as good as the gates, and two of the gates currently validate the model
+    against itself.
+
+
+--------------------------------------------------------------------------------
+[T25] RE-QA PASS -- DID I MISS ANYTHING THE DOCUMENT ALREADY CAUGHT?
+--------------------------------------------------------------------------------
+Checked my findings against Sec 14 (failure modes) and Appendix C (auditor
+checklist) to avoid claiming credit for things already flagged.
+  - Sec 14 "Count bottleneck" anticipates that a wrong K_l breaks morphology. It
+    does NOT anticipate that eq (25) makes the truth K_l unrepresentable (B4).
+  - Sec 14 "Exposure bias" anticipates the truth-conditioned/free-running gap. It
+    does NOT supply the Stage 5 objective (T21b).
+  - Sec 14 "Profile underweighting" anticipates a response bias surviving a
+    falling global loss. It does NOT identify the reserve as a structural source
+    of one (B2).
+  - Sec 14 "Dense energy dust" is the defect the decoder solves. The INVERSE
+    defect -- concentration of subthreshold energy into resolved cells (B3) -- is
+    absent from the table.
+  - Appendix C item 10 asks the auditor to confirm "zero dust, exact count,
+    per-layer accounting, and event accounting on a large generated sample." All
+    four pass in the presence of B2 and B3. The checklist needs a truth-referenced
+    item: compare generated U_l and generated total against Geant4, not against
+    the model's own identities.
+  - Nothing anywhere in the document addresses B1 (the latent z).
+CONCLUSION: B1-B4 are genuinely new relative to the document's own self-criticism.
+
+
+--------------------------------------------------------------------------------
+[T26] FINAL TRIAGE
+--------------------------------------------------------------------------------
+BLOCKING (fix before Stage 1; each invalidates a stated property of the design)
+  B1  shared latent z is unlearnable under eq (41)                    [T08]
+  B2  reserve is an unsupervised, structurally positive energy sink   [T09]
+  B3  decoder cannot represent K_l > 0 with U_l > 0; inflates cells   [T10]
+  B4  eq (25) assigns probability 0 to an ordinary truth; +inf loss   [T11]
+
+MAJOR (fix before Stage 4 / before any external claim)
+  M1  six misattributed references; undermines Sec 17                 [T03,T04]
+  M2  kinetic vs total energy in eq (4)-(5) and rho denominator       [T05]
+  M3  causal layer mask unjustified in a parallel field               [T12]
+  M4  Sec 7.1 overstates the advantage over layer autoregression      [T13]
+  M5  Gumbel-Top-k double-counts stochasticity                        [T14]
+  M6  eq (28) target unbounded near threshold; dominates L_FM         [T15]
+  M7  point-cloud baseline P1 should be required, not optional        [T04]
+  M8  under-specified training paths (L_sup, Stage 5, L_D, lambdas)   [T21]
+
+MODERATE / EDITORIAL
+  E1  notation collision S vs S_l inside eq (12)                      [T17]
+  E2  ragged HCAL layers never declared; ECAL depth-unsegmented       [T18]
+  E3  -inf masked softmax under mixed precision                       [T19]
+  E4  renormalised hazards break the survival semantics               [T20]
+  E5  eq (12) splits one CFM draw into two factors; p(Y|.) is a delta [T17]
+  E6  redundant r* = 0 supervision on unselected nodes                [T22]
+  E7  no power calculation; no seed-replication protocol              [T23]
+  E8  missing ref: Wojnar/Majerz/Dzwinel CSBS 9,1 (2025)              [T02]
+  E9  rho parameterisation vs sampling fraction; Beta on [0,1]        [T05]
+  E10 low-energy T > E_kin mechanism (radiative capture) unnamed      [T05]
+
+CONFIRMED CORRECT (do not change)
+  P1  Proposition 5.1 and claim C1                                    [T06]
+  P2  Theorem 8.1 (i)-(v) and Corollary 8.2, verified numerically     [T07]
+  P3  eq (28)/(36)/(37) are exactly self-inverse -- unclaimed virtue  [T16]
+  P4  eq (5) preserves all 3 dof of a mass-shell-constrained p^mu     [T05]
+  P5  eq (8)-(9) straight-line intercept and the manifold caveat      [read]
+  P6  categorical-over-Poisson count argument                         [read]
+  P7  Sec 2.2's claim that ALICE ZDC work is not drop-in -- quantified [T02]
+
+OVERALL: the specification is worth implementing, and its central physics
+correction is right. But it is not currently implementable as an exact contract:
+two of its four blocking defects are invisible to its own QA suite, and one
+(the latent z) removes the mechanism the factorization exists to provide. The
+document's greatest strength -- that everything provable is proved and correct --
+is also what makes these defects dangerous, because all four live in the prose
+between the theorems.
+
+
+--------------------------------------------------------------------------------
+SOURCE LIST (all URLs consulted, in order of first use)
+--------------------------------------------------------------------------------
+ 1. https://arxiv.org/abs/2507.18811            Wojnar, FM for ZDC          [14] OK
+ 2. https://arxiv.org/html/2507.18811v1         ZN 44x44, ZP 56x30, 112.5 m
+ 3. https://arxiv.org/abs/2512.20346            IAF for ZDC                 [16] OK
+ 4. https://arxiv.org/abs/2508.20991            ExpertSim                   [15] OK
+ 5. https://dblp.org/pid/93/233.html            ExpertSim ECAI 2025 venue
+ 6. https://arxiv.org/abs/2406.03233            Kita et al., diffusion ZDC  [13] OK
+ 7. https://arxiv.org/html/2406.03233           ALICE ZN = quartz-fibre spaghetti
+ 8. https://arxiv.org/abs/2306.13606            Dubinski et al.             [12] BAD
+ 9. https://www.researchgate.net/publication/371855563  author confirmation
+10. https://link.springer.com/article/10.1007/s41781-025-00130-x  missing ref  E8
+11. https://arxiv.org/abs/2305.11934            Buckley et al., iCaloFlow   [18] BAD
+12. https://arxiv.org/html/2403.15782           CaloPointFlow II ref list
+13. https://arxiv.org/abs/2403.15782            Schnake et al.              [28] BAD
+14. https://arxiv.org/html/2406.12898v1         independent author list check
+15. https://arxiv.org/pdf/2402.11575            Kobylianskii et al.         [24] BAD
+16. https://arxiv.org/html/2406.13074v1         PIPPIN ref list, CaloGraph
+17. https://arxiv.org/abs/2302.11594            Diefenbacher et al.         [19] BAD
+18. https://arxiv.org/html/2405.20407v1         JINST 18 P10017 confirmation
+19. https://arxiv.org/html/2308.11700           SuperCalo ref list
+20. https://link.springer.com/article/10.1140/epjc/s10052-025-14604-0  ParaFlow refs
+21. https://arxiv.org/html/2503.21461v1         ParaFlow ref list
+22. https://arxiv.org/abs/2511.17293            Buss et al., full-physics benchmark
+                                                [41] OK; point-cloud finding -> M7
+23. https://arxiv.org/html/2506.21720v2         CaloHadronic; SciPost 18,088 [21] OK
+24. https://geant4.web.cern.ch/documentation/pipelines/master/prm_html/
+      PhysicsReferenceManual/electromagnetic/shower_parameterizations/
+      parameterisation.html                     Grindhammer disambiguation  [9] BAD
+25. https://arxiv.org/pdf/2110.05505v2          independent Grindhammer refs
+26. https://www.sciencedirect.com/science/article/pii/S1875389212017154  HF GFlash
+27. https://www.arxiv-vanity.com/papers/hep-ex/0001020/  MC'93 proceeding text
+28. https://arxiv.org/abs/hep-ex/0001027        Kulchitsky & Vinogradov     [8] OK
+29. https://arxiv.org/pdf/hep-ex/0001027        eq (1) two-component profile
+30. https://arxiv.org/pdf/1805.01792            Dmitrieva & Pshenichnov     [11] OK
+31. https://apc.u-paris.fr/~franco/g4doxy4.10/html/_g4_particle_gun_8hh_source.html
+                                                SetParticleEnergy(kinetic)  -> M2
+32. https://indico.cern.ch/event/294651/sessions/55918/attachments/552022/760639/
+      PrimaryParticles.pdf                      /gun/energy = kinetic energy
+33. https://ecce-eic.github.io/doxygen/da/d3e/G4ParticleGun_8hh_source.html
+                                                third independent confirmation
+
+Local artefacts produced:
+  /home/claude/qa_cbsc.py    8-check numerical QA harness (CHECK 1-8 above)
+
+Not verifiable by this audit:
+  refs [5], [6], [7]  -- internal ASIoP evidence packages, not supplied
+  Sec 16              -- "30 passed, 100 % coverage" scaffold claim, repo not supplied
+  Sec 17              -- 600-work catalogue, not supplied
+================================================================================

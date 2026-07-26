@@ -1,0 +1,1558 @@
+================================================================================
+CBSC-ZDC FULL AUDIT LOG
+================================================================================
+File name: CBSC_ZDC_audit_log.txt
+Generated: 2026-07-23
+Audit target: CBSC_ZDC_Auditor_Specification_LaTeX.pdf
+Audit mode: full design audit + QA + research + iteration + chronological log
+Auditor: AI assistant working from the supplied knowledge-base text only.
+
+IMPORTANT LIMITATIONS OF THIS AUDIT
+1. This is a design/specification audit, not a trained-model fidelity audit.
+2. No external papers, URLs, repositories, or ROOT files were fetched.
+3. No numerical Geant4 data were available for independent recomputation.
+4. The supplied small ROOT file is described as a schema/reference fixture only.
+5. Therefore, all data-contract, geometry, and target-mode assumptions remain
+   provisional until an actual ROOT/geometry/data audit is executed.
+
+================================================================================
+PART A: CHRONOLOGICAL SOURCE / THOUGHT / QA / RESEARCH / ITERATION LOG
+================================================================================
+
+[000] SOURCE: User request.
+      Content: "fully audit. QA, research, QA, and iterate at each and every
+      thought until done. log all sources and thoughts and ideas chronologically
+      in a .txt file"
+      THOUGHT: The deliverable should be a single plain-text audit log that
+      contains sources, reasoning, QA checks, research notes, and iterative
+      corrections. It should separate structural validity from empirical fidelity.
+      QA: The final file must not claim that CBSC-ZDC has been validated against
+      Geant4.
+      ITERATION: Use a chronological log first, then a consolidated audit report.
+
+[001] SOURCE: Uploaded specification title and abstract.
+      Content: CBSC-ZDC is an auditable specification for a four-momentum-
+      conditioned fast Monte Carlo surrogate of neutron showers in a ZDC.
+      THOUGHT: The document explicitly frames itself as a research plan and
+      implementation contract, not a performance claim. This is important for
+      audit scope.
+      QA: Check that the audit preserves the distinction between "implementation
+      correctness" and "Geant4 fidelity".
+      ITERATION: Add explicit audit disclaimer.
+
+[002] SOURCE: Abstract, central correction.
+      Content: Deposited energy must not be forced to decrease layer to layer;
+      only remaining accounting budget must be non-increasing.
+      THOUGHT: This is physically sensible for neutron-induced hadronic showers
+      because first interaction depth is stochastic and showers can rise after a
+      late start.
+      QA: Verify that the mathematical implementation uses monotone remaining
+      budget, not monotone layer deposits.
+      ITERATION: Mark monotone-deposit rejection as a major positive correction.
+
+[003] SOURCE: Abstract, anti-dust decoder.
+      Content: Generated layer count selects exactly that many cells; unselected
+      cells are exactly zero; selected cells receive threshold floor plus
+      normalized share.
+      THOUGHT: This directly addresses a known failure mode where dense softmax
+      models put tiny positive energy in every cell.
+      QA: The decoder proof must be checked for exact count, exact zeros,
+      threshold consistency, and budget closure.
+      ITERATION: Add decoder proof re-derivation to QA section.
+
+[004] SOURCE: Abstract, assurance statement.
+      Content: Implementing the specification exactly should make the experiment
+      scientifically interpretable and satisfy algebraic invariants, but does
+      not guarantee Geant4 reproduction.
+      THOUGHT: This is the correct epistemic stance.
+      QA: The audit should not upgrade structural validity into physics fidelity.
+      ITERATION: Use "conditional design approval" rather than "validated model".
+
+[005] SOURCE: Section 1, scope and precise claim.
+      Content: Research question is whether p_theta(Y | p_mu, G) approximates
+      p_G4(Y | p_mu, G) over 50-250 GeV while respecting exact readout contract.
+      THOUGHT: The condition is minimal and clean: only four-momentum is raw
+      event condition; geometry is frozen metadata.
+      QA: Need to verify that all derived features are deterministic functions of
+      p_mu and static geometry.
+      ITERATION: Add condition-manifold audit item.
+
+[006] SOURCE: Section 1.2, claims C1-C4.
+      Content: C1 rejects monotone per-layer deposit; C2 uses known components;
+      C3 proves decoder invariants under assumptions; C4 separates validity from
+      fidelity.
+      THOUGHT: These claims are modest and mostly verifiable.
+      QA: C2 requires literature audit; C3 requires proof check; C4 requires
+      reporting protocol check.
+      ITERATION: Build claim-to-evidence table in final report.
+
+[007] SOURCE: Section 1.3, prior project models.
+      Content: Legacy HurdleGraph had unbounded tail, positive inactive layers,
+      invalid slot correspondence, unused recurrent state, isolated nodes, and
+      separable events. HGF-ZDC had response bias, late-HCAL suppression,
+      loss-physics misalignment, weak speed, invalid fixed-condition reference.
+      THOUGHT: The specification is strongly motivated by documented negative
+      evidence. This is good research hygiene.
+      QA: Internal audits [5,6] are not externally verifiable from this document
+      alone, but they justify many design constraints.
+      ITERATION: Treat prior failures as internal source evidence, not public
+      proof.
+
+[008] SOURCE: Section 2.1, neutron stochasticity.
+      Content: Neutrons are neutral; hadronic interaction depth and final state
+      are stochastic; same p_mu can produce different showers.
+      THOUGHT: This supports a conditional distribution model, not deterministic
+      regression.
+      QA: The model must preserve conditional variance, not only conditional mean.
+      ITERATION: Add repeated-condition ensemble evaluation requirement.
+
+[009] SOURCE: Section 2.1, rejection of D_{l+1} <= D_l.
+      Content: A late-start event would be impossible if early deposit near zero
+      forced all later deposits near zero.
+      THOUGHT: Correct. Monotone deposits are appropriate for some smoothed
+      average profiles but not event-level hadronic showers.
+      QA: Verify no hidden layer-order constraint remains in profile sampler.
+      ITERATION: Check masked-simplex profile does not impose depth ordering.
+
+[010] SOURCE: Section 2.2, ZDC detector specificity.
+      Content: ZDC response depends on geometry, segmentation, absorber, active
+      material, acceptance, beam conditions, readout.
+      THOUGHT: Published ALICE ZDC models are methodological baselines, not
+      drop-in replacements for a 6790-channel detector.
+      QA: External baselines must be reproduced on native representations before
+      adaptation.
+      ITERATION: Add baseline transfer warning.
+
+[011] SOURCE: Section 2.3, scored target emulation.
+      Content: Surrogate target is stored detector outputs, not microscopic
+      Geant4 particle history.
+      THOUGHT: This prevents overinterpretation of learned "transport" or
+      "energy flow" as physical mechanism.
+      QA: Any microscopic claim requires track/step supervision, which is not
+      present.
+      ITERATION: Add interpretation guardrail.
+
+[012] SOURCE: Section 3.1, sole raw condition p_mu.
+      Content: p_mu = (E, px, py, pz); mass-shell relation checked; minimal
+      derived features are log(E/E0), px/||p||, py/||p||, pz/||p||.
+      THOUGHT: Minimal condition is clean, but low-momentum edge cases need
+      guards.
+      QA: Check division by ||p||, E <= 0, pz = 0, and mass-shell tolerance.
+      ITERATION: Add preprocessing edge-case findings.
+
+[013] SOURCE: Section 3.2, static detector metadata.
+      Content: NECAL=400, NHCAL=6390, N=6790, 65 layers; node metadata includes
+      x,y,z, layer, subdetector, area, ganging, valid; edges from physical
+      adjacency, not array-slot coincidence.
+      THOUGHT: This is a major correction relative to prior invalid slot edges.
+      QA: Need geometry hash, edge provenance, degree/connectivity report, and
+      isolated-node audit.
+      ITERATION: Add geometry QA checklist.
+
+[014] SOURCE: Section 3.3, entry position derived from p_mu.
+      Content: If vertex and detector plane are fixed, entry intercept is
+      deterministic from px/pz and py/pz.
+      THOUGHT: This is acceptable only if vertex is truly fixed. If vertex varies
+      event-by-event, then entry position is not determined by p_mu alone.
+      QA: Audit Geant4 generator for fixed vs variable vertex.
+      ITERATION: Add condition-manifold finding.
+
+[015] SOURCE: Section 3.4, target mode freeze.
+      Content: Raw-deposit mode uses tau=0; thresholded-readout mode uses frozen
+      tau>0; subthreshold remainder U_l defined.
+      THOUGHT: This distinction is scientifically important.
+      QA: The threshold must be detector/electronics/analysis motivated, not
+      optimization motivated.
+      ITERATION: Add threshold-provenance audit item.
+
+[016] SOURCE: Section 3.5, energy support assumption.
+      Content: rho = T/E in [0,1] is enabled only if data audit shows stored
+      target is raw deposited energy and legitimate T > E events do not occur.
+      THOUGHT: This is cautious and correct. Nuclear Q values and scoring
+      definition make this empirical.
+      QA: Need audit of total response T definition, units, and overflow rate.
+      ITERATION: Add critical data-contract finding.
+
+[017] SOURCE: Section 4, statistical factorization.
+      Content: Joint factorization over V, T, S, A, D, Rres, K, cell support, Y,
+      conditioned on c and shared z.
+      THOUGHT: The hierarchy is sensible: visible hurdle, total response, start,
+      active layers, profile, counts, spatial support/energy.
+      QA: There is a notation collision: S is used for first visible layer and
+      also later for selected cell set/support.
+      ITERATION: Recommend renaming first visible layer to L0 or S_vis and cell
+      support to C or S_cell.
+
+[018] SOURCE: Section 4, shared latent z.
+      Content: z ~ N(0,I) preserves event-level dependence among stages.
+      THOUGHT: This is potentially under-specified. If z is merely sampled and
+      never inferred or regularized, it may act only as noise rather than a
+      latent variable inducing event-level dependence.
+      QA: Check whether there is a prior term, encoder, ELBO, or explicit
+      marginalization. The written objective does not show p(z) or q(z|truth).
+      ITERATION: Create high-severity finding on latent-variable semantics.
+
+[019] SOURCE: Section 5.1, visible-response hurdle.
+      Content: V ~ Bern(pi_V); if V=0, all response variables zero.
+      THOUGHT: Good because zero-response events are a point mass and should not
+      be modeled only by a continuous density.
+      QA: Need truth definition for V: is it any raw deposit, any thresholded
+      hit, or producer flag?
+      ITERATION: Add target-definition audit item.
+
+[020] SOURCE: Section 5.2, total response beta mixture.
+      Content: rho = T/E in (0,1), finite beta mixture; endpoint mass at rho=1
+      should be explicit if present.
+      THOUGHT: Flexible and bounded, appropriate if T/E support is truly bounded.
+      QA: Beta mixture cannot represent exact endpoint masses well; need atom or
+      explicit component.
+      ITERATION: Add endpoint-mass finding.
+
+[021] SOURCE: Section 5.3, first-visible-layer survival model.
+      Content: Discrete hazard h_l; p(S=l | S>=l, V=1, c, z, T); normalize over
+      detector layers.
+      THOUGHT: Survival model is a natural way to model stochastic start depth.
+      QA: Must define what happens to probability mass beyond last layer; V=0
+      should absorb no-visible events.
+      ITERATION: Add start-layer normalization check.
+
+[022] SOURCE: Section 5.4, exact active-layer support.
+      Content: A_l=0 for l<S; A_S=1; later layers can be active/inactive.
+      THOUGHT: This allows gaps after start, which is physically reasonable for
+      sparse readout and shower fluctuations.
+      QA: Need truth definition for A_l in thresholded mode: raw positive layer,
+      thresholded hit layer, or layer with nonzero budget D_l?
+      ITERATION: Add active-layer/subthreshold ambiguity finding.
+
+[023] SOURCE: Section 5.5, masked-simplex energy allocation.
+      Content: Inactive layers get -inf logits; softmax over active layers plus
+      reserve; D_l = T w_l; Rres = T w_res.
+      THOUGHT: This enforces nonnegative layer budgets and exact total
+      allocation.
+      QA: Reserve can become a slack variable that hides profile errors.
+      ITERATION: Add reserve diagnostics and target-definition finding.
+
+[024] SOURCE: Proposition 5.1, monotone remaining budget.
+      Content: R_l = T - sum_{j=0}^l D_j; R_{l+1} <= R_l; no restriction on
+      D_{l+1} vs D_l.
+      THOUGHT: This is the core physics correction in algebraic form.
+      QA: Re-derived manually: R_{l+1}=R_l-D_{l+1}; if D_{l+1}>=0 then
+      R_{l+1}<=R_l. Also R_l=Rres+sum_{j>l}D_j>=Rres>=0. PASS.
+      ITERATION: Mark proposition as mathematically sound.
+
+[025] SOURCE: Section 6, finite-support count model.
+      Content: K_l ~ Categorical over 0..N_l; thresholded feasibility piecewise;
+      raw mode K_l=0 iff D_l=0.
+      THOUGHT: Categorical counts avoid Poisson variance restriction and allow
+      exact masking.
+      QA: At generation, count logits must be dynamically masked by generated
+      D_l and tau. Otherwise model can sample infeasible K_l.
+      ITERATION: Add high-severity count-feasibility finding.
+
+[026] SOURCE: Section 7.1, parallel CFM instead of 65-call rollout.
+      Content: Avoid invalid index correspondence, accumulated free-running
+      error, serial latency.
+      THOUGHT: Parallel node updates are attractive for irregular layers.
+      QA: Need to verify causal dependence is preserved by directed longitudinal
+      edges and causal layer attention.
+      ITERATION: Add causal-leakage QA test.
+
+[027] SOURCE: Section 7.2, continuous target state.
+      Content: X_i=(s_i,r_i); s is support-ranking; r is positive-energy share;
+      target encoding uses logit for M_i and centered log positive energy.
+      THOUGHT: Encoding is reasonable: support channel separates hit/non-hit;
+      share channel encodes relative positive energies.
+      QA: The epsilon floor and target transform must be versioned with decoder.
+      If generated K differs from truth K, share normalization may mismatch.
+      ITERATION: Add exposure-bias and target-transform versioning findings.
+
+[028] SOURCE: Section 7.3, flow-matching objective.
+      Content: Straight interpolation X_t=(1-t)X0+tX1; target velocity
+      u_t=X1-X0; loss compares v_theta to u_t.
+      THOUGHT: Standard conditional flow matching.
+      QA: Network must explicitly consume t; implementation that ignores t is
+      invalid.
+      ITERATION: Add t-dependence unit test.
+
+[029] SOURCE: Section 7.4, velocity network.
+      Content: Concatenate X_t, static features, dynamic layer features; time
+      embedding; FiLM conditioning; edge-conditioned graph message passing; layer
+      pooling; causal transformer; broadcast; predict velocities.
+      THOUGHT: This combines established components without claiming a new
+      primitive.
+      QA: Need to check transformer causal mask and graph edge directions.
+      ITERATION: Add architecture QA tests.
+
+[030] SOURCE: Section 7.5, sampling.
+      Content: Solve ODE dX/dt=v_theta; solver, steps, precision, seed must be
+      reported.
+      THOUGHT: Good reproducibility requirement.
+      QA: Timing must include solver steps and decoding, not only network
+      forward time.
+      ITERATION: Add timing-report requirement.
+
+[031] SOURCE: Section 8.1, dust failure mode.
+      Content: Dense softmax can assign tiny positive energy to nominally empty
+      cells, improving aggregate loss while corrupting occupancy.
+      THOUGHT: This is a real and common failure in high-granularity calorimeter
+      generation.
+      QA: Need zero-dust assertion: no cell with 0 < Y_i < tau in thresholded
+      mode.
+      ITERATION: Add anti-dust invariant test.
+
+[032] SOURCE: Section 8.2, exact-support construction.
+      Content: Gumbel-Top-k selects K cells; selected shares softmax; decode
+      Y_i = tau + (B-K tau) w_i for selected, else 0; if B<tau then K=0 and
+      U_l=B.
+      THOUGHT: This is the central exact-sparsity mechanism.
+      QA: Requires B>=K tau. Count feasibility must be enforced before decoding.
+      ITERATION: Link to count-feasibility finding.
+
+[033] SOURCE: Theorem 8.1, no-dust exact-count exact-budget decoder.
+      Content: Under feasible K and B>=K tau, decoder gives exact zeros outside
+      support, threshold floor, exact budget, exact positive count, no sub-tau
+      positive cells.
+      THOUGHT: Proof is straightforward but conditional on feasibility.
+      QA: Re-derived manually:
+            sum selected Y_i = K tau + (B-K tau) sum w_i = B.
+            unselected = 0.
+            selected >= tau because B-K tau >=0 and w_i>0.
+            exactly K positives.
+            no 0<Y<tau.
+            PASS.
+      ITERATION: Mark decoder invariants as mathematically sound.
+
+[034] SOURCE: Corollary 8.2, event accounting.
+      Content: sum_i Y_i + sum_l U_l + Rres = T.
+      THOUGHT: This is the global conservation identity.
+      QA: It holds if each layer either resolves D_l into cells or records U_l=D_l
+      and if sum D_l + Rres = T.
+      ITERATION: Add large-sample event-accounting assertion.
+
+[035] SOURCE: Section 8.3, exact Top-k limitations.
+      Content: Exact Top-k does not prevent wrong K_l; count must be trained and
+      reported independently.
+      THOUGHT: Important. Algebraic validity is not physical validity.
+      QA: Need requested-count calibration and realized-count calibration.
+      ITERATION: Add count-calibration reporting requirement.
+
+[036] SOURCE: Section 8.4, training discrete support.
+      Content: Hard Top-k is non-differentiable; use supervised support logits,
+      relaxation, straight-through, generated-support exposure, sparsemax/entmax/
+      hard-concrete ablations.
+      THOUGHT: Correct. Hard Top-k is an inference/evaluation decoder, not a
+      complete training objective.
+      QA: If support training is omitted, free-running support can fail even if
+      truth-conditioned spatial loss looks good.
+      ITERATION: Add support-training and exposure-bias findings.
+
+[037] SOURCE: Section 9, training objectives.
+      Content: Modular loss with visible, response, start, active, profile,
+      count, flow, support, auxiliary terms.
+      THOUGHT: Modular losses are appropriate for the factorization.
+      QA: Loss weighting can dominate or hide physics errors. Need component
+      losses, gradient norms, and frozen validation selection.
+      ITERATION: Add loss-weighting governance finding.
+
+[038] SOURCE: Section 10.1, raw ROOT audit.
+      Content: Report hashes, tree/branch names, units, mass-shell residuals,
+      channel decoding, duplicates, invalid IDs, sentinel records, ECAL/HCAL
+      totals, zero-response frequency, occupancy, threshold sensitivity, vertex,
+      provenance.
+      THOUGHT: This is the most important empirical prerequisite.
+      QA: The current environment lacks ROOT/Uproot/Awkward and the supplied
+      ROOT file is only schema/reference. Therefore numerical audit cannot be
+      completed here.
+      ITERATION: Add critical finding: data contract unverified.
+
+[039] SOURCE: Section 10.2, canonical tensors.
+      Content: p4, cell_energy_raw, cell_energy_tau, layer_energy, hit_count,
+      active_layer, first_visible, subthreshold, provenance; channel order and
+      geometry hashed.
+      THOUGHT: Good tensor interface.
+      QA: Need distinguish padding, invalid channels, and valid zero-energy
+      cells.
+      ITERATION: Add padding/valid-mask QA.
+
+[040] SOURCE: Section 10.3, splitting.
+      Content: Prefer independent Geant4 generation group; if unavailable,
+      deterministic row-index hash split with leakage warnings.
+      THOUGHT: Correct concern about train/test leakage.
+      QA: Need duplicate/correlation searches and nearest-neighbor memorization
+      checks.
+      ITERATION: Add splitting audit item.
+
+[041] SOURCE: Section 10.4, training range experiment.
+      Content: R1 train 50-250 GeV; R2 train 0-300 GeV; primary reporting
+      domain remains separated from stress regions.
+      THOUGHT: Good controlled experiment.
+      QA: Need boundary artifacts and capacity-consumption analysis.
+      ITERATION: Add energy-range ablation reporting.
+
+[042] SOURCE: Section 11.1, staged implementation.
+      Content: Stage 0 freeze target; Stage 1 hurdle/response; Stage 2 start/
+      profile; Stage 3 counts; Stage 4 spatial CFM with truth; Stage 5 generated
+      exposure; Stage 6 joint fine-tuning; Stage 7 baselines; Stage 8 final eval.
+      THOUGHT: Staging is sensible and reduces debugging ambiguity.
+      QA: These are reporting locations, not pass/fail gates, except algebraic
+      invariants.
+      ITERATION: Add stage-wise QA matrix.
+
+[043] SOURCE: Section 11.2, Vertex job layout.
+      Content: Immutable self-describing runs with config, environment, git
+      commit, data manifest, geometry hash, statistics, checkpoints, histories,
+      free-running validation, timing, logs.
+      THOUGHT: Strong reproducibility design.
+      QA: Need RNG states, optimizer/scheduler/scaler states, and artifact
+      versioning.
+      ITERATION: Add reproducibility checklist.
+
+[044] SOURCE: Section 11.3, precision and performance.
+      Content: Start float32 accumulation; mixed precision only after equivalence
+      probes; report model-only and end-to-end timing.
+      THOUGHT: Motivated by prior dtype/accumulation failures.
+      QA: Need finite-gradient and output-equivalence tests before mixed
+      precision.
+      ITERATION: Add numerical-precision QA.
+
+[045] SOURCE: Section 12.1, direct ZDC references.
+      Content: faster_zdc, zdc, ExpertSim, inverse-autoregressive-flow ZDC line.
+      THOUGHT: These are the most relevant external baselines.
+      QA: Licenses and code availability must be checked; adaptation to 6790
+      channels is a new experiment.
+      ITERATION: Add external-baseline governance finding.
+
+[046] SOURCE: Section 12.2, internal matched baseline ladder.
+      Content: B0 empirical/template, B1 non-graph CFM, M1 mixture-of-experts,
+      G1 CBSC-ZDC, S1 single-stage graph flow, A1 serial previous-layer, P1
+      sparse point-cloud.
+      THOUGHT: Excellent controlled comparison plan.
+      QA: Graph is justified only if it improves predeclared geometry-sensitive
+      metrics enough to offset latency/memory.
+      ITERATION: Add baseline fairness requirement.
+
+[047] SOURCE: Section 13.1, software/algebraic QA.
+      Content: Shapes, dtypes, devices, masks, finite values, nonnegative
+      energy, invalid-channel zeros, exact support count, no dust, per-layer
+      accounting, event accounting, bounded T/E if audited, deterministic replay,
+      t dependence.
+      THOUGHT: This is a strong invariant suite.
+      QA: Need automated assertions in unit tests and large-sample generation.
+      ITERATION: Convert into auditor checklist.
+
+[048] SOURCE: Section 13.2, training-time monitoring.
+      Content: Component losses, response distributions, first-visible layer,
+      active-layer count, profile, hit count, transverse shape, correlations,
+      inference time, memory.
+      THOUGHT: Good monitoring plan.
+      QA: Need paired/bootstrap uncertainty and frozen analysis plan to avoid
+      checkpoint cherry-picking.
+      ITERATION: Add statistical-comparison requirement.
+
+[049] SOURCE: Section 13.3, distributional evaluation.
+      Content: 1D histograms, C2ST, geometry-aware classifiers, Frechet/kernel
+      distances, precision/recall, memorization, truth-half floors, repeated-
+      condition ensembles.
+      THOUGHT: Comprehensive and appropriate.
+      QA: Avoid overreliance on a single aggregate distance or per-cell MSE over
+      mostly zero channels.
+      ITERATION: Add evaluation-anti-patterns section.
+
+[050] SOURCE: Section 13.4, downstream and amplification studies.
+      Content: Freeze reconstruction model; report reconstruction scale,
+      resolution, efficiencies, tail migration; train-on-Geant4/test-on-FastMC
+      and reverse; calomplification must be measured.
+      THOUGHT: This is essential because image metrics can hide reconstruction
+      failures.
+      QA: FastMC oversampling reduces sampling noise but not surrogate bias.
+      ITERATION: Add downstream-closure requirement.
+
+[051] SOURCE: Section 14, failure modes table.
+      Content: Dust, unbounded tail, profile underweighting, mode averaging,
+      count bottleneck, exposure bias, invalid graph, condition ignorance,
+      support extrapolation, latency failure.
+      THOUGHT: The table is useful and maps symptoms to diagnoses.
+      QA: Each failure mode should have an automated or semi-automated test.
+      ITERATION: Add failure-mode-to-test matrix.
+
+[052] SOURCE: Section 15.1, reference tensor interface.
+      Content: p_mu, condition embedding, node features, edge index, edge
+      features, layer index, D, K, flow state, Y, U, reserve.
+      THOUGHT: Clear interface.
+      QA: Need validate shapes and feasibility for every batch.
+      ITERATION: Add tensor-contract unit tests.
+
+[053] SOURCE: Section 15.2, reference hyperparameters.
+      Content: C=128, z=32, 4 beta components, profile hidden 256, count hidden
+      192, spatial hidden 96, 2 graph blocks, 3 transformer blocks, 4 heads,
+      solver 4/8/16 steps, float32, 50k-100k pilot.
+      THOUGHT: These are starting values, not optimized claims.
+      QA: Hyperparameters must be frozen for matched comparisons.
+      ITERATION: Add pilot-config provenance.
+
+[054] SOURCE: Section 15.3, pseudocode.
+      Content: Sample condition, z, visible, rho, T, S, A, D/reserve, K, flow,
+      Top-k, decode, assert invariants.
+      THOUGHT: Pseudocode matches the mathematical contract.
+      QA: Need explicit feasibility masks before Top-k and decode.
+      ITERATION: Add pseudocode correction recommendation.
+
+[055] SOURCE: Section 16, software QA status.
+      Content: 30 passed; 100% statement/branch coverage under synthetic suite;
+      nested-tensor warning; scaffold not full training system.
+      THOUGHT: Good transparency.
+      QA: Coverage demonstrates execution of scaffold paths, not fidelity.
+      ITERATION: Add scaffold-vs-production distinction.
+
+[056] SOURCE: Section 17, literature audit and evidence depth.
+      Content: 600 linked works and 100+ named models are discovery maps, not
+      full-text replications; core bibliography checked against primary papers/
+      docs/project evidence.
+      THOUGHT: Honest evidence-depth disclosure.
+      QA: Auditors should not treat title/abstract screening as full replication.
+      ITERATION: Add evidence-depth caveat.
+
+[057] SOURCE: Section 18, general science-fair explanation.
+      Content: Explains expensive simulation, hierarchy, late-start correction,
+      exact count/zero decoder, controlled falsifiable test.
+      THOUGHT: Accurate and accessible.
+      QA: No overclaim of fidelity.
+      ITERATION: None needed.
+
+[058] SOURCE: Section 19, computational HEP physicist explanation.
+      Content: Summarizes conditional density, hierarchy, CFM, graph, causal
+      transformer, Top-k decoder, evaluation, and no guaranteed fidelity.
+      THOUGHT: Technically faithful.
+      QA: Same latent-z and target-definition ambiguities remain.
+      ITERATION: Carry findings forward.
+
+[059] SOURCE: Section 20, conclusions.
+      Content: Experiment worth implementing; negative result informative; no
+      advance promise of Geant4 agreement.
+      THOUGHT: Conclusion is appropriately bounded.
+      QA: Final audit should mirror this bounded conclusion.
+      ITERATION: Use "conditional design approval".
+
+[060] SOURCE: Appendix A, claim-to-evidence map.
+      Content: Maps Geant4 stochasticity, nonmonotone deposits, ZDC specificity,
+      hierarchical generation, CFM, sparse support, Top-k, ALICE ZDC baselines,
+      mixtures, prior internal failures, decoder invariants, and non-claim of
+      Geant4 reproduction.
+      THOUGHT: The map is mostly sound.
+      QA: Some evidence is internal and not externally verifiable.
+      ITERATION: Label internal evidence accordingly.
+
+[061] SOURCE: Appendix B, chronological design corrections.
+      Content: Reject monotone deposits; retain monotone budget; separate stages;
+      correct time dependence; valid-node masking; vectorized exact-K decoding;
+      first-visible semantics; anti-dust contract; hard Top-k training caveat;
+      separate correctness from fidelity; reclassify 600-work catalogue.
+      THOUGHT: This shows iterative research hygiene.
+      QA: The current audit adds further corrections on z, target mode, count
+      masks, reserve, and condition manifold.
+      ITERATION: Append audit corrections.
+
+[062] SOURCE: Appendix C, recommended auditor checklist.
+      Content: ROOT map, target mode, energy support, geometry hashes, sole
+      condition, unit tests, tensor trace, t dependence, support gradient path,
+      dust/count/accounting, domain separation, matched baselines, test-set
+      isolation, speed reporting, conclusion bounds.
+      THOUGHT: This is the natural backbone of the audit.
+      QA: Convert into pass/fail/conditional table.
+      ITERATION: Produce checklist in final report.
+
+[063] SOURCE: References [1]-[4], Geant4.
+      Content: Geant4 toolkit papers and hadronic physics manual.
+      THOUGHT: Support stochastic hadronic transport and model dependence.
+      QA: No external fetch performed; accepted as cited primary sources.
+      ITERATION: Log as external source evidence.
+
+[064] SOURCE: References [8]-[9], shower parameterizations.
+      Content: Longitudinal hadronic/electromagnetic profile parameterizations.
+      THOUGHT: Support smooth average profiles but not deterministic event-level
+      monotonicity.
+      QA: Use as physics motivation only.
+      ITERATION: None.
+
+[065] SOURCE: References [10]-[16], ZDC and ALICE ZDC ML.
+      Content: ZDC TDR, performance, ML methods, flow matching, ExpertSim, IAF.
+      THOUGHT: Establish ZDC-specific baseline landscape.
+      QA: Detector differences prevent drop-in transfer.
+      ITERATION: Add baseline adaptation warning.
+
+[066] SOURCE: References [17]-[21], hierarchical calorimeter flows/flow matching.
+      Content: CaloFlow, iCaloFlow, L2LFlows, Convolutional L2LFlows, CaloDREAM.
+      THOUGHT: Support hierarchical global-to-local generation and flow matching.
+      QA: These are not ZDC-specific and not direct proof for 6790 channels.
+      ITERATION: Use as methodological evidence.
+
+[067] SOURCE: References [22]-[23], flow matching.
+      Content: Flow Matching and minibatch OT-CFM.
+      THOUGHT: Establishes CFM as known framework.
+      QA: None.
+      ITERATION: None.
+
+[068] SOURCE: References [24]-[25], graph/geometry-aware calorimeter models.
+      Content: CaloGraph, geometry-adapted diffusion.
+      THOUGHT: Support graph/geometry inductive biases.
+      QA: Need empirical justification for added cost.
+      ITERATION: Link to baseline ladder.
+
+[069] SOURCE: References [27]-[29], [36], sparse/point-cloud models.
+      Content: SARM, CaloPointFlow II, CaloClouds, CaloClouds II.
+      THOUGHT: Support exact sparsity and point-cloud alternatives.
+      QA: Point-cloud comparison optional but relevant.
+      ITERATION: Keep P1 ablation.
+
+[070] SOURCE: References [30]-[34], Top-k and sparse relaxations.
+      Content: Gumbel-Top-k, continuous subset relaxation, sparsemax, entmax,
+      hard-concrete.
+      THOUGHT: Supports exact Top-k decoder and training alternatives.
+      QA: Hard Top-k is non-differentiable; training path required.
+      ITERATION: Link to support-training finding.
+
+[071] SOURCE: References [38]-[42], evaluation and downstream benchmarks.
+      Content: Evaluator metrics, precision/recall, full physics benchmark,
+      calomplification.
+      THOUGHT: Support multi-diagnostic evaluation and reconstruction closure.
+      QA: Avoid single-metric validation.
+      ITERATION: Add evaluation governance.
+
+[072] SOURCE: Reference [37], AtlFast3.
+      Content: Production fast simulation is often hybrid.
+      THOUGHT: Useful reminder that architectural purity is less important than
+      validated speed-fidelity tradeoff.
+      QA: None.
+      ITERATION: None.
+
+[073] QA PASS 1: Structural completeness.
+      RESULT: PASS with conditions.
+      NOTES: The specification contains scope, physics motivation, data contract,
+      factorization, proofs, training plan, evaluation plan, baselines, failure
+      modes, implementation contract, QA status, and auditor checklist.
+
+[074] RESEARCH PASS 1: Physics consistency.
+      RESULT: PASS with conditions.
+      NOTES: Rejection of monotone layer deposits is correct. Stochastic first
+      interaction depth and shower fluctuations justify hierarchical stochastic
+      model. Need data audit for T/E support and threshold semantics.
+
+[075] QA PASS 2: Mathematical proofs.
+      RESULT: PASS.
+      NOTES: Proposition 5.1 and Theorem 8.1 re-derived. Corollary 8.2 follows
+      under layer accounting. All proofs depend on feasibility assumptions.
+
+[076] RESEARCH PASS 2: Latent variable semantics.
+      RESULT: ISSUE FOUND.
+      NOTES: z is introduced as shared latent but no prior term, encoder, or
+      marginal likelihood objective is specified. It may function as stochastic
+      conditioning/noise rather than a true latent variable.
+      ITERATION: Create finding F-03.
+
+[077] QA PASS 3: Data contract.
+      RESULT: CRITICAL OPEN.
+      NOTES: ROOT numerical audit not possible here. Target mode, T definition,
+      threshold provenance, reserve truth, subthreshold truth, and condition
+      manifold remain unverified.
+      ITERATION: Create findings F-01, F-02, F-04, F-08, F-19.
+
+[078] RESEARCH PASS 3: Count/support feasibility.
+      RESULT: ISSUE FOUND.
+      NOTES: Decoder is exact only if K_l is feasible for generated D_l and tau.
+      Count logits must be dynamically masked. Hard Top-k needs training path.
+      ITERATION: Create findings F-05 and F-06.
+
+[079] QA PASS 4: Causal/graph consistency.
+      RESULT: CONDITIONAL PASS.
+      NOTES: Directed longitudinal edges plus causal layer mask should prevent
+      future leakage. Need unit tests for edge direction, mask, and bidirectional
+      ablation separation.
+      ITERATION: Add causal-leakage test.
+
+[080] RESEARCH PASS 4: Performance.
+      RESULT: RISK FOUND.
+      NOTES: Full 6790-node graph CFM with transformer and ODE solver may be
+      expensive. Need profiling and possible latent/distillation path after
+      fidelity teacher exists.
+      ITERATION: Create finding F-11.
+
+[081] QA PASS 5: Evaluation protocol.
+      RESULT: STRONG but needs pre-registration.
+      NOTES: Diagnostics are comprehensive. Need primary metrics, statistical
+      uncertainty, and acceptance criteria defined before test-set opening.
+      ITERATION: Create finding F-12.
+
+[082] ITERATION PASS: Consolidate findings.
+      RESULT: 28 findings registered below, with severity and remediation.
+
+[083] FINAL QA: Does the specification claim Geant4 fidelity?
+      RESULT: NO.
+      NOTES: It explicitly does not claim trained fidelity. Audit conclusion must
+      remain bounded.
+
+================================================================================
+PART B: CONSOLIDATED AUDIT REPORT
+================================================================================
+
+1. EXECUTIVE AUDIT OPINION
+--------------------------------------------------------------------------------
+The CBSC-ZDC specification is a serious, auditor-ready design document. Its main
+structural ideas are sound:
+
+  - Rejecting monotone per-layer deposits is physically correct.
+  - Enforcing monotone remaining budget is mathematically clean.
+  - The exact anti-dust decoder is provably correct under feasibility conditions.
+  - The staged factorization addresses known prior failure modes.
+  - The evaluation plan is broad and appropriate for HEP fast simulation.
+  - The separation between structural validity and empirical fidelity is correct.
+
+However, the specification is not yet fully implementation-ready because several
+data-contract and probabilistic-semantics issues remain open:
+
+  - The ROOT/data target has not been numerically audited.
+  - The definition of total response T, reserve Rres, subthreshold U_l, active
+    layer A_l, and visible V must be frozen precisely.
+  - The shared latent z needs a clear probabilistic role.
+  - Count feasibility must be enforced dynamically at sampling.
+  - Hard Top-k requires an explicit training-time support-learning path.
+  - Performance and evaluation acceptance criteria must be predeclared.
+
+Overall disposition:
+  DESIGN STATUS: Conditional pass.
+  IMPLEMENTATION STATUS: Not approved until critical/high findings resolved.
+  PHYSICS FIDELITY STATUS: Not evaluated; cannot be claimed from this audit.
+
+
+2. SOURCE INVENTORY
+--------------------------------------------------------------------------------
+Primary source:
+  S1. Uploaded specification text: CBSC_ZDC_Auditor_Specification_LaTeX.pdf,
+      provided in knowledge base.
+
+Internal project sources cited by specification:
+  S2. [5] Independent Audit of Legacy Recurrent HurdleGraph Model.
+  S3. [6] Independent Audit of HGF-ZDC.
+  S4. [7] Proposal: Single-Stage Graph Flow Baseline.
+
+External methodological sources cited by specification:
+  S5. [1]-[4] Geant4 toolkit and hadronic physics documentation.
+  S6. [8]-[9] Longitudinal shower parameterization literature.
+  S7. [10]-[11] ALICE ZDC TDR and ZDC performance.
+  S8. [12]-[16] ZDC ML baselines: VAE/GAN/VQ/diffusion, faster_zdc, ExpertSim,
+      inverse autoregressive flow.
+  S9. [17]-[21] Hierarchical calorimeter flows and flow matching: CaloFlow,
+      iCaloFlow, L2LFlows, Convolutional L2LFlows, CaloDREAM.
+  S10. [22]-[23] Flow matching foundations.
+  S11. [24]-[25] Graph and geometry-aware calorimeter simulation.
+  S12. [27]-[29], [36] Sparse and point-cloud calorimeter models.
+  S13. [30]-[34] Gumbel-Top-k and sparse subset relaxations.
+  S14. [38]-[42] Evaluation metrics, precision/recall, full physics benchmark,
+       calomplification.
+  S15. [37] AtlFast3 and hybrid production fast simulation.
+
+General domain knowledge used only where consistent with cited sources:
+  S16. Neutron neutrality and stochastic hadronic first interaction depth.
+  S17. Calorimeter readout sparsity and threshold effects.
+
+External verification performed:
+  NONE. No external URLs, papers, repositories, or ROOT data were fetched.
+
+
+3. CLAIM AUDIT
+--------------------------------------------------------------------------------
+Claim C1: Monotone per-layer deposit is physically inappropriate.
+  AUDIT: ACCEPT.
+  EVIDENCE: Neutron hadronic showers can start late and grow; document Sections
+  2.1, 5.5; references [8], [4].
+  QA: Proposition 5.1 replaces layer monotonicity with budget monotonicity.
+
+Claim C2: Model uses known published components.
+  AUDIT: ACCEPT.
+  EVIDENCE: Hurdle, beta mixture, survival model, masked simplex, categorical
+  counts, CFM, graph message passing, transformer, Gumbel-Top-k, exact decoder
+  are all known primitives.
+  QA: No new primitive architecture is required.
+
+Claim C3: Decoder guarantees nonnegative outputs, exact zeros, threshold
+consistency, and accounting identities under assumptions.
+  AUDIT: ACCEPT WITH FEASIBILITY CONDITIONS.
+  EVIDENCE: Theorem 8.1 and Corollary 8.2; re-derived in this audit.
+  QA: Requires feasible K_l, B>=K_l*tau, valid masks, and correct residual
+  handling.
+
+Claim C4: Training/reporting protocol separates implementation validity from
+empirical fidelity.
+  AUDIT: ACCEPT.
+  EVIDENCE: Abstract assurance statement; Sections 1.2, 13, 14, 16, 20.
+  QA: Audit conclusion preserves this separation.
+
+Claim: CBSC-ZDC reproduces Geant4.
+  AUDIT: NOT CLAIMED AND NOT VERIFIED.
+  EVIDENCE: Explicitly stated in specification.
+  QA: Requires training, held-out evaluation, and baseline comparison.
+
+
+4. PHYSICS AUDIT
+--------------------------------------------------------------------------------
+4.1 Neutron stochasticity
+  STATUS: PASS.
+  NOTES: Neutral particles do not continuously ionize like charged particles;
+  hadronic interaction occurrence and final state are stochastic. Conditional
+  distribution modeling is appropriate.
+
+4.2 Nonmonotone longitudinal deposits
+  STATUS: PASS.
+  NOTES: Event-level layer deposits can rise, fluctuate, and show secondary
+  maxima. Monotone remaining budget is the correct conservation structure.
+
+4.3 Detector specificity
+  STATUS: PASS.
+  NOTES: ZDC response is geometry/material/readout specific. ALICE baselines
+  are methodological, not drop-in.
+
+4.4 Scored target vs microscopic transport
+  STATUS: PASS.
+  NOTES: Model emulates readout distribution. Learned "transport" is statistical
+  dependence unless supervised by track/step truth.
+
+4.5 Energy support T/E <= 1
+  STATUS: CONDITIONAL.
+  NOTES: Valid only if data audit confirms raw deposited energy scoring and no
+  legitimate overflow. Nuclear Q values, invisible energy, rest-mass conventions,
+  and producer totals must be checked.
+
+4.6 Threshold semantics
+  STATUS: CONDITIONAL.
+  NOTES: Threshold tau must be frozen from detector/electronics/analysis, not
+  chosen for optimization convenience. Subthreshold residual U_l must be
+  definable from source data.
+
+
+5. DATA CONTRACT AUDIT
+--------------------------------------------------------------------------------
+5.1 Sole raw condition p_mu
+  STATUS: PASS WITH GUARDS.
+  REQUIRED:
+    - Validate shape [B,4].
+    - Validate units GeV.
+    - Validate neutron mass-shell residual within tolerance.
+    - Reject or flag events outside declared support.
+    - Guard against ||p||=0, E<=0, pz=0 for derived direction/entry features.
+
+5.2 Static geometry
+  STATUS: PASS WITH AUDIT REQUIRED.
+  REQUIRED:
+    - Geometry hash immutable.
+    - Valid channel list audited.
+    - Edge list derived from physical adjacency/overlap.
+    - No array-slot edges.
+    - Degree/connectivity report.
+    - Isolated valid nodes justified.
+
+5.3 Entry position
+  STATUS: CONDITIONAL.
+  REQUIRED:
+    - Confirm fixed gun vertex and detector plane.
+    - If vertex varies, either include vertex as condition or restrict claims to
+      fixed-vertex manifold.
+
+5.4 Target mode
+  STATUS: CRITICAL OPEN.
+  REQUIRED:
+    - Freeze raw-deposit or thresholded-readout mode.
+    - Define V truth.
+    - Define T truth.
+    - Define A_l truth.
+    - Define K_l truth.
+    - Define U_l truth.
+    - Define Rres truth or interpretation.
+    - Reconcile T with sum cell energies and producer summary branches.
+
+5.5 Splitting/provenance
+  STATUS: PASS WITH CAUTION.
+  REQUIRED:
+    - Prefer job/run/seed family split.
+    - If row-hash split, report limitation.
+    - Search duplicates and near-duplicates.
+    - Keep final test set locked.
+
+
+6. MATHEMATICAL AUDIT
+--------------------------------------------------------------------------------
+6.1 Proposition 5.1: Monotone remaining budget
+  STATUS: PASS.
+  PROOF RECHECK:
+    R_l = T - sum_{j=0}^l D_j.
+    R_{l+1} = R_l - D_{l+1}.
+    If D_{l+1} >= 0, then R_{l+1} <= R_l.
+    Also R_l = Rres + sum_{j>l} D_j >= Rres >= 0.
+    No constraint D_{l+1} <= D_l is implied.
+
+6.2 Theorem 8.1: No-dust exact-count exact-budget decoder
+  STATUS: PASS UNDER FEASIBILITY.
+  CONDITIONS:
+    B > 0, 1 <= K <= N_l, B >= K tau, |S_l|=K, w_i>0, sum w_i=1.
+  PROOF RECHECK:
+    Unselected: Y_i=0.
+    Selected: Y_i=tau+(B-K tau)w_i >= tau.
+    Sum: K tau + (B-K tau)*1 = B.
+    Positive count: exactly K.
+    No 0<Y<tau: selected >= tau, unselected = 0.
+
+6.3 Corollary 8.2: Event accounting
+  STATUS: PASS UNDER LAYER ACCOUNTING.
+  PROOF RECHECK:
+    For each layer, either resolved sum_i Y_i = D_l or unresolved U_l = D_l.
+    Sum_l D_l + Rres = T.
+    Therefore sum_i Y_i + sum_l U_l + Rres = T.
+
+6.4 Factorization notation
+  STATUS: ISSUE.
+  NOTES: S is used for first visible layer and selected cell support.
+  RECOMMENDATION: Rename first visible layer to S_vis or L0; rename cell support
+  to C_l or S_cell,l.
+
+6.5 Latent z semantics
+  STATUS: ISSUE.
+  NOTES: z ~ N(0,I) is introduced, but no prior regularization, encoder, or
+  marginal likelihood is specified. It may be a stochastic conditioning input
+  rather than a latent variable in a probabilistic density model.
+  RECOMMENDATION: Explicitly define z as one of:
+    Option A: Pure noise conditioning variable, not claimed to induce latent
+              event structure.
+    Option B: VAE/flow latent with q(z | truth) and prior p(z), with ELBO or
+              equivalent objective.
+    Option C: Conditional latent sampled from a learned prior p(z | c) with
+              explicit training protocol.
+
+
+7. MODEL ARCHITECTURE AUDIT
+--------------------------------------------------------------------------------
+7.1 Visible hurdle
+  STATUS: PASS.
+  NOTES: Handles zero-response point mass.
+  REQUIRED: Truth definition for V frozen.
+
+7.2 Total response beta mixture
+  STATUS: PASS WITH CONDITIONS.
+  NOTES: Bounded support appropriate if T/E in [0,1].
+  REQUIRED:
+    - Endpoint mass at rho=1 handled explicitly if present.
+    - Possible near-zero visible response handled by V hurdle.
+    - Overflow T/E>1 handled by target-correct distribution if audit requires.
+
+7.3 First-visible-layer survival
+  STATUS: PASS WITH CONDITIONS.
+  REQUIRED:
+    - Normalization over detector layers defined.
+    - Relation between V=0 and S undefined state handled.
+    - "Visible" defined as raw or thresholded consistently.
+
+7.4 Active-layer model
+  STATUS: CONDITIONAL.
+  ISSUE: In thresholded mode, a layer with only subthreshold energy may have no
+  resolved hit but nonzero raw budget. If A_l=0, D_l=0 and U_l cannot represent
+  that energy. If A_l=1, D_l can be <tau and K_l=0 with U_l=D_l.
+  RECOMMENDATION: Define A_l as "layer has nonzero modeled budget" for
+  accounting, while K_l represents resolved hit count. Report both raw-active
+  and resolved-hit layer masks.
+
+7.5 Masked-simplex profile
+  STATUS: PASS WITH CONDITIONS.
+  REQUIRED:
+    - Inactive layers exactly zero.
+    - Reserve diagnostics reported.
+    - Reserve target/regularization defined.
+
+7.6 Count model
+  STATUS: HIGH-RISK BUT FIXABLE.
+  REQUIRED:
+    - Dynamic feasibility masks from generated D_l and tau.
+    - Raw mode: K=0 iff D=0; if D>0, 1<=K<=N_l.
+    - Threshold mode: if D<tau, K=0; if D>=tau, 1<=K<=min(N_l, floor(D/tau)).
+    - Categorical logits masked before sampling.
+    - Count calibration reported by energy, layer, angle, start, budget.
+
+7.7 Spatial CFM
+  STATUS: PASS WITH CONDITIONS.
+  REQUIRED:
+    - t explicitly consumed.
+    - solver documented.
+    - support and share channels weighted.
+    - truth-conditioned and generated-conditioned evaluations separated.
+
+7.8 Graph/transformer causality
+  STATUS: PASS WITH TESTS.
+  REQUIRED:
+    - Longitudinal edges directed shallow->deep in causal model.
+    - Transformer causal mask layer l attends only 0..l.
+    - Bidirectional graph only in separate ablation.
+    - Unit test that changing future layer inputs does not affect earlier layer
+      outputs in causal mode.
+
+7.9 Anti-dust decoder
+  STATUS: PASS.
+  REQUIRED:
+    - Gumbel-Top-k over valid channels only.
+    - K feasibility checked.
+    - B>=K tau checked.
+    - Subthreshold residual recorded when B<tau.
+    - Large-sample assertion: zero cells with 0<Y<tau.
+
+
+8. TRAINING OBJECTIVE AUDIT
+--------------------------------------------------------------------------------
+8.1 Modular loss
+  STATUS: PASS.
+  NOTES: Matches factorization.
+
+8.2 Loss weighting
+  STATUS: MEDIUM RISK.
+  REQUIRED:
+    - Report all unweighted losses.
+    - Report weighted contributions.
+    - Report gradient norms by stage.
+    - Select weights on validation, not test.
+
+8.3 Support training
+  STATUS: HIGH RISK.
+  REQUIRED:
+    - Support logits supervised/ranked against truth.
+    - Later-stage generated-count/generated-support exposure.
+    - Optional relaxation/straight-through ablations.
+
+8.4 Auxiliary losses
+  STATUS: PASS WITH CAUTION.
+  REQUIRED:
+    - Aux diagnostics must not reduce experiment to eventwise regression against
+      arbitrary independent Geant4 shower.
+
+8.5 Latent z training
+  STATUS: HIGH RISK.
+  REQUIRED:
+    - Define probabilistic role and objective term or explicitly label z as
+      stochastic noise conditioning.
+
+
+9. SAMPLING AND DECODING AUDIT
+--------------------------------------------------------------------------------
+9.1 Solver
+  REQUIRED:
+    - Document solver type, steps, precision, seed.
+    - Compare 4/8/16 steps as planned.
+    - Report sensitivity of metrics to solver steps.
+
+9.2 Top-k
+  REQUIRED:
+    - Stochastic Gumbel-Top-k for generation.
+    - Deterministic Top-k for diagnostics.
+    - Valid-channel mask applied.
+
+9.3 Decoder invariants
+  REQUIRED AUTOMATED ASSERTIONS:
+    - finite tensors.
+    - no negative energy.
+    - invalid/padded channels zero.
+    - exact support count.
+    - no forbidden dust.
+    - per-layer resolved sum equals D_l - U_l.
+    - event accounting identity.
+    - T/E bounded only if audited.
+
+9.4 Edge cases
+  REQUIRED:
+    - V=0 returns all zeros and T=0 or ignored.
+    - D_l=0 gives K_l=0 and Y_l=0.
+    - D_l<tau gives K_l=0 and U_l=D_l.
+    - D_l=K_l*tau gives selected cells exactly tau.
+    - N_l=0 layers handled.
+    - tau=0 raw mode handled without division by tau.
+
+
+10. EVALUATION AUDIT
+--------------------------------------------------------------------------------
+10.1 Distributional diagnostics
+  STATUS: STRONG.
+  REQUIRED:
+    - Conditional histograms by energy/angle/response regime.
+    - C2ST with geometry-aware and high-level features.
+    - Frechet/kernel distances with frozen feature extractor.
+    - Precision/recall/coverage.
+    - Truth-half floors.
+    - Repeated-condition ensembles.
+
+10.2 Physics observables
+  REQUIRED:
+    - Total response.
+    - Zero-response rate.
+    - First visible layer.
+    - Active-layer count.
+    - Longitudinal profile.
+    - Cumulative profile.
+    - Late-energy fraction.
+    - ECAL fraction.
+    - Hit count.
+    - Occupancy.
+    - Positive-hit spectrum.
+    - Subthreshold residual.
+    - Transverse centroid, RMS, R50, R90.
+    - Maximum-cell and top-k fractions.
+    - Correlations among response, start, count, width, ECAL fraction, late energy.
+
+10.3 Downstream reconstruction
+  REQUIRED:
+    - Freeze reconstruction model before comparison.
+    - Report energy scale/resolution.
+    - Report position/angle resolution.
+    - Report efficiencies and threshold behavior.
+    - Train-on-Geant4/test-on-FastMC and reverse.
+
+10.4 Timing
+  REQUIRED:
+    - Hardware, batch, precision, solver, preprocessing, decoding, output size.
+    - Model-only and end-to-end timing.
+    - Batch 1 and representative larger batches.
+
+10.5 Acceptance criteria
+  STATUS: MISSING BUT REQUIRED.
+  RECOMMENDATION: Predeclare primary metrics, statistical uncertainty method,
+  and decision rules before opening final test set.
+
+
+11. REPRODUCIBILITY AND PROVENANCE AUDIT
+--------------------------------------------------------------------------------
+STATUS: STRONG DESIGN.
+REQUIRED:
+  - config_resolved.yaml.
+  - environment.txt.
+  - git_commit.txt.
+  - data_manifest.json.
+  - geometry_hash.txt.
+  - statistics.pt.
+  - checkpoints with optimizer/scheduler/scaler/RNG states.
+  - validation bank version.
+  - deterministic replay under fixed seeds.
+  - nondeterminism tolerance reported for GPU/transformer/SDPA.
+
+
+12. SOFTWARE QA STATUS AUDIT
+--------------------------------------------------------------------------------
+REPORTED STATUS:
+  - 30 tests passed.
+  - 100% statement/branch coverage under synthetic suite.
+  - nested-tensor optimization warning from transformer norm_first=True.
+  - scaffold, not full training system.
+
+AUDIT INTERPRETATION:
+  - Synthetic coverage is good for structural paths.
+  - It does not validate Geant4 fidelity.
+  - Production ROOT converter, data loader, geometry builder, loss orchestration,
+    Vertex launcher, and full evaluation package remain work items.
+
+ADDITIONAL REQUIRED TESTS:
+  - Dynamic count feasibility masks.
+  - t-dependence test.
+  - causal leakage test.
+  - condition permutation test.
+  - mass-shell rejection test.
+  - low-momentum guard test.
+  - threshold/raw mode edge cases.
+  - reserve accounting test.
+  - subthreshold residual test.
+  - large-sample accounting test.
+  - external baseline manifest reproducibility.
+
+
+13. FAILURE MODE / TEST MATRIX
+--------------------------------------------------------------------------------
+FM1 Dense dust
+  TEST: Assert no 0<Y<tau; report occupancy and positive-hit spectrum.
+
+FM2 Unbounded response tail
+  TEST: Million-sample tail audit; target-correct response if needed.
+
+FM3 Profile underweighting
+  TEST: Standalone response model; profile-only metrics; gradient reports.
+
+FM4 Mode averaging
+  TEST: Hurdle/mixture routing; conditional precision/recall; repeated p_mu.
+
+FM5 Count bottleneck
+  TEST: Count calibration; truth-count vs generated-count spatial tests.
+
+FM6 Exposure bias
+  TEST: Truth-conditioned vs generated-conditioned cascade; cross-combination
+  matrix; optional joint fine-tuning.
+
+FM7 Invalid graph
+  TEST: Geometry audit; degree/connectivity; physical edge provenance; no-graph
+  comparison.
+
+FM8 Condition ignorance
+  TEST: Condition permutation; local interpolation; repeated-p4 evaluation.
+
+FM9 Support extrapolation
+  TEST: Report stress/OOD separately; generate new anchored Geant4 data.
+
+FM10 Latency failure
+  TEST: Profile every stage; solver sweep; distillation/latent comparison only
+  after fidelity teacher exists.
+
+
+14. FINDINGS REGISTER
+--------------------------------------------------------------------------------
+Severity scale:
+  CRITICAL: Blocks valid scientific interpretation until resolved.
+  HIGH: Likely to cause invalid samples, training failure, or misleading results.
+  MEDIUM: Important design/evaluation risk; should be resolved before final run.
+  LOW: Minor or operational.
+  INFO: Documentation/evidence note.
+
+F-01 CRITICAL OPEN
+  Title: Numerical ROOT/data audit not completed.
+  Evidence: Section 10.1; current environment lacks ROOT/Uproot/Awkward; small
+  ROOT file is schema fixture only.
+  Risk: All data assumptions provisional.
+  Remediation: Execute ROOT audit: hashes, branches, units, channel codec,
+  sentinel records, duplicate IDs, summary-branch reconciliation, zero-response
+  rate, occupancy, threshold sensitivity, vertex/provenance.
+
+F-02 CRITICAL OPEN
+  Title: Target mode and total response definition not frozen.
+  Evidence: Sections 3.4, 3.5, 4, 5.2.
+  Risk: V, T, A, D, U, Rres, K truth may be inconsistent.
+  Remediation: Freeze one target mode. Define T as sum raw deposits, sum
+  thresholded deposits plus subthreshold, or producer total. Reconcile with
+  cell energies and reserve.
+
+F-03 HIGH OPEN
+  Title: Shared latent z probabilistic role under-specified.
+  Evidence: Section 4; loss equation Section 9.
+  Risk: z may be mere noise; event-level dependence claim weakened; density
+  interpretation ambiguous.
+  Remediation: Define z as noise, VAE/flow latent with encoder/prior, or
+  conditional prior. Add corresponding objective term or explicit disclaimer.
+
+F-04 HIGH OPEN
+  Title: Active-layer truth vs subthreshold ambiguity in thresholded mode.
+  Evidence: Sections 3.4, 5.4, 8.2.
+  Risk: Layers with only subthreshold energy cannot be accounted if A_l=0.
+  Remediation: Define A_l as nonzero modeled budget for accounting; define
+  separate resolved-hit mask. Report both.
+
+F-05 HIGH OPEN
+  Title: Count feasibility must be dynamically masked.
+  Evidence: Sections 6, 8.2.
+  Risk: Sampling K_l with K_l*tau > D_l or K_l>N_l breaks decoder assumptions.
+  Remediation: Mask categorical count logits using generated D_l, tau, N_l.
+  Assert feasibility before decode.
+
+F-06 HIGH OPEN
+  Title: Hard Top-k requires explicit training path.
+  Evidence: Section 8.4.
+  Risk: Truth-conditioned spatial loss can hide free-running support errors.
+  Remediation: Supervise/rank support logits; use relaxation/straight-through;
+  expose model to generated counts/support in Stage 5.
+
+F-07 MEDIUM OPEN
+  Title: Notation collision S.
+  Evidence: Section 4 factorization; Section 8 cell support.
+  Risk: Auditor/implementer confusion.
+  Remediation: Rename first visible layer S_vis or L0; rename cell support
+  C_l or S_cell,l.
+
+F-08 MEDIUM OPEN
+  Title: Reserve Rres target/interpretation not frozen.
+  Evidence: Sections 5.5, Remark 5.2.
+  Risk: Reserve can absorb profile errors silently.
+  Remediation: Define reserve truth or regularization; report reserve
+  distribution; cap or penalize if appropriate.
+
+F-09 MEDIUM OPEN
+  Title: Endpoint masses in rho distribution.
+  Evidence: Section 5.2.
+  Risk: Beta mixture may smooth over rho=1 or near-zero structure.
+  Remediation: Add explicit endpoint/atom components if data show masses.
+
+F-10 MEDIUM OPEN
+  Title: Low-energy and zero-momentum guards.
+  Evidence: Sections 3.1, 3.3.
+  Risk: Division by ||p|| or pz; unstable angles near rest.
+  Remediation: Validate reporting domain; guard or reject unsafe events;
+  document tolerance.
+
+F-11 MEDIUM OPEN
+  Title: Performance risk for full 6790-node graph CFM.
+  Evidence: Sections 7, 11.3, 14.
+  Risk: Model may be too slow for FastMC usefulness.
+  Remediation: Profile early; compare solver steps; consider latent/distillation
+  only after fidelity teacher exists.
+
+F-12 MEDIUM OPEN
+  Title: Primary evaluation metrics and acceptance rules not predeclared.
+  Evidence: Section 13.
+  Risk: Post-hoc metric selection.
+  Remediation: Pre-register primary observables, statistical tests, and decision
+  rules before final test evaluation.
+
+F-13 MEDIUM OPEN
+  Title: Condition manifold/entry position depends on fixed vertex.
+  Evidence: Section 3.3.
+  Risk: Edge-entry claims may exceed actual Geant4 coverage.
+  Remediation: Audit gun vertex; if variable, include as condition or restrict
+  claims.
+
+F-14 MEDIUM OPEN
+  Title: Threshold provenance.
+  Evidence: Section 3.4.
+  Risk: tau chosen for optimization rather than detector/readout reality.
+  Remediation: Freeze tau from detector/electronics/analysis; report sensitivity.
+
+F-15 MEDIUM OPEN
+  Title: Subthreshold U_l supervision may be impossible from thresholded-only
+  data.
+  Evidence: Sections 3.4, 10.2.
+  Risk: Accounting identity uses U_l but truth U_l may be unavailable.
+  Remediation: Require raw deposits for U_l supervision or define U_l as latent
+  accounting variable with clear loss treatment.
+
+F-16 MEDIUM OPEN
+  Title: Loss weighting governance.
+  Evidence: Section 9.
+  Risk: One loss term dominates; physics errors hidden by total loss decrease.
+  Remediation: Report unweighted losses, weighted contributions, gradient norms;
+  select weights on validation.
+
+F-17 MEDIUM OPEN
+  Title: Generated-count/share mismatch in flow target.
+  Evidence: Sections 7.2, 8.4.
+  Risk: r_i target normalized by truth K; generated K may differ.
+  Remediation: Stage 5 generated-support exposure; ablate truth vs generated K.
+
+F-18 MEDIUM OPEN
+  Title: Causal leakage risk if edge directions/masks misconfigured.
+  Evidence: Sections 7.4, 7.5.
+  Risk: Future layer information contaminates earlier layers.
+  Remediation: Unit test edge direction and causal mask; separate bidirectional
+  ablation.
+
+F-19 LOW OPEN
+  Title: Determinism not guaranteed on GPU.
+  Evidence: Sections 11.3, 13.1.
+  Risk: Replay differences from nondeterministic kernels.
+  Remediation: Use deterministic settings where possible; report tolerance.
+
+F-20 LOW OPEN
+  Title: Transformer nested-tensor warning.
+  Evidence: Section 16.
+  Risk: Performance/compatibility issue, not necessarily numerical.
+  Remediation: Profile alternative transformer settings in production timing.
+
+F-21 LOW OPEN
+  Title: External baseline license/availability.
+  Evidence: Section 12.1.
+  Risk: Cannot integrate or redistribute some baselines.
+  Remediation: Check licenses; document adaptation as new experiment.
+
+F-22 LOW OPEN
+  Title: Padding vs valid zero-energy cells.
+  Evidence: Section 10.2.
+  Risk: Padding mistaken for physical zeros.
+  Remediation: Explicit valid mask; assert invalid/padded channels zero.
+
+F-23 LOW OPEN
+  Title: Epsilon/versioning in target transform.
+  Evidence: Section 7.2.
+  Risk: Train/decode mismatch if epsilon changes.
+  Remediation: Version epsilon with target transform and decoder.
+
+F-24 LOW OPEN
+  Title: Mass-shell tolerance policy.
+  Evidence: Section 3.1.
+  Risk: Silent acceptance of malformed p_mu.
+  Remediation: Define tolerance, reject/flag policy, and QA histogram.
+
+F-25 INFO
+  Title: 600-work catalogue is discovery map, not full replication.
+  Evidence: Section 17.
+  Risk: Overstated literature evidence.
+  Remediation: Keep evidence-depth labels.
+
+F-26 INFO
+  Title: Some references are 2025/2026 and current as of audit date.
+  Evidence: References [14]-[16], [41], [4].
+  Risk: None apparent.
+  Remediation: Verify external availability if used in implementation.
+
+F-27 INFO
+  Title: Internal audits [5]-[7] are not externally verifiable from this file.
+  Evidence: Section 1.3, Appendix A.
+  Risk: Motivation relies on internal evidence.
+  Remediation: Keep internal evidence packages linked in repository.
+
+F-28 INFO
+  Title: No security/privacy risk apparent.
+  Evidence: HEP simulation; no personal data.
+  Risk: Low.
+  Remediation: Standard code/data integrity controls.
+
+
+15. AUDITOR CHECKLIST RESULTS
+--------------------------------------------------------------------------------
+C1 ROOT branch map/units/channel codec/sentinel/event counts:
+   NOT VERIFIED. Requires data audit.
+
+C2 Target is raw deposit or thresholded readout, not mixed:
+   NOT VERIFIED. Must freeze.
+
+C3 Energy-support assumption T/E <= 1:
+   NOT VERIFIED. Requires overflow audit.
+
+C4 Geometry hashes and adjacency/isolated-node audit:
+   NOT VERIFIED. Design requirement present.
+
+C5 Sole raw condition p_mu and deterministic entry under fixed vertex:
+   CONDITIONAL. Requires vertex audit.
+
+C6 Static compilation/unit tests/deterministic replay:
+   PARTIALLY VERIFIED by document: 30 tests passed, synthetic coverage 100%.
+   Not independently executed in this audit.
+
+C7 Every generated tensor traceable to mathematical variable:
+   PASS by specification design; needs implementation trace.
+
+C8 Flow field consumes t and solver documented:
+   PASS by specification; requires unit test in code.
+
+C9 Hard support not only gradient path:
+   CONDITIONAL. Specification recommends support supervision/relaxation; must be
+   implemented.
+
+C10 Zero dust/exact count/per-layer/event accounting on large sample:
+   PASS mathematically; requires runtime assertion on large generated sample.
+
+C11 Primary-domain and stress-domain reports separate:
+   PASS by design.
+
+C12 Baselines matched or mismatches disclosed:
+   PASS by design; requires execution.
+
+C13 Final test set not used for preprocessing/threshold/checkpoint:
+   PASS by design; requires workflow enforcement.
+
+C14 Speed comparisons report hardware/batch/precision/steps/preprocessing:
+   PASS by design.
+
+C15 Conclusions do not exceed supported condition manifold:
+   PASS. Specification explicitly avoids overclaiming.
+
+
+16. RESEARCH IDEAS AND OPTIONAL IMPROVEMENTS
+--------------------------------------------------------------------------------
+These are not required upgrades. They are ablations or future options.
+
+R-01 Conditional latent z.
+  Replace pure noise z with amortized latent q(z | truth) or conditional prior
+  p(z | c) if event-level latent structure is desired.
+
+R-02 Endpoint atoms for rho.
+  Add explicit point mass at rho=1 or near-1 component if data show endpoint.
+
+R-03 Zero-inflated layer profile.
+  Use layer-level hurdle or zero-inflated logistic-normal to handle exact zero
+  layers more explicitly than active Bernoulli plus simplex.
+
+R-04 Count model alternatives.
+  Test grouped categorical, Poisson-binomial, or hierarchical count models if
+  per-layer N_l is large or count distributions are highly structured.
+
+R-05 Support relaxation alternatives.
+  Compare Gumbel-Top-k with sparsemax, entmax, hard-concrete, continuous subset
+  relaxation.
+
+R-06 Scheduled sampling.
+  Gradually replace truth counts/support/profile with generated ones to reduce
+  exposure bias.
+
+R-07 Latent graph compression.
+  If full-node CFM is too slow, learn a geometry-aware latent representation and
+  decode to cells, but only after a faithful full-state teacher exists.
+
+R-08 Mixture-of-experts routing.
+  Route by total response regime, first visible layer, ECAL fraction, or late
+  energy to handle heterogeneous ZDC response.
+
+R-09 Point-cloud decoder.
+  If threshold and readout mapping are frozen, compare against point-cloud
+  generation for sparse hit sets.
+
+R-10 Distillation.
+  Distill ODE solver to fewer steps only after fidelity teacher is established.
+
+R-11 Tail-aware objectives.
+  Add quantile or tail diagnostics, but avoid turning generation into eventwise
+  regression.
+
+R-12 Reconstruction-aware diagnostics.
+  Use frozen reconstruction as evaluation, not as a hidden training target that
+  overfits downstream metric.
+
+
+17. ITERATION SUMMARY
+--------------------------------------------------------------------------------
+Iteration 1:
+  Initial reading suggested the specification was strong and mostly complete.
+
+Iteration 2:
+  Physics QA confirmed rejection of monotone layer deposits and monotone budget
+  proof.
+
+Iteration 3:
+  Decoder QA confirmed exact anti-dust invariants but exposed dependence on
+  feasible counts.
+
+Iteration 4:
+  Research pass identified latent-z semantics as under-specified.
+
+Iteration 5:
+  Data-contract QA identified critical open issues: ROOT audit, target mode,
+  T/Rres/U/A definitions.
+
+Iteration 6:
+  Architecture QA identified count feasibility masks and support training as
+  high-risk implementation details.
+
+Iteration 7:
+  Evaluation QA identified need for predeclared primary metrics and acceptance
+  rules.
+
+Iteration 8:
+  Final consolidation produced 28 findings and a conditional design approval.
+
+
+18. FINAL AUDIT DISPOSITION
+--------------------------------------------------------------------------------
+STRUCTURAL DESIGN:
+  PASS WITH CONDITIONS.
+
+MATHEMATICAL INVARIANTS:
+  PASS under stated assumptions and feasibility conditions.
+
+DATA CONTRACT:
+  NOT VERIFIED. Critical prerequisite remains.
+
+IMPLEMENTATION READINESS:
+  CONDITIONAL. Resolve critical/high findings before full training.
+
+FIDELITY TO GEANT4:
+  NOT EVALUATED. Cannot be claimed from this audit.
+
+OVERALL:
+  The specification is scientifically coherent and worth implementing. It is
+  auditor-ready as a design contract. It is not a validated fast simulator. A
+  negative empirical result would still be informative if the controlled
+  comparison protocol is followed.
+
+================================================================================
+END OF FILE
+================================================================================
