@@ -1891,6 +1891,11 @@ include local mutations, Cloud Build, and Vertex submissions.
 275. Both merged staging reports pass at 212 objects (205 base + 4 shared + 3
      unique), synthetic false, no forbidden path, exact config/checkpoint
      hashes. Report SHAs are `e93fd568...6a73` and `72cb82b8...244f`.
+276. Exactly two wave-2 jobs were accepted: LR3e-4 pipeline/custom
+     `7762998777287278592`/`8103319616316506112`, half-batch
+     `3138927859884621824`/`576590778143342592`. Independent specs match
+     on-demand one-T4 r20, one replica, 100GB pd-ssd, timeout 14400s, approved
+     SA, exact inputs/configs/outputs. Initial state is pending; next timer 300s.
 
 ## Implementation QA disposition
 

@@ -3397,6 +3397,24 @@ remain empty. Budget and all hard gates permit exactly these two on-demand T4
 continuations using immutable r20 `sha256:8b4a94c0...9048f`; no test or final
 six-run training is authorized.
 
+## 2026-07-27 06:58 Asia/Taipei — exactly two wave-2 jobs submitted
+
+After a final output-emptiness and `$58.05` post-reserve budget check, exactly
+the two selector-authorized jobs were submitted:
+
+- calibrated LR3e-4: pipeline `7762998777287278592`, custom job
+  `8103319616316506112`;
+- calibrated LR1e-4 half-batch: pipeline `3138927859884621824`, custom job
+  `576590778143342592`.
+
+Independent server descriptions initially show `JOB_STATE_PENDING` and match
+one on-demand `NVIDIA_TESLA_T4`, one `n1-standard-8` replica, 100 GB `pd-ssd`,
+14,400-second timeout, approved service account, immutable r20
+`sha256:8b4a94c0...9048f`, exact base/shared/unique prefixes, exact frozen
+config relative paths, CUDA, postflight training, and unique output prefixes.
+No third job or local observer was submitted. The next gate is a 300-second
+shell timer followed by identity/state/progress inspection.
+
 ## 2026-07-26 21:54 Asia/Taipei — dashboard browser retry preserved
 
 The five Vertex jobs remain under the existing 3,000-second timer; no job was
