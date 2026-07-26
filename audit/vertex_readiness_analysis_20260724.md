@@ -1727,6 +1727,16 @@ include local mutations, Cloud Build, and Vertex submissions.
      variants concurrently, but calibration/dependent gates remain serial and
      every parallel wave needs a combined worst-case budget reservation and
      unique generation-zero prefixes.
+239. User narrowed the outcome to an A100 viability decision, not final
+     publication training. Predeclared five-way one-epoch wave is default
+     control; calibrated LR 3e-5/1e-4/3e-4; calibrated LR1e-4 effective-batch
+     half-control. Exact real bank/checkpoint/FP32/fixed-50x5/zero-test gates
+     remain. At most two continue several epochs; result is GO/CONDITIONAL
+     GO/NO-GO, never physics validation.
+240. Unfrozen viability generator `4244704c...e494b` and tests
+     `58eab82d...f23a5` pass Ruff/compile and combined 8 tests. R2 allocated at
+     20:35:18 local. Existing 600s calibration timer remains; later measured
+     epoch timer is 4200s from 3878s training plus terminal overhead.
 
 ## Implementation QA disposition
 

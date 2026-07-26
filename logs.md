@@ -3042,3 +3042,35 @@ independent validation/optimizer/throughput variants with unique empty
 generation-zero prefixes and a combined worst-case budget reservation.
 Dependent gates, calibration retries, and protocol-freezing steps remain
 serial; parallel capacity is never used to duplicate a job or bypass evidence.
+
+## 2026-07-26 20:50 Asia/Taipei — A100 decision scope and r2 allocation
+
+The user clarified that Vertex should establish whether the model is worth
+scaling to A100s, not complete the publication-scale six-run final matrix.
+The frozen test bank remains closed and physics validation remains
+unestablished. The new bounded decision protocol is:
+
+1. accept train-only calibration;
+2. run five matched one-epoch pilots concurrently: exact default-weight
+   control, calibrated weights at learning rates `3e-5`, `1e-4`, `3e-4`, and
+   calibrated `1e-4` with half effective batch;
+3. require real 26,624/4,096/0 staging, finite/all-nine losses, checkpoint
+   reload, invariants, ≥15% T4 headroom, 8/8 timing, and fixed 50×5
+   Geant4/FastMC visualization per epoch;
+4. Pareto-select at most two from validation/structural/visual evidence only
+   and continue them for several epochs;
+5. report A100 `GO`, `CONDITIONAL GO`, or `NO-GO`, without calling the pilot
+   physics validation.
+
+At measured joint throughput, one pilot epoch is 3,878 seconds plus about
+4–6 minutes of validation/visualization/postflight. The future epoch poll
+interval is therefore 4,200 seconds. Calibration r2 itself entered
+`JOB_STATE_RUNNING` at `2026-07-26T12:35:18Z`; its existing 600-second timer
+remains active, with expected terminal evidence about 20:55–21:20.
+
+Unfrozen-only viability-wave generator SHA `4244704c...e494b` and test SHA
+`58eab82d...f23a5` predeclare the five variants, exact checkpoint binding,
+one epoch, FP32, fixed visualization, zero test, update-50 recovery snapshots,
+and wave limit five. They do not freeze a config or submit a job. Ruff,
+compileall, and the combined calibration/viability tests pass `8/8` with one
+known Transformer warning.
