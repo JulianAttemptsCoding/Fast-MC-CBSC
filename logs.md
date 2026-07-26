@@ -3195,3 +3195,15 @@ and exact A100 GO/CONDITIONAL-GO/NO-GO thresholds. Official NVIDIA A100/T4
 specifications and Google GPU pricing were rechecked. Hardware peaks are not
 used as a claimed speedup: any GO still requires a 256-batch plus 8/8 empirical
 benchmark on the target A100 stack.
+
+All five jobs allocated concurrently between `13:04:50Z` and `13:05:39Z`.
+The measured safe epoch/terminal window is therefore
+`2026-07-26 22:14:50–22:15:39 Asia/Taipei`. A 1,200-second health timer was
+armed before the longer remaining interval.
+
+During that wait, the existing component-output verifier was generalized
+without changing its historical defaults so it can verify joint→joint
+viability initialization, one training epoch, update-50 checkpoints, and the
+second exact overlay source. Script SHA is `a1d585de...0e2d`; Ruff/compile pass
+and all eight existing verifier tests pass. This is local verification tooling
+only and did not change the running immutable image or jobs.

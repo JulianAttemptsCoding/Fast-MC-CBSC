@@ -1788,6 +1788,13 @@ include local mutations, Cloud Build, and Vertex submissions.
      continuation, two additional epochs, and exact GO/CONDITIONAL-GO/NO-GO
      rules. Official NVIDIA and Google sources were rechecked; no A100 speedup
      is claimed without a target-stack 256-batch plus 8/8 benchmark.
+252. All five jobs allocated concurrently from `13:04:50Z` to `13:05:39Z`;
+     conservative epoch/terminal ETA is 22:14:50–22:15:39 local. A 1200s
+     health timer precedes the remaining interval.
+253. Output verifier `a1d585de...0e2d` now supports joint→joint source,
+     one-epoch/update-50 contracts, and an additional exact overlay while
+     retaining historical defaults. Ruff/compile and eight existing tests pass;
+     this local tool change does not alter running image/jobs.
 
 ## Implementation QA disposition
 

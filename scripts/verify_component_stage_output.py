@@ -284,6 +284,11 @@ def verify(
     terminal: bool,
     expected_batch_size: int,
     expected_gradient_accumulation: int,
+    expected_source_stage: str | None = None,
+    expected_predecessor_filename: str | None = None,
+    expected_training_epochs: int = 3,
+    expected_checkpoint_interval_updates: int = 0,
+    expected_additional_source_counts: list[tuple[str, int]] | None = None,
 ) -> dict[str, Any]:
     assert stage in STAGE_PREFIX
     assert root.is_dir()
@@ -292,10 +297,11 @@ def verify(
     source_hash = _sha256(source_checkpoint)
     assert source_hash == expected_source_sha256
     source = torch.load(source_checkpoint, map_location="cpu", weights_only=False)
-    assert source["stage"] == EXPECTED_PREVIOUS[stage]
+    assert source["stage"] == (
+        expected_source_stage or EXPECTED_PREVIOUS[stage]
+    )
 
     history = _read_history(root, stage, expected_epoch)
-    current_row = history[-1]
 
     files = sorted(path for path in root.rglob("*") if path.is_file())
     file_hashes = {
@@ -332,13 +338,16 @@ def verify(
     assert training["stage"] == stage
     assert training["amp"] is False
     assert training["train_condition_encoder"] is (stage == "joint")
-    assert int(training["epochs"]) == 3
+    assert int(training["epochs"]) == expected_training_epochs
     assert int(training["batch_size"]) == expected_batch_size
     assert int(training["gradient_accumulation"]) == expected_gradient_accumulation
-    assert int(training["checkpoint_interval_updates"]) == 0
+    assert (
+        int(training["checkpoint_interval_updates"])
+        == expected_checkpoint_interval_updates
+    )
     assert training["initialize_from_sha256"] == source_hash
     assert str(training["initialize_from"]).endswith(
-        EXPECTED_PREDECESSOR_FILENAME[stage]
+        expected_predecessor_filename or EXPECTED_PREDECESSOR_FILENAME[stage]
     )
 
     preflight = _json(root / "reports/preflight.json")
@@ -375,6 +384,14 @@ def verify(
         )
         == expected_overlay_count
     )
+    for suffix, expected_count in expected_additional_source_counts or []:
+        assert (
+            sum(
+                item["source_prefix"].endswith(suffix)
+                for item in staged
+            )
+            == expected_count
+        ), suffix
 
     batches_per_epoch = 26624 // int(training["batch_size"])
     updates_per_epoch = math.ceil(
@@ -509,6 +526,20 @@ def main() -> None:
     parser.add_argument("--expected-overlay-count", type=int, required=True)
     parser.add_argument("--expected-batch-size", type=int, default=6)
     parser.add_argument("--expected-gradient-accumulation", type=int, default=4)
+    parser.add_argument("--expected-source-stage", choices=sorted(STAGE_PREFIX))
+    parser.add_argument("--expected-predecessor-filename")
+    parser.add_argument("--expected-training-epochs", type=int, default=3)
+    parser.add_argument(
+        "--expected-checkpoint-interval-updates",
+        type=int,
+        default=0,
+    )
+    parser.add_argument(
+        "--expected-additional-source-count",
+        action="append",
+        default=[],
+        metavar="SUFFIX=COUNT",
+    )
     parser.add_argument("--expected-selection-sha256")
     parser.add_argument("--comparison-visualization", type=Path)
     parser.add_argument("--terminal", action="store_true")
@@ -529,6 +560,16 @@ def main() -> None:
         terminal=args.terminal,
         expected_batch_size=args.expected_batch_size,
         expected_gradient_accumulation=args.expected_gradient_accumulation,
+        expected_source_stage=args.expected_source_stage,
+        expected_predecessor_filename=args.expected_predecessor_filename,
+        expected_training_epochs=args.expected_training_epochs,
+        expected_checkpoint_interval_updates=(
+            args.expected_checkpoint_interval_updates
+        ),
+        expected_additional_source_counts=[
+            (value.rsplit("=", 1)[0], int(value.rsplit("=", 1)[1]))
+            for value in args.expected_additional_source_count
+        ],
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     temporary = args.output.with_suffix(args.output.suffix + ".tmp")
