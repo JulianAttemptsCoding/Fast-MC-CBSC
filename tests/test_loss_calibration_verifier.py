@@ -90,6 +90,16 @@ def test_loss_calibration_terminal_verifier_recomputes_contract(tmp_path: Path):
         "batches_consumed": 64,
         "clip": [0.25, 4.0],
         "measured_components": sorted(COMPONENTS),
+        "memory_bounded_loss_groups": [
+            "response",
+            "profile",
+            "count",
+            "support",
+            "share",
+        ],
+        "gradient_norm_observations": {
+            name: 64 for name in COMPONENTS
+        },
         "gradient_norm_median": medians,
         "weights": weights,
         "checkpoint": checkpoint,

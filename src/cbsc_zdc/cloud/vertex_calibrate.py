@@ -131,17 +131,21 @@ def run_calibration(
         for batch in loader:
             yield {key: value.to(device) for key, value in batch.items()}
 
-    def losses(batch):
-        return compute_component_losses(model, batch, "joint")[0]
+    calibration_stages = ("response", "profile", "count", "support", "share")
+
+    def loss_groups(batch):
+        for stage in calibration_stages:
+            yield compute_component_losses(model, batch, stage)[0]
 
     started = time.perf_counter()
     calibration = calibrate_loss_weights(
         model,
         batches(),
-        losses,
+        None,
         max_batches=max_batches,
         clip=(clip_min, clip_max),
         expected_losses=STAGE_LOSSES["joint"],
+        compute_loss_groups=loss_groups,
     )
     elapsed = time.perf_counter() - started
     total_memory = int(torch.cuda.get_device_properties(device).total_memory)
@@ -178,6 +182,7 @@ def run_calibration(
         "scientific_status": "train-only proposal; not validation selection",
         "split": "train",
         "test_events_used": 0,
+        "memory_bounded_loss_groups": list(calibration_stages),
         "checkpoint": {
             "path": str(checkpoint),
             "sha256": sha256_file(checkpoint),

@@ -1675,6 +1675,33 @@ include local mutations, Cloud Build, and Vertex submissions.
      `5d354a50...f322c`. Output empty, matching job count zero, exact one-T4
      64-batch train-only spec and $74.06 post-reserve capacity. One submission
      authorized.
+231. Calibration pipeline `5827277770262052864` / custom
+     `767991563283333120` was submitted exactly once. Independent describe
+     confirmed r18, prep/overlay/output/config/checkpoint, CUDA, one on-demand
+     T4, n1-standard-8, 100GB pd-ssd, service account, and 7200s timeout. It
+     entered running at 20:07:12 Asia/Taipei and failed closed at 20:14:45.
+232. Immutable r1 failure output has 4 objects / 72,894 bytes and is preserved
+     under `audit/calibration_joint_r1_failure/`. Failure SHA
+     `0497383e...7c4f` and worker logs independently prove T4 OOM at the
+     support graph: 14.28GiB live PyTorch allocation, 129.78MiB reserved but
+     free, 35.56MiB device free, failed 44MiB request. No proposal exists and
+     neither r1 prefix may be reused. Conservative charge $0.15 gives $23.89
+     accounted / $76.11 remaining.
+233. Root cause is full nine-loss graph retention across nine gradient-norm
+     calls, not training, input, checkpoint, schema, or fragmentation. A
+     memory-bounded correction computes response/profile/count/support/share
+     family graphs in identical stochastic order, differentiates every family
+     component, and releases each graph before the next. It requires every
+     component exactly once per batch and records 64 observations each; no
+     loss, batch, precision, headroom gate, or selection rule is weakened.
+234. Corrected weight/calibrator/verifier source SHAs are
+     `34016279...a38787`, `c898081d...459056`, and
+     `7957c0fc...ac7`. Full QA passes 71 tests with four known nonfatal
+     Transformer warnings and clean compileall; strict Ruff found inherited
+     compact syntax in the touched weight file, which was formatted, after
+     which Ruff and focused 23-test QA passed. A replacement remains closed
+     pending a new image, unique r2 prefixes, fresh staging/spec/cardinality,
+     and budget gates.
 
 ## Implementation QA disposition
 

@@ -2850,3 +2850,124 @@ authoritative verification. `git diff --cached --check` reported inherited
 Markdown trailing spaces used in supplied/historical documents; these were not
 silently rewritten because they are evidence files, and they do not affect
 source execution or repository integrity.
+
+## 2026-07-26 20:20 Asia/Taipei — loss-direction research and QA disposition
+
+The calibration custom job entered `JOB_STATE_RUNNING` at
+`2026-07-26T12:07:12Z` (20:07 Asia/Taipei). Its unique output still matches no
+objects, which is correct before the generation-zero terminal publication.
+The safe estimated completion window is 20:27–20:47, bounded by the two-hour
+Vertex timeout. This is a 64-batch calibration gate, not a training epoch; no
+new checkpoint or visualization is expected from it.
+
+The concern that “zero is always the best loss” was checked against the actual
+implementation, measured histories, and primary references. Disposition:
+**do not add an absolute value and do not replace the objective with a blanket
+L2 loss**.
+
+Evidence and reasoning:
+
+- `visible`, `first_layer`, `active`, `count`, `support_bce`, and
+  `support_rank` are BCE/cross-entropy/softplus ranking objectives whose
+  infimum is zero.
+- `profile_flow` and `share_flow` are already masked squared-error objectives;
+  adding another L2 operation would change their units and gradients rather
+  than repair them.
+- `response` is negative log density from a continuous four-component Gaussian
+  mixture in transformed response space. A continuous density may exceed one,
+  so its negative log density may legitimately be negative and has no special
+  optimum at zero. Taking `abs(response_nll)` would create a false minimum at
+  density one and reverse correct gradients once the NLL becomes negative.
+- Flow Matching is defined as vector-field regression, consistent with the
+  implemented masked MSE (Lipman et al.,
+  `https://arxiv.org/abs/2210.02747`; Tong et al.,
+  `https://arxiv.org/abs/2302.00482`).
+- PyTorch’s likelihood documentation likewise defines NLLs from densities or
+  probabilities rather than a universal zero-distance target
+  (`https://docs.pytorch.org/docs/2.12/generated/torch.nn.modules.loss.PoissonNLLLoss.html`).
+- Multi-task losses naturally have different scales, motivating calibrated
+  weights rather than forcing identical raw values (Kendall, Gal, Cipolla,
+  `https://arxiv.org/abs/1705.07115`).
+
+The observed joint pilot is moving in the correct minimization direction:
+train total `10.1056 → 9.6870 → 9.4188` and validation
+`10.0881 → 9.6136 → 9.4914` over epochs 0–2. The response NLL becomes more
+negative (`-0.7381 → -0.7894 → -0.8247`), which is an improvement in log
+density, not divergence. The nonnegative flow components also fall:
+profile `2.3199 → 2.0634`, share `4.7792 → 4.5852`. The response visual bias
+did not monotonically improve, confirming why validation physics metrics—not
+raw loss magnitude or distance from zero—must control family sensitivity.
+
+No loss formula is changed at this gate. The authorized 64-batch gradient
+calibration measures whether any component dominates the shared encoder; the
+predeclared validation-only family matrix then tests physical consequences.
+One diagnostic `rg audit/*verification.json` used a POSIX-style wildcard that
+PowerShell passed literally and failed without mutation. Exact files were read
+with `Get-ChildItem`/`ConvertFrom-Json` instead.
+
+## 2026-07-26 20:25 Asia/Taipei — calibration r1 fails closed on T4 memory
+
+Pipeline `5827277770262052864` / custom job `767991563283333120`
+failed at `2026-07-26T12:14:45Z`, after 7m33s of running time. The immutable
+r1 output prefix is preserved and will never be reused. It contains exactly
+four failure objects / 72,894 bytes:
+
+- `environment.json`, SHA `d018a198...e119`;
+- `runtime_config.yaml`, SHA `88cb3cb7...8f30`;
+- `staged_input_manifest.json`, SHA `c45b8bb5...6049`;
+- `vertex_failure.json`, SHA `0497383e...7c4f`.
+
+Independent job describe is SHA `3789c55b...9d39`; all evidence is mirrored
+under `audit/calibration_joint_r1_failure/`. The worker and failure artifact
+agree exactly: `torch.OutOfMemoryError` at the support graph forward while
+trying to allocate 44 MiB. PyTorch had 14.28 GiB allocated, 129.78 MiB
+reserved-but-free, and only 35.56 MiB device capacity free on the 14.58 GiB
+T4. CUDA, real-data staging, exact checkpoint, and frozen-config preflight had
+already succeeded. There is no calibration report and no accepted proposal.
+
+Root cause: `calibrate_loss_weights` constructed the full nine-loss joint
+autograd graph for batch 6, then retained the graph while differentiating all
+nine components. This is materially different from the accepted joint trainer,
+which releases the graph after one weighted backward pass and had 25% T4
+headroom. Fragmentation is not the primary diagnosis: only 129.78 MiB was
+reserved but unallocated, far less than the live 14.28 GiB allocation.
+
+Conservative failed-job charge is rounded up to `$0.15`. Accounted spend moves
+from `$23.74` to `$23.89`; remaining capacity is `$76.11`.
+
+## 2026-07-26 20:31 Asia/Taipei — memory-bounded calibration correction passes local QA
+
+The correction preserves the calibration semantics while bounding live
+autograd memory:
+
+1. For each unchanged train batch, compute loss graphs in the original
+   scientific order: response, profile, count, support, share.
+2. Differentiate every loss in a stage-family graph, retaining only until that
+   family’s last component.
+3. Release that graph before constructing the next family.
+4. Require every one of the nine components exactly once per batch and record
+   exactly 64 observations per component.
+
+This retains the same batch, checkpoint, model, loss formulas, shared condition
+encoder, stochastic draw order, clip rule, and median calculation. It does not
+lower the batch, omit a loss, use AMP, weaken the 15% headroom gate, or change
+scientific selection. The five family graphs have previously demonstrated far
+lower isolated-stage memory than the full retained graph.
+
+Changed source SHAs:
+
+- `src/cbsc_zdc/training/weights.py`:
+  `340162791a048d6fc02ddac0350ece94eb898b170b8d98af76c70ba8d7a38787`;
+- `src/cbsc_zdc/cloud/vertex_calibrate.py`:
+  `c898081d8768342d5432122c11f96b69207f8fd5b4f349540f67e3040b459056`;
+- verifier `7957c0fc...ac7`;
+- weight tests `95bb2355...6d01`;
+- verifier tests `2fd66945...c01db`.
+
+QA results: full suite `71 passed` with only the four known nonfatal
+Transformer nested-tensor warnings; compileall clean; strict Ruff initially
+reported inherited compact one-line formatting in the touched weight module,
+so that module was mechanically formatted; Ruff then passed and the focused
+calibration/hardening suite passed `23/23`. No cloud resubmission is authorized
+until a new immutable image, unique r2 input/output prefixes, fresh staging
+verification, exact job cardinality, and budget reserve all pass.

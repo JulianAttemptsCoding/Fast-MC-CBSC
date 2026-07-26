@@ -101,6 +101,16 @@ def verify(
     assert int(report["batches_consumed"]) == 64
     assert [float(value) for value in report["clip"]] == [0.25, 4.0]
     assert set(report["measured_components"]) == COMPONENTS
+    assert report["memory_bounded_loss_groups"] == [
+        "response",
+        "profile",
+        "count",
+        "support",
+        "share",
+    ]
+    assert report["gradient_norm_observations"] == {
+        name: 64 for name in COMPONENTS
+    }
     medians = {
         name: float(value)
         for name, value in report["gradient_norm_median"].items()

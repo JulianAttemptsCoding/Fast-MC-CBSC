@@ -59,3 +59,27 @@ def test_calibration_rejects_invalid_clip_bounds():
             assert "clip bounds" in str(exc)
         else:
             raise AssertionError(f"clip={invalid} did not fail")
+
+
+def test_calibration_can_release_independent_loss_group_graphs():
+    model = Tiny()
+    batches = [{"x": torch.tensor([[1.0, 2.0]])} for _ in range(2)]
+    observed = []
+
+    def grouped_losses(batch):
+        for name, scale in (("a", 1.0), ("b", 3.0)):
+            observed.append(name)
+            value = model.condition(batch["x"])
+            yield {name: (scale * value).square().mean()}
+
+    report = calibrate_loss_weights(
+        model,
+        batches,
+        None,
+        max_batches=2,
+        expected_losses={"a", "b"},
+        compute_loss_groups=grouped_losses,
+    )
+    assert observed == ["a", "b", "a", "b"]
+    assert report["measured_components"] == ["a", "b"]
+    assert report["batches_consumed"] == 2
