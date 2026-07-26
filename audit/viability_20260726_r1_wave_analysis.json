@@ -1,0 +1,132 @@
+{
+  "dominated_by": {
+    "calibrated_lr1e4": [
+      "calibrated_lr1e4_halfbatch",
+      "calibrated_lr3e4",
+      "calibrated_lr3e5"
+    ],
+    "calibrated_lr1e4_halfbatch": [],
+    "calibrated_lr3e4": [],
+    "calibrated_lr3e5": [
+      "calibrated_lr3e4",
+      "default_control"
+    ],
+    "default_control": [
+      "calibrated_lr3e4"
+    ]
+  },
+  "nondominated": [
+    "calibrated_lr1e4_halfbatch",
+    "calibrated_lr3e4"
+  ],
+  "pass": true,
+  "rows": [
+    {
+      "name": "default_control",
+      "selection_sha256": "f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6",
+      "source_checkpoint_sha256": "03c7960861d6f6f3012a8e4469421d51e33d1a8dad7fc8ec8c8406d547f1adb7",
+      "values": {
+        "examples_per_second": 7.084287064251898,
+        "generated_zero_response_fraction": 0.032,
+        "groups_with_multiple_unique_deposits": 50,
+        "headroom_fraction": 0.2491190665434574,
+        "hit_count_bias_abs": 0.07142625457578428,
+        "mean_within_condition_response_std_gev": 3.2905080676555283,
+        "milliseconds_per_event_8x8": 254.5581530000618,
+        "profile_relative_l1": 0.25412133510312335,
+        "response_bias_abs": 0.08693714205924256,
+        "truth_zero_response_fraction": 0.0,
+        "validation_loss": 9.479305260352474
+      },
+      "weight_family": "default"
+    },
+    {
+      "name": "calibrated_lr3e5",
+      "selection_sha256": "f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6",
+      "source_checkpoint_sha256": "03c7960861d6f6f3012a8e4469421d51e33d1a8dad7fc8ec8c8406d547f1adb7",
+      "values": {
+        "examples_per_second": 7.075098560394845,
+        "generated_zero_response_fraction": 0.028,
+        "groups_with_multiple_unique_deposits": 50,
+        "headroom_fraction": 0.2491190665434574,
+        "hit_count_bias_abs": 0.07067791112552715,
+        "mean_within_condition_response_std_gev": 3.2982271595178587,
+        "milliseconds_per_event_8x8": 264.55389524994644,
+        "profile_relative_l1": 0.2673339921068222,
+        "response_bias_abs": 0.08094751162561316,
+        "truth_zero_response_fraction": 0.0,
+        "validation_loss": 4.988944060631413
+      },
+      "weight_family": "calibrated"
+    },
+    {
+      "name": "calibrated_lr1e4",
+      "selection_sha256": "f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6",
+      "source_checkpoint_sha256": "03c7960861d6f6f3012a8e4469421d51e33d1a8dad7fc8ec8c8406d547f1adb7",
+      "values": {
+        "examples_per_second": 6.934298988751883,
+        "generated_zero_response_fraction": 0.032,
+        "groups_with_multiple_unique_deposits": 50,
+        "headroom_fraction": 0.2491190665434574,
+        "hit_count_bias_abs": 0.0665585468699319,
+        "mean_within_condition_response_std_gev": 3.309441328408078,
+        "milliseconds_per_event_8x8": 261.9967099999485,
+        "profile_relative_l1": 0.26291385531036704,
+        "response_bias_abs": 0.09276540558349372,
+        "truth_zero_response_fraction": 0.0,
+        "validation_loss": 4.97325349552216
+      },
+      "weight_family": "calibrated"
+    },
+    {
+      "name": "calibrated_lr3e4",
+      "selection_sha256": "f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6",
+      "source_checkpoint_sha256": "03c7960861d6f6f3012a8e4469421d51e33d1a8dad7fc8ec8c8406d547f1adb7",
+      "values": {
+        "examples_per_second": 6.976800173225523,
+        "generated_zero_response_fraction": 0.02,
+        "groups_with_multiple_unique_deposits": 50,
+        "headroom_fraction": 0.2491190665434574,
+        "hit_count_bias_abs": 0.046258282748714165,
+        "mean_within_condition_response_std_gev": 2.942645455337354,
+        "milliseconds_per_event_8x8": 280.2474752500075,
+        "profile_relative_l1": 0.22227801535753544,
+        "response_bias_abs": 0.034872706217585266,
+        "truth_zero_response_fraction": 0.0,
+        "validation_loss": 4.951028173175772
+      },
+      "weight_family": "calibrated"
+    },
+    {
+      "name": "calibrated_lr1e4_halfbatch",
+      "selection_sha256": "f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6",
+      "source_checkpoint_sha256": "03c7960861d6f6f3012a8e4469421d51e33d1a8dad7fc8ec8c8406d547f1adb7",
+      "values": {
+        "examples_per_second": 6.625060803279223,
+        "generated_zero_response_fraction": 0.024,
+        "groups_with_multiple_unique_deposits": 50,
+        "headroom_fraction": 0.621314416685155,
+        "hit_count_bias_abs": 0.05795375561836803,
+        "mean_within_condition_response_std_gev": 3.273327358862098,
+        "milliseconds_per_event_8x8": 276.0399899998447,
+        "profile_relative_l1": 0.23018897028376642,
+        "response_bias_abs": 0.0861843927303016,
+        "truth_zero_response_fraction": 0.0,
+        "validation_loss": 4.976166040097986
+      },
+      "weight_family": "calibrated"
+    }
+  ],
+  "scientific_status": "validation-only wave-1 selection; physics fidelity not established",
+  "selected_for_two_epoch_continuation": [
+    "calibrated_lr1e4_halfbatch",
+    "calibrated_lr3e4"
+  ],
+  "selection_sha256": "f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6",
+  "source_checkpoint_sha256": "03c7960861d6f6f3012a8e4469421d51e33d1a8dad7fc8ec8c8406d547f1adb7",
+  "test_events_used": 0,
+  "worst_normalized_rank": {
+    "calibrated_lr1e4_halfbatch": 1.0,
+    "calibrated_lr3e4": 1.0
+  }
+}

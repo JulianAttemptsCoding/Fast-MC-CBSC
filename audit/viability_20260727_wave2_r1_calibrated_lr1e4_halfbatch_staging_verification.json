@@ -1,0 +1,49 @@
+{
+  "base_uri": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5",
+  "checkpoints": [
+    {
+      "field": "resume_from",
+      "generation": "1785106388115396",
+      "relative_path": "checkpoints/calibrated_lr1e4_halfbatch_last_epoch0.pt",
+      "sha256": "716fcbfeb32e5da08761bce94183445be7dbdea9aff28ea582a8ace965e3ff84",
+      "size": 29362912
+    },
+    {
+      "field": "resume_best_from",
+      "generation": "1785106371602871",
+      "relative_path": "checkpoints/calibrated_lr1e4_halfbatch_best_epoch0.pt",
+      "sha256": "75e8e38cf083cf9c10e44203c784dd8d6af3fe37436f5b3b0bcf7ccbe9d371bc",
+      "size": 29362912
+    }
+  ],
+  "config_sha256": "c58ff7a8d4c6f4060f1a61b9e0d4b1b6b79579f6305753c1478f992b8f681efd",
+  "forbidden_path_count": 0,
+  "hashes": {
+    "dataset_manifest_sha256": "5a6d963247091e91c0787dd763b46e3b1189f62785d9cab1d8fda4e76ca08096",
+    "geometry_manifest_sha256": "616b14bd006fb00acb963dc2b8b21fa0bc80d041a890b580d80ff31a11daa5d2",
+    "split_assignment_sha256": "084f0dfd86e488c63bb41ea50d6783ad22eb57a322288c075a94b1ec12dd3714",
+    "split_manifest_sha256": "a4d0967597bee525843d81647bd259deee7c2e908d25d2b1df78a8179526b0b3"
+  },
+  "merged_bytes": 6032504716,
+  "merged_object_count": 212,
+  "overlay_uris": [
+    "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/calibration-20260726-r2-joint-input",
+    "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/viability-20260727-wave2-r1-calibrated-lr1e4-halfbatch-input"
+  ],
+  "pass": true,
+  "required_paths": [
+    "artifacts/data/dataset_manifest.json",
+    "artifacts/geometry/geometry.npz",
+    "artifacts/geometry/geometry_manifest.json",
+    "artifacts/training_pilot_splits.json",
+    "artifacts/training_pilot_splits_assignments.npz",
+    "configs/frozen_viability_calibrated_lr1e4_halfbatch_continuation.yaml"
+  ],
+  "source_object_counts": {
+    "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/calibration-20260726-r2-joint-input": 4,
+    "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5": 205,
+    "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/viability-20260727-wave2-r1-calibrated-lr1e4-halfbatch-input": 3
+  },
+  "stage": "joint",
+  "synthetic": false
+}

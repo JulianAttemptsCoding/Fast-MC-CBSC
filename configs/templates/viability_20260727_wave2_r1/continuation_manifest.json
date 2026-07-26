@@ -1,0 +1,35 @@
+{
+  "analysis_sha256": "fefd010227a213f3a8419d5b665097863c1b77eb6d1fec36f9dbcfbbc0898efa",
+  "pass": true,
+  "scientific_status": "unfrozen validation-only two-epoch continuations; no job submitted",
+  "test_events_used": 0,
+  "variant_count": 2,
+  "variants": [
+    {
+      "batch_size": 3,
+      "best_checkpoint_sha256": "75e8e38cf083cf9c10e44203c784dd8d6af3fe37436f5b3b0bcf7ccbe9d371bc",
+      "gradient_accumulation": 4,
+      "last_checkpoint_sha256": "716fcbfeb32e5da08761bce94183445be7dbdea9aff28ea582a8ace965e3ff84",
+      "learning_rate": 0.0001,
+      "name": "calibrated_lr1e4_halfbatch",
+      "parent_result_sha256": "6ce2a55617a86ad99d2f7a44dcdc2a0483147415a74b8156205fa7894b8f1cb7",
+      "start_epoch": 1,
+      "stop_before_epoch": 3,
+      "template": "calibrated_lr1e4_halfbatch_continuation.yaml",
+      "template_sha256": "6522bb9c204a858712b39e802daba1006765db28b30a60d5cddd3241d3dc4f97"
+    },
+    {
+      "batch_size": 6,
+      "best_checkpoint_sha256": "520294c593f568c4001ddd121361961683ba3394b0e0308fd90ef34fef4d9758",
+      "gradient_accumulation": 4,
+      "last_checkpoint_sha256": "571d460fba9b4a87d2912e1de8c34cff8e5c7954b0c6083962ba693c1abda762",
+      "learning_rate": 0.0003,
+      "name": "calibrated_lr3e4",
+      "parent_result_sha256": "e53c741e3152a0d893677801b28f6f69d0b34f26099290f8f51262a1064469e2",
+      "start_epoch": 1,
+      "stop_before_epoch": 3,
+      "template": "calibrated_lr3e4_continuation.yaml",
+      "template_sha256": "6f551d976ee58152cadcce316573034250a57baf3da8ddfded3057380c2cc16c"
+    }
+  ]
+}

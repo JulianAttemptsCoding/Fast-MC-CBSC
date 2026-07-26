@@ -3291,6 +3291,112 @@ unfrozen templates only; no config is frozen or job submitted. Ruff/compile
 pass and the combined continuation/analyzer/config/loss suite passes 19/19
 with one known Transformer warning.
 
+## 2026-07-27 06:55 Asia/Taipei — viability wave 1 terminal gate
+
+The local machine slept across the terminal timer, but all work was already
+server-side. Exactly the five authorized custom jobs succeeded; no replacement
+was submitted. Their start/end durations were:
+
+- default `1645340269597425664`: 4,526 s;
+- calibrated LR3e-5 `2259914492966076416`: 4,558 s;
+- calibrated LR1e-4 `5596221998754693120`: 4,590 s;
+- calibrated LR3e-4 `8082035270226018304`: 4,590 s;
+- calibrated LR1e-4 half-batch `4196752603805122560`: 4,800 s.
+
+Each immutable terminal mirror has exactly 19 files and no
+`vertex_failure.json`; byte totals are
+`72,828,877/72,839,477/72,885,408/73,125,092/72,988,166`.
+Each epoch-0 mirror has 13 files, and every one of its 13 hashes equals the
+corresponding terminal file. The accepted source remains
+`03c79608...adb7`.
+
+The first verifier invocation intentionally stopped without an output because
+the command incorrectly supplied epoch 0 as its own comparison epoch; the
+cross-epoch contract correctly requires `epoch_delta > 0`. The corrected
+terminal-only invocation passes all five. Verification report SHA-256 values
+are `d0b86c79...2d7a`, `c0deee3a...9af7`, `3c849d78...19f`,
+`e53c741e...69e2`, and `6ce2a556...1cb7`.
+
+All five prove finite selected losses and gradients, exact final optimizer
+steps (1,110 or 2,219), changed trainable tensors, exact best/last hashes,
+checkpoint reload, epoch and postflight invariant pass, zero negative or
+nonfinite output, zero count/support mismatch, 8/8 solver/decode timing, and
+zero test use. Batch-6 T4 headroom is `24.9119%`; half-batch headroom is
+`62.1314%`. The five validation losses are:
+
+- default-family control `9.479305` (not comparable to calibrated totals);
+- calibrated LR3e-5 `4.988944`;
+- calibrated LR1e-4 `4.973253`;
+- calibrated LR3e-4 `4.951028`;
+- calibrated LR1e-4 half-batch `4.976166`.
+
+Every fixed visualization contains 50 identical validation conditions, one
+four-vector per condition, five FastMC draws, and all 50 conditions with
+multiple unique deposits. Generated zero-response fractions are
+`0.032/0.028/0.032/0.020/0.024` versus truth `0.0`. The corresponding absolute
+response bias, absolute hit-count bias, and profile relative L1 are:
+
+```text
+default                 0.08694  0.07143  0.25412
+calibrated LR3e-5       0.08095  0.07068  0.26733
+calibrated LR1e-4       0.09277  0.06656  0.26291
+calibrated LR3e-4       0.03487  0.04626  0.22228
+calibrated half-batch   0.08618  0.05795  0.23019
+```
+
+The first wave-analyzer command used display-label hyphens and was rejected
+before output because the frozen contract requires canonical underscore IDs.
+The corrected invocation produced
+`audit/viability_20260726_r1_wave_analysis.json`, SHA
+`fefd0102...8efa`, and selected exactly the two nondominated candidates:
+`calibrated_lr3e4` and `calibrated_lr1e4_halfbatch`. This is validation-only
+successive halving, not physics validation.
+
+Dashboard synchronization was sequential. Manifest schema 3 now has 21 epochs
+and five new viability rows, one fixed selection `f7052919...9b6`, five draws
+per each of 50 conditions, four p4 components, matching file hashes, and zero
+test events. ESLint, production build, two rendered-HTML tests, and localhost
+root/manifest HTTP 200 pass. Browser-level visual inspection remains blocked
+only by the already logged desktop bridge `os error 3`.
+
+Actual wave cost is conservatively rounded per job to
+`1.3/1.3/1.3/1.3/1.4` hours at `$0.85/h`, or `$5.61`. Prior accounted spend
+`$25.04` therefore becomes `$30.65`. Keeping `$4.50` contingency and reserving
+two four-hour continuation timeouts (`$6.80`) leaves `$58.05` below the hard
+`$100` ceiling.
+
+## 2026-07-27 06:55 Asia/Taipei — wave-2 continuation preflight
+
+The accepted analyzer and exact reports generated two new unfrozen templates
+only. They were frozen through `cbsc-zdc freeze-config`, never hand-edited:
+
+- LR3e-4 frozen config `135c45ff...208b`, paired best/last
+  `520294c5...9758` / `571d460f...a762`;
+- half-batch frozen config `c58ff7a8...1efd`, paired best/last
+  `75e8e38c...71bc` / `716fcbfe...ff84`.
+
+Both are joint FP32, seed 20260723, epochs total 3 (resume epochs 1–2 only),
+update-50 snapshots, `restart_scheduler_on_resume=true`, preserved optimizer
+moments/scaler/RNG/selected best, fixed validation 50×5, and zero test events.
+Focused recovery/config/verifier QA passes 40/40 with one documented
+Transformer warning; compileall is clean.
+
+Both new input/output prefixes and both display names were empty. The installed
+`gcloud` lacks `training-pipelines list`, so that first collision command
+stopped; the read-only Vertex SDK returned zero matching pipelines. Generation
+0 then created exactly three unique objects per input. Two attempted retries
+were rejected by generation-0 because the original long-running upload had
+completed between list and retry; this proves no overwrite occurred.
+
+Merged staging verification independently passes for both at 212 objects:
+205 base production objects + four shared split/checkpoint objects + three
+unique continuation objects, zero forbidden paths, synthetic false, exact
+config and paired-checkpoint hashes. Reports are
+`e93fd568...6a73` (LR3e-4) and `72cb82b8...244f` (half-batch). Output prefixes
+remain empty. Budget and all hard gates permit exactly these two on-demand T4
+continuations using immutable r20 `sha256:8b4a94c0...9048f`; no test or final
+six-run training is authorized.
+
 ## 2026-07-26 21:54 Asia/Taipei — dashboard browser retry preserved
 
 The five Vertex jobs remain under the existing 3,000-second timer; no job was

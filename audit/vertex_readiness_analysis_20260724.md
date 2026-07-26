@@ -1852,6 +1852,45 @@ include local mutations, Cloud Build, and Vertex submissions.
      leave 670–887s of training plus validation/viz/postflight, tightening the
      safe terminal window to 22:20–22:30. Partial train means are finite health
      evidence only and are excluded from selection.
+266. After a local sleep, all five exact wave-1 jobs independently describe as
+     `JOB_STATE_SUCCEEDED`; durations are 4526/4558/4590/4590/4800s. No
+     duplicate or replacement was submitted.
+267. Each terminal mirror has 19 files, no failure artifact, and 72.83–73.13
+     MB; each immutable epoch mirror has 13 files with zero hash mismatch
+     against terminal. The source hash remains `03c79608...adb7`.
+268. A self-comparison verifier invocation correctly rejected
+     `epoch_delta=0`; removing the inapplicable comparison made all five strict
+     terminal reports pass. Report hashes are `d0b86c79...2d7a`,
+     `c0deee3a...9af7`, `3c849d78...19f`, `e53c741e...69e2`,
+     `6ce2a556...1cb7`.
+269. Exact calibrated validation losses are
+     `4.988944/4.973253/4.951028/4.976166`; default-family control is
+     `9.479305` and is not cross-family comparable. All checkpoint, finite,
+     invariant, reload, 8/8 timing, T4 headroom, fixed-selection, 50x5
+     diversity, and zero-test gates pass.
+270. Canonical-ID analyzer retry (after hyphen labels were correctly rejected)
+     produced `fefd0102...8efa` and selected only nondominated
+     `calibrated_lr3e4` and `calibrated_lr1e4_halfbatch`. This is
+     validation-only selection, not physics validation.
+271. Dashboard manifest now has 21 epochs and five exact wave rows with one
+     fixed selection, 50 p4 conditions x five draws, matching hashes, zero
+     nonfinite/negative/test use. Lint/build/two HTML tests and HTTP 200 pass;
+     browser bridge limitation remains preserved.
+272. Conservative actual wave cost is `$5.61`; accounted total becomes
+     `$30.65`. After `$4.50` contingency and `$6.80` two-job worst reserve,
+     `$58.05` remains.
+273. Two unfrozen continuation templates were generated from the accepted
+     selector, then CLI-frozen to `135c45ff...208b` and
+     `c58ff7a8...1efd`; exact paired best/last hashes, epochs 1–2 only, FP32,
+     scheduler restart, preserved recovery state, fixed 50x5 validation, and
+     zero test are encoded. Focused QA passes 40 tests.
+274. Prefix/display collision QA passes. The unavailable gcloud pipeline-list
+     subcommand was replaced by the read-only SDK, which found zero matches.
+     Generation-0 staging produced exactly three objects per candidate; two
+     later retries were safely rejected because originals had completed.
+275. Both merged staging reports pass at 212 objects (205 base + 4 shared + 3
+     unique), synthetic false, no forbidden path, exact config/checkpoint
+     hashes. Report SHAs are `e93fd568...6a73` and `72cb82b8...244f`.
 
 ## Implementation QA disposition
 
