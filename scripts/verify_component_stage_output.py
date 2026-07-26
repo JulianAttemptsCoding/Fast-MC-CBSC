@@ -269,6 +269,60 @@ def _assert_cross_epoch_visual_contract(
     }
 
 
+def _visualization_population_metrics(
+    visualization: dict[str, Any],
+) -> dict[str, float | int]:
+    truth_responses = [
+        float(group["geant4"]["summary"]["total_response_gev"])
+        for group in visualization["groups"]
+    ]
+    generated_responses = [
+        float(draw["summary"]["total_response_gev"])
+        for group in visualization["groups"]
+        for draw in group["fast_mc"]
+    ]
+    unique_deposit_counts = []
+    response_standard_deviations = []
+    for group in visualization["groups"]:
+        signatures = {
+            (
+                tuple(draw["deposit"]["cell_index"]),
+                tuple(float(value) for value in draw["deposit"]["energy_gev"]),
+            )
+            for draw in group["fast_mc"]
+        }
+        unique_deposit_counts.append(len(signatures))
+        responses = [
+            float(draw["summary"]["total_response_gev"])
+            for draw in group["fast_mc"]
+        ]
+        mean = sum(responses) / len(responses)
+        variance = sum((value - mean) ** 2 for value in responses) / len(
+            responses
+        )
+        response_standard_deviations.append(math.sqrt(variance))
+    assert all(math.isfinite(value) for value in truth_responses)
+    assert all(math.isfinite(value) for value in generated_responses)
+    return {
+        "truth_zero_response_fraction": sum(
+            value == 0 for value in truth_responses
+        )
+        / len(truth_responses),
+        "generated_zero_response_fraction": sum(
+            value == 0 for value in generated_responses
+        )
+        / len(generated_responses),
+        "groups_with_multiple_unique_deposits": sum(
+            count > 1 for count in unique_deposit_counts
+        ),
+        "minimum_unique_deposits_per_condition": min(unique_deposit_counts),
+        "mean_within_condition_response_std_gev": sum(
+            response_standard_deviations
+        )
+        / len(response_standard_deviations),
+    }
+
+
 def verify(
     root: Path,
     source_checkpoint: Path,
@@ -507,6 +561,7 @@ def verify(
             "elapsed_seconds": visualization["elapsed_seconds"],
             "trend": visualization["aggregate"]["trend"],
             "qa": visualization["qa"],
+            "population": _visualization_population_metrics(visualization),
             "cross_epoch_contract": cross_epoch_contract,
         },
         "postflight": postflight,

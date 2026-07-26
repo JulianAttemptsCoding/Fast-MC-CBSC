@@ -8,6 +8,7 @@ from scripts.verify_component_stage_output import (
     _assert_cross_epoch_visual_contract,
     _assert_weighted_history,
     _compare_model_state,
+    _visualization_population_metrics,
 )
 
 
@@ -138,6 +139,29 @@ def test_cross_epoch_visual_contract_rejects_seed_reuse():
     candidate["generation_seeds"] = reference["generation_seeds"]
     with pytest.raises(AssertionError):
         _assert_cross_epoch_visual_contract(reference, candidate)
+
+
+def test_visualization_population_metrics_detects_diversity_and_zeros():
+    visualization = _visualization(epoch=0)
+    for index, group in enumerate(visualization["groups"]):
+        group["geant4"] = {
+            "summary": {
+                "total_response_gev": 0.0 if index == 0 else 5.0
+            }
+        }
+        for draw_index, draw in enumerate(group["fast_mc"]):
+            draw["summary"]["total_response_gev"] = (
+                0.0 if draw_index == 0 else float(draw_index)
+            )
+            draw["deposit"]["energy_gev"] = [float(draw_index), 3.0]
+
+    metrics = _visualization_population_metrics(visualization)
+
+    assert metrics["truth_zero_response_fraction"] == 1 / 50
+    assert metrics["generated_zero_response_fraction"] == 1 / 5
+    assert metrics["groups_with_multiple_unique_deposits"] == 50
+    assert metrics["minimum_unique_deposits_per_condition"] == 5
+    assert metrics["mean_within_condition_response_std_gev"] > 0
 
 
 def test_component_predecessor_filenames_follow_stage_order():

@@ -1795,6 +1795,11 @@ include local mutations, Cloud Build, and Vertex submissions.
      one-epoch/update-50 contracts, and an additional exact overlay while
      retaining historical defaults. Ruff/compile and eight existing tests pass;
      this local tool change does not alter running image/jobs.
+254. Full 50x5 output analysis now reports truth/generated zero-response,
+     deposit diversity, and response spread. The first test exposed shallow
+     copying in its synthetic fixture; replacing the nested fixture object
+     supplied the intended counterexample. Final verifier `92a47237...88c6`;
+     Ruff and corrected 9-test suite pass.
 
 ## Implementation QA disposition
 

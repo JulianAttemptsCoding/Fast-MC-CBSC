@@ -3207,3 +3207,11 @@ viability initialization, one training epoch, update-50 checkpoints, and the
 second exact overlay source. Script SHA is `a1d585de...0e2d`; Ruff/compile pass
 and all eight existing verifier tests pass. This is local verification tooling
 only and did not change the running immutable image or jobs.
+
+The verifier now also computes truth/generated zero-response fractions,
+per-condition deposit diversity, and within-condition response spread from the
+full 50×5 artifact. Its first unit test failed because the synthetic fixture
+used shallow nested copies, not because of the metric code; replacing the
+fixture's nested Geant4 object independently produced the intended one-zero
+counterexample. Final verifier SHA is `92a47237...88c6`; Ruff passes and the
+corrected suite passes 9/9.
