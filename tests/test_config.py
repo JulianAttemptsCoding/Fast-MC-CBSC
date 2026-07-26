@@ -83,3 +83,20 @@ def test_epoch_visualization_bounds_sample_and_draw_counts():
     cfg["evaluation"]["visualization"]["draws_per_condition"] = 11
     with pytest.raises(ValueError, match="draws_per_condition"):
         validate_config(cfg)
+
+
+def test_scheduler_restart_requires_paired_resume():
+    cfg = base()
+    cfg["training"]["restart_scheduler_on_resume"] = True
+    with pytest.raises(ValueError, match="requires resume_from"):
+        validate_config(cfg)
+
+    cfg["training"].update(
+        {
+            "resume_from_relative": "checkpoints/last.pt",
+            "resume_from_sha256": "a" * 64,
+            "resume_best_from_relative": "checkpoints/best.pt",
+            "resume_best_from_sha256": "b" * 64,
+        }
+    )
+    validate_config(cfg)

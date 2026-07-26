@@ -1805,6 +1805,20 @@ include local mutations, Cloud Build, and Vertex submissions.
      maximum-two continuation. Its first cross-family test accidentally
      improved response too; equalizing non-aggregate metrics isolated loss
      incomparability. Ruff and combined 12 tests pass.
+256. At 1200s all five jobs run. Batch-6 snapshots are update 350/1110;
+     half-batch is 650/2219. Independent local SHA/load QA proves five worker
+     hashes, 207 finite tensors, optimizer/scheduler steps, next batches,
+     Torch/CUDA RNG, and expected no-prior-best state. Partial calibrated train
+     means are `5.0738/5.1380/5.4134/5.1541`; default `9.7495` is not
+     cross-family comparable.
+257. Measured train projections are 3550–3805s; revised terminal ETA is
+     22:25–22:35 local and next timer is 3000s.
+258. Pre-result scheduler QA proved restoring a one-epoch cosine state beyond
+     `T_max` would make LR rise. Wave 2 now explicitly preserves optimizer
+     moments/RNG/best/epoch but restarts only LR and a two-epoch monotonic
+     cosine horizon. Config requires paired resume; focused 33 tests pass.
+     Unscoped Ruff exposed 42 historical compact-style findings; scoped lint
+     ignoring only E701/E702/E703 passes. Running r19 jobs are unchanged.
 
 ## Implementation QA disposition
 

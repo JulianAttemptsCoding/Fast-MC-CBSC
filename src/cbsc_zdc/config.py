@@ -112,6 +112,15 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ValueError(
             "training.resume_best_from requires a resume checkpoint"
         )
+    restart_scheduler = training.get("restart_scheduler_on_resume", False)
+    if not isinstance(restart_scheduler, bool):
+        raise ValueError(
+            "training.restart_scheduler_on_resume must be boolean"
+        )
+    if restart_scheduler and not has_resume:
+        raise ValueError(
+            "training.restart_scheduler_on_resume requires resume_from"
+        )
     checkpoint_interval = int(training.get("checkpoint_interval_updates", 0))
     if checkpoint_interval < 0:
         raise ValueError(

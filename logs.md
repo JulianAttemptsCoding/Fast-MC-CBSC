@@ -3223,3 +3223,43 @@ incorrectly made the default row better on response as well as incomparable
 aggregate loss, so dominance was legitimately true. Equalizing every
 non-aggregate metric isolated the intended counterexample. Ruff passes and the
 combined analyzer/verifier suite passes 12/12.
+
+## 2026-07-26 21:37 Asia/Taipei — wave mid-epoch gate
+
+All five jobs remain `JOB_STATE_RUNNING`. At the 1,200-second health timer,
+the batch-6 jobs had immutable update-350 snapshots (350/1110, 31.53%); the
+half-batch job had update 650/2219 (29.29%). Every progress record is epoch 0,
+seed 20260723, optimizer-boundary true, and has finite accumulated losses.
+Partial train means are:
+
+- default control `9.749463` (not cross-family comparable);
+- calibrated LR3e-5 `5.073775`;
+- calibrated LR1e-4 `5.137950`;
+- calibrated LR3e-4 `5.413417`;
+- calibrated LR1e-4 half-batch `5.154070`.
+
+Independent downloads reproduce every worker SHA. All five checkpoints contain
+207 finite model tensors, exact optimizer steps `{350}` or `{650}`, matching
+scheduler last-epoch, matching next batch (`1400` or `2600`), Torch and CUDA
+RNG, and no prior-best checkpoint as expected before first validation. Exact
+checkpoint hashes are `20212ea5...4b6c`, `03dfddb7...62be`,
+`a17f76e2...a9b4`, `48cb6950...c983`, and `9c35662c...c2d2`.
+
+Measured train projection is 3,550–3,805 seconds plus validation,
+visualization, and postflight. The updated safe terminal window is
+22:25–22:35 local. The next timer is 3,000 seconds.
+
+Scheduler QA found a real continuation counterexample before any wave result:
+restoring a one-epoch `CosineAnnealingLR` at `last_epoch=T_max` and stepping
+beyond the old horizon makes LR rise again. The protocol now requires an
+explicit resume warm restart for wave 2: preserve model, optimizer moments,
+scaler, RNG, selected best, and epoch numbering; reset only LR/initial-LR and
+construct a monotonic cosine horizon for exactly the two remaining epochs.
+Configuration rejects the option without paired resume. Focused recovery,
+config, and loss QA passes 33 tests with two known Transformer warnings.
+
+An unscoped Ruff call reported 42 pre-existing compact-style E701/E702/E703
+findings throughout `trainer.py`; it did not mutate code. A scoped run ignoring
+only those historical style classes passes, and `git diff --check` is clean.
+This correction is not in the currently running r19 image. A new immutable
+image is required only if wave-2 continuation is selected.

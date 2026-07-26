@@ -75,9 +75,19 @@ using its differently weighted aggregate as a cross-family advantage.
 ## Wave 2: continuation
 
 Resume each selected candidate for two more epochs from its exact accepted
-best/last checkpoint pair. Preserve optimizer, scheduler, scaler, RNG, fixed
-truth selection, and independent epoch generation seeds. Use new generation-0
-prefixes and the proven mid-epoch recovery path.
+best/last checkpoint pair. Preserve model, optimizer moments, scaler, RNG,
+fixed truth selection, epoch numbering, and independent epoch generation
+seeds. Use new generation-0 prefixes and the proven mid-epoch recovery path.
+
+Do not restore the one-epoch cosine horizon unchanged. Wave 1 necessarily ends
+at `T_max`; stepping that state beyond its horizon makes cosine annealing rise
+again. Wave 2 therefore uses the explicit frozen
+`training.restart_scheduler_on_resume=true` contract: reset every optimizer
+parameter group's LR/initial-LR to the candidate's declared learning rate and
+create one fresh monotonic cosine horizon covering exactly the two remaining
+epochs. Optimizer moments and every other recovery state stay intact. This is
+a pre-result protocol correction based on scheduler-state QA, not a
+result-driven hyperparameter change.
 
 ## Decision
 

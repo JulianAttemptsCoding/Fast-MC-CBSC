@@ -168,6 +168,29 @@ def _make_loader(config,split,shuffle):
     return DataLoader(ds,batch_size=int(config['training']['batch_size']),shuffle=shuffle,num_workers=int(config['training'].get('num_workers',0)),pin_memory=torch.cuda.is_available(),drop_last=shuffle,generator=generator,worker_init_fn=_seed_worker,persistent_workers=int(config['training'].get('num_workers',0))>0)
 
 
+def _restart_cosine_scheduler(
+    optimizer: torch.optim.Optimizer,
+    *,
+    learning_rate: float,
+    minimum_learning_rate: float,
+    remaining_updates: int,
+) -> torch.optim.lr_scheduler.CosineAnnealingLR:
+    if remaining_updates <= 0:
+        raise ValueError("scheduler restart requires positive remaining updates")
+    if not 0 < minimum_learning_rate <= learning_rate:
+        raise ValueError(
+            "scheduler restart requires 0 < minimum_learning_rate <= learning_rate"
+        )
+    for group in optimizer.param_groups:
+        group["lr"] = learning_rate
+        group["initial_lr"] = learning_rate
+    return torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer,
+        T_max=remaining_updates,
+        eta_min=minimum_learning_rate,
+    )
+
+
 def _checkpoint_invariant_gate(model: CBSCZDC, config: dict[str, Any], seed: int):
     kinetic = torch.tensor(
         [0.0, 50.0, 100.0, 150.0, 200.0, 250.0, 300.0],
@@ -431,6 +454,19 @@ def train_from_config(
             raise ValueError(
                 f"resume checkpoint epoch {payload['epoch']} leaves no epoch "
                 f"before configured training.epochs={epochs}"
+            )
+        if bool(config["training"].get("restart_scheduler_on_resume", False)):
+            updates_per_epoch = math.ceil(
+                len(train_loader)
+                / int(config["training"].get("gradient_accumulation", 1))
+            )
+            scheduler = _restart_cosine_scheduler(
+                optimizer,
+                learning_rate=float(config["training"]["learning_rate"]),
+                minimum_learning_rate=float(
+                    config["training"].get("min_learning_rate", 1e-6)
+                ),
+                remaining_updates=updates_per_epoch * (epochs - start_epoch),
             )
     weights={k:float(v) for k,v in config['loss_weights'].items()}; accumulation=int(config['training'].get('gradient_accumulation',1)); clip=float(config['training'].get('gradient_clip_norm',1.0)); patience=int(config['training'].get('early_stopping_patience',10)); stale=0
     if resume_progress:

@@ -5,7 +5,10 @@ import torch
 from cbsc_zdc.data.dataset import ShardedSparseDataset, load_geometry
 from cbsc_zdc.data.synthetic import create_synthetic_dataset
 from cbsc_zdc.models.system import CBSCZDC
-from cbsc_zdc.training.trainer import compute_component_losses
+from cbsc_zdc.training.trainer import (
+    _restart_cosine_scheduler,
+    compute_component_losses,
+)
 from cbsc_zdc.training.weights import calibrate_loss_weights, weighted_total
 
 
@@ -13,6 +16,64 @@ class Tiny(torch.nn.Module):
     def __init__(self):
         super().__init__()
         self.condition = torch.nn.Linear(2, 2, bias=False)
+
+
+def test_scheduler_restart_rebases_lr_and_remaining_horizon():
+    parameter = torch.nn.Parameter(torch.tensor(1.0))
+    optimizer = torch.optim.AdamW([parameter], lr=0.1)
+    old_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer,
+        T_max=2,
+        eta_min=0.01,
+    )
+    for _ in range(2):
+        parameter.grad = torch.tensor(1.0)
+        optimizer.step()
+        old_scheduler.step()
+    assert optimizer.param_groups[0]["lr"] == 0.01
+    exp_avg_before = optimizer.state[parameter]["exp_avg"].clone()
+
+    scheduler = _restart_cosine_scheduler(
+        optimizer,
+        learning_rate=0.05,
+        minimum_learning_rate=0.005,
+        remaining_updates=4,
+    )
+
+    assert optimizer.param_groups[0]["lr"] == 0.05
+    assert optimizer.param_groups[0]["initial_lr"] == 0.05
+    assert scheduler.T_max == 4
+    assert torch.equal(optimizer.state[parameter]["exp_avg"], exp_avg_before)
+    observed = []
+    for _ in range(4):
+        optimizer.step()
+        scheduler.step()
+        observed.append(optimizer.param_groups[0]["lr"])
+    assert observed == sorted(observed, reverse=True)
+    assert abs(observed[-1] - 0.005) < 1e-12
+
+
+def test_scheduler_restart_rejects_invalid_horizon_and_lr():
+    parameter = torch.nn.Parameter(torch.tensor(1.0))
+    optimizer = torch.optim.AdamW([parameter], lr=0.1)
+    for arguments in (
+        {
+            "learning_rate": 0.1,
+            "minimum_learning_rate": 0.01,
+            "remaining_updates": 0,
+        },
+        {
+            "learning_rate": 0.01,
+            "minimum_learning_rate": 0.1,
+            "remaining_updates": 1,
+        },
+    ):
+        try:
+            _restart_cosine_scheduler(optimizer, **arguments)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("invalid scheduler restart was accepted")
 
 
 def test_weighted_total_and_calibration_are_finite():
