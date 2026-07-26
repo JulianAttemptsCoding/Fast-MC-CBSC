@@ -3263,3 +3263,13 @@ findings throughout `trainer.py`; it did not mutate code. A scoped run ignoring
 only those historical style classes passes, and `git diff --check` is clean.
 This correction is not in the currently running r19 image. A new immutable
 image is required only if wave-2 continuation is selected.
+
+Pre-build QA at commit `92752af`: full repository test suite passes 81/81 with
+five known Transformer warnings and compileall is clean. A repository-wide
+Ruff check (already ignoring only historical E701/E702/E703 compact style)
+found 12 additional pre-existing unused-import/ambiguous-name findings outside
+the changed continuation path; it made no mutation. The previously scoped
+changed-file Ruff gate passes. Conservative budget remains `$24.54` accounted,
+`$8.50` live-wave worst reserve, and `$5.00` contingency. Spending at most
+`$0.50` of that contingency on an immutable continuation image still leaves
+`$61.96` after all reserves.

@@ -1819,6 +1819,11 @@ include local mutations, Cloud Build, and Vertex submissions.
      cosine horizon. Config requires paired resume; focused 33 tests pass.
      Unscoped Ruff exposed 42 historical compact-style findings; scoped lint
      ignoring only E701/E702/E703 passes. Running r19 jobs are unchanged.
+259. Continuation pre-build at `92752af`: full 81 tests and compileall pass.
+     Repo-wide Ruff additionally exposes 12 historical unused/ambiguous-name
+     findings outside the changed path; scoped changed-file lint passes. A
+     `$0.50` image build remains inside the already reserved `$5` contingency
+     and leaves `$61.96` after all worst-case reserves.
 
 ## Implementation QA disposition
 
