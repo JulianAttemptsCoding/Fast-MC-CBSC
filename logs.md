@@ -3273,3 +3273,11 @@ changed-file Ruff gate passes. Conservative budget remains `$24.54` accounted,
 `$8.50` live-wave worst reserve, and `$5.00` contingency. Spending at most
 `$0.50` of that contingency on an immutable continuation image still leaves
 `$61.96` after all reserves.
+
+Cloud Build `46b06a98-3741-4e6e-8df8-be175260b86e` succeeded from
+`13:39:16Z` through `13:41:50Z`. The allowlisted context was 75 files /
+300.0 KiB. Independent Artifact Registry describe resolves immutable r20:
+`us-central1-docker.pkg.dev/asiop-zdc-1/cbsc-zdc/cbsc-zdc@sha256:8b4a94c0c748febdb059b1302503d280498ddd1360b595a90e0a6c9b0999048f`.
+No job uses this image yet. Conservative accounted spend becomes `$25.04`;
+live-wave worst reserve `$8.50` plus remaining contingency `$4.50` still leaves
+`$61.96`.

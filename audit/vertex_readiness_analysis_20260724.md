@@ -1824,6 +1824,10 @@ include local mutations, Cloud Build, and Vertex submissions.
      findings outside the changed path; scoped changed-file lint passes. A
      `$0.50` image build remains inside the already reserved `$5` contingency
      and leaves `$61.96` after all worst-case reserves.
+260. Cloud Build `46b06a98-3741-4e6e-8df8-be175260b86e` succeeded in 2m35s
+     from the 75-file/300 KiB allowlist. Independent registry digest is r20
+     `sha256:8b4a94c0...9048f`. No job uses it yet. Accounted spend is `$25.04`;
+     remaining after live-wave worst reserve and contingency is `$61.96`.
 
 ## Implementation QA disposition
 
