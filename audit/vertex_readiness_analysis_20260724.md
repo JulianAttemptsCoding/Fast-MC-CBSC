@@ -1995,6 +1995,30 @@ include local mutations, Cloud Build, and Vertex submissions.
      families, one checkpoint each, latest compressed hash/decode, epoch 2,
      50x5, zero test use, explicit key/selection copy, rAF/DPR optimisation,
      and zero radial gradients in deployed JS.
+304. A separately authorized validation-only compute extension freezes two
+     additional epochs for all four calibrated families. LR3e-5/LR1e-4 resume
+     from epoch 0; LR3e-4/half-batch resume from epoch 2. Exact paired
+     checkpoints were independently streamed, SHA-256 checked, and loaded.
+     New configs were generated then frozen through the CLI; the four-family
+     verifier, 29 focused tests, Ruff, and compileall pass with zero test use.
+305. Artifact Registry and actual Vertex descriptions identify r20 as
+     `sha256:8b4a94c0c748febdb059b1302503d280498ddd1360b595a90e0a6c9b0999048f`.
+     This exposes a different digest transcribed in the old handoff text;
+     authoritative server evidence wins and the mismatch is preserved for
+     correction. Pre-submit worst-case budget is `$53.84` of `$100`.
+306. All eight compute-extension prefixes and display-name namespaces were
+     empty. Generation-0 staging created one config plus exact parent
+     best/last per family. Every merged input independently verifies at 212
+     objects (205 base + 4 shared + 3 unique), synthetic false, exact hashes,
+     zero forbidden/test paths; all four outputs remain empty.
+307. Four on-demand T4 pipelines/custom jobs were accepted: LR3e-5
+     `6276485444813193216/3731080842139664384`, LR1e-4
+     `1268482659177201664/2327954471516110848`, LR3e-4
+     `6713334608668131328/2033311743551209472`, and half-batch
+     `5186614334989533184/3979763984063528960`. Server specs match exact
+     r20, inputs, configs, outputs, service account, resources, on-demand
+     scheduling, and four-hour caps. Two initially run and two await capacity.
+     Local SDK observers were stopped after acceptance; server jobs persist.
 
 ## Implementation QA disposition
 

@@ -3758,3 +3758,98 @@ gradients.
 
 No Vertex state changed; spend remains `$35.24`; there is no next epoch, ETA,
 or timer.
+
+## 2026-07-27 — four-family calibrated compute-extension preflight
+
+The user separately authorized two additional epochs for every calibrated
+family to answer a narrower question: does more compute improve each
+configuration's validation loss? This is a new validation-only exploratory
+protocol; it does not erase or reinterpret the predeclared A100 `NO-GO`.
+`docs/COMPUTE_EXTENSION_PROTOCOL_20260727.md` freezes the comparison before
+new results: four parallel on-demand T4 jobs, exact paired recovery, two new
+epochs each, same FP32 objective/data/fixed 50-by-5 validation bank, and zero
+test use. A fifth unrelated or duplicate job is not justified merely because
+five T4 allocations may be available.
+
+Parent checkpoints were streamed independently from GCS, SHA-256 checked, and
+loaded with PyTorch on CPU. Every pair is joint-stage, finite-loadable, has
+Torch/CUDA RNG, and matches its expected terminal epoch, best metric,
+optimizer step, and scheduler step:
+
+```text
+family                       parent  best SHA       last SHA       best val
+calibrated_lr3e5                  0  9864e8b9...   e3d4d0c7...   4.988944060631413
+calibrated_lr1e4                  0  6258aa7b...   b375d018...   4.973253495522160
+calibrated_lr3e4                  2  0d02d193...   f612b83a...   4.800034052805531
+calibrated_lr1e4_halfbatch        2  b9939a8e...   67de2e2f...   4.903753406306835
+```
+
+The generator `scripts/build_compute_extensions.py` produced exactly four new
+unfrozen templates and refused overwrite/partial-family input. Each template
+was then frozen only through `cbsc-zdc freeze-config`. Independent
+`scripts/verify_compute_extensions_frozen.py` checks common production
+provenance, exact parent hashes/epochs, paired recovery, two-epoch horizon,
+scheduler restart, joint FP32, calibrated weights, fixed validation
+visualization, and zero test. Frozen hashes are:
+
+```text
+lr3e-5       9188b6c5745f0866c2188df6dce57452dfc29bd919d2ed5cf549646d2915cbb1
+lr1e-4       7cb32e3c8f2a0ec88195be18600ee8f1357b56c2210eeb9463dfb6ae029726c7
+lr3e-4       7b34b61121e38a42e05431389cd06f754c18d102dfdac7c7b76555fcef64f79a
+half-batch   76eaa5e11008bc55acb6920e336daeb126e2077f23b536f19800c3adb66a91bc
+```
+
+Focused recovery/config tests pass `29/29`; Ruff and compileall pass. The
+exact Artifact Registry identity and prior Vertex job descriptions agree on
+r20 digest
+`sha256:8b4a94c0c748febdb059b1302503d280498ddd1360b595a90e0a6c9b0999048f`.
+The old terminal handoff document instead transcribed a different r20 digest;
+that discrepancy was found before submission, is not being propagated, and
+will be corrected in terminal evidence.
+
+Budget gate before any new submission: prior accounted spend `$35.24`; four
+four-hour hard caps at `$0.85/hour` reserve `$13.60`; separate contingency
+`$5.00`; worst-case ledger `$53.84`; hard-ceiling remainder `$46.16`.
+
+All eight proposed GCS prefixes and all eight Vertex custom-job/training-
+pipeline display-name namespaces were empty before mutation. Generation-match
+zero created exactly three objects in each unique input: one frozen config and
+the exact parent best/last checkpoint pair copied server-side without local
+checkpoint persistence. Four independent merged-staging verifications pass:
+205 real production-base objects + four shared pilot-split/calibration objects
++ three unique objects = 212, with exact provenance/checkpoint hashes,
+synthetic false, zero forbidden/test paths. All four output prefixes remained
+empty after staging. This is the final input gate before submission.
+
+## 2026-07-27 11:45 Asia/Taipei — four extensions submitted
+
+After repeating the `$53.84/$100` worst-case budget and output-emptiness gates,
+exactly four jobs were accepted:
+
+```text
+family                     pipeline             custom job
+calibrated LR3e-5          6276485444813193216  3731080842139664384
+calibrated LR1e-4          1268482659177201664  2327954471516110848
+calibrated LR3e-4          6713334608668131328  2033311743551209472
+calibrated half-batch      5186614334989533184  3979763984063528960
+```
+
+Independent server descriptions reproduce the exact base/shared/unique
+prefixes, config relatives, unique outputs, approved service account, one
+replica, on-demand `n1-standard-8`, one `NVIDIA_TESLA_T4`, 100 GB `pd-ssd`,
+14,400-second hard timeout, postflight training, and authoritative immutable
+r20 digest `8b4a94c0...9048f`. LR3e-5 and half-batch are running; LR1e-4 and
+LR3e-4 are pending accelerator allocation. Pending is not a failed gate.
+
+The SDK's documented asynchronous call still left a local status-observer
+thread alive after each server acceptance. Each observer PID was resolved by
+its complete, unique command line and stopped locally only after the pipeline
+and backing custom-job IDs were printed. Fresh Vertex descriptions prove the
+four server-side jobs continue independently. No job was cancelled,
+duplicated, or altered.
+
+Based on prior measured runs, the first immutable epoch should appear roughly
+65–80 minutes after each job's actual start; terminal output should follow
+about another epoch plus postflight. Site publication remains gated on a
+complete immutable epoch, exact verification, and a lower family-specific
+validation loss.

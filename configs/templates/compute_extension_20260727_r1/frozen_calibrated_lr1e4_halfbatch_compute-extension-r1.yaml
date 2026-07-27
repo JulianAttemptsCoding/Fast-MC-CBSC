@@ -1,0 +1,132 @@
+project:
+  name: cbsc-zdc-v2-2-viability-calibrated_lr1e4_halfbatch-continuation-compute-extension-r1
+  run_dir: runs/viability_calibrated_lr1e4_halfbatch_continuation_compute_extension_r1
+  pilot: true
+data:
+  manifest: C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast MC CBSC\audit\fp32_freeze_inputs\artifacts\data\dataset_manifest.json
+  splits: C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast MC CBSC\audit\training_hardening_inputs\artifacts\training_pilot_splits.json
+  target_mode: raw_deposit
+  threshold_gev: 0.0
+  train_kinetic_gev:
+  - 0.0
+  - 300.0
+  evaluation_kinetic_gev:
+  - 50.0
+  - 250.0
+  split_fraction:
+  - 0.8
+  - 0.1
+  - 0.1
+  response_cap_ratio: 0.725470286351178
+  response_cap_absolute_gev: 64.38813572617559
+geometry:
+  path: C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast MC CBSC\audit\fp32_freeze_inputs\artifacts\geometry
+  n_nodes: 6790
+  n_layers: 65
+  geometry_hash: e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b
+model:
+  condition_dim: 128
+  hidden_dim: 96
+  response_hidden: 192
+  response_components: 4
+  response_scale_gev: 10.0
+  profile_hidden: 128
+  count_hidden: 192
+  graph_blocks: 3
+  attention_heads: 4
+  attention_layers: 2
+  layer_context: bidirectional
+  dropout: 0.0
+training:
+  stage: joint
+  seed: 20260723
+  device: cuda
+  batch_size: 3
+  gradient_accumulation: 4
+  num_workers: 4
+  epochs: 5
+  learning_rate: 0.0001
+  min_learning_rate: 1.0e-06
+  betas:
+  - 0.9
+  - 0.999
+  eps: 1.0e-08
+  weight_decay: 0.01
+  gradient_clip_norm: 1.0
+  amp: false
+  deterministic_debug: false
+  early_stopping_patience: 3
+  checkpoint_interval_updates: 50
+  initialize_from: null
+  initialize_from_relative: null
+  initialize_from_sha256: null
+  resume_from: null
+  train_condition_encoder: true
+  resume_from_relative: checkpoints/calibrated_lr1e4_halfbatch_last_epoch2.pt
+  resume_from_sha256: 67de2e2f26c947c163b6566ae8343e05cd3297e5facbd6b4431f27e02858ff1b
+  resume_best_from: null
+  resume_best_from_relative: checkpoints/calibrated_lr1e4_halfbatch_best_epoch2.pt
+  resume_best_from_sha256: b9939a8eb157a33097c9dcf3af82e4bffd6d474888b129c65442ea006beca1e4
+  restart_scheduler_on_resume: true
+  resume_progress_from: null
+  resume_progress_from_relative: null
+  resume_progress_from_sha256: null
+loss_weights:
+  active: 0.5367704371463009
+  count: 0.16090104449935363
+  first_layer: 2.159450729859089
+  profile_flow: 0.16090104449935363
+  response: 0.16090104449935363
+  share_flow: 0.44496024094966563
+  support_bce: 1.3241075363035668
+  support_rank: 1.4775912102536604
+  visible: 2.574416711989658
+evaluation:
+  energy_bin_edges_gev:
+  - 50
+  - 75
+  - 100
+  - 125
+  - 150
+  - 175
+  - 200
+  - 225
+  - 250.0001
+  profile_steps: 8
+  share_steps: 8
+  closure_tolerance_gev: 2.0e-05
+  visualization:
+    enabled: true
+    split: validation
+    sample_count: 50
+    draws_per_condition: 5
+    selection_seed: 20260725
+    generation_seed: 20260725
+    required: true
+provenance:
+  template_sha256: bff91945f695972dc87e10b47bb03a4b2165bfbd9d0c54874ba7f1cfb03ec688
+  audit_sha256: ebc951971dc3ad25f9738b2d150d54d5b3fcc9518d039c2a33420f53a409496f
+  geometry_manifest_sha256: 616b14bd006fb00acb963dc2b8b21fa0bc80d041a890b580d80ff31a11daa5d2
+  dataset_manifest_sha256: 5a6d963247091e91c0787dd763b46e3b1189f62785d9cab1d8fda4e76ca08096
+  split_manifest_sha256: a4d0967597bee525843d81647bd259deee7c2e908d25d2b1df78a8179526b0b3
+  dataset_geometry_hash: e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b
+  split_assignment_sha256: 084f0dfd86e488c63bb41ea50d6783ad22eb57a322288c075a94b1ec12dd3714
+viability:
+  screening_only: true
+  selection_split: validation
+  test_events_used: 0
+  weight_source: calibrated
+  baseline_calibration_report_sha256: 280e1b7f08bdc3bf3d8b8d075ce21379123a8ba16c7bc852f9290107537d6ac3
+  baseline_checkpoint_sha256: 03c7960861d6f6f3012a8e4469421d51e33d1a8dad7fc8ec8c8406d547f1adb7
+  successive_halving_wave: 2
+  max_parallel_jobs: 5
+  continuation_epochs: 2
+  parent_result_sha256: 6ce2a55617a86ad99d2f7a44dcdc2a0483147415a74b8156205fa7894b8f1cb7
+  selection_analysis_sha256: fefd010227a213f3a8419d5b665097863c1b77eb6d1fec36f9dbcfbbc0898efa
+  scheduler_contract: preserve model/optimizer/scaler/RNG and paired historical best;
+    restart exhausted cosine over exactly two new epochs
+  compute_extension_round: compute-extension-r1
+  parent_epoch: 2
+  parent_output_uri: gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/viability-20260727-wave2-r1-calibrated-lr1e4-halfbatch-output
+  parent_template_sha256: 6522bb9c204a858712b39e802daba1006765db28b30a60d5cddd3241d3dc4f97
+  frozen_a100_decision_unchanged: true

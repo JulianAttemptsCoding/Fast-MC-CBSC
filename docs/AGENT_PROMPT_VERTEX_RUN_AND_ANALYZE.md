@@ -4,8 +4,9 @@ Copy everything below the separator verbatim into the new agent.
 
 ---
 
-You are the independent terminal QA and public-visual-evidence maintenance
-agent for CBSC-ZDC v2.2. Work only in these two repositories:
+You are the independent Vertex compute-extension QA and
+public-visual-evidence maintenance agent for CBSC-ZDC v2.2. Work only in
+these two repositories:
 
 ```text
 source=C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast MC CBSC
@@ -15,11 +16,46 @@ public_remote=https://github.com/JulianAttemptsCoding/Fast-MC-Visual-Tests
 public_url=https://julianattemptscoding.github.io/Fast-MC-Visual-Tests/
 ```
 
-The authorized Vertex training/screening phase is terminal. Do not submit,
-clone, resume, cancel, or mutate a Vertex job. Do not open the test split. Do
-not change the frozen A100 decision. Your task is to reproduce the terminal
-evidence read-only, verify the public site and its data contract, record any
-mismatch, and stop.
+The frozen A100 screening phase is terminal, but a later user-authorized
+validation-only compute extension is active. Do not submit, clone, resume,
+cancel, or mutate any Vertex job: exactly four extension jobs already exist.
+Do not open the test split or change the historical frozen A100 decision.
+Monitor and verify the four jobs below, publish only verified family-specific
+validation improvements, and stop after terminal comparison.
+
+## 0. Active compute-extension jobs — do not duplicate
+
+```text
+image=us-central1-docker.pkg.dev/asiop-zdc-1/cbsc-zdc/cbsc-zdc@sha256:8b4a94c0c748febdb059b1302503d280498ddd1360b595a90e0a6c9b0999048f
+
+lr3e5_pipeline=6276485444813193216
+lr3e5_custom_job=3731080842139664384
+lr3e5_output=gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/compute-extension-20260727-r1-calibrated-lr3e5-output
+lr3e5_expected_epochs=1,2
+
+lr1e4_pipeline=1268482659177201664
+lr1e4_custom_job=2327954471516110848
+lr1e4_output=gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/compute-extension-20260727-r1-calibrated-lr1e4-output
+lr1e4_expected_epochs=1,2
+
+lr3e4_pipeline=6713334608668131328
+lr3e4_custom_job=2033311743551209472
+lr3e4_output=gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/compute-extension-20260727-r1-calibrated-lr3e4-output
+lr3e4_expected_epochs=3,4
+
+half_pipeline=5186614334989533184
+half_custom_job=3979763984063528960
+half_output=gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/compute-extension-20260727-r1-calibrated-lr1e4-halfbatch-output
+half_expected_epochs=3,4
+```
+
+Read `docs/COMPUTE_EXTENSION_PROTOCOL_20260727.md`. At each immutable epoch,
+verify exact paired recovery, finite losses/gradients/checkpoints, optimizer
+and restarted scheduler steps, invariants, T4 headroom, 8/8 timing, exact
+fixed 50-by-5 validation conditions, and zero test use. Update `logs.md` and
+the source dashboard. Update the public site only when the new epoch is the
+lowest verified validation-loss checkpoint for that calibrated family; retain
+exactly one public checkpoint per family.
 
 ## 1. Read before every command
 
@@ -47,7 +83,7 @@ validation.
 ```text
 project=asiop-zdc-1
 region=us-central1
-image=us-central1-docker.pkg.dev/asiop-zdc-1/cbsc-zdc/cbsc-zdc@sha256:8b4a94c0d4b322f16e884559788309933a92f6d42c0787c22b52c57eb6e9048f
+image=us-central1-docker.pkg.dev/asiop-zdc-1/cbsc-zdc/cbsc-zdc@sha256:8b4a94c0c748febdb059b1302503d280498ddd1360b595a90e0a6c9b0999048f
 
 lr3_pipeline=7762998777287278592
 lr3_custom_job=8103319616316506112
@@ -114,7 +150,7 @@ optimization_and_structural_QA=PASS
 A100_SCREENING_FOR_EXACT_OBJECTIVE=NO-GO
 physics_validation=NOT_ESTABLISHED
 test_evaluation=BLOCKED
-additional_vertex_training=NOT_AUTHORIZED
+additional_vertex_training=ACTIVE_USER_AUTHORIZED_COMPUTE_EXTENSION
 ```
 
 LR3e4 improves loss by 3.0498% but worsens response by 15.704 percentage
