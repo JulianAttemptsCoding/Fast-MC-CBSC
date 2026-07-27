@@ -64,8 +64,8 @@ WARN = "#C47F00"
 BLOCK = "#B42318"
 
 BEST_FILES = {
-    "calibrated_lr3e5": "compute-extension-r1-calibrated-lr3e5_joint_epoch_0002.json",
-    "calibrated_lr1e4": "compute-extension-r1-calibrated-lr1e4_joint_epoch_0002.json",
+    "calibrated_lr3e5": "compute-extension-r2-calibrated-lr3e5_joint_epoch_0004.json",
+    "calibrated_lr1e4": "compute-extension-r2-calibrated-lr1e4_joint_epoch_0004.json",
     "calibrated_lr3e4": "compute-extension-r1-calibrated-lr3e4_joint_epoch_0004.json",
     "calibrated_lr1e4_halfbatch": "compute-extension-r1-calibrated-lr1e4-halfbatch_joint_epoch_0004.json",
 }
@@ -101,7 +101,7 @@ def read_history() -> dict[str, list[dict[str, float]]]:
             rows[variant].append(parsed)
     for variant, series in rows.items():
         series.sort(key=lambda x: x["epoch"])
-        expected = list(range(3 if variant in VARIANTS[:2] else 5))
+        expected = list(range(5))
         actual = [r["epoch"] for r in series]
         assert actual == expected, (variant, actual, expected)
         assert all(math.isfinite(value) for row in series for value in row.values())
@@ -152,10 +152,19 @@ def footer(fig: mpl.figure.Figure, text: str) -> None:
 
 def save(fig: mpl.figure.Figure, stem: str, *, svg: bool = True) -> list[Path]:
     paths = [FIG / f"{stem}.png"]
-    fig.savefig(paths[0], dpi=180)
+    png_temporary = paths[0].with_name(f".{paths[0].name}.tmp.png")
+    fig.savefig(png_temporary, dpi=180)
+    png_temporary.replace(paths[0])
     if svg:
         paths.append(FIG / f"{stem}.svg")
-        fig.savefig(paths[-1])
+        svg_temporary = paths[-1].with_name(f".{paths[-1].name}.tmp.svg")
+        fig.savefig(svg_temporary)
+        normalized_svg = "\n".join(
+            line.rstrip()
+            for line in svg_temporary.read_text(encoding="utf-8").splitlines()
+        )
+        svg_temporary.write_text(normalized_svg + "\n", encoding="utf-8")
+        svg_temporary.replace(paths[-1])
     plt.close(fig)
     return paths
 
@@ -277,11 +286,24 @@ def visualization_payloads() -> dict[str, dict[int, dict]]:
                 continue
             if variant == "calibrated_lr1e4" and "halfbatch" in ident:
                 continue
-            if "viability-r1-" not in ident and "viability-wave2-r1-" not in ident and "compute-extension-r1-" not in ident:
+            if (
+                "viability-r1-" not in ident
+                and "viability-wave2-r1-" not in ident
+                and "compute-extension-r1-" not in ident
+                and "compute-extension-r2-" not in ident
+            ):
                 continue
             epoch = int(entry["epoch"])
             current = selected[variant].get(epoch)
-            priority = 3 if "compute-extension-r1-" in ident else 2 if "viability-wave2-r1-" in ident else 1
+            priority = (
+                4
+                if "compute-extension-r2-" in ident
+                else 3
+                if "compute-extension-r1-" in ident
+                else 2
+                if "viability-wave2-r1-" in ident
+                else 1
+            )
             current_priority = current["_priority"] if current else -1
             if priority >= current_priority:
                 payload = load_json(DASH / entry["path"])
@@ -289,8 +311,8 @@ def visualization_payloads() -> dict[str, dict[int, dict]]:
                 payload["_path"] = entry["path"]
                 selected[variant][epoch] = payload
     expected = {
-        "calibrated_lr3e5": [0, 1, 2],
-        "calibrated_lr1e4": [0, 1, 2],
+        "calibrated_lr3e5": [0, 1, 2, 3, 4],
+        "calibrated_lr1e4": [0, 1, 2, 3, 4],
         "calibrated_lr3e4": [0, 1, 2, 3, 4],
         "calibrated_lr1e4_halfbatch": [0, 1, 2, 3, 4],
     }
@@ -365,8 +387,8 @@ def fig06_compute_budget(terminal: dict) -> list[Path]:
     fig, (ax, ax2) = plt.subplots(1, 2, figsize=(13.333, 7.5), gridspec_kw={"width_ratios": [1.7, 1]})
     title(
         fig,
-        "Four continuation jobs ran concurrently on on-demand T4 GPUs",
-        "Server-side Vertex execution preserved local storage and completed within the $100 conservative ceiling",
+        "The four current-best families were trained on on-demand T4 GPUs",
+        "Two parallel waves preserved local storage and completed within the $100 conservative ceiling",
     )
     variants = terminal["variants"]
     starts = [datetime.fromisoformat(v["start_time"].replace("Z", "+00:00")) for v in variants]
@@ -394,7 +416,7 @@ def fig06_compute_budget(terminal: dict) -> list[Path]:
     ax2.set_xticks([])
     ax2.set_ylabel("USD")
     clean_axis(ax2, grid="y")
-    ax2.set_title(f"{cost['extension_total_t4_hours']:.2f} T4-hours in this extension", loc="left", fontsize=11)
+    ax2.set_title(f"{cost['extension_total_t4_hours']:.2f} cumulative extension T4-hours", loc="left", fontsize=11)
     fig.subplots_adjust(left=0.12, right=0.95, top=0.82, bottom=0.13, wspace=0.32)
     footer(fig, "On-demand NVIDIA T4 only; no Spot, CPU fallback, test evaluation, or extra Vertex job was used to produce this exhibition.")
     return save(fig, "06_vertex_compute_and_budget")
@@ -518,7 +540,7 @@ def fig09_claim_boundary() -> list[Path]:
     rows = [
         ("Structural execution", "PASS", "T4 runtime, real production data, finite gradients, checkpoint reload, invariant checks", PASS),
         ("Optimization continuation", "PASS", "All 4 calibrated families ended below their first completed validation loss", PASS),
-        ("Resource feasibility", "PASS", "On-demand T4, 25–62% memory headroom, conservative ledger $48.68 / $100", PASS),
+        ("Resource feasibility", "PASS", "On-demand T4, 25–62% memory headroom, conservative ledger $53.10 / $100", PASS),
         ("Fixed-sample visual QA", "MIXED", "Some showers look credible; response, hit-count, and profile proxies are non-monotonic", WARN),
         ("Physics validation", "NOT ESTABLISHED", "Conditional distribution agreement, correlations, C2ST, and reconstruction closure not proven", BLOCK),
         ("A100 scale-up gate", "NO-GO", "Frozen screening gate remains closed; lower weighted loss alone is insufficient", BLOCK),
@@ -707,7 +729,7 @@ def main() -> None:
     FIG.mkdir(parents=True, exist_ok=True)
     style()
     history = read_history()
-    terminal = load_json(AUDIT / "compute_extension_20260727_r1_terminal_analysis.json")
+    terminal = load_json(AUDIT / "compute_extension_20260727_r2_terminal_analysis.json")
     assert terminal["test_events_used"] == 0
     payloads = visualization_payloads()
     best = {variant: load_json(DASH / filename) for variant, filename in BEST_FILES.items()}
@@ -737,7 +759,7 @@ def main() -> None:
 
     source_files = [
         DATA / "training_history.csv",
-        AUDIT / "compute_extension_20260727_r1_terminal_analysis.json",
+        AUDIT / "compute_extension_20260727_r2_terminal_analysis.json",
         DASH / "manifest.json",
         DASH / "geometry.json",
         *[DASH / name for name in BEST_FILES.values()],

@@ -4326,3 +4326,167 @@ printing server acceptance. Each exact Python child was identified by its full
 unique command line and stopped locally only after both pipeline and custom-job
 IDs were printed. Fresh server descriptions prove both Vertex jobs remain
 active. No cloud job was cancelled, duplicated, or altered.
+
+## 2026-07-27T23:56+08:00 — calibrated LR 3e-5 and LR 1e-4 reach E4
+
+The existing two jobs were re-described; no job was submitted or duplicated.
+Both server-side runs succeeded:
+
+```text
+family    pipeline             custom job           start UTC             end UTC               duration
+LR 3e-5   3939574635045060608  4234868273893605376  2026-07-27 07:48:59   2026-07-27 10:27:27   9,508 s
+LR 1e-4   8388568116933689344  3118380186584743936  2026-07-27 07:49:24   2026-07-27 10:22:55   9,211 s
+```
+
+Both remained `ON_DEMAND`, one `NVIDIA_TESLA_T4`, `n1-standard-8`, one
+replica, 100 GB `pd-ssd`, 14,400-second timeout, and immutable image
+`sha256:8b4a94c0c748febdb059b1302503d280498ddd1360b595a90e0a6c9b0999048f`.
+Each output contains 183 objects, 13 in the immutable E3 snapshot and 16 in
+E4, with no `vertex_failure.json`.
+
+The streamed verifier was run independently for E3 and E4 of both families.
+It re-downloaded and hashed the paired parent/checkpoint state, loaded all
+checkpoints on CPU, tested every tensor for finiteness, reproduced optimizer
+and restarted-scheduler steps, checked contiguous history, validated the
+fixed 50-condition/five-draw bank, and enforced the common selection hash
+`f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6`.
+All four reports pass with zero test events:
+
+```text
+family    epoch  train loss  validation loss  examples/s  best epoch  fixed-sample |response bias|  |hit bias|  profile L1
+LR 3e-5   E3     5.053009    4.939322         6.3710      E2          0.05886                       0.07354     0.24864
+LR 3e-5   E4     4.981933    4.897327         6.2544      E4          0.05429                       0.07540     0.20762
+LR 1e-4   E3     5.032178    4.911421         6.5859      E2          0.08470                       0.02226     0.27926
+LR 1e-4   E4     4.920952    4.827105         6.5927      E4          0.05594                       0.06645     0.20695
+```
+
+E3 regressed relative to E2 by 0.236% for LR 3e-5 and 0.668% for LR 1e-4.
+E4 then improved relative to E3 by 0.850% and 1.717%, respectively, and
+established new family-best validation losses 0.616% and 1.060% below E2.
+This supports the narrow hypothesis that another two-epoch cosine cycle can
+improve the frozen weighted objective. It does not demonstrate monotonic
+per-epoch progress or physics fidelity.
+
+Checkpoint identities:
+
+```text
+family    E4 best SHA                                                       E4 last SHA
+LR 3e-5   949c8e0e199def5eba8cc6cc3f7be7d76aa9e110297fc4382b0e2f82c3b2e064  83758012275d20a4a23c1495ccc30e240913c95a416f3fb31c0b5d472c10aaf8
+LR 1e-4   f4469a912275480507f758c9bdcd98bc58e94c459e50f5c73d9916446bebf945  0a9a229495004681e2df9ebe5099889e40de5af2def05eb2cf48098f0ccb8915
+```
+
+Both E4 checkpoints report 200 changed model tensors, optimizer step 5,550,
+restarted scheduler step 2,220, 25.0186% T4 memory headroom, finite losses,
+and zero count/support/nonfinite/negative failures. Maximum epoch-invariant
+event closure is `4.7684e-7 GeV`; fixed-sample event closure remains below
+`7.6294e-6 GeV`.
+
+Terminal postflight independently re-read the fresh-model best-checkpoint
+reload, seven fixed kinetic conditions, structural invariant report, resource
+report, and 8/8 timing:
+
+```text
+family    postflight ms/event  event closure max  postflight JSON SHA
+LR 3e-5   294.797              3.8147e-6 GeV      2f7e1e2cd4659697d6db96c1b884a2c641956926a684b4deeb652adc80f38c31
+LR 1e-4   278.449              1.9073e-6 GeV      85ec565227e323c5fe7bedc84822c8c24e0e6fcedf517ca46725a728240ff355
+```
+
+Operator corrections preserved:
+
+- The first LR 1e-4 E4 read-only verifier invocation used the r1 output as
+  `--input-uri` instead of the r2 frozen input and stopped without producing
+  a report. No GCS or Vertex state changed.
+- The first corrected invocation later exited without a report or diagnostic
+  after a long local read. The identical correct read-only invocation was
+  repeated and passed. The final JSON is the only accepted evidence.
+- One PowerShell percentage-calculation command had an empty-pipe syntax
+  error. The corrected calculation reproduced the percentages above.
+
+Incremental conservative cost is 5.199722 T4-hours × $0.85/hour = $4.4198.
+The cumulative conservative ledger is therefore `$53.1006/$100`, leaving
+`$46.8994`. The $0.85/hour rate remains deliberately above the T4 component
+price to cover VM, disk, and uncertainty.
+
+## 2026-07-28T00:10+08:00 — E4 visual evidence and exhibition refresh
+
+The two r2 visualization prefixes were synchronized into the source dashboard
+using unique immutable run labels. The source manifest now contains E3/E4 for
+both extended families, preserves the common geometry and selection hashes,
+and continues to declare zero test use.
+
+`exhibition/data/training_history.csv` now contains contiguous E0–E4 histories
+for all four calibrated families. `exhibition/build_exhibition.py` selects
+the new r2 E4 payloads for LR 3e-5 and LR 1e-4, retains the existing E4
+payloads for LR 3e-4 and the half-batch control, and gives r2 artifacts higher
+immutable-run priority than r1.
+
+Rebuild and QA:
+
+```text
+python exhibition/build_exhibition.py
+visual_count=23
+selected_validation_position=21
+python -m compileall -q exhibition scripts src tests
+PASS
+```
+
+Visual inspection of the regenerated train/validation small multiples and
+same-condition 3D Geant4-versus-five-Fast-MC figure found no clipping,
+mislabeling, or missing series. The loss figure visibly records the E3
+regression and E4 recovery rather than hiding the non-monotonic epoch.
+
+The public-site allowlist was changed only for the two newly improved
+families:
+
+```text
+calibrated_lr3e5  compute-extension-r2-calibrated-lr3e5:joint:0004
+calibrated_lr1e4  compute-extension-r2-calibrated-lr1e4:joint:0004
+```
+
+The public exporter retained exactly four calibrated families and one accepted
+checkpoint per family, removed the two superseded r1 gzip objects, emitted
+24,582,747 compressed bytes, and reported `test_events_used=0`. Seven public
+repository tests pass and the TypeScript/Vite production build passes. Live
+deployment verification follows after commit and push.
+
+Scientific boundary remains:
+
+```text
+structural_and_optimization_QA=PASS
+more_compute_validation_hypothesis=SUPPORTED_FOR_ALL_4_CALIBRATED_FAMILIES
+physics_validation=NOT_ESTABLISHED
+historical_frozen_A100_screening=NO-GO_UNCHANGED
+test_evaluation=BLOCKED_NOT_OPENED
+```
+
+Public deployment subsequently completed:
+
+```text
+commit=784fe6bf572cb6285fb2e92a54858883da1c0e6e
+workflow=30285942671
+workflow_conclusion=success
+live_manifest_sha256=3ab56be2af72b386fa2e553d48aea9e9dbb361e19621c35639e8e61b1f3c8bfe
+live_manifest_bytes=5,028
+published_checkpoints=4
+compressed_payload_bytes=24,582,747
+```
+
+All four live gzip objects were fetched with cache bypass, hash-checked before
+decompression, then checked for exact selected ID, checkpoint hash, E4 joint
+stage, validation split, selection hash, 50 groups, five draws per group,
+`qa.pass=true`, and zero test events. The interactive in-app browser pass was
+attempted after the HTTP/artifact checks but remains blocked by the local
+kernel-asset `os error 3`; no unsupported browser driver was substituted.
+
+Final source QA ran all 90 tests successfully with five known nonfatal
+Transformer nested-tensor performance warnings. Compileall passed. Exhibition
+QA reproduced 23 files (12 PNG and 11 SVG), five contiguous epochs for every
+family, source/output hashes, minimum PNG dimensions, SVG XML parsing, and zero
+test events.
+
+One final reproducibility rebuild encountered a transient OneDrive/PIL
+`OSError: [Errno 22]` while directly overwriting figure 06. The builder was
+hardened to render same-directory temporary PNG/SVG files and atomically
+replace destinations. It also normalizes Matplotlib SVG trailing whitespace.
+Two subsequent complete builds passed, `git diff --check` is clean, and no
+evidence input or scientific value changed.
