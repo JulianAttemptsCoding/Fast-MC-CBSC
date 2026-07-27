@@ -1896,6 +1896,13 @@ include local mutations, Cloud Build, and Vertex submissions.
      `3138927859884621824`/`576590778143342592`. Independent specs match
      on-demand one-T4 r20, one replica, 100GB pd-ssd, timeout 14400s, approved
      SA, exact inputs/configs/outputs. Initial state is pending; next timer 300s.
+277. At the 300s gate both exact jobs are running from 23:01:47Z and
+     23:00:32Z; no progress object exists yet and no duplicate was submitted.
+278. Before any wave-2 result, the terminal verifier was extended for resume:
+     epoch-1 history start, exact paired parent hashes, cumulative optimizer
+     versus restarted scheduler steps, preserved prior best, and per-epoch
+     invariant/fixed-truth/independent-seed evidence. Ruff/compile pass,
+     focused 17 tests pass, and a real wave-1 regression remains pass.
 
 ## Implementation QA disposition
 

@@ -3415,6 +3415,33 @@ config relative paths, CUDA, postflight training, and unique output prefixes.
 No third job or local observer was submitted. The next gate is a 300-second
 shell timer followed by identity/state/progress inspection.
 
+## 2026-07-27 07:04 Asia/Taipei — wave-2 allocation gate
+
+The 300-second shell timer completed. LR3e-4 job `8103319616316506112`
+is `JOB_STATE_RUNNING` from `23:01:47Z`; half-batch job
+`576590778143342592` is `JOB_STATE_RUNNING` from `23:00:32Z`. Neither has
+published an in-flight update yet, which is expected during initial staging
+and first 50 updates. No duplicate or mutation occurred.
+
+Pre-result verifier QA found that the existing component verifier assumed a
+fresh epoch-0 history and an uninterrupted cosine scheduler. That would
+misclassify the intentionally resumed wave-2 contract, whose local history
+begins at epoch 1, optimizer steps remain cumulative, a prior best can survive,
+and only scheduler step counting restarts. Before any wave-2 result existed,
+the verifier was extended to:
+
+- require the exact parent best/last checkpoint pair and resume hashes;
+- require history epochs 1–2 and the explicit scheduler restart;
+- distinguish cumulative optimizer steps from restarted scheduler steps;
+- accept an exact preserved parent best or a legitimately improved new best;
+- verify invariant/progress/visualization evidence at every resumed epoch;
+- prove fixed truth and independent generation seeds across epoch 0→1→2.
+
+Ruff and compileall pass. Focused continuation/recovery/verifier QA passes
+17/17 with one documented Transformer warning, and a full real wave-1
+terminal regression still passes with history start 0. No job uses this local
+verifier code; it is independent post-run QA.
+
 ## 2026-07-26 21:54 Asia/Taipei — dashboard browser retry preserved
 
 The five Vertex jobs remain under the existing 3,000-second timer; no job was

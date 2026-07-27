@@ -8,6 +8,8 @@ from scripts.verify_component_stage_output import (
     _assert_cross_epoch_visual_contract,
     _assert_weighted_history,
     _compare_model_state,
+    _expected_scheduler_step,
+    _read_history,
     _visualization_population_metrics,
 )
 
@@ -172,3 +174,32 @@ def test_component_predecessor_filenames_follow_stage_order():
         "share": "support_best.pt",
         "joint": "share_best.pt",
     }
+
+
+def test_resume_history_starts_after_parent_epoch(tmp_path):
+    logs = tmp_path / "logs"
+    logs.mkdir()
+    (logs / "history.csv").write_text(
+        "epoch,stage,train_loss,validation_loss,learning_rate,seconds,"
+        "examples_per_second,train_count\n"
+        "1,count,1.0,0.9,0.001,10.0,20.0,1.0\n"
+        "2,count,0.8,0.7,0.0001,11.0,19.0,0.8\n",
+        encoding="utf-8",
+    )
+
+    history = _read_history(
+        tmp_path,
+        "count",
+        expected_epoch=2,
+        expected_start_epoch=1,
+    )
+    assert [int(row["epoch"]) for row in history] == [1, 2]
+    with pytest.raises(AssertionError):
+        _read_history(tmp_path, "count", expected_epoch=2)
+
+
+def test_scheduler_steps_restart_without_resetting_optimizer_epochs():
+    assert _expected_scheduler_step(100, 0, 1, True) == 100
+    assert _expected_scheduler_step(100, 1, 1, True) == 100
+    assert _expected_scheduler_step(100, 2, 1, True) == 200
+    assert _expected_scheduler_step(100, 2, 1, False) == 300

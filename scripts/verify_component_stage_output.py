@@ -136,14 +136,20 @@ def _assert_weighted_history(
         ), (row["epoch"], row["train_loss"], reconstructed)
 
 
-def _read_history(root: Path, stage: str, expected_epoch: int) -> list[dict[str, str]]:
+def _read_history(
+    root: Path,
+    stage: str,
+    expected_epoch: int,
+    expected_start_epoch: int = 0,
+) -> list[dict[str, str]]:
     with (root / "logs/history.csv").open(
         newline="", encoding="utf-8"
     ) as handle:
         history = list(csv.DictReader(handle))
-    assert len(history) == expected_epoch + 1, len(history)
+    assert 0 <= expected_start_epoch <= expected_epoch
+    assert len(history) == expected_epoch - expected_start_epoch + 1, len(history)
     assert [int(row["epoch"]) for row in history] == list(
-        range(expected_epoch + 1)
+        range(expected_start_epoch, expected_epoch + 1)
     )
     required_components = STAGE_COMPONENTS[stage]
     for row in history:
@@ -164,6 +170,19 @@ def _read_history(root: Path, stage: str, expected_epoch: int) -> list[dict[str,
         if row.get("cuda_peak_memory_bytes", ""):
             assert int(float(row["cuda_peak_memory_bytes"])) > 0
     return history
+
+
+def _expected_scheduler_step(
+    updates_per_epoch: int,
+    checkpoint_epoch: int,
+    history_start_epoch: int,
+    restart_scheduler_on_resume: bool,
+) -> int:
+    if restart_scheduler_on_resume and checkpoint_epoch >= history_start_epoch:
+        return updates_per_epoch * (
+            checkpoint_epoch - history_start_epoch + 1
+        )
+    return updates_per_epoch * (checkpoint_epoch + 1)
 
 
 def _assert_visualization(
@@ -343,6 +362,10 @@ def verify(
     expected_training_epochs: int = 3,
     expected_checkpoint_interval_updates: int = 0,
     expected_additional_source_counts: list[tuple[str, int]] | None = None,
+    expected_history_start_epoch: int = 0,
+    resume_parent_best_checkpoint: Path | None = None,
+    resume_parent_last_checkpoint: Path | None = None,
+    expected_restart_scheduler_on_resume: bool = False,
 ) -> dict[str, Any]:
     assert stage in STAGE_PREFIX
     assert root.is_dir()
@@ -355,7 +378,17 @@ def verify(
         expected_source_stage or EXPECTED_PREVIOUS[stage]
     )
 
-    history = _read_history(root, stage, expected_epoch)
+    history = _read_history(
+        root,
+        stage,
+        expected_epoch,
+        expected_start_epoch=expected_history_start_epoch,
+    )
+    resume_mode = resume_parent_best_checkpoint is not None
+    assert resume_mode is (resume_parent_last_checkpoint is not None)
+    if resume_mode:
+        assert expected_history_start_epoch > 0
+        assert comparison_visualization is not None
 
     files = sorted(path for path in root.rglob("*") if path.is_file())
     file_hashes = {
@@ -372,6 +405,28 @@ def verify(
     assert 0 <= int(best["epoch"]) <= expected_epoch
     assert int(last["epoch"]) == expected_epoch
     validation_losses = [float(row["validation_loss"]) for row in history]
+    parent_best: dict[str, Any] | None = None
+    parent_last: dict[str, Any] | None = None
+    parent_best_hash: str | None = None
+    parent_last_hash: str | None = None
+    if resume_mode:
+        assert resume_parent_best_checkpoint is not None
+        assert resume_parent_last_checkpoint is not None
+        parent_best_hash = _sha256(resume_parent_best_checkpoint)
+        parent_last_hash = _sha256(resume_parent_last_checkpoint)
+        parent_best = torch.load(
+            resume_parent_best_checkpoint,
+            map_location="cpu",
+            weights_only=False,
+        )
+        parent_last = torch.load(
+            resume_parent_last_checkpoint,
+            map_location="cpu",
+            weights_only=False,
+        )
+        assert parent_best["stage"] == parent_last["stage"] == stage
+        assert int(parent_last["epoch"]) == expected_history_start_epoch - 1
+        validation_losses.append(float(parent_best["best_metric"]))
     selected_validation = min(validation_losses)
     assert math.isclose(
         float(best["best_metric"]), selected_validation, rel_tol=0, abs_tol=1e-12
@@ -379,7 +434,11 @@ def verify(
     assert math.isclose(
         float(last["best_metric"]), selected_validation, rel_tol=0, abs_tol=1e-12
     )
-    assert best["provenance"] == last["provenance"]
+    if resume_mode and best_hash == parent_best_hash:
+        assert parent_best is not None
+        assert best["provenance"] == parent_best["provenance"]
+    else:
+        assert best["provenance"] == last["provenance"]
 
     best_changed, _ = _compare_model_state(source, best, STAGE_PREFIX[stage])
     last_changed, _ = _compare_model_state(source, last, STAGE_PREFIX[stage])
@@ -399,10 +458,28 @@ def verify(
         int(training["checkpoint_interval_updates"])
         == expected_checkpoint_interval_updates
     )
-    assert training["initialize_from_sha256"] == source_hash
-    assert str(training["initialize_from"]).endswith(
-        expected_predecessor_filename or EXPECTED_PREDECESSOR_FILENAME[stage]
-    )
+    if resume_mode:
+        assert parent_best_hash is not None
+        assert parent_last_hash is not None
+        assert training["initialize_from"] is None
+        assert training["initialize_from_sha256"] is None
+        assert training["resume_from_sha256"] == parent_last_hash
+        assert training["resume_best_from_sha256"] == parent_best_hash
+        assert str(training["resume_from"]).endswith(
+            resume_parent_last_checkpoint.name
+        )
+        assert str(training["resume_best_from"]).endswith(
+            resume_parent_best_checkpoint.name
+        )
+        assert (
+            bool(training.get("restart_scheduler_on_resume", False))
+            is expected_restart_scheduler_on_resume
+        )
+    else:
+        assert training["initialize_from_sha256"] == source_hash
+        assert str(training["initialize_from"]).endswith(
+            expected_predecessor_filename or EXPECTED_PREDECESSOR_FILENAME[stage]
+        )
 
     preflight = _json(root / "reports/preflight.json")
     assert preflight["pass"] is True
@@ -454,44 +531,82 @@ def verify(
     expected_last_step = updates_per_epoch * (expected_epoch + 1)
     last_steps = _optimizer_steps(last)
     assert last_steps == {expected_last_step}, last_steps
-    assert int(last["scheduler_state"]["last_epoch"]) == expected_last_step
+    scheduler_updates = _expected_scheduler_step(
+        updates_per_epoch,
+        expected_epoch,
+        expected_history_start_epoch,
+        expected_restart_scheduler_on_resume,
+    )
+    assert int(last["scheduler_state"]["last_epoch"]) == scheduler_updates
     best_expected_step = updates_per_epoch * (int(best["epoch"]) + 1)
     assert _optimizer_steps(best) == {best_expected_step}
-    assert int(best["scheduler_state"]["last_epoch"]) == best_expected_step
+    best_scheduler_step = _expected_scheduler_step(
+        updates_per_epoch,
+        int(best["epoch"]),
+        expected_history_start_epoch,
+        expected_restart_scheduler_on_resume,
+    )
+    assert int(best["scheduler_state"]["last_epoch"]) == best_scheduler_step
     assert last.get("rng_state", {}).get("torch") is not None
     assert last.get("rng_state", {}).get("cuda") is not None
 
     tolerance = float(runtime["evaluation"]["closure_tolerance_gev"])
-    epoch_invariants = _json(
-        root / f"reports/invariant_epoch_{expected_epoch:04d}.json"
+    epoch_evidence: list[dict[str, Any]] = []
+    previous_visualization = (
+        _json(comparison_visualization)
+        if comparison_visualization is not None
+        else None
     )
-    _assert_invariants(epoch_invariants, tolerance)
-    progress = _json(root / f"reports/progress_epoch_{expected_epoch:04d}.json")
-    assert int(progress["epoch"]) == expected_epoch
-    assert progress["row"]["stage"] == stage
+    progress: dict[str, Any] | None = None
+    epoch_invariants: dict[str, Any] | None = None
+    visualization: dict[str, Any] | None = None
+    cross_epoch_contract: dict[str, Any] | None = None
+    for epoch in range(expected_history_start_epoch, expected_epoch + 1):
+        epoch_invariants = _json(
+            root / f"reports/invariant_epoch_{epoch:04d}.json"
+        )
+        _assert_invariants(epoch_invariants, tolerance)
+        progress = _json(root / f"reports/progress_epoch_{epoch:04d}.json")
+        assert int(progress["epoch"]) == epoch
+        assert progress["row"]["stage"] == stage
+        expected_epoch_last_hash = str(progress["last_checkpoint_sha256"])
+        visualization = _assert_visualization(
+            root,
+            stage,
+            epoch,
+            expected_epoch_last_hash,
+            tolerance,
+            expected_selection_sha256,
+        )
+        cross_epoch_contract = None
+        if previous_visualization is not None:
+            cross_epoch_contract = _assert_cross_epoch_visual_contract(
+                previous_visualization,
+                visualization,
+            )
+        epoch_evidence.append(
+            {
+                "epoch": epoch,
+                "invariants": epoch_invariants,
+                "progress": progress,
+                "visualization_sha256": _sha256(
+                    root / f"reports/visualization/epoch_{epoch:04d}.json"
+                ),
+                "cross_epoch_contract": cross_epoch_contract,
+            }
+        )
+        previous_visualization = visualization
+    assert progress is not None
+    assert epoch_invariants is not None
+    assert visualization is not None
     assert progress["best_checkpoint_sha256"] == best_hash
     assert progress["last_checkpoint_sha256"] == last_hash
-
-    visualization = _assert_visualization(
-        root,
-        stage,
-        expected_epoch,
-        last_hash,
-        tolerance,
-        expected_selection_sha256,
-    )
-    cross_epoch_contract = None
-    if comparison_visualization is not None:
-        cross_epoch_contract = _assert_cross_epoch_visual_contract(
-            _json(comparison_visualization),
-            visualization,
-        )
 
     postflight: dict[str, Any] | None = None
     if terminal:
         summary = _json(root / "reports/training_summary.json")
         assert summary["stage"] == stage
-        assert int(summary["updates"]) == expected_last_step
+        assert int(summary["updates"]) == scheduler_updates
         assert math.isclose(
             float(summary["best_validation_loss"]),
             selected_validation,
@@ -540,8 +655,11 @@ def verify(
             "frozen_tensor_mismatches": [],
             "last_optimizer_steps": sorted(last_steps),
             "last_scheduler_step": int(last["scheduler_state"]["last_epoch"]),
+            "resume_parent_best_sha256": parent_best_hash,
+            "resume_parent_last_sha256": parent_last_hash,
         },
         "history": history,
+        "history_start_epoch": expected_history_start_epoch,
         "loss_trend": {
             "first_validation_loss": first_validation,
             "last_validation_loss": last_validation,
@@ -551,6 +669,7 @@ def verify(
                 expected_epoch == 0 or selected_validation < first_validation
             ),
         },
+        "epoch_evidence": epoch_evidence,
         "invariants": epoch_invariants,
         "visualization": {
             "sha256": _sha256(
@@ -584,6 +703,13 @@ def main() -> None:
     parser.add_argument("--expected-source-stage", choices=sorted(STAGE_PREFIX))
     parser.add_argument("--expected-predecessor-filename")
     parser.add_argument("--expected-training-epochs", type=int, default=3)
+    parser.add_argument("--expected-history-start-epoch", type=int, default=0)
+    parser.add_argument("--resume-parent-best-checkpoint", type=Path)
+    parser.add_argument("--resume-parent-last-checkpoint", type=Path)
+    parser.add_argument(
+        "--expected-restart-scheduler-on-resume",
+        action="store_true",
+    )
     parser.add_argument(
         "--expected-checkpoint-interval-updates",
         type=int,
@@ -618,6 +744,12 @@ def main() -> None:
         expected_source_stage=args.expected_source_stage,
         expected_predecessor_filename=args.expected_predecessor_filename,
         expected_training_epochs=args.expected_training_epochs,
+        expected_history_start_epoch=args.expected_history_start_epoch,
+        resume_parent_best_checkpoint=args.resume_parent_best_checkpoint,
+        resume_parent_last_checkpoint=args.resume_parent_last_checkpoint,
+        expected_restart_scheduler_on_resume=(
+            args.expected_restart_scheduler_on_resume
+        ),
         expected_checkpoint_interval_updates=(
             args.expected_checkpoint_interval_updates
         ),
