@@ -3997,3 +3997,33 @@ storage step is gated on preserving the current compact reports in Git and
 confirming that every large local CBSC evidence mirror is either an exact copy
 of an immutable GCS prefix or newly archived with an object manifest before
 local removal.
+
+## 2026-07-27 13:34 Asia/Taipei — 25 GB production ROOT local copy removed
+
+The exact local file
+`C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\ML ZDC all 1\myTree_20251117_765k_0to300GeV_neutron_All.root`
+was 25,022,001,408 bytes. It is not referenced by an active process or by any
+current local/Vertex workflow; all current paths use the preprocessed
+production shard bank in GCS. The preparation gate already processed all
+764,940 entries into 187/187 verified shards with zero test use.
+
+Before removal, the independent durable source object was described as:
+
+```text
+gs://asiop-zdc-1-zdc-reco-us-central1/data/myTree_20251117_765k_0to300GeV_neutron_All.root
+generation 1783683550292251
+size       25,022,001,408
+CRC32C     lCVUvQ==
+components 32
+class      STANDARD
+```
+
+The frozen preparation record also preserves source SHA-256
+`b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533`.
+OneDrive accepted an online-only flag but did not reclaim the allocation.
+Direct PowerShell removal was rejected before execution by the command safety
+layer. A single exact-path unlink then rechecked the byte size before removal
+and succeeded; no glob or directory recursion was used. Free space rose from
+approximately 0.40 GB to 25,396,822,016 bytes. Recovery is by copying the
+generation-pinned GCS object above; the original local file is no longer
+present.
