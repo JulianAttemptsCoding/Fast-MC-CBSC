@@ -1903,6 +1903,29 @@ include local mutations, Cloud Build, and Vertex submissions.
      versus restarted scheduler steps, preserved prior best, and per-epoch
      invariant/fixed-truth/independent-seed evidence. Ruff/compile pass,
      focused 17 tests pass, and a real wave-1 regression remains pass.
+279. Wave-2 jobs `8103319616316506112` and `576590778143342592`
+     succeeded in 9,510/9,175 s. Exact terminal inventories are 22 objects
+     and 90,152,966/88,302,560 bytes with no failure artifact.
+280. Independent in-memory checkpoint QA proves exact SHA-256, reload,
+     finite model/optimizer state, paired best/last, cumulative optimizer
+     steps, restarted scheduler steps, RNG, immutable epoch snapshots, all
+     invariant/resource/timing gates, and zero test use.
+281. LR3e-4 validation loss improves 3.0498% to `4.800034`; half-batch
+     improves 1.4552% to `4.903753`. All 50 fixed truth conditions and 250
+     independent draws per epoch are exact across epochs 0–2.
+282. Geant4-facing fixed-sample metrics materially worsen. LR3e-4 response
+     bias/profile L1 change `0.03487→0.19191` / `0.22228→0.37246`;
+     half-batch changes `0.08618→0.14096` / `0.23019→0.30099`.
+     Both cross the frozen worsening limits, so the exact setup is A100
+     NO-GO despite stable optimization. Physics validation is not established.
+283. Response is continuous-density NLL and may validly be negative; adding
+     absolute value or L2 around that objective is rejected. The evidence is
+     objective/observable misalignment, not a sign error.
+284. Continuation cost is conservatively `$4.59`, bringing accounted spend
+     to `$35.24`. No further Vertex submission is authorized.
+285. Local C: exhaustion interrupted only evidence mirroring/dashboard
+     ingestion. GCS remains authoritative. The 5.536 GB obsolete temp prep
+     mirror is the safe cleanup target; no PAD process or cloud state changed.
 
 ## Implementation QA disposition
 
@@ -1912,7 +1935,6 @@ include local mutations, Cloud Build, and Vertex submissions.
 - Validation-only component, loss-calibration, and optimizer pilot work: GO.
 - Physics validation: not established. The one-epoch high-level C2ST AUC is
   `1.0`, which explicitly demonstrates that structural success is not fidelity.
-- Final training and test evaluation: blocked. Loss weights, learning rate,
-  statistical-floor-informed acceptance gates, component diagnostics,
-  full-evaluation memory behavior, and the required six-run final matrix remain
-  unfinished.
+- A100 migration for the exact screened objective: NO-GO under the frozen
+  viability protocol because fixed-sample observables materially worsen.
+- Final training and test evaluation: blocked and intentionally not launched.

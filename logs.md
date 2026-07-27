@@ -3482,3 +3482,87 @@ still run. The safe terminal window tightens to 22:20–22:30. Partial means
 (`9.5673` default; calibrated `5.0661/5.0975/5.2289/5.1150`) are recorded only
 as finite health evidence and remain forbidden for cross-family or final
 selection.
+
+## 2026-07-27 10:17 Asia/Taipei — wave-2 epochs 1–2 and terminal gate
+
+Both exact continuation jobs succeeded without resubmission:
+
+- calibrated LR3e-4 pipeline/custom
+  `7762998777287278592` / `8103319616316506112`, 9,510 s;
+- calibrated LR1e-4 half-batch pipeline/custom
+  `3138927859884621824` / `576590778143342592`, 9,175 s.
+
+The server specifications still match immutable r20
+`sha256:8b4a94c0...9048f`, one on-demand T4, `n1-standard-8`, one replica,
+100 GB `pd-ssd`, approved inputs/config/output/SA, and zero test use. No
+`vertex_failure.json` exists. Each terminal prefix has exactly 22 non-progress
+objects; byte totals are 90,152,966 and 88,302,560. Full prefixes contain 183
+and 315 objects including the update-50 recovery stream.
+
+Epoch evidence, recorded separately rather than inferred from terminal state:
+
+```text
+candidate             epoch  train loss  validation loss  examples/s  peak GiB
+calibrated LR3e-4          1    5.097584         4.987015       6.266    10.933
+calibrated LR3e-4          2    4.909252         4.800034       6.353    10.933
+calibrated half-batch      1    5.074131         4.998304       6.556     5.506
+calibrated half-batch      2    4.960174         4.903753       6.558     5.506
+```
+
+Both preflight/postflight and every epoch invariant pass. T4 headroom is
+25.019% / 62.238%; FP32 8/8 timing is 291.908 / 274.380 ms/event. The
+LR3e-4 best improves 3.0498% from epoch 0; half-batch improves 1.4552%.
+Final equals later best for both.
+
+An independent in-memory GCS audit avoided trusting worker summaries. It
+SHA-256-checked and loaded each epoch-1 last and terminal paired checkpoint,
+verified all model/optimizer tensors finite, exact joint stage/epoch, CUDA and
+Torch RNG, cumulative optimizer steps `2220→3330` / `4438→6657`, and restarted
+scheduler steps `1110→2220` / `2219→4438`. Epoch-2 snapshot and terminal
+best/last objects match byte metadata. Epoch snapshots contain exactly 13 and
+16 objects. Fixed-truth cross-epoch QA proves the same 50 conditions and
+Geant4 deposits at epochs 0→1→2, 250 independent FastMC draws per comparison,
+and exact generation-seed offsets `1,000,003` per epoch. Every epoch has 50
+groups with multiple deposits (minimum 4 or 5), finite/nonnegative outputs,
+zero test events, and selection `f7052919...9b6`.
+
+The fixed 50×5 metrics expose objective/physics-proxy disagreement:
+
+```text
+candidate       epoch  |response bias|  |hit bias|  profile relative L1  zero
+LR3e-4              0          0.03487     0.04626              0.22228  0.020
+LR3e-4              1          0.23316     0.23615              0.44377  0.028
+LR3e-4              2          0.19191     0.06483              0.37246  0.016
+half-batch          0          0.08618     0.05795              0.23019  0.024
+half-batch          1          0.12860     0.07382              0.25799  0.016
+half-batch          2          0.14096     0.06000              0.30099  0.008
+```
+
+LR3e-4 therefore improves comparable aggregate validation loss but worsens
+response by 15.704 percentage points and profile L1 by 0.15018. Half-batch
+worsens response by 5.478 points and profile L1 by 0.07080 while missing the
+3% loss threshold. Both exceed the predeclared material-worsening limits.
+The frozen protocol disposition is consequently **A100 NO-GO for this exact
+objective/training setup**, not a claim that every possible CBSC-ZDC model
+cannot work. Physics validation remains not established; test remains closed.
+
+The signed response component is continuous-density NLL, not an error norm
+with zero as a lower bound. Repository test
+`test_continuous_response_nll_can_be_negative_without_failure` proves a narrow
+valid density has negative NLL. Applying `abs()` or squaring this NLL would
+change/reverse valid likelihood gradients and is rejected. The observed
+failure is held-out objective/observable misalignment, not a missing absolute
+value.
+
+Conservative continuation cost is two jobs rounded to 2.7 h each at $0.85/h,
+or $4.59. Accounted spend becomes $35.24; no further Vertex submission is
+scientifically authorized.
+
+Local mirror/synchronization hit a separate machine gate: C: reached zero
+free bytes. The failed `gcloud storage rsync` was stopped; immutable GCS
+artifacts are intact. The exact obsolete 5.536 GB temp preparation mirror is
+`C:\Users\Julia\AppData\Local\Temp\cbsc_training_derive_20260725_r1`, whose
+authoritative hash-verified copy is prep-r5 in GCS. No Power Automate process,
+cloud object, or Vertex job was touched. Dashboard remains HTTP 200 with 21
+views but cannot ingest the four completed views until at least ~1 GB local
+space is released.
