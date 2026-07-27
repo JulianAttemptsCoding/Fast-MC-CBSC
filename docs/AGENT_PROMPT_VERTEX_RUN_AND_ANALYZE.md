@@ -1,350 +1,233 @@
-# Exact copy/paste prompt for the next Vertex agent
+# Exact copy/paste prompt for an independent terminal QA agent
 
 Copy everything below the separator verbatim into the new agent.
 
 ---
 
-You are the next execution and independent QA agent for CBSC-ZDC v2.2. Work
-only in:
-
-`C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast MC CBSC`
-
-The production-data-derived FP32 Vertex structural smoke has already completed
-successfully. Your first objective is to independently reproduce its read-only
-verification and analyze its artifacts. Your second objective is to make an
-evidence-backed plan for the next train/validation-only Vertex phase. Do not
-submit another preparation, coordinator, or smoke job. Do not launch final
-training and do not open test data.
-
-Follow this sequence exactly.
-
-1. Before any command, read these files completely, in this order:
+You are the independent terminal QA and public-visual-evidence maintenance
+agent for CBSC-ZDC v2.2. Work only in these two repositories:
 
 ```text
-docs/IMPLEMENTATION_GUIDE.md
-AGENTS.md
-docs/VERTEX_QA_GATE_PLAN_20260724.md
-docs/VERTEX_EXECUTION_HANDOFF_20260724.md
-audit/vertex_readiness_analysis_20260724.md
-audit/agent_vertex_smoke_analysis_20260724.json
-audit/agent_vertex_smoke_analysis_20260724.md
+source=C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast MC CBSC
+public=C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast-MC-Visual-Tests
+source_remote=https://github.com/JulianAttemptsCoding/Fast-MC-CBSC
+public_remote=https://github.com/JulianAttemptsCoding/Fast-MC-Visual-Tests
+public_url=https://julianattemptscoding.github.io/Fast-MC-Visual-Tests/
 ```
 
-2. Apply these non-negotiable rules:
+The authorized Vertex training/screening phase is terminal. Do not submit,
+clone, resume, cancel, or mutate a Vertex job. Do not open the test split. Do
+not change the frozen A100 decision. Your task is to reproduce the terminal
+evidence read-only, verify the public site and its data contract, record any
+mismatch, and stop.
 
-- Treat `legacy/` as evidence only. Never import or train from it.
-- Never hand-edit a frozen config.
-- Never use test events or test metrics for preprocessing, thresholds, loss
-  weights, architecture, stopping, checkpoint selection, or corrections.
-- Stop on schema, geometry, hash, invariant, nonfinite, negative-energy,
-  empty-bin, split-leakage, CUDA-fallback, checkpoint, memory-headroom, or
-  artifact failure.
-- Preserve every failure and every prefix. Never weaken a gate and never
-  overwrite a GCS prefix.
-- Use one on-demand `NVIDIA_TESLA_T4` for any later authorized pilot. Spot,
-  low-cost, preemptible, another accelerator, multiple GPUs, and CPU fallback
-  are forbidden.
-- Log commands, timestamps, hashes, environment, alternatives, decisions,
-  counterexamples, and failed attempts. Do not log hidden chain-of-thought.
-- A structural smoke pass is not physics validation.
+## 1. Read before every command
 
-3. Use these exact immutable identities:
+Read these files completely and obey them in this exact order:
+
+```text
+C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast MC CBSC\docs\IMPLEMENTATION_GUIDE.md
+C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast MC CBSC\AGENTS.md
+C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast MC CBSC\docs\A100_VIABILITY_PROTOCOL.md
+C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast MC CBSC\logs.md
+C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast MC CBSC\audit\vertex_readiness_analysis_20260724.md
+C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast-MC-Visual-Tests\README.md
+```
+
+Never use `legacy/`. Never hand-edit a frozen config. Never use test data for
+selection, calibration, stopping, visualization, or claims. Stop on schema,
+geometry, hash, checkpoint, invariant, nonfinite, negative-energy, empty-bin,
+split-leakage, CUDA-fallback, artifact, or budget mismatch. Record evidence,
+alternatives, decisions, commands, hashes, and failures; never record private
+hidden chain-of-thought. A visual or structural pass is not physics
+validation.
+
+## 2. Exact terminal Vertex identities
 
 ```text
 project=asiop-zdc-1
-project_number=39719277374
 region=us-central1
-service_account=39719277374-compute@developer.gserviceaccount.com
+image=us-central1-docker.pkg.dev/asiop-zdc-1/cbsc-zdc/cbsc-zdc@sha256:8b4a94c0d4b322f16e884559788309933a92f6d42c0787c22b52c57eb6e9048f
 
-root_uri=gs://asiop-zdc-1-zdc-reco-us-central1/data/myTree_20251117_765k_0to300GeV_neutron_All.root
-root_generation=1783683550292251
-root_size=25022001408
-root_crc32c=lCVUvQ==
-root_sha256=b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533
-root_tree=myTree
-root_entries=764940
+lr3_pipeline=7762998777287278592
+lr3_custom_job=8103319616316506112
+lr3_output=gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/viability-20260727-wave2-r1-calibrated-lr3e4-output
 
-prepare_job=projects/39719277374/locations/us-central1/customJobs/1981826012068970496
-prepare_prefix=gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5
-
-smoke_pipeline=projects/39719277374/locations/us-central1/trainingPipelines/5105571531929419776
-smoke_job=projects/39719277374/locations/us-central1/customJobs/4964365651620659200
-smoke_input=gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5-fp32-r2
-smoke_output=gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/smoke-20260724-r2-fp32
-smoke_image=us-central1-docker.pkg.dev/asiop-zdc-1/cbsc-zdc/cbsc-zdc@sha256:45ff337d8c4b1b34e936a24926a8fa495aebfb06187e75965fab9624d1f402f1
-smoke_frozen_config_sha256=e75f1bda7140a00b9caf04bf9ee574c034879e7a935dfe32a42a983680511f31
-smoke_template_sha256=bb09dff2040906d98d5df5e116a344c12d7212836090d66ee33cbcd6f7fc9633
-geometry_hash=e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b
+half_pipeline=3138927859884621824
+half_custom_job=576590778143342592
+half_output=gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/viability-20260727-wave2-r1-calibrated-lr1e4-halfbatch-output
 ```
 
-4. Verify local code without changing it:
+Both jobs must be `JOB_STATE_SUCCEEDED`, on-demand, one
+`NVIDIA_TESLA_T4`, one replica, `n1-standard-8`, 100 GB `pd-ssd`, exact image
+digest above, and zero test use. Expected durations are 9,510 s and 9,175 s.
+Do not resubmit if any description differs; preserve and report the mismatch.
 
-```powershell
-$env:PYTHONPATH = (Resolve-Path -LiteralPath 'src').Path
-python -m pytest -q
-if ($LASTEXITCODE -ne 0) { throw 'pytest failed' }
-python -m compileall -q src vertex tests
-if ($LASTEXITCODE -ne 0) { throw 'compileall failed' }
-```
+## 3. Reproduce terminal measurements
 
-Require exactly 25 passing tests. The two documented Transformer
-nested-tensor warnings are nonfatal; any other failure is fatal.
-
-5. Re-verify preparation from the full production ROOT artifact:
-
-```powershell
-gcloud ai custom-jobs describe 1981826012068970496 `
-  --project asiop-zdc-1 `
-  --region us-central1 `
-  --format=json
-if ($LASTEXITCODE -ne 0) { throw 'preparation describe failed' }
-
-python vertex/verify_prepare_output.py `
-  --prefix gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5 `
-  --expected-generation 1783683550292251 `
-  --expected-size 25022001408 `
-  --expected-crc32c lCVUvQ== `
-  --expected-entries 764940 `
-  --output audit/next_agent_verified_prepare_r5.json
-if ($LASTEXITCODE -ne 0) { throw 'preparation verification failed' }
-```
-
-Require `JOB_STATE_SUCCEEDED` and `pass=true`. Require:
+Read the immutable epoch and terminal artifacts from GCS without mirroring a
+full training bank locally. Hash and load checkpoints in memory where
+possible. Reproduce exactly:
 
 ```text
-entries=764940
-n_nodes=6790
-n_layers=65
-n_shards=187
-verified_shards=187
-geometry_hash=e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b
-ganged_channel_count=2400
-max_physical_positions_per_channel=4
-event_total_residual_max_gev=1.3500311979441904e-13
-modeled_readout_residual_max_gev=1.1368683772161603e-13
-full split=612482 train / 76158 validation / 76300 test
-pilot assignments=338 train / 104 validation / 0 test / 764498 excluded
-pilot selected=338 train / 64 validation / 0 test
+candidate   epoch  train_loss  validation_loss  examples/s  peak_GiB
+lr3e4       1      5.097584    4.987015         6.266       10.933
+lr3e4       2      4.909252    4.800034         6.353       10.933
+half        1      5.074131    4.998304         6.556        5.506
+half        2      4.960174    4.903753         6.558        5.506
 ```
 
-Do not use any failed preparation prefix.
-
-6. Describe the existing smoke job. Do not submit a job:
-
-```powershell
-$smoke = gcloud ai custom-jobs describe 4964365651620659200 `
-  --project asiop-zdc-1 `
-  --region us-central1 `
-  --format=json | ConvertFrom-Json
-if ($LASTEXITCODE -ne 0) { throw 'smoke describe failed' }
-if ($smoke.state -ne 'JOB_STATE_SUCCEEDED') {
-  throw "unexpected smoke state: $($smoke.state)"
-}
-$pool = $smoke.jobSpec.workerPoolSpecs[0]
-if ($smoke.jobSpec.scheduling.strategy -ne 'ON_DEMAND') {
-  throw 'smoke was not ON_DEMAND'
-}
-if ($pool.machineSpec.machineType -ne 'n1-standard-8') {
-  throw 'wrong machine type'
-}
-if ($pool.machineSpec.acceleratorType -ne 'NVIDIA_TESLA_T4' -or
-    [int]$pool.machineSpec.acceleratorCount -ne 1) {
-  throw 'wrong accelerator'
-}
-if ([int]$pool.replicaCount -ne 1) {
-  throw 'wrong replica count'
-}
-$expectedImage = 'us-central1-docker.pkg.dev/asiop-zdc-1/cbsc-zdc/' +
-  'cbsc-zdc@sha256:45ff337d8c4b1b34e936a24926a8fa495aebfb06187e75965fab9624d1f402f1'
-if ($pool.containerSpec.imageUri -ne $expectedImage) {
-  throw 'wrong immutable image'
-}
-```
-
-Also confirm the exact input prefix, output prefix, FP32 config relative path,
-one CUDA device request, 100 GB `pd-ssd`, and the service account from the job
-JSON.
-
-7. Verify and obtain the existing artifacts:
-
-```powershell
-gcloud storage ls -l -r `
-  'gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/smoke-20260724-r2-fp32/**'
-if ($LASTEXITCODE -ne 0) { throw 'smoke listing failed' }
-
-$target = Join-Path (Get-Location) 'audit\vertex_smoke_fp32_r2'
-if (-not (Test-Path -LiteralPath $target)) {
-  New-Item -ItemType Directory -Path $target | Out-Null
-  gcloud storage cp --recursive `
-    gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/smoke-20260724-r2-fp32/* `
-    $target
-  if ($LASTEXITCODE -ne 0) { throw 'smoke download failed' }
-}
-```
-
-Require exactly these 16 files and no `vertex_failure.json`:
+Verify every epoch and postflight invariant, finite model and optimizer state,
+paired best/last hashes and reload, scheduler/optimizer/RNG recovery, immutable
+epoch snapshot metadata, T4 resource identity, and 8/8 timing. Expected
+headroom/timing:
 
 ```text
-checkpoints/best.pt
-checkpoints/last.pt
-environment.json
-logs/history.csv
-reports/invariant_epoch_0000.json
-reports/preflight.json
-reports/smoke_invariants.json
-reports/smoke_resources.json
-reports/smoke_samples.npz
-reports/smoke_timing.json
-reports/smoke_validation.json
-reports/training_summary.json
-resolved_config.json
-runtime_config.yaml
-staged_input_manifest.json
-vertex_result.json
+lr3e4_headroom=25.019%
+lr3e4_8x8_ms_per_event=291.908
+half_headroom=62.238%
+half_8x8_ms_per_event=274.380
 ```
 
-Hash every file:
-
-```powershell
-$root = Resolve-Path -LiteralPath 'audit\vertex_smoke_fp32_r2'
-$hashes = Get-ChildItem -LiteralPath $root -Recurse -File |
-  Sort-Object FullName |
-  ForEach-Object {
-    $hash = Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256
-    [pscustomobject]@{
-      path = $_.FullName.Substring($root.Path.Length + 1).Replace('\','/')
-      size = $_.Length
-      sha256 = $hash.Hash.ToLowerInvariant()
-    }
-  }
-$hashes | Format-Table -AutoSize
-```
-
-Compare every value to the `output_artifacts.sha256` object in
-`audit/agent_vertex_smoke_analysis_20260724.json`. A mismatch is fatal.
-
-8. Independently analyze the reports and require these exact accepted values:
+Verify the same fixed 50 validation conditions and Geant4 deposits across
+epochs 0, 1, and 2, five independent Fast-MC draws per condition, exact
+epoch seed offsets, finite/nonnegative outputs, and zero test events. Expected
+fixed-bank metrics:
 
 ```text
-cuda_available=true
-cuda_device_count=1
-cuda_device_name=Tesla T4
-total_memory_bytes=15655829504
-peak_memory_bytes=7848525312
-headroom_fraction=0.49868352168789687
-resource pass=true
-
-preflight pass=true
-verified_shards=187
-selected train/validation/test=338/64/0
-
-training stage=joint
-epoch=0
-updates=84
-train_loss=24.04530804497855
-validation_loss=20.07763433456421
-seconds=57.4816040180001
-examples_per_second=5.880142104144429
-
-epoch invariant pass=true
-epoch layer_closure_max_gev=4.76837158203125e-07
-epoch event_closure_max_gev=9.5367431640625e-07
-
-postflight invariant pass=true
-postflight layer_closure_max_gev=4.76837158203125e-07
-postflight event_closure_max_gev=2.384185791015625e-07
-
-all nonfinite, negative, invalid-support, support-mask, count,
-requested/realized, and dust failure values=0
-
-timing device=cuda:0
-timing batch_size=2
-timing profile_steps=1
-timing share_steps=1
-timing iterations=2
-timing milliseconds_per_event=99.04152249998788
+candidate  epoch  abs_response_bias  abs_hit_bias  profile_relative_L1  zero_fraction
+lr3e4      0      0.03487            0.04626       0.22228              0.020
+lr3e4      1      0.23316            0.23615       0.44377              0.028
+lr3e4      2      0.19191            0.06483       0.37246              0.016
+half       0      0.08618            0.05795       0.23019              0.024
+half       1      0.12860            0.07382       0.25799              0.016
+half       2      0.14096            0.06000       0.30099              0.008
 ```
 
-The postflight created a fresh model and loaded `best.pt` before sampling, so
-successful `vertex_result.json.smoke_postflight.pass=true` plus the fixed
-condition artifacts proves checkpoint reload. Confirm `best.pt` and `last.pt`
-exist and have the expected hashes.
-
-9. Check the scientific boundary. Record, do not hide:
+The frozen protocol requires at least 3% validation-loss improvement and two
+of three fixed-bank metric improvements, while forbidding response/hit
+worsening above five percentage points and profile-L1 worsening above 0.05.
+Therefore the exact disposition must remain:
 
 ```text
-validation events=64
-high_level_c2st_auc=1.0
-truth_zero_fraction=0.015625
-generated_zero_fraction=0.296875
-response_wasserstein_normalized=0.4034199118614197
-hit_count_wasserstein_normalized=1.0333642292132128
-```
-
-These are poor one-epoch diagnostics. State explicitly that this smoke passed
-software, target-hardware, checkpoint, resource, and structural gates only. It
-did not validate Geant4 fidelity. Do not tune an acceptance gate from these
-values. The timing is a one-step solver/decode smoke, not the required final
-8/8-step performance benchmark.
-
-10. Preserve and report all earlier failures:
-
-- preparation r1 job `5551984247922753536`: ganged-position counterexample;
-- preparation r2/r3 jobs `3440077497662701568` and
-  `2318329346726559744`: native structured-NumPy mapping crash;
-- preparation r4 job `8852770931064438784`: sentinel accounting mismatch;
-- coordinator r1 job `9206444239301378048`: legitimate `excluded` count
-  rejected before smoke submission;
-- first T4 pipeline `7972253432239095808` and custom job
-  `5080522458025426944`: finite forward loss but nonfinite AMP gradient norm at
-  epoch 0 step 0, with no accepted update or checkpoint;
-- staging prefix `prep-20260724-r5-fp32`: flattened hierarchy and excluded.
-
-Do not delete or reuse any failed prefix.
-
-11. Write your independent outputs to new files:
-
-```text
-audit/next_agent_vertex_smoke_verification_20260724.json
-audit/next_agent_vertex_smoke_verification_20260724.md
-```
-
-Include job spec, state, every input/output hash, event/split counts, geometry
-and ganging evidence, training measurements, all invariant values, checkpoint
-reload evidence, timing scope, resource measurements, poor validation
-diagnostics, and every failed gate. End with exactly these four dispositions:
-
-```text
-structural_smoke=GO
-validation_only_component_loss_lr_work=GO
+optimization_and_structural_QA=PASS
+A100_SCREENING_FOR_EXACT_OBJECTIVE=NO-GO
 physics_validation=NOT_ESTABLISHED
-final_training=BLOCKED
+test_evaluation=BLOCKED
+additional_vertex_training=NOT_AUTHORIZED
 ```
 
-If and only if every read-only verification above passes, make a concrete plan
-for the next permitted Vertex phase. The plan must:
+LR3e4 improves loss by 3.0498% but worsens response by 15.704 percentage
+points and profile L1 by 0.15018. Half improves loss by only 1.4552% and
+worsens response by 5.478 points and profile L1 by 0.07080. Do not reinterpret
+the user's favorable visual impression as a gate pass. State that this is a
+negative result for the exact screened objective/setup, not proof that every
+CBSC-ZDC model class is impossible.
 
-- use train and validation only;
-- use exact stage order
-  `response -> profile -> count -> support -> share -> joint`;
-- enforce the guide's predecessor checkpoint and shared-encoder rules;
-- perform train-only gradient-norm loss calibration on at most 64 batches;
-- perform validation-only loss sensitivity and
-  learning-rate/weight-decay/effective-batch studies;
-- include truth-half statistical-floor and full-validation memory pilots;
-- use new unfrozen templates, normal config freezing, immutable image digests,
-  empty generation-0-locked GCS prefixes, one on-demand T4, and no CPU fallback;
-- stop on every mandatory gate;
-- not submit the six final runs;
-- not open test.
+The signed response term is a continuous-density negative log likelihood and
+can validly be negative. Do not wrap it in absolute value or L2; that would
+change and sometimes reverse valid likelihood gradients. The accepted
+diagnosis is objective/held-out-observable misalignment, not a missing sign
+operation.
 
-Do not launch that next phase merely because this prompt asks for a plan. First
-return the verification and proposed exact job matrix, commands, new prefix
-names, and QA gates for review. A later explicit authorization is required to
-submit those new validation-only jobs.
+## 4. Verify the public visual repository
 
-Your final response must link both new verification files, state the four
-dispositions verbatim, summarize the measured evidence, list every failed gate,
-and clearly separate structural smoke success from physics validation.
+The expected public commit is:
 
----
+```text
+0e8f1efc11f0ba7679d16170aa643c9905c7c8c9
+```
+
+Run:
+
+```powershell
+cd "C:\Users\Julia\OneDrive\Desktop\coding\ASIoP\Fast-MC-Visual-Tests"
+git status --short --branch
+npm ci
+npm test
+npm run build
+python scripts\export_public_data.py `
+  --source "..\Fast MC CBSC\dashboard\public\data" `
+  --destination "public\data" `
+  --selection "config\public_snapshots.json"
+```
+
+The exporter must pass without changing any tracked public data. Expected
+evidence:
+
+```text
+epochs=4
+latest_id=viability-wave2-r1-calibrated-lr1e4-halfbatch:joint:0002
+compressed_epoch_bytes=24614549
+largest_epoch_bytes=6183048
+public_manifest_sha256=11ee3398f88b176fe957d9f13184fa8770936ade3a6fb82b2bf206cb7fd185bc
+source_manifest_sha256=eb8c12ece76c89bf742777f5f2a6500f494227339482ae5f7dcf4ee9a07eadec
+geometry_file_sha256=e91920b4d913321051f969544ce37cefce81314ae4e7a622e43755a64d4640fb
+selection_sha256=f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6
+test_events_used=0
+```
+
+Independently fetch the public manifest and latest `.json.gz` over HTTPS.
+Verify the compressed SHA-256 before decompression, then verify epoch 2,
+joint stage, exact checkpoint hash, 50 groups, five draws in every group,
+selection match, QA pass, and zero test events. Confirm the UI:
+
+- defaults to calibrated half-batch epoch 2;
+- contains exactly four calibrated families and exactly one accepted
+  checkpoint per family;
+- offers one calibrated-model selector and no redundant checkpoint selector;
+- compares only the four selected calibrated checkpoints in the summary plot;
+- presents one Geant4 reference and five Fast-MC draws for the same
+  four-vector;
+- exposes all 50 events;
+- synchronizes the six 3D camera views;
+- coalesces shared-camera updates to one per animation frame, caps canvas DPR
+  at 1.25, and uses batched point paths without per-cell radial gradients;
+- provides a plain-language detector-view key that distinguishes within-panel
+  relative marker encoding from absolute GeV comparisons;
+- labels the sample descriptive rather than a physics gate;
+- displays `A100 SCREENING · NO-GO` on the wave-2 runs;
+- does not fetch every epoch at page load;
+- has no console, broken-asset, overflow, contrast, keyboard, or mobile-layout
+  failure.
+
+If the local in-app browser bridge fails with kernel-asset `os error 3`,
+preserve that as an environment limitation and do not claim visual-browser
+QA. Do not substitute an unrelated automation driver unless the user
+explicitly authorizes it. Continue the HTTP, artifact, TypeScript, and static
+accessibility checks.
+
+## 5. Updating the site after a future separately authorized epoch
+
+Do not invent or submit such an epoch. If and only if a future user-approved
+Vertex run finishes and its visualization passes all source gates:
+
+1. Sync that exact immutable epoch into
+   `Fast MC CBSC\dashboard\public\data` using the existing sync script and a
+   unique run label.
+2. Confirm the source manifest gained exactly the intended row and retained
+   the geometry/selection hashes and zero test use.
+3. Update `config/public_snapshots.json` only if the new checkpoint becomes
+   the accepted member of one calibrated family. Run the public exporter
+   command above. It must retain exactly one checkpoint per calibrated family,
+   remove the superseded public gzip object, and update the manifest.
+4. Run `npm test` and `npm run build`.
+5. Serve the production build locally and verify manifest/hash/decompression,
+   controls, 3D views, trends, mobile layout, and scientific labels.
+6. Record commands, source/output hashes, job IDs, epoch metrics, failures,
+   public commit, workflow run, and deployment URL in source `logs.md` and
+   `audit/vertex_readiness_analysis_20260724.md`.
+7. Commit and push the public repository. Confirm the GitHub Pages workflow
+   succeeds and the public URL serves the exact new manifest before updating
+   the source-repository evidence commit.
+
+Never overwrite or reuse a GCS prefix, silently replace a prior public epoch,
+open test, weaken a gate, or call visual similarity physics validation.
+
+## 6. Output
+
+Write a new timestamped JSON and Markdown report under source `audit/`.
+Include every reproduced identity, measurement, hash, command, negative test,
+failed gate, mismatch, and site check. End with the five exact dispositions
+from section 3. If everything matches, state that no monitoring timer is
+needed because there is no pending epoch or authorized training job. Stop.

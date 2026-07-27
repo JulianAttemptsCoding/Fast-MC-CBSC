@@ -1926,6 +1926,75 @@ include local mutations, Cloud Build, and Vertex submissions.
 285. Local C: exhaustion interrupted only evidence mirroring/dashboard
      ingestion. GCS remains authoritative. The 5.536 GB obsolete temp prep
      mirror is the safe cleanup target; no PAD process or cloud state changed.
+286. After disk recovery, the four wave-2 views were synced. Dashboard schema
+     3 now has 25 immutable epochs, fixed selection `f7052919...9b6`, latest
+     half-batch epoch 2, exact 50x5 samples, and zero test use.
+287. Public repo `JulianAttemptsCoding/Fast-MC-Visual-Tests` commit
+     `c5612eb...8f66` packages all accepted views as deterministic gzip. Every
+     source SHA, embedded geometry contract, checkpoint identity, selection,
+     50x5 count, QA flag, and zero-test gate is independently verified.
+288. The initial exporter geometry check stopped safely because it compared a
+     contract hash to file bytes. Evidence proved the intended embedded-hash
+     semantics; the corrected exporter also records independent geometry file
+     hash `e91920b4...0fb`. Two exporter tests and the real export pass.
+289. Public payload is 25 objects / 163,859,212 compressed epoch bytes;
+     largest object is 9,670,115 bytes. Manifest SHA is
+     `40773c9a...3889`; latest served artifact passes independent download,
+     compressed-hash, in-memory decompression, 50x5, selection, QA, and
+     zero-test checks.
+290. Public UI separates run/checkpoint, scopes trends per run, lazy-loads one
+     epoch, verifies its compressed SHA before decompression, and states both
+     the descriptive-only boundary and frozen A100 NO-GO. No model or physics
+     gate changed.
+291. Browser bridge initialization still fails pre-discovery with local
+     kernel-asset `os error 3`; no alternate driver was substituted. TypeScript,
+     Vite, responsive CSS inspection, production HTTP/base-path, and artifact
+     delivery checks pass.
+292. GitHub Pages push workflow `30233119062` failed because Pages was not yet
+     enabled. Pages was enabled in workflow mode and identical commit
+     `c5612eb...8f66` was re-dispatched as `30233144010`. The retry succeeded
+     in 41s and deployed Pages artifact digest `e414a6d2...36b9`. Failure
+     preserved.
+293. Independent production HTTPS QA verified correct base path, exact
+     25-row manifest, latest ID, compressed artifact hash, gzip decode, joint
+     epoch 2, 50 groups x 5 draws, fixed selection, QA pass, and zero test use.
+294. No new Vertex submission is scientifically authorized; spend remains
+     `$35.24`, no epoch is pending, and no timer is warranted.
+295. User-reported 3D lag is accepted as an interaction QA failure. Both
+     canvases now memoise geometry/event transforms, coalesce camera/draw work
+     per animation frame, cap DPR at 1.25, resize only on dimension change,
+     and batch all markers into three fills with zero per-cell gradients.
+296. At DPR 2, backing pixel area falls 60.94%. Paint allocation changes from
+     one radial gradient/fill per cell to zero gradients/three fills per
+     canvas. No deposit, threshold, sample, draw, or metric changes.
+297. Research-guided UI revision removes decorative page gradients, glows,
+     shadows, excessive rounding, and purple/neon emphasis. Flat light
+     scientific surfaces, dark detector canvases, one blue UI accent, orange
+     Geant4, sequential-blue Fast MC, clearer hierarchy, larger labels, and
+     explicit metadata/key replace them.
+298. New detector key explicitly states within-panel normalisation,
+     truth/MC colours, relative marker scale, `ln(1+120 Ecell/Emax)`, white
+     cores, and the distinction between relative 3D encoding and absolute GeV
+     plots. Distribution keys identify 50 truth vs 250 pooled draws.
+299. Public-only allowlist retains exactly one checkpoint for four calibrated
+     families: LR3e-5 E0, LR1e-4 E0, LR3e-4 E2, half-batch E2. Local dashboard
+     retains all 25 internal snapshots. Twenty-one public generated objects
+     were removed but remain recoverable from Git history.
+300. Exporter enforces calibrated-only unique families and exact IDs; cleanup
+     is confined to generated epoch gzip files after successful validation.
+     Five tests plus public Vite and local vinext lint/build pass.
+301. Public commit `0e8f1ef...c8c9` has four rows / 24,614,549 compressed
+     epoch bytes, manifest `11ee3398...85bc`, unchanged source manifest
+     `eb8c12ec...adec`. Pages workflow `30233812474` is the only deployment
+     for this revision and succeeded.
+302. First local rendered-HTML run failed only a stale old-title assertion.
+     The contract was updated to require the new title, detector key,
+     normalisation explanation, rAF/DPR limits, and zero radial gradients;
+     both rendered-HTML tests pass on rerun.
+303. Live-CDN QA confirms exact public manifest, four calibrated unique
+     families, one checkpoint each, latest compressed hash/decode, epoch 2,
+     50x5, zero test use, explicit key/selection copy, rAF/DPR optimisation,
+     and zero radial gradients in deployed JS.
 
 ## Implementation QA disposition
 

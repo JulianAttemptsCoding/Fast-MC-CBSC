@@ -61,8 +61,11 @@ export function LayerProfileChart({ series }: { series: Series[] }) {
             className={item.name === "Geant4" ? "truth-line" : ""}
           />
         ))}
+        <text className="axis-title" x="24" y="12">
+          deposited energy [GeV]
+        </text>
         <text className="axis-label" x={width - 14} y={height - 6} textAnchor="end">
-          layer
+          detector layer
         </text>
       </svg>
       <div className="chart-legend">
@@ -127,8 +130,8 @@ export function DistributionStrip({
         ))}
       </div>
       <div className="distribution-key">
-        <span><i className="key-truth" />Geant4</span>
-        <span><i className="key-mc" />Fast MC</span>
+        <span><i className="key-truth" />Geant4 · 50 events</span>
+        <span><i className="key-mc" />Fast MC · 250 pooled draws</span>
       </div>
     </div>
   );
@@ -140,17 +143,17 @@ export function EpochTrendChart({ epochs }: { epochs: Epoch[] }) {
   const height = 230;
   const series = [
     {
-      name: "|response bias|",
+      name: "Absolute response bias",
       color: "#ff9c63",
       values: ordered.map((row) => Math.abs(row.trend.response_bias_fraction)),
     },
     {
-      name: "|hit bias|",
+      name: "Absolute hit-count bias",
       color: "#5ce1e6",
       values: ordered.map((row) => Math.abs(row.trend.hit_count_bias_fraction)),
     },
     {
-      name: "profile L1",
+      name: "Longitudinal profile relative L1",
       color: "#b195ff",
       values: ordered.map((row) => row.trend.mean_longitudinal_profile_relative_l1),
     },
@@ -182,6 +185,9 @@ export function EpochTrendChart({ epochs }: { epochs: Epoch[] }) {
             stroke={item.color}
           />
         ))}
+        <text className="axis-title" x="24" y="12">
+          fractional bias / relative distance
+        </text>
         {ordered.map((row, index) => {
           const x = 24 + (index / Math.max(ordered.length - 1, 1)) * (width - 38);
           return (

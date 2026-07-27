@@ -3566,3 +3566,195 @@ authoritative hash-verified copy is prep-r5 in GCS. No Power Automate process,
 cloud object, or Vertex job was touched. Dashboard remains HTTP 200 with 21
 views but cannot ingest the four completed views until at least ~1 GB local
 space is released.
+
+## 2026-07-27 11:00 Asia/Taipei — public visual QA observatory
+
+After the obsolete local preparation mirror was removed, the four accepted
+wave-2 visual artifacts were synced into the source dashboard. The schema-3
+manifest now contains 25 immutable snapshots and selects
+`viability-wave2-r1-calibrated-lr1e4-halfbatch:joint:0002` as latest. The
+selection hash remains `f7052919...9b6`; every visualization uses 50 fixed
+validation conditions, five draws per condition, and zero test events.
+
+A separate public repository was created from the user-provided empty remote:
+
+```text
+repository=https://github.com/JulianAttemptsCoding/Fast-MC-Visual-Tests
+commit=c5612ebf9b29b19e22ff7db4939a9cdcf36e8f66
+site=https://julianattemptscoding.github.io/Fast-MC-Visual-Tests/
+```
+
+The public exporter performs source-byte SHA-256 verification for every epoch,
+geometry contract-hash verification, checkpoint/epoch/stage consistency,
+fixed-selection verification, exact `50 × 5` verification, QA-pass
+verification, and a hard zero-test-use gate. It writes deterministic gzip
+objects and a new manifest without changing the authoritative source data.
+The first real export correctly stopped because it incorrectly interpreted the
+geometry contract hash as a file-byte hash. Inspection of
+`sync_vertex_visualizations.py` and both JSON payloads proved that
+`geometry_sha256` identifies the geometry contract embedded in the payload.
+The exporter was corrected to verify that exact embedded contract and to
+record the file-byte hash independently. No gate was removed.
+
+Final public evidence:
+
+```text
+epochs=25
+compressed_epoch_bytes=163859212
+largest_epoch_bytes=9670115
+public_manifest_sha256=40773c9a5eb622020e950f39d46904b49b6dc6fed6acc2929283ea90df6a3889
+source_manifest_sha256=eb8c12ece76c89bf742777f5f2a6500f494227339482ae5f7dcf4ee9a07eadec
+geometry_file_sha256=e91920b4d913321051f969544ce37cefce81314ae4e7a622e43755a64d4640fb
+social_preview_sha256=5ef9ab8fc0698e8d011a4f0d110d030c853beb21b092bd075fa5711b3d6a6762
+```
+
+`python -m unittest discover -s tests -v` passes two exporter tests, including
+a negative test that rejects any nonzero test-event count. `npm install`
+reported zero vulnerabilities. `npm run build` passes TypeScript and Vite;
+the application bundle is 215.26 KiB before transport gzip. A served
+production probe independently downloaded the latest `.json.gz`, verified its
+compressed SHA-256, decompressed it in memory, and reproduced epoch 2,
+50 conditions, five draws, QA pass, fixed-selection match, and zero test use.
+
+The public UI separates training run from checkpoint, limits trend plots to
+the selected run, lazily downloads only one compressed epoch, verifies its
+hash before browser decompression, explains the matched four-vector and
+50-by-5 protocol for students and HEP experts, and displays the frozen A100
+NO-GO boundary on the wave-2 runs. The calibrated views remain available for
+diagnosis, but the site explicitly says that visual similarity is not physics
+validation.
+
+The in-app browser connection was retried after reading its operating
+contract, but initialization again failed before page discovery with the same
+local kernel-asset `os error 3`. This is an environment limitation, not a
+visual pass. No external browser driver was substituted. Compilation,
+responsive-CSS inspection, production HTTP/base-path delivery, manifest
+delivery, gzip/hash/decompression, and data-contract checks are the accepted
+site QA evidence.
+
+The first Pages workflow `30233119062` failed because the push arrived before
+Pages was enabled. Pages was then enabled in workflow mode through the
+authenticated GitHub API, and the identical commit was dispatched as workflow
+`30233144010`; no code or data was changed between attempts. This deployment
+failure is preserved rather than hidden. Workflow `30233144010` succeeded in
+41 seconds (25-second build, 9-second deploy) and published a 159 MB Pages
+artifact with digest
+`e414a6d226409cb82e0e9ca2a53e4452388510f37669dcad1c0edf05e72336b9`.
+
+An independent HTTPS probe of the deployed URL verified the correct Pages
+base asset path, exact 25-row manifest SHA, latest ID, compressed epoch hash,
+in-memory gzip decode, joint epoch 2, 50 groups, five draws in every group,
+fixed selection, QA pass, and zero test events. The production public
+deployment is therefore delivery/data-contract verified.
+
+No Vertex job was submitted. Accounted Vertex spend remains `$35.24`. There
+is no pending epoch and no scientifically authorized next training job, so no
+monitor timer was created.
+
+## 2026-07-27 11:18 Asia/Taipei — visual performance and public curation
+
+User observation that both 3D dashboards were laggy was accepted as a failed
+interaction-quality gate. Code inspection identified four concrete costs:
+six canvases redrew on every pointer event, every draw recomputed all geometry
+extrema and energy normalisation, DPR was allowed to reach 2, and every active
+cell allocated/fill-painted a separate radial gradient.
+
+Both the local and public `EnergyCloud` implementations were changed without
+dropping, thresholding, or aggregating any deposit:
+
+- camera changes coalesce to at most one React update per animation frame;
+- each canvas coalesces draw requests through `requestAnimationFrame`;
+- geometry bounds and per-event energy normalisation are memoised;
+- backing-store DPR is capped at 1.25 and is resized only when dimensions
+  actually change;
+- per-cell gradient allocations/fills are replaced by three batched paths:
+  outer colour, inner colour, and high-relative-energy white cores.
+
+For DPR-2 displays, the backing pixel area is now `(1.25/2)^2 = 39.06%` of
+the previous area, a 60.94% reduction. Paint-call complexity changes from one
+radial-gradient allocation and fill per active cell to zero radial gradients
+and three fills per canvas. The production bundle contains zero
+`createRadialGradient` calls and retains frame coalescing. This is a rendering
+optimisation only; all event values, cell indices, energies, 50 conditions,
+five draws, and scientific metrics remain exact.
+
+Presentation research used CERN's stated objective of communicating complex
+science clearly and accessibly, current dashboard guidance recommending an
+inverted-pyramid hierarchy, limited fonts/colours, whitespace, explicit
+metadata, consistent legends, and responsive testing, and a design critique
+of common generated-UI traits (decorative dark glows, excessive neon,
+purple gradients, nested cards, and meaningless status decoration). The
+revised interface uses a flat light scientific shell, dark detector canvases,
+one blue UI accent, orange only for Geant4, sequential blue Fast-MC colours,
+smaller headings, fewer rounded surfaces, no decorative page gradients or
+shadows, and more legible label sizes.
+
+The former ambiguous energy strip was replaced with an explicit
+detector-view key. It states that each panel is normalised to its own largest
+cell deposit, distinguishes orange Geant4 from blue Fast-MC draws, shows
+low/medium/high relative marker encodings, gives the
+`ln(1 + 120 Ecell/Emax)` radius transform, explains the white core, and directs
+absolute comparisons to GeV totals and layer profiles. Chart legends now say
+that the sample distributions contain 50 Geant4 events and 250 pooled
+Fast-MC draws; axes and metric names use full definitions.
+
+Per the user's public-only curation instruction, the local dashboard retains
+all 25 internal epoch snapshots. The `.io` site now uses an exact four-ID
+allowlist containing one accepted checkpoint for each calibrated family:
+
+```text
+viability-r1-calibrated-lr3e5:joint:0000
+viability-r1-calibrated-lr1e4:joint:0000
+viability-wave2-r1-calibrated-lr3e4:joint:0002
+viability-wave2-r1-calibrated-lr1e4-halfbatch:joint:0002
+```
+
+The two epoch-2 entries are terminal best-validation-loss checkpoints from the
+frozen continuation; the other families have only epoch 0. Non-calibrated
+component/control/recovery views and superseded checkpoints were removed from
+the public repository only. Twenty-one generated gzip objects were removed;
+they remain recoverable from Git history and in the full local source
+dashboard.
+
+The public exporter now enforces unique allowlisted families, calibrated-only
+run labels, exact source IDs, and one snapshot per family. Its cleanup is
+restricted to generated `public/data/epochs/*.json.gz` files and occurs only
+after all selected artifacts pass and the new manifest is written. Five tests
+pass, including closed-test rejection, deterministic hash/decompression,
+allowlist cleanup, rendering-cost invariants, and explanatory-selection
+content. Public TypeScript/Vite build and local vinext lint/build pass.
+
+The first local rendered-HTML run failed one stale copy assertion that still
+required `One Geant4 truth`; rendering and its first test passed. The test was
+updated to the new `Geant4 and Fast-MC` title and extended to require the
+explicit detector key, within-panel-normalisation explanation, animation-frame
+coalescing, DPR 1.25 cap, and absence of radial gradients. The rerun passes
+both rendered-HTML tests. This was a test-contract correction, not a page or
+data rollback.
+
+Final public revision before deployment:
+
+```text
+commit=0e8f1efc11f0ba7679d16170aa643c9905c7c8c9
+models=4
+compressed_epoch_bytes=24614549
+public_manifest_sha256=11ee3398f88b176fe957d9f13184fa8770936ade3a6fb82b2bf206cb7fd185bc
+source_manifest_sha256=eb8c12ece76c89bf742777f5f2a6500f494227339482ae5f7dcf4ee9a07eadec
+```
+
+Served local production QA reproduced four unique calibrated runs/IDs, four
+files on disk, zero radial-gradient calls, frame coalescing, the explicit key,
+and one-checkpoint copy. GitHub Pages workflow `30233812474` is the only
+deployment for this revision and succeeded on exact commit
+`0e8f1efc...c8c9`.
+
+Independent live-CDN QA reproduced public manifest SHA
+`11ee3398...85bc`, four calibrated rows, four unique model families, one
+checkpoint per family, exact latest compressed-artifact hash, epoch 2,
+50 groups, five draws in every group, and zero test events. The deployed JS
+contains the explicit key and one-checkpoint explanation, contains
+animation-frame coalescing and the 1.25 DPR cap, and contains zero radial
+gradients.
+
+No Vertex state changed; spend remains `$35.24`; there is no next epoch, ETA,
+or timer.

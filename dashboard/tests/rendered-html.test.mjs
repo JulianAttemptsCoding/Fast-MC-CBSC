@@ -35,11 +35,12 @@ test("server-renders the event observatory shell", async () => {
 });
 
 test("ships a labeled five-draw dashboard fixture and no starter remnants", async () => {
-  const [page, layout, dashboard, packageJson, manifestText, epochText] =
+  const [page, layout, dashboard, energyCloud, packageJson, manifestText, epochText] =
     await Promise.all([
       readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
       readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
       readFile(new URL("../app/ZdcDashboard.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/components/EnergyCloud.tsx", import.meta.url), "utf8"),
       readFile(new URL("../package.json", import.meta.url), "utf8"),
       readFile(new URL("../public/demo/manifest.json", import.meta.url), "utf8"),
       readFile(new URL("../public/demo/epoch_0000.json", import.meta.url), "utf8"),
@@ -49,8 +50,13 @@ test("ships a labeled five-draw dashboard fixture and no starter remnants", asyn
 
   assert.match(page, /ZdcDashboard/);
   assert.match(layout, /CBSC ZDC Event Observatory/);
-  assert.match(dashboard, /One Geant4 truth/);
+  assert.match(dashboard, /Geant4 and Fast-MC/);
   assert.match(dashboard, /five-draw mean/i);
+  assert.match(dashboard, /Detector-view key/);
+  assert.match(dashboard, /normalised to its own largest cell deposit/);
+  assert.match(energyCloud, /requestAnimationFrame/);
+  assert.match(energyCloud, /devicePixelRatio \|\| 1, 1\.25/);
+  assert.doesNotMatch(energyCloud, /createRadialGradient/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
   assert.equal(manifest.schema_version, 1);
   assert.equal(epoch.draws_per_condition, 5);
