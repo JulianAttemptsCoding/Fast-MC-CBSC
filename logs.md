@@ -4027,3 +4027,33 @@ and succeeded; no glob or directory recursion was used. Free space rose from
 approximately 0.40 GB to 25,396,822,016 bytes. Recovery is by copying the
 generation-pinned GCS object above; the original local file is no longer
 present.
+
+## 2026-07-27 13:43 Asia/Taipei — audit mirror archive verified and reclaimed
+
+The complete local `audit/` tree was uploaded to a new, previously empty
+prefix:
+
+```text
+gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/local-evidence-offload-20260727-r1/audit
+```
+
+Initial `gcloud storage rsync --recursive` completed successfully. A separate
+`--checksums-only` rsync then exited zero and scheduled no copies or updates.
+Independent local/remote inventories matched exactly at 1,018 files and
+4,105,726,074 bytes.
+
+A scoped `git clean -ndX -- audit` dry run listed only Git-ignored mirror,
+checkpoint, staging, and generated-output directories. The corresponding
+`git clean -fdX -- audit` removed those archived ignored objects while
+retaining all tracked verification reports. Windows denied removal of seven
+now-empty directory shells, but their contained files were removed and the
+remaining `audit/` tree is 71 files / 921,579 bytes. Free disk space increased
+to 28,729,405,440 bytes.
+
+Recovery options are now redundant: compact evidence is on GitHub, the exact
+archive is in the new GCS prefix, and the authoritative training artifacts
+remain under their original immutable job prefixes. No active Vertex input or
+output was changed. The four compute-extension T4 jobs remained
+`JOB_STATE_RUNNING`; latest safe progress was standard-batch updates
+1,650–1,750 of 2,219 and half-batch update 3,400 of 4,438 in the second added
+epoch.
