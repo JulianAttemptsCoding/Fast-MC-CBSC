@@ -4143,3 +4143,83 @@ historical_frozen_A100_screening=NO-GO_UNCHANGED
 test_evaluation=BLOCKED_NOT_OPENED
 further_Vertex_jobs_authorized=false
 ```
+
+## 2026-07-27T15:12:28+08:00 — presentation-figure exhibition
+
+Created the repo-root `exhibition/` package from compact verified evidence and
+the already-synced fixed-validation visualization payloads. No new Vertex job
+was submitted: the requested figures require no model execution, every required
+epoch payload is already local, and additional GPU spend would add no evidence
+to this visualization task.
+
+Inputs and reconstruction:
+
+```text
+audit/viability_20260726_r1_calibrated-*_terminal_verification.json
+audit/compute_extension_20260727_r1_*_epoch_*.json
+audit/compute_extension_20260727_r1_terminal_analysis.json
+dashboard/public/data/manifest.json
+dashboard/public/data/geometry.json
+dashboard/public/data/{four current-best validation payloads}
+gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/
+  viability-20260727-wave2-r1-calibrated-lr3e4-output/logs/history.csv
+gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/
+  viability-20260727-wave2-r1-calibrated-lr1e4-halfbatch-output/logs/history.csv
+```
+
+The two small GCS history files were read with `gcloud storage cat`; no bulk
+artifact or ROOT download was performed. The reconstructed history contains
+complete contiguous epochs E0–E2 for calibrated LR 3e-5 and LR 1e-4, and E0–E4
+for calibrated LR 3e-4 and LR 1e-4 half batch. All numeric values are finite.
+
+Builder command:
+
+```text
+python exhibition/build_exhibition.py
+```
+
+The first build stopped before completion because the visualization trend
+metrics are nested under `aggregate.trend`, not directly under `aggregate`.
+The accessor was corrected without changing source evidence. The second build
+passed; visual inspection identified literal `\n` rendering and crowded diagram
+labels in the architecture/data figures. Text handling and legend placement
+were corrected and the full package was rebuilt a third time.
+
+Final QA:
+
+```text
+python -m py_compile exhibition/build_exhibition.py
+EXHIBITION_QA_PASS visuals=23 png=12 svg=11 test_events=0
+PNG minimum dimensions gate: >=2200 x >=1300
+SVG XML parse: PASS (11/11)
+gallery reference check: PASS (12/12 PNG)
+source selection hash equality: PASS
+same-condition event identity across four best checkpoints: PASS
+validation sample contract: 50 conditions x 5 draws
+geometry: 6,790 nodes / 65 layers
+synthetic_source=false
+physics_validation=NOT_ESTABLISHED
+```
+
+Output size is 4,034,108 bytes across 29 files. This is intentionally compact
+and does not recreate the offloaded ROOT or audit mirrors.
+
+Key hashes:
+
+```text
+exhibition/manifest.json
+  529d6ecfd35130cd16fe1258b71a8a932d143c9d1b00f17dd973e700ed51735e
+exhibition/data/training_history.csv
+  bb18cf524c19c36c8838b72db8b6f901aa98f75210049024d6d0c83dbb1de227
+exhibition/build_exhibition.py
+  73315f4cfe0fb9189aa1610e3c19391a9b797d170c4460d8587fb51957973407
+```
+
+The figure set covers train/validation loss for all four calibrated families,
+nine objective components, fixed-sample proxy trajectories, objective/proxy
+tradeoffs, parallel T4 time and budget, architecture and exact constraints,
+data/geometry/split boundaries, claim status, same-condition longitudinal
+profiles, fixed-sample distributions, and one Geant4 3D shower against five
+Fast-MC draws. The final boundary remains unchanged: structural and
+optimization evidence passes; Geant4 fidelity and physics validation are not
+established; test remains sealed.
