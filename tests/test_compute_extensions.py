@@ -78,8 +78,38 @@ def test_builds_four_paired_two_epoch_extensions(tmp_path: Path) -> None:
 
 def test_requires_all_four_calibrated_variants(tmp_path: Path) -> None:
     variants = _variants(tmp_path)
-    with pytest.raises(ValueError, match="exactly the four"):
+    with pytest.raises(ValueError, match="declared calibrated subset"):
         build(variants[:-1], tmp_path / "output", "compute-extension-r1")
+
+
+def test_accepts_declared_calibrated_subset(tmp_path: Path) -> None:
+    variants = [
+        variant
+        for variant in _variants(tmp_path)
+        if variant.name in {"calibrated_lr3e5", "calibrated_lr1e4"}
+    ]
+    manifest = build(
+        variants,
+        tmp_path / "output",
+        "compute-extension-r2",
+        {"calibrated_lr3e5", "calibrated_lr1e4"},
+    )
+    assert manifest["variant_count"] == 2
+    assert {row["name"] for row in manifest["variants"]} == {
+        "calibrated_lr3e5",
+        "calibrated_lr1e4",
+    }
+
+
+def test_rejects_mismatched_declared_subset(tmp_path: Path) -> None:
+    variants = _variants(tmp_path)
+    with pytest.raises(ValueError, match="declared calibrated subset"):
+        build(
+            variants[:2],
+            tmp_path / "output",
+            "compute-extension-r2",
+            {"calibrated_lr3e5"},
+        )
 
 
 def test_stream_verifier_finds_nested_nonfinite_tensor() -> None:

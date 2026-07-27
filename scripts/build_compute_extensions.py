@@ -79,16 +79,20 @@ def build(
     variants: list[Variant],
     output_dir: Path,
     round_id: str,
+    expected_variants: set[str] | None = None,
 ) -> dict[str, Any]:
     if output_dir.exists():
         raise FileExistsError(
             f"refusing to overwrite compute-extension directory: {output_dir}"
         )
-    if {variant.name for variant in variants} != EXPECTED_VARIANTS:
+    expected = expected_variants or EXPECTED_VARIANTS
+    if not expected or not expected.issubset(EXPECTED_VARIANTS):
+        raise ValueError("expected variants must be a nonempty calibrated subset")
+    if {variant.name for variant in variants} != expected:
         raise ValueError(
-            "compute extension requires exactly the four calibrated variants"
+            "compute extension variants do not match the declared calibrated subset"
         )
-    if len(variants) != len(EXPECTED_VARIANTS):
+    if len(variants) != len(expected):
         raise ValueError("duplicate compute-extension variant")
     if not round_id or not re.fullmatch(r"[a-z0-9-]+", round_id):
         raise ValueError("round ID must contain only lowercase letters, digits, hyphens")
@@ -214,11 +218,21 @@ def main() -> None:
     parser.add_argument("--variant", action="append", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--round-id", required=True)
+    parser.add_argument(
+        "--expected-variant",
+        action="append",
+        choices=sorted(EXPECTED_VARIANTS),
+        help=(
+            "declare the exact calibrated subset for this round; omit to "
+            "retain the four-family protocol"
+        ),
+    )
     args = parser.parse_args()
     report = build(
         [_parse_variant(value) for value in args.variant],
         args.output_dir,
         args.round_id,
+        set(args.expected_variant) if args.expected_variant else None,
     )
     print(json.dumps(report, indent=2, sort_keys=True))
 

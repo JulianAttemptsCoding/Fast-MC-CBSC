@@ -1,0 +1,45 @@
+{
+  "common_provenance": {
+    "audit_sha256": "ebc951971dc3ad25f9738b2d150d54d5b3fcc9518d039c2a33420f53a409496f",
+    "dataset_geometry_hash": "e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b",
+    "dataset_manifest_sha256": "5a6d963247091e91c0787dd763b46e3b1189f62785d9cab1d8fda4e76ca08096",
+    "geometry_manifest_sha256": "616b14bd006fb00acb963dc2b8b21fa0bc80d041a890b580d80ff31a11daa5d2",
+    "split_assignment_sha256": "084f0dfd86e488c63bb41ea50d6783ad22eb57a322288c075a94b1ec12dd3714",
+    "split_manifest_sha256": "a4d0967597bee525843d81647bd259deee7c2e908d25d2b1df78a8179526b0b3"
+  },
+  "manifest_sha256": "144208945a3fa060362ab68be798ebf46540fc28c2c3bf8afe7058cfb05be6b1",
+  "pass": true,
+  "scientific_status": "frozen validation-only compute extension; no job submitted",
+  "test_events_used": 0,
+  "variant_count": 2,
+  "variants": [
+    {
+      "batch_size": 6,
+      "best_checkpoint_sha256": "0f1866b6547e3bae37700fa2089c93d4c79a25d6e8ea7c345233adca737fa920",
+      "expected_terminal_epoch": 4,
+      "frozen_path": "configs\\templates\\compute_extension_20260727_r2\\frozen_calibrated_lr1e4_compute-extension-r2.yaml",
+      "frozen_sha256": "ca73b1b435d5cb10133ea3a1b57a39150b516d85a80a362a2d3c9d3749b757c8",
+      "gradient_accumulation": 4,
+      "last_checkpoint_sha256": "3f9620b74341ee92ea7080c5b27eafb38eb3425bb545fd15169da2e805e28bce",
+      "learning_rate": 0.0001,
+      "name": "calibrated_lr1e4",
+      "parent_epoch": 2,
+      "start_epoch": 3,
+      "template_sha256": "f6fe70fc3b9a8319a1c30631eec506bbc3dfbd00f9bd11d83e2c2f40905c78d0"
+    },
+    {
+      "batch_size": 6,
+      "best_checkpoint_sha256": "f40c883b9f202f5b0b5763dc171147485845ef7cff877637ca5a500d6ea9d8ad",
+      "expected_terminal_epoch": 4,
+      "frozen_path": "configs\\templates\\compute_extension_20260727_r2\\frozen_calibrated_lr3e5_compute-extension-r2.yaml",
+      "frozen_sha256": "6a119c419a5bbeb03c790023157734f221b9b11f970bf4f253df15959ecfc83f",
+      "gradient_accumulation": 4,
+      "last_checkpoint_sha256": "f6ef8db0ba119c4415fa99ec257b71e3ee58762df347ce9408588266249047d3",
+      "learning_rate": 3e-05,
+      "name": "calibrated_lr3e5",
+      "parent_epoch": 2,
+      "start_epoch": 3,
+      "template_sha256": "9adf8d113cab5d789673650d76235d0d8aa955e9068430a241e4ff2cbca56e47"
+    }
+  ]
+}

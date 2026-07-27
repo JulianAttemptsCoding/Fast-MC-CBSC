@@ -31,11 +31,11 @@ def verify(
 ) -> dict[str, Any]:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert manifest["pass"] is True
-    assert int(manifest["variant_count"]) == 4
+    assert int(manifest["variant_count"]) > 0
     assert int(manifest["test_events_used"]) == 0
     variants = {row["name"]: row for row in manifest["variants"]}
     frozen = dict(frozen_specs)
-    assert len(frozen) == len(frozen_specs) == 4
+    assert len(frozen) == len(frozen_specs) == int(manifest["variant_count"])
     assert set(frozen) == set(variants)
 
     rows = []

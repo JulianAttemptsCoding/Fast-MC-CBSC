@@ -4223,3 +4223,106 @@ profiles, fixed-sample distributions, and one Geant4 3D shower against five
 Fast-MC draws. The final boundary remains unchanged: structural and
 optimization evidence passes; Geant4 fidelity and physics validation are not
 established; test remains sealed.
+
+## 2026-07-27T15:43:45+08:00 — two-family E2→E4 extension preflight
+
+The user authorized exactly two additional epochs for calibrated LR `3e-5`
+and LR `1e-4`, bringing all four displayed calibrated families through epoch
+index 4. No LR `3e-4` or half-batch job is authorized in this round because
+those families already have E0–E4.
+
+Both E2 parents were independently re-read from immutable GCS snapshots before
+reuse:
+
+```text
+family             best checkpoint SHA                         last checkpoint SHA
+LR 3e-5            f40c883b9f202f5b0b5763dc171147485845ef7c  f6ef8db0ba119c4415fa99ec257b71e3
+LR 1e-4            0f1866b6547e3bae37700fa2089c93d4c79a25d6  3f9620b74341ee92ea7080c5b27eafb3
+```
+
+The complete 64-character hashes are recorded in
+`audit/compute_extension_20260727_r2_*_parent_e2_verification.json`. Both
+reports pass: epoch 2, joint FP32, finite checkpoint tensors, 200 changed model
+tensors from their original parent, optimizer step 3330, scheduler step 2220,
+paired historical best, exact fixed-validation selection, zero test events,
+all invariants passing, and 25.0186% T4 memory headroom.
+
+`scripts/build_compute_extensions.py` and its frozen verifier were generalized
+to accept an explicitly declared nonempty subset while retaining the existing
+four-family default. The exact two-family subset has regression coverage;
+focused config/recovery/Vertex tests pass `30/30`, compileall is clean, and
+`git diff --check` passes.
+
+The builder created new unfrozen E2→E4 templates under
+`configs/templates/compute_extension_20260727_r2/`. They were frozen only
+through `PYTHONPATH=src python -m cbsc_zdc.cli freeze-config`, never hand
+edited. Frozen hashes:
+
+```text
+calibrated_lr3e5  6a119c419a5bbeb03c790023157734f221b9b11f970bf4f253df15959ecfc83f
+calibrated_lr1e4  ca73b1b435d5cb10133ea3a1b57a39150b516d85a80a362a2d3c9d3749b757c8
+```
+
+Independent frozen-config verification passes the common production
+provenance hashes, E3 start/E4 terminal horizon, paired E2 best/last hashes,
+scheduler restart over exactly two epochs, calibrated weights, batch 6 /
+accumulation 4, raw 0–300 GeV training, 50–250 GeV validation, fixed 50×5
+visualization, synthetic false, and zero test.
+
+New unique generation-zero input prefixes contain exactly three objects each:
+one frozen config and server-side copies of the exact E2 best/last checkpoint
+pair. Merged staging verification passes for both: 205 production-base objects
++ four shared pilot-split/calibration objects + three unique objects = 212,
+with `forbidden_path_count=0`. All four new input/output prefixes and both
+Vertex display-name namespaces were empty before mutation.
+
+The immutable runtime remains r20:
+
+```text
+us-central1-docker.pkg.dev/asiop-zdc-1/cbsc-zdc/cbsc-zdc@
+sha256:8b4a94c0c748febdb059b1302503d280498ddd1360b595a90e0a6c9b0999048f
+```
+
+It was re-resolved from Artifact Registry and matched the prior successful
+custom-job spec. Planned resources remain on-demand `n1-standard-8`, one
+`NVIDIA_TESLA_T4`, one replica, 100 GB `pd-ssd`, and a 14,400-second hard
+timeout.
+
+Budget gate immediately before submission:
+
+```text
+prior conservative ledger including contingency  $48.6808
+two jobs × 4-hour hard cap × $0.85/hour reserve    $6.8000
+worst credible projected ledger                    $55.4808
+remaining below the $100 hard ceiling              $44.5192
+```
+
+Google Cloud's current official us-central1 on-demand T4 GPU component price
+is `$0.35/GPU-hour`; the retained `$0.85/hour` project rate remains
+conservative because it also covers the n1-standard-8 VM, disk, and uncertainty:
+https://cloud.google.com/products/compute/gpus-pricing
+
+No new job had been submitted at the time of this preflight entry.
+
+## 2026-07-27T15:48+08:00 — E2→E4 extensions submitted
+
+After repeating the `$55.4808/$100` worst-case budget and output-emptiness
+gates, exactly two server-side jobs were accepted:
+
+```text
+family       training pipeline     custom job
+LR 3e-5      3939574635045060608    4234868273893605376
+LR 1e-4      8388568116933689344    3118380186584743936
+```
+
+Independent custom-job descriptions reproduce the expected unique prefixes,
+config paths, service account, one replica, on-demand `n1-standard-8`, one
+`NVIDIA_TESLA_T4`, 100 GB `pd-ssd`, 14,400-second timeout, 8/8
+postflight-training path, and immutable r20 image digest. Both are
+`JOB_STATE_PENDING` for accelerator allocation. Pending is not a failed gate.
+
+The SDK asynchronous calls again retained local status-observer threads after
+printing server acceptance. Each exact Python child was identified by its full
+unique command line and stopped locally only after both pipeline and custom-job
+IDs were printed. Fresh server descriptions prove both Vertex jobs remain
+active. No cloud job was cancelled, duplicated, or altered.

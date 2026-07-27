@@ -1,0 +1,43 @@
+{
+  "pass": true,
+  "round_id": "compute-extension-r2",
+  "scientific_status": "user-authorized validation-only compute extension; frozen A100 NO-GO remains historical evidence",
+  "test_events_used": 0,
+  "variant_count": 2,
+  "variants": [
+    {
+      "batch_size": 6,
+      "best_checkpoint_sha256": "0f1866b6547e3bae37700fa2089c93d4c79a25d6e8ea7c345233adca737fa920",
+      "gradient_accumulation": 4,
+      "last_checkpoint_sha256": "3f9620b74341ee92ea7080c5b27eafb38eb3425bb545fd15169da2e805e28bce",
+      "learning_rate": 0.0001,
+      "name": "calibrated_lr1e4",
+      "parent_epoch": 2,
+      "parent_output_uri": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/compute-extension-20260727-r1-calibrated-lr1e4-output",
+      "source_template": "configs\\templates\\compute_extension_20260727_r1\\calibrated_lr1e4_compute-extension-r1.yaml",
+      "source_template_sha256": "67570176d66935772244f7cd7d69a25b221b398c2fce55b0c3b6f6c23a27696d",
+      "start_epoch": 3,
+      "stop_before_epoch": 5,
+      "template": "calibrated_lr1e4_compute-extension-r2.yaml",
+      "template_sha256": "f6fe70fc3b9a8319a1c30631eec506bbc3dfbd00f9bd11d83e2c2f40905c78d0",
+      "test_events_used": 0
+    },
+    {
+      "batch_size": 6,
+      "best_checkpoint_sha256": "f40c883b9f202f5b0b5763dc171147485845ef7cff877637ca5a500d6ea9d8ad",
+      "gradient_accumulation": 4,
+      "last_checkpoint_sha256": "f6ef8db0ba119c4415fa99ec257b71e3ee58762df347ce9408588266249047d3",
+      "learning_rate": 3e-05,
+      "name": "calibrated_lr3e5",
+      "parent_epoch": 2,
+      "parent_output_uri": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/compute-extension-20260727-r1-calibrated-lr3e5-output",
+      "source_template": "configs\\templates\\compute_extension_20260727_r1\\calibrated_lr3e5_compute-extension-r1.yaml",
+      "source_template_sha256": "f8003eeabf1ebeb644c7460277cb5496cc84ad9226873925eb1808532cd630b9",
+      "start_epoch": 3,
+      "stop_before_epoch": 5,
+      "template": "calibrated_lr3e5_compute-extension-r2.yaml",
+      "template_sha256": "9adf8d113cab5d789673650d76235d0d8aa955e9068430a241e4ff2cbca56e47",
+      "test_events_used": 0
+    }
+  ]
+}
