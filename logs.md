@@ -4490,3 +4490,11 @@ hardened to render same-directory temporary PNG/SVG files and atomically
 replace destinations. It also normalizes Matplotlib SVG trailing whitespace.
 Two subsequent complete builds passed, `git diff --check` is clean, and no
 evidence input or scientific value changed.
+
+Post-QA cache inventory found 66,559,966 bytes in the public repository's
+reproducible `node_modules/` and 28,382,504 bytes in `dist/`. Both exact paths
+were resolved inside the public repository before cleanup was attempted. The
+execution safety layer rejected both recursive removal commands before they
+ran, so no file was deleted and both Git worktrees remained clean. These
+94,942,470 bytes are reproducible from `npm ci`/`npm run build`; they are not
+training data or unique evidence.
