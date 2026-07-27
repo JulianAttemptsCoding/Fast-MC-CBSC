@@ -16,12 +16,13 @@ public_remote=https://github.com/JulianAttemptsCoding/Fast-MC-Visual-Tests
 public_url=https://julianattemptscoding.github.io/Fast-MC-Visual-Tests/
 ```
 
-The frozen A100 screening phase is terminal, but a later user-authorized
-validation-only compute extension is active. Do not submit, clone, resume,
-cancel, or mutate any Vertex job: exactly four extension jobs already exist.
-Do not open the test split or change the historical frozen A100 decision.
-Monitor and verify the four jobs below, publish only verified family-specific
-validation improvements, and stop after terminal comparison.
+The frozen A100 screening phase and the later user-authorized validation-only
+compute extension are both terminal. Use
+`docs/AGENT_PROMPT_VERTEX_EXTENSION_TERMINAL_QA_20260727.md` for the exact
+completed commands, measurements, public identities, storage archive, and
+independent terminal-QA instructions. Do not submit, clone, resume, cancel, or
+mutate any Vertex job. Do not open the test split or change the historical
+frozen A100 decision.
 
 ## 0. Active compute-extension jobs — do not duplicate
 

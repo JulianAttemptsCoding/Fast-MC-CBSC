@@ -4057,3 +4057,89 @@ output was changed. The four compute-extension T4 jobs remained
 `JOB_STATE_RUNNING`; latest safe progress was standard-batch updates
 1,650–1,750 of 2,219 and half-batch update 3,400 of 4,438 in the second added
 epoch.
+
+## 2026-07-27 14:45 Asia/Taipei — compute extension terminal PASS
+
+All four second added epochs arrived and all four custom jobs reached
+`JOB_STATE_SUCCEEDED`. Streamed GCS verification was used throughout; no
+checkpoint mirror was recreated locally.
+
+```text
+family       parent      first added    final       final vs first  final vs parent
+LR3e-5       4.988944    4.974206 E1    4.927671 E2     +0.9355%        +1.2282%
+LR1e-4       4.973253    4.952879 E1    4.878822 E2     +1.4952%        +1.8988%
+LR3e-4       4.800034    4.828354 E3    4.738041 E4     +1.8705%        +1.2915%
+half-batch   4.903753    4.882708 E3    4.845029 E4     +0.7717%        +1.1975%
+```
+
+Every final snapshot has 16 immutable objects, exact paired parents, 200
+changed model tensors, finite checkpoint/optimizer state, correct cumulative
+optimizer and restarted-scheduler steps, passing invariants, exact fixed 50
+validation conditions with five independent Fast-MC draws each, selection
+SHA `f7052919...59b6`, and zero test use. Best checkpoint hashes are:
+
+```text
+LR3e-5     f40c883b9f202f5b0b5763dc171147485845ef7cff877637ca5a500d6ea9d8ad
+LR1e-4     0f1866b6547e3bae37700fa2089c93d4c79a25d6e8ea7c345233adca737fa920
+LR3e-4     3f1022b87361b8a14d9f8432273dcd6c72f6a5e599c1be1575e7f37f4014803d
+half-batch d14458bba3fcfbc35d5c3da0b106735fc8041ea2c191969ccb0b86eb484d91ca
+```
+
+The exact user question is answered positively: the second added epoch lowers
+validation loss for all four calibrated families. Fixed-sample descriptive
+proxies remain mixed and can move opposite the full validation objective.
+Therefore this is an optimization/validation result, not Geant4 fidelity or
+physics validation. It is credible evidence that additional compute can help,
+but the historical frozen A100 gate remains NO-GO because its predeclared
+3%-plus-observable guardrail was not reopened or weakened.
+
+The first verifier attempt used `--expected-training-epochs 2`; this failed
+cleanly because that argument means absolute configured stop epoch. Immutable
+resolved configs independently showed 3 for LR3e-5/LR1e-4 and 5 for
+LR3e-4/half; the corrected reruns pass. A subsequent corrected LR3e-5 stream
+hit a transient `storage.googleapis.com` DNS timeout and wrote no accepted
+report. DNS recovered and the exact retry passed. Two monitoring/evidence
+PowerShell commands had pre-execution empty-pipe parser errors; corrected
+array-wrapped commands changed no cloud state. A Cloud Logging filter returned
+no records; Vertex job state and immutable GCS evidence remained authoritative.
+
+Measured job time totals 9.930278 T4-hours. At the predeclared conservative
+$0.85/hour, extension cost is $8.4408. Prior ledger $35.24 plus $5
+build/storage/management contingency yields $48.6808 total and $51.3192
+remaining under the $100 ceiling.
+
+The local dashboard now has 33 epoch rows. The public site selection was
+advanced to E2/E2/E4/E4, exactly one best checkpoint for each calibrated
+family. Exporter PASS: four epochs, 24,518,772 compressed bytes, zero test,
+four stale gzip files removed. Seven public tests and TypeScript/Vite build
+pass with zero npm vulnerabilities. Public commit
+`a3816fbd590fde159d3a0c02ea0a67caa22673dc` deployed successfully in workflow
+`30243408128`.
+
+Independent live fetch QA passes for manifest SHA-256
+`2e504c7a094fe90ae050adbb06765834ea2472f4b7c7fa83beffbfcf17ba1f00`
+and all four gzip size/SHA/decompression/checkpoint/epoch/stage/split/50x5/QA
+checks. Interactive browser QA was attempted through the required in-app
+browser bridge; both initialization and documented troubleshooting failed
+with kernel-asset `os error 3`. No interactive browser pass is claimed. HTTP,
+artifact, tests, build, and static frontend-contract gates pass. Temporary
+public `node_modules` and `dist` were removed again after QA.
+
+Terminal evidence:
+
+```text
+audit/compute_extension_20260727_r1_terminal_analysis.json
+audit/compute_extension_20260727_r1_terminal_analysis.md
+docs/AGENT_PROMPT_VERTEX_EXTENSION_TERMINAL_QA_20260727.md
+```
+
+Final disposition:
+
+```text
+structural_and_optimization_QA=PASS
+more_compute_validation_hypothesis=SUPPORTED_FOR_ALL_4_CALIBRATED_FAMILIES
+physics_validation=NOT_ESTABLISHED
+historical_frozen_A100_screening=NO-GO_UNCHANGED
+test_evaluation=BLOCKED_NOT_OPENED
+further_Vertex_jobs_authorized=false
+```

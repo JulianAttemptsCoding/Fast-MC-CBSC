@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "analysis_time": "2026-07-27T14:45:00+08:00",
+  "project": "asiop-zdc-1",
+  "region": "us-central1",
+  "image": "us-central1-docker.pkg.dev/asiop-zdc-1/cbsc-zdc/cbsc-zdc@sha256:8b4a94c0c748febdb059b1302503d280498ddd1360b595a90e0a6c9b0999048f",
+  "test_events_used": 0,
+  "variants": [
+    {
+      "name": "calibrated_lr3e5",
+      "pipeline_job": "6276485444813193216",
+      "custom_job": "3731080842139664384",
+      "state": "JOB_STATE_SUCCEEDED",
+      "start_time": "2026-07-27T03:43:31Z",
+      "end_time": "2026-07-27T06:10:55Z",
+      "hours": 2.456667,
+      "parent_validation_loss": 4.988944060631413,
+      "first_added_epoch": 1,
+      "first_added_validation_loss": 4.97420585940907,
+      "final_epoch": 2,
+      "final_validation_loss": 4.927671314507592,
+      "improvement_vs_first_added_percent": 0.935517,
+      "improvement_vs_parent_percent": 1.228171,
+      "best_checkpoint_sha256": "f40c883b9f202f5b0b5763dc171147485845ef7cff877637ca5a500d6ea9d8ad",
+      "last_checkpoint_sha256": "f6ef8db0ba119c4415fa99ec257b71e3ee58762df347ce9408588266249047d3",
+      "t4_memory_headroom_percent": 25.0186,
+      "fixed_sample": {
+        "response_bias_fraction": 0.13621036692324695,
+        "hit_count_bias_fraction": -0.08076548816088229,
+        "mean_longitudinal_profile_relative_l1": 0.3216723579036778
+      },
+      "qa_pass": true
+    },
+    {
+      "name": "calibrated_lr1e4",
+      "pipeline_job": "1268482659177201664",
+      "custom_job": "2327954471516110848",
+      "state": "JOB_STATE_SUCCEEDED",
+      "start_time": "2026-07-27T03:46:08Z",
+      "end_time": "2026-07-27T06:17:38Z",
+      "hours": 2.525,
+      "parent_validation_loss": 4.97325349552216,
+      "first_added_epoch": 1,
+      "first_added_validation_loss": 4.952878915722513,
+      "final_epoch": 2,
+      "final_validation_loss": 4.8788224024095435,
+      "improvement_vs_first_added_percent": 1.495222,
+      "improvement_vs_parent_percent": 1.898779,
+      "best_checkpoint_sha256": "0f1866b6547e3bae37700fa2089c93d4c79a25d6e8ea7c345233adca737fa920",
+      "last_checkpoint_sha256": "3f9620b74341ee92ea7080c5b27eafb38eb3425bb545fd15169da2e805e28bce",
+      "t4_memory_headroom_percent": 25.0186,
+      "fixed_sample": {
+        "response_bias_fraction": 0.11697820118580286,
+        "hit_count_bias_fraction": -0.0721745980260414,
+        "mean_longitudinal_profile_relative_l1": 0.31427334789870165
+      },
+      "qa_pass": true
+    },
+    {
+      "name": "calibrated_lr3e4",
+      "pipeline_job": "6713334608668131328",
+      "custom_job": "2033311743551209472",
+      "state": "JOB_STATE_SUCCEEDED",
+      "start_time": "2026-07-27T03:45:20Z",
+      "end_time": "2026-07-27T06:11:15Z",
+      "hours": 2.431944,
+      "parent_validation_loss": 4.800034052805531,
+      "first_added_epoch": 3,
+      "first_added_validation_loss": 4.828353757914129,
+      "final_epoch": 4,
+      "final_validation_loss": 4.738041260930141,
+      "improvement_vs_first_added_percent": 1.870461,
+      "improvement_vs_parent_percent": 1.291507,
+      "best_checkpoint_sha256": "3f1022b87361b8a14d9f8432273dcd6c72f6a5e599c1be1575e7f37f4014803d",
+      "last_checkpoint_sha256": "42782827de374dedcbba50a784460833ad16129c474f98553622b39d6467720a",
+      "t4_memory_headroom_percent": 25.0186,
+      "fixed_sample": {
+        "response_bias_fraction": 0.17481210500636174,
+        "hit_count_bias_fraction": -0.07300866502942403,
+        "mean_longitudinal_profile_relative_l1": 0.33232219813516584
+      },
+      "qa_pass": true
+    },
+    {
+      "name": "calibrated_lr1e4_halfbatch",
+      "pipeline_job": "5186614334989533184",
+      "custom_job": "3979763984063528960",
+      "state": "JOB_STATE_SUCCEEDED",
+      "start_time": "2026-07-27T03:44:44Z",
+      "end_time": "2026-07-27T06:15:44Z",
+      "hours": 2.516667,
+      "parent_validation_loss": 4.903753406306835,
+      "first_added_epoch": 3,
+      "first_added_validation_loss": 4.882708232189866,
+      "final_epoch": 4,
+      "final_validation_loss": 4.8450291584386305,
+      "improvement_vs_first_added_percent": 0.771684,
+      "improvement_vs_parent_percent": 1.197537,
+      "best_checkpoint_sha256": "d14458bba3fcfbc35d5c3da0b106735fc8041ea2c191969ccb0b86eb484d91ca",
+      "last_checkpoint_sha256": "999d4e3a49c18941a20eeb001a01f56d2d77a2e5e3147e940e0d8347f0d475d4",
+      "t4_memory_headroom_percent": 62.2381,
+      "fixed_sample": {
+        "response_bias_fraction": 0.07809616182998946,
+        "hit_count_bias_fraction": -0.0531532366433437,
+        "mean_longitudinal_profile_relative_l1": 0.236195444244593
+      },
+      "qa_pass": true
+    }
+  ],
+  "cost": {
+    "extension_total_t4_hours": 9.930278,
+    "conservative_rate_usd_per_hour": 0.85,
+    "extension_projection_usd": 8.4408,
+    "prior_ledger_usd": 35.24,
+    "build_storage_management_contingency_usd": 5.0,
+    "conservative_total_usd": 48.6808,
+    "remaining_under_100_usd": 51.3192
+  },
+  "storage": {
+    "root_local_bytes_removed": 25022001408,
+    "root_gcs_uri": "gs://asiop-zdc-1-zdc-reco-us-central1/data/myTree_20251117_765k_0to300GeV_neutron_All.root#1783683550292251",
+    "root_crc32c": "lCVUvQ==",
+    "root_sha256": "b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533",
+    "audit_archive_uri": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/local-evidence-offload-20260727-r1/audit",
+    "audit_archive_objects": 1018,
+    "audit_archive_bytes": 4105726074,
+    "audit_checksum_sync_pass": true,
+    "final_free_bytes_observed": 26460938240
+  },
+  "public_site": {
+    "url": "https://julianattemptscoding.github.io/Fast-MC-Visual-Tests/",
+    "commit": "a3816fbd590fde159d3a0c02ea0a67caa22673dc",
+    "workflow_run": "30243408128",
+    "workflow_conclusion": "success",
+    "manifest_sha256": "2e504c7a094fe90ae050adbb06765834ea2472f4b7c7fa83beffbfcf17ba1f00",
+    "compressed_bytes": 24518772,
+    "published_epochs": 4,
+    "live_payload_qa_pass": true,
+    "interactive_browser_qa": "BLOCKED_ENVIRONMENT_OS_ERROR_3"
+  },
+  "conclusion": {
+    "structural_and_optimization_qa": "PASS",
+    "more_compute_validation_hypothesis": "SUPPORTED_FOR_ALL_4_CALIBRATED_FAMILIES",
+    "physics_validation": "NOT_ESTABLISHED",
+    "historical_frozen_a100_screening": "NO-GO_UNCHANGED",
+    "test_evaluation": "BLOCKED_NOT_OPENED",
+    "further_vertex_jobs_authorized": false
+  }
+}

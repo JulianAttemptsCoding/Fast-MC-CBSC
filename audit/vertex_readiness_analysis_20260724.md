@@ -2066,3 +2066,31 @@ include local mutations, Cloud Build, and Vertex submissions.
 - A100 migration for the exact screened objective: NO-GO under the frozen
   viability protocol because fixed-sample observables materially worsen.
 - Final training and test evaluation: blocked and intentionally not launched.
+
+## 2026-07-27 terminal compute-extension addendum
+
+The four user-authorized on-demand T4 extension jobs all reached
+`JOB_STATE_SUCCEEDED`; exact identities and full measurements are frozen in
+`compute_extension_20260727_r1_terminal_analysis.{json,md}`. Streamed
+checkpoint verification passes for E2/E2/E4/E4 with zero test use.
+
+Final validation losses are LR3e-5 `4.9276713145`, LR1e-4 `4.8788224024`,
+LR3e-4 `4.7380412609`, and half-batch `4.8450291584`. Relative to the first
+added epoch, these improve by `0.935517%`, `1.495222%`, `1.870461%`, and
+`0.771684%`; relative to each pre-extension parent, all four improve by
+`1.197537–1.898779%`. Thus the bounded “does more compute help validation?”
+question is supported 4/4. Fixed-bank observables remain mixed, so physics
+validation is not established and the historical frozen A100 NO-GO is not
+reopened.
+
+Public commit `a3816fb` and workflow `30243408128` are successful. The live
+manifest hash is `2e504c7a...a1f00`; four exact calibrated payloads pass
+compressed hash/decompression/50x5/validation/zero-test checks. Interactive
+browser QA is unclaimed because the required bridge failed with environment
+`os error 3`; tests, build, HTTP, artifacts, and static contracts pass.
+
+Storage remediation preserved the 25.022 GB ROOT object at GCS generation
+`1783683550292251` and archived 1,018 audit objects / 4,105,726,074 bytes to
+`gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/local-evidence-offload-20260727-r1/audit`
+before local bulk mirrors were removed. Conservative budget reconciliation is
+`$48.6808 / $100`.
