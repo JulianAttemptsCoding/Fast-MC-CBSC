@@ -2019,6 +2019,41 @@ include local mutations, Cloud Build, and Vertex submissions.
      r20, inputs, configs, outputs, service account, resources, on-demand
      scheduling, and four-hour caps. Two initially run and two await capacity.
      Local SDK observers were stopped after acceptance; server jobs persist.
+308. A 300-second gate confirms all four running. First recovery snapshots
+     are LR3e-5 u100, LR1e-4 u50, LR3e-4 u50, half u200; each is an exact
+     optimizer boundary with finite accumulated components, correct
+     parent-best hash, epoch/seed/batch/accumulation, and unique progress
+     checkpoint. Measured rates project the first epoch near 12:50–13:10
+     local; no partial state is selected or published.
+309. Local snapshot mirroring hit zero free C: space after one 16 MiB partial
+     temp file. That exact generated file was removed; only the recoverable
+     376,174,662-byte dashboard build output was additionally removed to
+     restore working space. No source/data/checkpoint/public evidence changed.
+     Verification was converted to sequential streamed GCS checkpoint loads.
+310. LR3e-5 E1 passes all gates and improves validation
+     `4.988944→4.974206` (+0.2954%, marginal). LR3e-4 E3 passes structural
+     gates but regresses `4.800034→4.828354` (-0.5900%), preserving parent
+     best. Fixed 50x5 metrics for LR3e-5 improve response/profile but slightly
+     worsen hit bias; LR3e-4 improves all three proxies despite loss
+     regression, explicitly demonstrating objective/proxy misalignment.
+311. Both epochs entered the 27-row local dashboard. Public selection replaced
+     only LR3e-5 E0 with verified E1; LR3e-4 stays E2. Exporter, six tests,
+     and build pass; public commit `c2f9338`, manifest `48aa183c...3182`,
+     four calibrated families, one checkpoint each, zero test.
+312. LR1e-4 E1 and half E3 pass the same gates and improve validation
+     `4.973253→4.952879` (+0.4097%) and `4.903753→4.882708`
+     (+0.4292%). Both are marginal (<0.5%) but real. LR1e-4 improves all
+     three 50x5 proxies; half improves response/hit but profile L1 worsens
+     0.03996. Three of four families now improve after one added epoch.
+313. A public export failed pre-manifest at zero disk space, leaving commit
+     `a0cdae9` with selection config but no matching payloads; live data
+     remained on the prior valid manifest. Four old, explicitly named,
+     reproducible CBSC temp mirrors were removed. Clean rerun passes with four
+     exact IDs, manifest `b2720526...463e`, 25,117,808 bytes, six tests,
+     build, and corrective public commit `61feebd`.
+314. Stream-verifier focused QA is 30 passed plus Ruff/compileall. Root
+     `npm run lint` failed because no root npm script exists; corrected
+     `npm --prefix dashboard run lint` passes.
 
 ## Implementation QA disposition
 

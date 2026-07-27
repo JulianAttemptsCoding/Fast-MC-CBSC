@@ -3,9 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import torch
 import yaml
 
 from scripts.build_compute_extensions import EXPECTED_VARIANTS, Variant, build
+from scripts.verify_compute_extension_epoch_gcs import _finite_tensors
 
 
 def _template(path: Path, *, parent_epoch: int, name: str) -> None:
@@ -78,3 +80,14 @@ def test_requires_all_four_calibrated_variants(tmp_path: Path) -> None:
     variants = _variants(tmp_path)
     with pytest.raises(ValueError, match="exactly the four"):
         build(variants[:-1], tmp_path / "output", "compute-extension-r1")
+
+
+def test_stream_verifier_finds_nested_nonfinite_tensor() -> None:
+    count, failures = _finite_tensors(
+        {
+            "model": {"finite": torch.tensor([1.0])},
+            "optimizer": [{"bad": torch.tensor([float("nan")])}],
+        }
+    )
+    assert count == 2
+    assert failures == ["checkpoint.optimizer[0].bad"]
