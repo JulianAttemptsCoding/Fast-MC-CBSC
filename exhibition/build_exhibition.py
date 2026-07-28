@@ -379,7 +379,7 @@ def fig05_proxy_change(payloads: dict, history: dict) -> list[Path]:
         for b, value in zip(bars, values):
             ax.text(b.get_x() + b.get_width() / 2, value + (0.015 if value >= 0 else -0.015) * max(1, max(abs(v) for v in values)), f"{value:+.3f}", ha="center", va="bottom" if value >= 0 else "top", fontsize=8.5)
     fig.subplots_adjust(left=0.075, right=0.96, top=0.82, bottom=0.13, wspace=0.36)
-    footer(fig, "All four validation losses improved; visual proxies were mixed. This is why lower weighted loss alone cannot open the physics or A100 gate.")
+    footer(fig, "All four validation losses improved; visual proxies were mixed. Lower weighted loss alone does not establish Geant4 fidelity.")
     return save(fig, "05_loss_vs_visual_proxy_boundary")
 
 
@@ -543,7 +543,7 @@ def fig09_claim_boundary() -> list[Path]:
         ("Resource feasibility", "PASS", "On-demand T4, 25–62% memory headroom, conservative ledger $53.10 / $100", PASS),
         ("Fixed-sample visual QA", "MIXED", "Some showers look credible; response, hit-count, and profile proxies are non-monotonic", WARN),
         ("Physics validation", "NOT ESTABLISHED", "Conditional distribution agreement, correlations, C2ST, and reconstruction closure not proven", BLOCK),
-        ("A100 scale-up gate", "NO-GO", "Frozen screening gate remains closed; lower weighted loss alone is insufficient", BLOCK),
+        ("Hardware portability", "QA NEEDED", "Benchmark the intended backend; prior hardware measurements do not block training", WARN),
         ("Final test evaluation", "SEALED", "0 test events opened; final protocol and three-seed runs are not complete", BLOCK),
     ]
     y0, row_h = 0.80, 0.092

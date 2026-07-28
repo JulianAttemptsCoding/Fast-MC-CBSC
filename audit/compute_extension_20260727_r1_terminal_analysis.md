@@ -47,7 +47,7 @@ Final disposition:
 structural_and_optimization_QA=PASS
 more_compute_validation_hypothesis=SUPPORTED_FOR_ALL_4_CALIBRATED_FAMILIES
 physics_validation=NOT_ESTABLISHED
-historical_frozen_A100_screening=NO-GO_UNCHANGED
-test_evaluation=BLOCKED_NOT_OPENED
-further_Vertex_jobs_authorized=false
+historical_hardware_screening=NONBINDING_QA_ONLY
+test_evaluation=NOT_OPENED
+future_compute=USER_DECISION_WITH_NEW_EXPERIMENT_SPEC
 ```

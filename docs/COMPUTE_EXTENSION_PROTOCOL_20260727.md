@@ -5,9 +5,10 @@
 Does adding exactly two more joint-training epochs improve validation loss for
 each of the four calibrated configurations already shown on the visual site?
 
-This is a validation-only exploratory extension authorized after the frozen
-A100 screen. It does not revise the historical A100 `NO-GO`, establish physics
-fidelity, open the test split, or authorize final training.
+This is a validation-only exploratory extension following an earlier hardware
+screen. The permission-style interpretation of that screen is superseded by
+`docs/QA_POLICY.md`. This extension does not establish physics fidelity or open
+the test split.
 
 ## Fixed experiment
 
@@ -37,8 +38,8 @@ the paired parent checkpoint's selected validation loss:
 - `regression`: final loss is higher than the parent loss.
 
 Report exact values and percentages even when the category is unfavorable.
-The main aggregate question passes only if at least one family improves. Also
-report whether all four, a majority, or only a minority improve.
+The main aggregate question is whether at least one family improves. Also report
+whether all four, a majority, or only a minority improve.
 
 ## Mandatory QA
 

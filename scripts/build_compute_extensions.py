@@ -164,7 +164,7 @@ def build(
                 "parent_epoch": variant.parent_epoch,
                 "parent_output_uri": variant.parent_output_uri,
                 "parent_template_sha256": _sha256(variant.template),
-                "frozen_a100_decision_unchanged": True,
+                "historical_hardware_screening_is_nonbinding": True,
                 "selection_split": "validation",
                 "test_events_used": 0,
                 "scheduler_contract": (
@@ -203,7 +203,7 @@ def build(
         "round_id": round_id,
         "scientific_status": (
             "user-authorized validation-only compute extension; "
-            "frozen A100 NO-GO remains historical evidence"
+            "hardware screening is nonbinding QA evidence"
         ),
         "variant_count": len(rows),
         "variants": rows,

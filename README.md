@@ -8,9 +8,15 @@ CLI-first, auditable Fast Monte Carlo research scaffold for 65-layer, 6,790-chan
 - condition: neutron four-momentum only;
 - training support comparison: 0–300 GeV versus 50–250 GeV;
 - primary result domain: 50–250 GeV;
-- software QA: 18 tests pass in the bundled environment;
-- synthetic CLI chain: training, sampling, structural QA, evaluation, timing, and loss calibration exercised;
-- physics status: **not yet trained or validated on the production 765k-event corpus**.
+- software QA: 90 source tests pass in the current environment;
+- production preparation: 764,940 real Geant4 events converted into 187
+  content-addressed shards;
+- current optimization evidence: four calibrated joint-training families have
+  verified epoch-4 checkpoints on production-derived train/validation data;
+- visual QA: fixed-condition Geant4-versus-Fast-MC comparisons are available
+  locally and on the public site;
+- physics status: **optimization and structural execution are established;
+  Geant4 fidelity is not yet established**.
 
 ## Start
 
@@ -57,7 +63,11 @@ The decoder guarantees exact zeros outside selected support and exact generated 
 ## Active documents
 
 - [Agent operating contract](AGENTS.md)
+- [Documentation map](docs/README.md)
 - [Complete implementation/training/QA/results guide](docs/IMPLEMENTATION_GUIDE.md)
+- [Backend-neutral continuation prompt](docs/AGENT_PROMPT_CONTINUE_ANY_BACKEND_20260728.md)
+- [QA policy: checks are evidence, not progression permission](docs/QA_POLICY.md)
+- [Hardware portability QA](docs/HARDWARE_PORTABILITY_QA.md)
 - [Beginner model walkthrough](docs/MODEL_WALKTHROUGH.md)
 - [Loss-weight research and freezing protocol](docs/LOSS_WEIGHT_PROTOCOL.md)
 - [Evaluation and decision protocol](docs/EVALUATION_PROTOCOL.md)

@@ -41,10 +41,9 @@ verified. Interactive browser QA remains blocked by the existing local browser
 kernel `os error 3`; HTTP, artifact, seven unit tests, TypeScript, and Vite
 production-build checks pass.
 
-The result supports taking the model to faster hardware for longer
-optimization experiments if desired. It does not overturn the historical
-frozen A100 screening result, establish Geant4 fidelity, authorize test
-evaluation, or authorize another Vertex job.
+The result supports taking the model to faster hardware for longer optimization
+experiments if desired. Historical hardware screening is nonbinding QA evidence.
+This result does not establish Geant4 fidelity or open the test split.
 
 Final disposition:
 
@@ -52,7 +51,7 @@ Final disposition:
 structural_and_optimization_QA=PASS
 more_compute_validation_hypothesis=SUPPORTED_FOR_ALL_4_CALIBRATED_FAMILIES
 physics_validation=NOT_ESTABLISHED
-historical_frozen_A100_screening=NO-GO_UNCHANGED
-test_evaluation=BLOCKED_NOT_OPENED
-further_Vertex_jobs_authorized=false
+historical_hardware_screening=NONBINDING_QA_ONLY
+test_evaluation=NOT_OPENED
+future_compute=USER_DECISION_WITH_NEW_EXPERIMENT_SPEC
 ```

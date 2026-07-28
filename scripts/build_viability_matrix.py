@@ -224,7 +224,7 @@ def generate_matrix(
     manifest = {
         "pass": True,
         "scientific_status": (
-            "unfrozen A100 viability wave; no job submitted"
+            "unfrozen backend-neutral optimization QA wave; no job submitted"
         ),
         "base_template": str(base_template),
         "base_template_sha256": _sha256(base_template),

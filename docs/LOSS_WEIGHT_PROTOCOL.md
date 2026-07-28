@@ -35,15 +35,15 @@ Rationale:
 
 ## 4. Exact calibration procedure
 
-### Gate 1: isolated stages
+### QA phase 1: isolated stages
 
 Train response, profile, count, support, and share stages. Confirm every component can improve on validation independently. Do not calibrate a loss that is numerically broken.
 
-### Gate 2: default joint pilot
+### QA phase 2: default joint pilot
 
 Use the final architecture, one seed, and a training-only pilot. Save the best validation checkpoint.
 
-### Gate 3: gradient-norm measurement
+### QA phase 3: gradient-norm measurement
 
 ```bash
 cbsc-zdc calibrate-loss-weights \
@@ -72,7 +72,7 @@ Weights are normalized so their arithmetic mean is one.
 
 This equalizes initial gradient scale only. It does not certify task importance.
 
-### Gate 4: family sensitivity matrix
+### QA phase 4: family sensitivity matrix
 
 Group losses into five scientific families:
 
@@ -97,7 +97,7 @@ share family ×0.5 and ×2
 
 Use one seed for screening. Reject settings that improve weighted validation loss while damaging the corresponding physical metrics.
 
-### Gate 5: select by validation Pareto criteria
+### QA phase 5: select by validation Pareto criteria
 
 Primary selection order:
 
@@ -109,7 +109,7 @@ Primary selection order:
 6. C2ST and reconstruction closure;
 7. weighted validation loss only as a tie-breaker.
 
-### Gate 6: freeze and repeat three seeds
+### QA phase 6: freeze and repeat three seeds
 
 Write selected weights into an unfrozen template. Freeze it. Run three independent seeds. Do not change weights after examining test output.
 

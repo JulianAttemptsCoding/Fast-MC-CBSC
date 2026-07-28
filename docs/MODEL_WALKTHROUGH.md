@@ -162,7 +162,7 @@ This implementation adds:
 5. dynamic count-feasibility masks;
 6. one stochastic Gumbel-Top-k draw;
 7. an exact budget decoder;
-8. CLI-enforced provenance, hashes, gates, and checkpoint contracts.
+8. CLI-enforced provenance, hashes, QA checks, and checkpoint contracts.
 
 ## 6. How training differs from generation
 

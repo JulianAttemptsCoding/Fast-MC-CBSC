@@ -1,11 +1,11 @@
 {
   "verification_agent_run_date": "2026-07-25",
   "scope": "independent read-only reproduction of the production-data-derived FP32 Vertex structural smoke verification; no preparation, coordinator, smoke, or final training job was submitted; test data was not opened",
-  "disposition": {
-    "structural_smoke": "GO",
-    "validation_only_component_loss_lr_work": "GO",
+  "qa_summary": {
+    "structural_smoke": "QA_PASS",
+    "validation_only_component_loss_lr_work": "FOLLOW_UP_QA",
     "physics_validation": "NOT_ESTABLISHED",
-    "final_training": "BLOCKED"
+    "final_training": "NOT_RUN_USER_DECISION"
   },
   "identities_used": {
     "project": "asiop-zdc-1",

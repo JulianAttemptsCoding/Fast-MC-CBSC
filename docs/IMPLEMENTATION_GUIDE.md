@@ -14,7 +14,8 @@
 
 This repository is an executable research scaffold. Its synthetic tests establish software and algebraic properties. They do not establish that the model reproduces Geant4.
 
-Do not claim a validated FastMC until all of these are true:
+The following are independent QA areas needed before claiming a validated
+FastMC:
 
 1. the production ROOT schema and units pass inspection;
 2. the 6,790-channel geometry and graph are frozen and independently reviewed;
@@ -22,7 +23,7 @@ Do not claim a validated FastMC until all of these are true:
 4. the split manifest is frozen before model development;
 5. all final metrics are computed on untouched test events;
 6. structural invariants pass;
-7. fidelity gates pass across all primary energy bins and all seeds;
+7. fidelity metrics are reported across all primary energy bins and all seeds;
 8. diversity, memorization, downstream reconstruction, and speed studies pass;
 9. the result is compared against competent internal and external baselines.
 
@@ -40,7 +41,7 @@ cbsc_zdc_fastmc_v2_2/
 ├── pyproject.toml                    package and CLI definition
 ├── configs/
 │   ├── schema_sample_edm4hep.yaml    sample ROOT branch contract
-│   ├── gates_primary.yaml            provisional frozen decision gates
+│   ├── gates_primary.yaml            versioned diagnostic thresholds
 │   ├── loss_weights_default.yaml     starting joint-loss weights
 │   └── templates/                    stage and range experiment templates
 ├── docs/
@@ -48,7 +49,7 @@ cbsc_zdc_fastmc_v2_2/
 │   ├── MODEL_WALKTHROUGH.md          beginner-facing model explanation
 │   ├── DATA_CONTRACT.md              exact data and geometry semantics
 │   ├── LOSS_WEIGHT_PROTOCOL.md       loss-weight selection procedure
-│   ├── EVALUATION_PROTOCOL.md        metrics, gates, and result interpretation
+│   ├── EVALUATION_PROTOCOL.md        metrics, QA thresholds, and interpretation
 │   ├── VERTEX_AI_RUNBOOK.md          cloud execution procedure
 │   └── TROUBLESHOOTING.md            ranked failure diagnosis
 ├── scripts/
@@ -70,9 +71,12 @@ Never train from `legacy/`. It exists only for provenance.
 
 ---
 
-## 2. End-to-end state machine
+## 2. End-to-end evidence map
 
-The production workflow has mandatory gates. Do not skip forward.
+The production workflow has ordered dependencies and QA checkpoints. The order
+protects provenance: downstream artifacts must cite trustworthy upstream
+artifacts. A finding does not grant or deny permission to run a new or corrected
+experiment.
 
 ```text
 ZIP integrity
@@ -110,7 +114,12 @@ Baselines, ablations, reconstruction, memorization, timing
 Scientific result or documented negative result
 ```
 
-A failed gate means stop, diagnose, correct the upstream artifact, regenerate dependent hashes, and rerun. Never weaken a gate merely because training already consumed compute.
+An integrity failure quarantines the affected artifact: diagnose it, correct the
+upstream artifact, regenerate dependent hashes, and rerun before trusting or
+reusing it. A poor scientific metric or performance result is preserved as a QA
+finding and a place for further investigation. Neither category is a global
+progression decision. Never weaken a diagnostic threshold merely because
+training already consumed compute.
 
 ---
 
@@ -854,7 +863,7 @@ Before a full 765k-event run, create a pilot template with:
 - target GPU;
 - final shard format and DataLoader worker count.
 
-Pilot gates:
+Pilot QA observations:
 
 1. no NaN/Inf loss;
 2. no NaN/Inf gradient norm;
@@ -1027,9 +1036,16 @@ cbsc-zdc evaluate \
   --require-pass
 ```
 
-`--require-pass` exits nonzero when any gate fails, making it suitable for an automated final pipeline.
+`--require-pass` exits nonzero when any configured diagnostic threshold is
+missed. This is useful for reproducible report generation and artifact
+quarantine; it does not decide whether future training is allowed.
 
-The bundled gate file is explicitly provisional. It requires at least 10,000 evaluation events and 500 events per primary energy bin, then checks response scale, resolution, zero rate, normalized Wasserstein distances, C2ST, and structural invariants. Validate the gate’s reasonableness using truth-half statistical floors on validation, then freeze it before test.
+The bundled threshold file is explicitly provisional. It requires at least
+10,000 evaluation events and 500 events per primary energy bin, then reports
+response scale, resolution, zero rate, normalized Wasserstein distances, C2ST,
+and structural invariants. Validate the thresholds’ reasonableness using
+truth-half statistical floors on validation, then freeze the diagnostic
+definition before test.
 
 Current executable report also includes:
 
@@ -1145,13 +1161,21 @@ Fairness rules:
 
 A defensible success statement is:
 
-> Across three seeds, the frozen CBSC-ZDC configuration passed structural invariants and predeclared 50–250 GeV fidelity gates on the untouched test bank, showed acceptable truth-relative diversity and reconstruction closure, did not exhibit memorization, and achieved the reported end-to-end speed under the disclosed hardware and solver settings.
+> Across three seeds, the frozen CBSC-ZDC configuration satisfied structural
+> invariants and its predeclared 50–250 GeV diagnostic thresholds on the
+> untouched test bank, showed the reported truth-relative diversity and
+> reconstruction closure, did not exhibit detected memorization, and achieved
+> the reported end-to-end speed under the disclosed hardware and solver
+> settings.
 
 ### 23.2 A valid negative result
 
 A scientifically useful negative result is:
 
-> The hierarchy satisfied exact accounting but failed specific distributional gates, identifying whether response, profile, count, support, or morphology caused the mismatch. The controlled baselines showed which complexity did or did not help.
+> The hierarchy satisfied exact accounting but missed specific distributional
+> thresholds, identifying whether response, profile, count, support, or
+> morphology caused the mismatch. The controlled baselines showed which
+> complexity did or did not help.
 
 ### 23.3 Invalid claims
 

@@ -21,7 +21,8 @@ Report 50–250 GeV in fixed bins:
 [150,175), [175,200), [200,225), [225,250].
 ```
 
-The executable gate requires sufficient events in every bin. Missing bins fail rather than disappearing from the average.
+The executable QA check requires sufficient events in every bin. Missing bins
+are reported as failures rather than disappearing from the average.
 
 ## 3. Current executable metrics
 
@@ -37,9 +38,12 @@ The executable gate requires sufficient events in every bin. Missing bins fail r
 - truth-half Wasserstein floors;
 - exact structural invariants.
 
-## 4. Provisional gates
+## 4. Provisional diagnostic thresholds
 
-`configs/gates_primary.yaml` supplies starting thresholds. They must be judged against validation truth-half floors and frozen before final test. They are not universal detector specifications.
+`configs/gates_primary.yaml` supplies starting diagnostic thresholds. They must
+be judged against validation truth-half floors and frozen before final test.
+They are not universal detector specifications and they do not control whether
+additional training may run.
 
 ## 5. Additional required publication studies
 
@@ -58,11 +62,12 @@ These may require analysis code specific to the experiment’s reconstruction pa
 
 ## 6. Multi-seed decision
 
-A model family passes only when the predeclared aggregate rule passes. Recommended:
+A model family may be summarized against the predeclared aggregate rule.
+Recommended reporting:
 
-- all three seeds pass structural gates;
-- median seed passes every fidelity gate;
-- no seed has a catastrophic outlier exceeding twice a gate threshold;
+- structural QA for all three seeds;
+- every fidelity threshold result for the median seed;
+- every seed with an outlier exceeding twice a threshold;
 - report median and full range, not only the best seed.
 
 ## 7. Test isolation
@@ -73,6 +78,6 @@ The test split is opened only after:
 - geometry frozen;
 - architecture frozen;
 - optimizer and loss weights frozen;
-- gates frozen;
+- diagnostic thresholds frozen;
 - checkpoint-selection rule frozen;
 - number of seeds frozen.

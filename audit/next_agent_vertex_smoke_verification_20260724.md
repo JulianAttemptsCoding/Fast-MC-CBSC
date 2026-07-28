@@ -11,13 +11,13 @@ hand-edited.
 Companion machine-readable file: `audit/next_agent_vertex_smoke_verification_20260724.json`
 Independent preparation re-verification artifact: `audit/next_agent_verified_prepare_r5.json`
 
-## Dispositions
+## QA summary
 
 ```text
-structural_smoke=GO
-validation_only_component_loss_lr_work=GO
+structural_smoke=QA_PASS
+validation_only_component_loss_lr_work=FOLLOW_UP_QA
 physics_validation=NOT_ESTABLISHED
-final_training=BLOCKED
+final_training=NOT_RUN_USER_DECISION
 ```
 
 ## 1. Local code verification (step 4)
@@ -28,7 +28,7 @@ PYTHONPATH=src python -m pytest -q  -> 25 passed, 2 warnings (documented Transfo
 python -m compileall -q src vertex tests -> exit 0
 ```
 
-Matches the required "exactly 25 passing tests" gate.
+Matches the required historical "exactly 25 passing tests" QA check.
 
 ## 2. Independent preparation re-verification (step 5)
 

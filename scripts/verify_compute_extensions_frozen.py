@@ -100,7 +100,7 @@ def verify(
         assert viability["parent_output_uri"] == specification[
             "parent_output_uri"
         ]
-        assert viability["frozen_a100_decision_unchanged"] is True
+        assert viability["historical_hardware_screening_is_nonbinding"] is True
         assert int(viability["test_events_used"]) == 0
 
         template = manifest_path.parent / specification["template"]

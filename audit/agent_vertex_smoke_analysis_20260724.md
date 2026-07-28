@@ -2,14 +2,15 @@
 
 Date: 2026-07-24
 
-## Decision
+## QA interpretation
 
-The production-data-derived, full-architecture FP32 smoke is a **structural and
-infrastructure GO**. It is also a GO to begin the guide's next
-**train/validation-only** component, loss-calibration, and learning-rate work.
+The production-data-derived, full-architecture FP32 smoke reproduced its
+**structural and infrastructure QA**. Train/validation-only component,
+loss-calibration, and learning-rate work are identified as follow-up QA.
 
-It is **not physics validation**, it does not authorize opening the test split,
-and it does not authorize the six final training runs. The one-epoch validation
+It is **not physics validation** and does not open the test split. Whether to run
+new training is a user decision under a newly specified experiment. The
+one-epoch validation
 diagnostics are poor, as expected for a connectivity smoke: high-level C2ST AUC
 is `1.0`, generated zero fraction is `0.296875` versus truth `0.015625`, and
 normalized hit-count Wasserstein is `1.0333642292132128`.

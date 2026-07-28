@@ -21,7 +21,7 @@ Changing truth events every epoch is forbidden because it would confound model
 evolution with sample variation.
 
 These plots and their 50-condition statistics are descriptive QA. They are not
-checkpoint-selection metrics, acceptance gates, or physics validation. Test
+checkpoint-selection metrics, acceptance decisions, or physics validation. Test
 events are forbidden. The untouched test split remains closed until the full
 protocol is frozen.
 
@@ -125,4 +125,4 @@ never be described as Geant4 or physics validation.
 
 Visual similarity never overrides the full validation report. A visually
 plausible event can coexist with failed distributional, diversity,
-reconstruction, memorization, or timing gates.
+reconstruction, memorization, or timing studies.

@@ -1724,15 +1724,16 @@ include local mutations, Cloud Build, and Vertex submissions.
      original joint graph and memory-bounded grouped graphs under the same
      model/batch/RNG; test SHA `6bb93ca2...d8fea`, Ruff pass, 5 tests pass.
      Up to five on-demand T4s may later run independent, predeclared validation
-     variants concurrently, but calibration/dependent gates remain serial and
+     variants concurrently, but calibration/dependent QA remains serial and
      every parallel wave needs a combined worst-case budget reservation and
      unique generation-zero prefixes.
-239. User narrowed the outcome to an A100 viability decision, not final
-     publication training. Predeclared five-way one-epoch wave is default
+239. User narrowed the outcome to a target-hardware viability study, not final
+     publication training. The predeclared five-way one-epoch wave is default
      control; calibrated LR 3e-5/1e-4/3e-4; calibrated LR1e-4 effective-batch
-     half-control. Exact real bank/checkpoint/FP32/fixed-50x5/zero-test gates
-     remain. At most two continue several epochs; result is GO/CONDITIONAL
-     GO/NO-GO, never physics validation.
+     half-control. Exact real bank/checkpoint/FP32/fixed-50x5/zero-test QA
+     remains. At most two were planned to continue several epochs. The
+     permission-style result used then is superseded by `docs/QA_POLICY.md`;
+     the measurements remain nonbinding evidence and never physics validation.
 240. Unfrozen viability generator `4244704c...e494b` and tests
      `58eab82d...f23a5` pass Ruff/compile and combined 8 tests. R2 allocated at
      20:35:18 local. Existing 600s calibration timer remains; later measured
@@ -1759,7 +1760,7 @@ include local mutations, Cloud Build, and Vertex submissions.
      object itself is correct.
 245. Conservative accounted budget is `$24.54`; five two-hour T4 reserves are
      `$8.50`, plus `$5.00` contingency, leaving `$61.96`. The predeclared
-     five-way one-epoch A100-viability wave therefore fits the `$100` ceiling.
+     five-way one-epoch hardware-QA wave therefore fits the `$100` ceiling.
 246. Five frozen configs passed exact matrix QA (report `7ae19f73...34f4`):
      default; calibrated LR `3e-5/1e-4/3e-4`; calibrated LR `1e-4` effective
      batch 12. All bind checkpoint `03c79608...adb7`, identical production
@@ -1783,11 +1784,12 @@ include local mutations, Cloud Build, and Vertex submissions.
      historical test filenames and are preserved as command errors; corrected
      `PYTHONPATH=src` calibration/viability suite passes 8 tests with one known
      nonfatal Transformer warning.
-251. Before results, `docs/A100_VIABILITY_PROTOCOL.md` froze hard gates,
-     same-weight-family comparisons, Pareto tolerances, maximum-two
-     continuation, two additional epochs, and exact GO/CONDITIONAL-GO/NO-GO
-     rules. Official NVIDIA and Google sources were rechecked; no A100 speedup
-     is claimed without a target-stack 256-batch plus 8/8 benchmark.
+251. Before results, the historical hardware protocol froze
+     same-weight-family comparisons, Pareto tolerances, a maximum-two
+     continuation design, and two additional epochs. Official NVIDIA and Google
+     sources were rechecked; no target-hardware speedup is claimed without a
+     target-stack 256-batch plus 8/8 benchmark. The old permission framing is
+     superseded by `docs/QA_POLICY.md`.
 252. All five jobs allocated concurrently from `13:04:50Z` to `13:05:39Z`;
      conservative epoch/terminal ETA is 22:14:50–22:15:39 local. A 1200s
      health timer precedes the remaining interval.
@@ -1909,15 +1911,16 @@ include local mutations, Cloud Build, and Vertex submissions.
 280. Independent in-memory checkpoint QA proves exact SHA-256, reload,
      finite model/optimizer state, paired best/last, cumulative optimizer
      steps, restarted scheduler steps, RNG, immutable epoch snapshots, all
-     invariant/resource/timing gates, and zero test use.
+     invariant/resource/timing QA checks, and zero test use.
 281. LR3e-4 validation loss improves 3.0498% to `4.800034`; half-batch
      improves 1.4552% to `4.903753`. All 50 fixed truth conditions and 250
      independent draws per epoch are exact across epochs 0–2.
 282. Geant4-facing fixed-sample metrics materially worsen. LR3e-4 response
      bias/profile L1 change `0.03487→0.19191` / `0.22228→0.37246`;
      half-batch changes `0.08618→0.14096` / `0.23019→0.30099`.
-     Both cross the frozen worsening limits, so the exact setup is A100
-     NO-GO despite stable optimization. Physics validation is not established.
+     Both cross the frozen worsening thresholds. This is a nonbinding QA finding
+     for the exact setup despite stable optimization. Physics validation is not
+     established.
 283. Response is continuous-density NLL and may validly be negative; adding
      absolute value or L2 around that objective is rejected. The evidence is
      objective/observable misalignment, not a sign error.
@@ -1932,7 +1935,7 @@ include local mutations, Cloud Build, and Vertex submissions.
 287. Public repo `JulianAttemptsCoding/Fast-MC-Visual-Tests` commit
      `c5612eb...8f66` packages all accepted views as deterministic gzip. Every
      source SHA, embedded geometry contract, checkpoint identity, selection,
-     50x5 count, QA flag, and zero-test gate is independently verified.
+     50x5 count, QA flag, and zero-test check is independently verified.
 288. The initial exporter geometry check stopped safely because it compared a
      contract hash to file bytes. Evidence proved the intended embedded-hash
      semantics; the corrected exporter also records independent geometry file
@@ -1944,8 +1947,9 @@ include local mutations, Cloud Build, and Vertex submissions.
      zero-test checks.
 290. Public UI separates run/checkpoint, scopes trends per run, lazy-loads one
      epoch, verifies its compressed SHA before decompression, and states both
-     the descriptive-only boundary and frozen A100 NO-GO. No model or physics
-     gate changed.
+     the descriptive-only boundary and the historical hardware finding. The
+     permission-style display was later removed; no model or physics result
+     changed.
 291. Browser bridge initialization still fails pre-discovery with local
      kernel-asset `os error 3`; no alternate driver was substituted. TypeScript,
      Vite, responsive CSS inspection, production HTTP/base-path, and artifact
@@ -2060,12 +2064,15 @@ include local mutations, Cloud Build, and Vertex submissions.
 - Local software/contract state: pass.
 - Full production data preparation r5: pass.
 - On-demand T4 full-architecture FP32 smoke: structural/infrastructure pass.
-- Validation-only component, loss-calibration, and optimizer pilot work: GO.
+- Validation-only component, loss-calibration, and optimizer pilot work:
+  completed with follow-up QA identified.
 - Physics validation: not established. The one-epoch high-level C2ST AUC is
   `1.0`, which explicitly demonstrates that structural success is not fidelity.
-- A100 migration for the exact screened objective: NO-GO under the frozen
-  viability protocol because fixed-sample observables materially worsen.
-- Final training and test evaluation: blocked and intentionally not launched.
+- Hardware-portability finding for the exact screened objective: fixed-sample
+  observables materially worsen even while the optimization objective improves.
+  This is nonbinding QA evidence.
+- Final training and test evaluation: not launched. Future training is the
+  user’s decision; test use still requires a separately frozen scientific plan.
 
 ## 2026-07-27 terminal compute-extension addendum
 
@@ -2080,8 +2087,8 @@ added epoch, these improve by `0.935517%`, `1.495222%`, `1.870461%`, and
 `0.771684%`; relative to each pre-extension parent, all four improve by
 `1.197537–1.898779%`. Thus the bounded “does more compute help validation?”
 question is supported 4/4. Fixed-bank observables remain mixed, so physics
-validation is not established and the historical frozen A100 NO-GO is not
-reopened.
+validation is not established. The historical hardware result is nonbinding
+under `docs/QA_POLICY.md`.
 
 Public commit `a3816fb` and workflow `30243408128` are successful. The live
 manifest hash is `2e504c7a...a1f00`; four exact calibrated payloads pass

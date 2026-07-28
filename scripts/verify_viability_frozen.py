@@ -128,7 +128,9 @@ def verify(manifest_path: Path, frozen_specs: list[tuple[str, Path]]) -> dict[st
         "common_provenance": common_provenance,
         "variants": rows,
         "test_events_used": 0,
-        "scientific_status": "frozen A100 viability wave; no job submitted",
+        "scientific_status": (
+            "frozen backend-neutral optimization QA wave; no job submitted"
+        ),
     }
 
 

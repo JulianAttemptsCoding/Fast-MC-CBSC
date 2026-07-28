@@ -44,5 +44,6 @@ payloads. It does not read `legacy/`, the original ROOT tree, or test events.
 ## Scientific boundary
 
 These figures establish structural execution and short-horizon optimization
-progress. They do not establish Geant4 fidelity. The test split remains unopened
-and the frozen A100 scale-up gate remains closed.
+progress. They do not establish Geant4 fidelity. The test split remains
+unopened. Hardware-screening measurements are nonbinding QA observations and do
+not control future training.

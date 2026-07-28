@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "date": "2026-07-28",
+  "scope": "replace hardware/progression permission framing with nonblocking QA and create backend-neutral continuation handoff",
+  "cloud_jobs_submitted": 0,
+  "training_artifacts_changed": false,
+  "policy": {
+    "qa_controls_progression": false,
+    "integrity_failure_effect": "quarantine affected artifact only",
+    "scientific_finding_effect": "record evidence and follow-up QA",
+    "future_compute": "user decision under a separately specified experiment",
+    "historical_frozen_artifacts_edited": false
+  },
+  "handoff": {
+    "path": "docs/AGENT_PROMPT_CONTINUE_ANY_BACKEND_20260728.md",
+    "sha256": "071b6d3b69c382aeed519be0b8f9d4726e1b1847a13ab2189748550858662920",
+    "bytes": 27093,
+    "backend_neutral": true,
+    "covers_model": true,
+    "covers_detector_geometry": true,
+    "covers_data_identity_and_schema": true,
+    "covers_vertex": true,
+    "covers_non_vertex_execution": true,
+    "covers_local_and_public_websites": true,
+    "covers_current_epoch4_checkpoints": true,
+    "covers_repo_map": true,
+    "covers_epoch_logging_and_qa": true
+  },
+  "repository_organization": {
+    "documentation_map": "docs/README.md",
+    "audit_map": "audit/README.md",
+    "compatibility_pointer": "docs/AGENT_PROMPT_VERTEX_RUN_AND_ANALYZE.md",
+    "obsolete_agent_prompts_removed": 2,
+    "obsolete_vertex_progression_docs_removed": 2,
+    "hardware_specific_protocol_replaced": true,
+    "path_sensitive_audit_files_moved": 0
+  },
+  "verification": {
+    "compileall": "pass",
+    "source_pytest": {
+      "passed": 92,
+      "failed": 0,
+      "warnings": 5,
+      "warnings_interpretation": "known nonfatal Transformer nested-tensor performance warning"
+    },
+    "public_unittest": {
+      "passed": 7,
+      "failed": 0
+    },
+    "public_typescript_vite_build": "pass",
+    "exhibition": {
+      "visual_count": 23,
+      "manifest_sha256": "262292e4a1b5d0c19f1d21b461f452bdf694b5e09eabc31139e50efd512ec649",
+      "selected_validation_position": 21
+    },
+    "git_diff_check": "pass"
+  },
+  "preserved_exception": {
+    "scope": "previously frozen July 2026 YAML and directly coupled manifests",
+    "reason": "never hand-edit frozen configurations or destroy historical hash provenance",
+    "operational_effect": "none; docs/QA_POLICY.md supersedes old field names"
+  },
+  "scientific_boundary": {
+    "structural_and_optimization_qa": "PASS",
+    "four_calibrated_epoch4_families": true,
+    "physics_validation": "NOT_ESTABLISHED",
+    "test_events_opened_in_this_work": 0
+  }
+}

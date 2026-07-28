@@ -2,12 +2,12 @@
   "analysis_version": 1,
   "analysis_date": "2026-07-24",
   "scope": "production-data-derived one-epoch target-hardware structural smoke",
-  "decision": {
-    "structural_smoke": "GO",
-    "validation_only_component_loss_lr_work": "GO",
+  "qa_interpretation": {
+    "structural_smoke": "QA_PASS",
+    "validation_only_component_loss_lr_work": "FOLLOW_UP_QA",
     "physics_validation": "NOT_ESTABLISHED",
-    "final_training": "BLOCKED",
-    "test_evaluation": "FORBIDDEN"
+    "final_training": "NOT_RUN_USER_DECISION",
+    "test_evaluation": "NOT_OPENED"
   },
   "vertex": {
     "project": "asiop-zdc-1",

@@ -70,7 +70,7 @@ python vertex/submit_custom_job.py \
 
 A T4 is an example compatible with the user’s earlier compute plan, not a guaranteed optimal or currently available choice.
 
-## 5. Cost-control gates
+## 5. Cost and throughput QA
 
 Before a full job:
 
@@ -78,10 +78,15 @@ Before a full job:
 2. record examples/second and projected epoch duration;
 3. set a budget alert;
 4. use one GPU and one replica initially;
-5. stop if DataLoader utilization is poor;
+5. record poor DataLoader utilization as optimization evidence and investigate
+   it before projecting larger-run cost;
 6. checkpoint every epoch;
 7. copy outputs to GCS at job completion;
 8. inspect quota and region pricing before every batch of jobs.
+
+These observations inform cost and implementation choices. They are not
+progression permission: a result on one GPU type neither authorizes nor forbids
+training on another backend.
 
 ## 6. Recovery
 

@@ -3040,13 +3040,14 @@ Up to five on-demand T4s are available for time-efficient independent work.
 They may be used concurrently only after calibration, for predeclared
 independent validation/optimizer/throughput variants with unique empty
 generation-zero prefixes and a combined worst-case budget reservation.
-Dependent gates, calibration retries, and protocol-freezing steps remain
-serial; parallel capacity is never used to duplicate a job or bypass evidence.
+Dependent QA, calibration retries, and protocol-freezing steps remain serial;
+parallel capacity is never used to duplicate a job or bypass evidence.
 
-## 2026-07-26 20:50 Asia/Taipei — A100 decision scope and r2 allocation
+## 2026-07-26 20:50 Asia/Taipei — historical hardware-screening scope and r2 allocation
 
-The user clarified that Vertex should establish whether the model is worth
-scaling to A100s, not complete the publication-scale six-run final matrix.
+The user clarified that Vertex should provide evidence for possible migration
+to a faster external cluster, not complete the publication-scale six-run final
+matrix.
 The frozen test bank remains closed and physics validation remains
 unestablished. The new bounded decision protocol is:
 
@@ -3059,8 +3060,9 @@ unestablished. The new bounded decision protocol is:
    Geant4/FastMC visualization per epoch;
 4. Pareto-select at most two from validation/structural/visual evidence only
    and continue them for several epochs;
-5. report A100 `GO`, `CONDITIONAL GO`, or `NO-GO`, without calling the pilot
-   physics validation.
+5. report the optimization and hardware observations without calling the pilot
+   physics validation. The permission-style disposition used at the time is
+   superseded by `docs/QA_POLICY.md`.
 
 At measured joint throughput, one pilot epoch is 3,878 seconds plus about
 4–6 minutes of validation/visualization/postflight. The future epoch poll
@@ -3179,8 +3181,8 @@ stopped; a fresh server listing proves all five jobs remain pending.
 Allocation is polled after 300 seconds. Once start times exist, the next-epoch
 timer is `start + 4,200 seconds`: 3,878 seconds previously measured for joint
 training plus approximately 322 seconds for validation, fixed visualization,
-checkpoint publication, and postflight. A100 viability selection remains
-closed until all five immutable epoch outputs are independently verified.
+checkpoint publication, and postflight. Comparative analysis waits until all
+five immutable epoch outputs are independently verified.
 
 Post-submit local QA: Ruff and compile checks pass. Two test invocations named
 nonexistent historical paths (`test_loss_weight_calibration.py`, then
@@ -3188,13 +3190,13 @@ nonexistent historical paths (`test_loss_weight_calibration.py`, then
 correct `PYTHONPATH=src` suite using `test_loss_weights.py` passes 8/8 with one
 known nonfatal Transformer warning.
 
-Before any result was visible, `docs/A100_VIABILITY_PROTOCOL.md` froze the
-hard-fail gates, same-weight-family loss comparison rule, wave-1 Pareto
-tolerances, maximum-two continuation rule, two-additional-epoch recovery plan,
-and exact A100 GO/CONDITIONAL-GO/NO-GO thresholds. Official NVIDIA A100/T4
-specifications and Google GPU pricing were rechecked. Hardware peaks are not
-used as a claimed speedup: any GO still requires a 256-batch plus 8/8 empirical
-benchmark on the target A100 stack.
+Before any result was visible, the historical hardware-screening protocol froze
+the same-weight-family comparison, wave-1 Pareto tolerances, maximum-two
+continuation design, and two-additional-epoch recovery plan. Official target
+accelerator/T4 specifications and Google GPU pricing were rechecked. Hardware
+peaks were not used as a claimed speedup; the target software stack still
+requires an empirical 256-batch plus 8/8 benchmark. The old permission framing
+is superseded by `docs/QA_POLICY.md`.
 
 All five jobs allocated concurrently between `13:04:50Z` and `13:05:39Z`.
 The measured safe epoch/terminal window is therefore
@@ -3541,10 +3543,11 @@ half-batch          2          0.14096     0.06000              0.30099  0.008
 LR3e-4 therefore improves comparable aggregate validation loss but worsens
 response by 15.704 percentage points and profile L1 by 0.15018. Half-batch
 worsens response by 5.478 points and profile L1 by 0.07080 while missing the
-3% loss threshold. Both exceed the predeclared material-worsening limits.
-The frozen protocol disposition is consequently **A100 NO-GO for this exact
-objective/training setup**, not a claim that every possible CBSC-ZDC model
-cannot work. Physics validation remains not established; test remains closed.
+3% loss threshold. Both exceed the predeclared material-worsening thresholds.
+This is a preserved QA finding for the exact objective/training setup, not a
+claim that every possible CBSC-ZDC model cannot work and not a prohibition on
+further training. Physics validation remains not established; test remains
+closed.
 
 The signed response component is continuous-density NLL, not an error norm
 with zero as a lower bound. Repository test
@@ -3619,8 +3622,9 @@ compressed SHA-256, decompressed it in memory, and reproduced epoch 2,
 The public UI separates training run from checkpoint, limits trend plots to
 the selected run, lazily downloads only one compressed epoch, verifies its
 hash before browser decompression, explains the matched four-vector and
-50-by-5 protocol for students and HEP experts, and displays the frozen A100
-NO-GO boundary on the wave-2 runs. The calibrated views remain available for
+50-by-5 protocol for students and HEP experts, and displayed the historical
+hardware-screening boundary on the wave-2 runs. That permission-style display
+was later removed. The calibrated views remain available for
 diagnosis, but the site explicitly says that visual similarity is not physics
 validation.
 
@@ -3764,7 +3768,8 @@ or timer.
 The user separately authorized two additional epochs for every calibrated
 family to answer a narrower question: does more compute improve each
 configuration's validation loss? This is a new validation-only exploratory
-protocol; it does not erase or reinterpret the predeclared A100 `NO-GO`.
+protocol; the historical hardware measurements remain evidence but have no
+permission effect under `docs/QA_POLICY.md`.
 `docs/COMPUTE_EXTENSION_PROTOCOL_20260727.md` freezes the comparison before
 new results: four parallel on-demand T4 jobs, exact paired recovery, two new
 epochs each, same FP32 objective/data/fixed 50-by-5 validation bank, and zero
@@ -4089,9 +4094,9 @@ The exact user question is answered positively: the second added epoch lowers
 validation loss for all four calibrated families. Fixed-sample descriptive
 proxies remain mixed and can move opposite the full validation objective.
 Therefore this is an optimization/validation result, not Geant4 fidelity or
-physics validation. It is credible evidence that additional compute can help,
-but the historical frozen A100 gate remains NO-GO because its predeclared
-3%-plus-observable guardrail was not reopened or weakened.
+physics validation. It is credible evidence that additional compute can help.
+The earlier 3%-plus-observable screening result remains a nonbinding QA
+observation.
 
 The first verifier attempt used `--expected-training-epochs 2`; this failed
 cleanly because that argument means absolute configured stop epoch. Immutable
@@ -4139,9 +4144,9 @@ Final disposition:
 structural_and_optimization_QA=PASS
 more_compute_validation_hypothesis=SUPPORTED_FOR_ALL_4_CALIBRATED_FAMILIES
 physics_validation=NOT_ESTABLISHED
-historical_frozen_A100_screening=NO-GO_UNCHANGED
-test_evaluation=BLOCKED_NOT_OPENED
-further_Vertex_jobs_authorized=false
+historical_hardware_screening=NONBINDING_QA_ONLY
+test_evaluation=NOT_OPENED
+future_compute=USER_DECISION_WITH_NEW_EXPERIMENT_SPEC
 ```
 
 ## 2026-07-27T15:12:28+08:00 — presentation-figure exhibition
@@ -4455,8 +4460,8 @@ Scientific boundary remains:
 structural_and_optimization_QA=PASS
 more_compute_validation_hypothesis=SUPPORTED_FOR_ALL_4_CALIBRATED_FAMILIES
 physics_validation=NOT_ESTABLISHED
-historical_frozen_A100_screening=NO-GO_UNCHANGED
-test_evaluation=BLOCKED_NOT_OPENED
+historical_hardware_screening=NONBINDING_QA_ONLY
+test_evaluation=NOT_OPENED
 ```
 
 Public deployment subsequently completed:
@@ -4498,3 +4503,60 @@ execution safety layer rejected both recursive removal commands before they
 ran, so no file was deleted and both Git worktrees remained clean. These
 94,942,470 bytes are reproducible from `npm ci`/`npm run build`; they are not
 training data or unique evidence.
+
+## 2026-07-28 — backend-neutral QA policy and new-chat handoff
+
+The user removed all hardware and progression permission gates. The operating
+policy is now explicit: QA determines whether a named artifact is trustworthy
+and identifies follow-up investigations; it never grants or denies permission
+to continue training, change hardware, or run a separately specified
+experiment.
+
+Repository changes:
+
+- `AGENTS.md`, the implementation/evaluation/loss/runbook/dashboard documents,
+  builders, tests, and exhibition language now use nonblocking QA terminology;
+- `docs/QA_POLICY.md` defines artifact quarantine, scientific findings, and
+  follow-up QA;
+- the old hardware-specific protocol was removed and replaced by
+  `docs/HARDWARE_PORTABILITY_QA.md`;
+- obsolete Vertex handoff/progression-plan documents were removed, while
+  `docs/AGENT_PROMPT_VERTEX_RUN_AND_ANALYZE.md` remains as a compatibility
+  pointer;
+- `docs/AGENT_PROMPT_CONTINUE_ANY_BACKEND_20260728.md` is the self-contained
+  new-chat/new-CLI prompt with exact model, detector, data, checkpoint, Vertex,
+  non-Vertex, website, exhibition, logging, and QA contracts;
+- `docs/README.md` and `audit/README.md` organize active guidance without moving
+  path-sensitive machine evidence;
+- the public-site source contains no hardware progression status.
+
+Provenance exception: previously frozen July 2026 YAML files and their manifests
+are not hand-edited. They may retain superseded historical field names. Those
+strings are immutable provenance only and have no operational effect under
+`docs/QA_POLICY.md`. Hash-like strings that coincidentally contain the same
+characters are also not terminology.
+
+Scientific state is unchanged: all four calibrated families have independently
+verified epoch-4 artifacts and short-horizon validation improvement; physics
+validation is not established; the test split remains unopened. No cloud job
+was submitted and no training artifact was changed during this documentation
+and organization pass.
+
+Verification iteration:
+
+- `python -m compileall -q src vertex scripts tests` passed;
+- the first `python -m pytest -q` omitted `PYTHONPATH=src` and failed during
+  import collection with `ModuleNotFoundError: cbsc_zdc`; it executed no tests
+  and changed no artifact;
+- corrected `$env:PYTHONPATH='src'; python -m pytest -q` passed `92/92` with
+  five known nonfatal Transformer nested-tensor performance warnings;
+- the new QA-policy regression tests passed;
+- the exhibition rebuilt `23` visuals and removed the hardware-permission
+  display; manifest SHA-256 is
+  `262292e4a1b5d0c19f1d21b461f452bdf694b5e09eabc31139e50efd512ec649`;
+- the public repository passed `7/7` unit tests and the TypeScript/Vite
+  production build;
+- `git diff --check` passed in both repositories.
+
+Machine-readable summary:
+`audit/qa_policy_and_handoff_20260728.{json,md}`.

@@ -73,7 +73,10 @@ def test_builds_four_paired_two_epoch_extensions(tmp_path: Path) -> None:
         assert training["resume_best_from_sha256"] == "a" * 64
         assert training["restart_scheduler_on_resume"] is True
         assert training["initialize_from_relative"] is None
-        assert config["viability"]["frozen_a100_decision_unchanged"] is True
+        assert (
+            config["viability"]["historical_hardware_screening_is_nonbinding"]
+            is True
+        )
 
 
 def test_requires_all_four_calibrated_variants(tmp_path: Path) -> None:

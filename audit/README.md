@@ -1,13 +1,18 @@
-# Audit directory
+# Audit evidence
 
-## Active v2.2 evidence
+This directory is intentionally evidence-oriented rather than a code module.
 
-- `IMPLEMENTATION_QA_V2_2.md`: executed software QA, test scope, fixture inspection, and unresolved production risks.
-- `RESEARCH_AND_DECISION_LOG_V2_2.md`: source-grounded design decisions and audit dispositions.
-- `SUPPLIED_AUDIT_1.txt` through `SUPPLIED_AUDIT_4.md`: the four independent audits supplied by the user. They are evidence inputs, not automatically accepted conclusions.
+- `*_verification.json` files contain machine-readable artifact checks.
+- `*_terminal_analysis.{json,md}` files summarize completed experiment waves.
+- `vertex_readiness_analysis_20260724.md` is the cumulative technical record.
+- `SUPPLIED_AUDIT_*` files are source review evidence and may use superseded
+  terminology.
+- `*_freeze_inputs` and checkpoint mirrors support hash reproduction.
 
-## Historical material
+Use `docs/AGENT_PROMPT_CONTINUE_ANY_BACKEND_20260728.md` for current operations.
+Do not infer permission to train or stop from a historical status label. Under
+`docs/QA_POLICY.md`, QA findings identify trusted artifacts and follow-up work.
 
-`historical_v2_1/` contains reports produced before the active v2.2 implementation. They are retained for traceability and must not be used as the current software-status report.
-
-No file in this directory is a verbatim transcript of private hidden reasoning. The active logs preserve reproducible evidence, counterexamples, decisions, commands, and QA outcomes.
+Do not casually rename or reorganize files in this directory: verifier commands,
+manifests, and historical reports cite their paths. Add new evidence with a
+unique date/round identifier.
