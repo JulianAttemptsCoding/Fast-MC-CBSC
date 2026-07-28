@@ -4608,3 +4608,60 @@ Scientific state is unchanged: optimization improvement is supported for all
 four calibrated families; `physics_validation=NOT_ESTABLISHED`; the test split
 remains unopened. Spending authorization must be reconfirmed with the user
 before any new paid compute.
+
+## 2026-07-28 — sealed test split opened for an isolated downstream C2ST study
+
+The user directed that the untouched test split be used as the Geant4 class of a
+standalone classifier two-sample test (C2ST) built to show colleagues how well a
+discriminator can separate Geant4 events from CBSC-ZDC Fast-MC events. I raised
+that `AGENTS.md` clause 4 and `docs/DATA_CONTRACT.md` reserve the test split, and
+recommended the 69,502 validation events no model has seen. The user reaffirmed
+the test split and required that the study have no way of relaying information
+back to the Fast-MC model.
+
+Decision recorded: 40,000 of the 76,300 test events are consumed by an external
+discriminator study under a one-way isolation contract.
+
+Isolation contract, binding on this repository:
+
+- no discriminator result, score, checkpoint, or figure may influence CBSC-ZDC
+  preprocessing, thresholds, architecture, loss weights, learning rate,
+  stopping, checkpoint selection, visualization, or any frozen config;
+- the discriminator lives in a separate repository
+  (`https://github.com/JulianAttemptsCoding/Fast-MC-tester`, local root
+  `C:\Users\Julia\Desktop\coding\ASIoP\Fast-MC-tester`) and writes no artifact
+  into this repository other than this log;
+- four-momenta for the Fast-MC class are resampled from the **train** split's
+  empirical `p4_total_gev`, never copied from the test four-vectors, so the
+  Fast-MC class carries no test-event condition information;
+- the four accepted epoch-4 checkpoints are consumed read-only by verified
+  SHA-256 and are not retrained, reselected, or modified;
+- consequence disclosed: any future publication must state that 40,000 test
+  events were exposed to this discriminator study. The remaining 36,300 test
+  events are untouched.
+
+Scope authorized: 40,000 Geant4 test events versus 10,000 generated events from
+each of the four calibrated epoch-4 families (40,000 total). Metrics centre on
+AUROC with per-family breakdown, plus a Brownian-diffusion noise-equivalence
+sweep. Spending confirmed against the `$100` cap with `$53.1006` already used;
+this experiment is held to a hard `$10` ceiling and will stop and report if the
+conservative projection exceeds it.
+
+Supporting facts established from the prepared corpus before this decision:
+
+- `artifacts/train_data_audit.json` gives train `K_inc` mean `149.05330283643448`
+  GeV and std `86.60899791192668` GeV against the `[0,300]` range, consistent
+  with a uniform incident kinetic-energy distribution;
+- `shard_00000.npz` (4,096 events) gives `K_inc` in
+  `[7.4066185e-05, 299.05484]` GeV, direction `u_z` mean `0.96873057` with
+  `u_x`/`u_y` standard deviations `0.17362595`/`0.17435908` bounded within
+  `+/-0.441`, `1508.370361328125` mean stored hits per event, and a single
+  `source_group`;
+- the prepared corpus is `5,943,519,651` bytes across 188 objects, about
+  `7.8` KB per event, so 40,000 Geant4 events are roughly 310 MB;
+- the existing `c2st_auc` helper in `src/cbsc_zdc/eval/metrics.py` is a
+  nine-feature HistGradientBoosting probe and is not the full-detector
+  discriminator requested; new code is required and will live in the separate
+  repository.
+
+No cloud job was submitted and no training artifact was changed by this entry.
