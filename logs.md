@@ -4560,3 +4560,51 @@ Verification iteration:
 
 Machine-readable summary:
 `audit/qa_policy_and_handoff_20260728.{json,md}`.
+
+## 2026-07-28 — new-CLI takeover, state verification, and standing rules
+
+A new agent session took over the project from
+`docs/AGENT_PROMPT_CONTINUE_ANY_BACKEND_20260728.md`. No experiment was
+launched, no config was frozen, no training artifact was changed, and no test
+event was read.
+
+State established from evidence at source commit
+`ab4761c58540271bacd1fde5aafb73a0c1dd6643`:
+
+- source worktree clean, `origin/main` synchronized (0 ahead / 0 behind);
+- public worktree `Fast-MC-Visual-Tests` clean at `c0387a1`, also synchronized;
+- both repositories now resolve under `C:\Users\Julia\Desktop\coding\ASIoP\`.
+  The prior `...\OneDrive\Desktop\...` locations recorded in the handoff no
+  longer exist on this host; only runtime paths differ, no scientific value
+  was changed;
+- `gcloud` authenticated as `jjjsresearch@gmail.com`, project `asiop-zdc-1`,
+  region `us-central1`; `gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/`
+  listed successfully;
+- the six most recent Vertex custom jobs are all `JOB_STATE_SUCCEEDED`; the
+  newest are `3118380186584743936` (r2 calibrated_lr1e4) and
+  `4234868273893605376` (r2 calibrated_lr3e5). No job is active;
+- `audit/compute_extension_20260727_r2_terminal_analysis.{json,md}` reconfirm
+  four accepted epoch-4 families, `qa_pass=true`, zero test events, and the
+  `$53.1006/$100` conservative ledger.
+
+Verification iteration on this host:
+
+- `python -m compileall -q src vertex scripts tests` passed;
+- `$env:PYTHONPATH='src'; python -m pytest -q` passed `92/92` in 29.90 s with
+  the five known nonfatal Transformer nested-tensor performance warnings. The
+  `PYTHONPATH=src` prerequisite is now recorded in `CLAUDE.md` because omitting
+  it collects zero tests and fails with `ModuleNotFoundError: cbsc_zdc`.
+
+Repository change: added `CLAUDE.md` at the source root, SHA-256
+`70a9bb16ac8f19cd03c766d813a0cec037df6c3dc7261b0a6a5bdf19e6cc6e06`. It is an
+operational session-rules pointer only. It restates the local environment,
+session-start checks, the mandatory `logs.md` rule, hard prohibitions, QA
+semantics under `docs/QA_POLICY.md`, paid-compute confirmation, backend
+portability invariants, minimum verification commands, and the standing
+scientific boundary. It introduces no new scientific value and does not
+override `AGENTS.md` or any `docs/` contract.
+
+Scientific state is unchanged: optimization improvement is supported for all
+four calibrated families; `physics_validation=NOT_ESTABLISHED`; the test split
+remains unopened. Spending authorization must be reconfirmed with the user
+before any new paid compute.
