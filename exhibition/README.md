@@ -31,6 +31,15 @@ counterparts are included for editable vector use where practical.
 12. `12_same_condition_3d_energy_deposits` — one Geant4 3D deposit and five
     conditional Fast-MC draws.
 
+## Companion material built from test events
+
+[`c2st_20260728/`](c2st_20260728/README.md) holds the classifier two-sample test
+comparison figures and the overview presentation deck. **Those artifacts use
+40,000 test-split events** and are therefore kept out of this gallery, which is
+built under `test_events_used = 0`. The builder passes an explicit file list to
+its gallery step and does not scan that subdirectory, so `manifest.json` and
+`index.html` are unaffected by it.
+
 ## Rebuild
 
 ```powershell
@@ -44,6 +53,14 @@ payloads. It does not read `legacy/`, the original ROOT tree, or test events.
 ## Scientific boundary
 
 These figures establish structural execution and short-horizon optimization
-progress. They do not establish Geant4 fidelity. The test split remains
-unopened. Hardware-screening measurements are nonbinding QA observations and do
-not control future training.
+progress. They do not establish Geant4 fidelity, and they use zero test events.
+
+Test-split accounting, repository-wide: 40,000 of the 76,300 test events were
+consumed on 2026-07-28 by the isolated classifier two-sample test recorded in
+`logs.md` and published under `c2st_20260728/`. The remaining 36,300 are
+untouched. That study measured separability, not fidelity, and no result from it
+may influence CBSC-ZDC preprocessing, thresholds, architecture, loss weights,
+learning rate, stopping, checkpoint selection, or visualization.
+
+Hardware-screening measurements are nonbinding QA observations and do not
+control future training.

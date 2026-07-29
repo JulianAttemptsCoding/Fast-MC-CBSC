@@ -1,0 +1,116 @@
+{
+  "boundary": "Descriptive distribution comparisons. Agreement in any panel is not Geant4 fidelity, and no result here may steer CBSC-ZDC training or checkpoint selection.",
+  "corpus_sha256": "e500b37d64f0643d4b9630771fb4a97c99904f615cc05844979c53ca8fe12664",
+  "energy_edges_gev": [
+    0.0,
+    25.0,
+    50.0,
+    75.0,
+    100.0,
+    125.0,
+    150.0,
+    175.0,
+    200.0,
+    225.0,
+    250.0,
+    275.0,
+    300.0
+  ],
+  "figures": [
+    {
+      "caption": "Mean total deposited readout energy against incident kinetic energy.",
+      "file": "01_total_response_vs_energy.png",
+      "sha256": "45f2f303ad0cc54593aea918be1dca56b8e84ce94dbc59490335eee0849b858a"
+    },
+    {
+      "caption": "Relative width of the total-response distribution against incident energy.",
+      "file": "02_response_resolution_vs_energy.png",
+      "sha256": "5cf7cea3ec01a843bf8acd98c7c4e74b54b820e3a3f26e80f853bb22e9fd87f1"
+    },
+    {
+      "caption": "Mean number of channels with positive energy against incident energy.",
+      "file": "03_hit_count_vs_energy.png",
+      "sha256": "9d724f88e3ce9260bbf490c6843c22e88707850daafefa0a025b3c505c93b4fc"
+    },
+    {
+      "caption": "Transverse shower width, the single most discriminating observable.",
+      "file": "04_radial_rms_vs_energy.png",
+      "sha256": "e97744ac6a0337e40ce009fc89dc8232b7b4dc46ae97330fa641631892c3b08b"
+    },
+    {
+      "caption": "Fraction of the event energy carried by the single hottest channel.",
+      "file": "05_top1_fraction_vs_energy.png",
+      "sha256": "70e88696ff457fae170ab242cea0deb769c66ca4991b8a13dc2a4ece705bca63"
+    },
+    {
+      "caption": "Fraction of the event energy carried by the five hottest channels.",
+      "file": "06_top5_fraction_vs_energy.png",
+      "sha256": "e46a9c3a007cc74a96164f36e14afbb1bd9f97541863368e53ffa167f1aefb67"
+    },
+    {
+      "caption": "Longitudinal energy centroid against incident energy.",
+      "file": "07_depth_centroid_vs_energy.png",
+      "sha256": "302bd09ab7943476cdb91c920d5634730f46dbf6dc2efa36ba58febba0ef0622"
+    },
+    {
+      "caption": "Fraction of energy deposited in the 400-channel ECAL plane.",
+      "file": "08_ecal_fraction_vs_energy.png",
+      "sha256": "973fd3839aebb336076ddb6b7d5442f399388a95d50f34231fa883bbe8446017"
+    },
+    {
+      "caption": "Fraction of energy deposited in the deepest quarter of the detector.",
+      "file": "09_late_fraction_vs_energy.png",
+      "sha256": "dc38114ee19ad4bf5ca94cb4e031a1e3a6e04c8241d08707e6536ab761d7cf73"
+    },
+    {
+      "caption": "Gini coefficient of the per-hit energy distribution; higher means more concentrated.",
+      "file": "10_energy_gini_vs_energy.png",
+      "sha256": "b409f2435f34ca1cd17e43b95c4406d7a057ac0d99d5c8c2251b869530e00090"
+    },
+    {
+      "caption": "Number of longitudinal layers receiving energy.",
+      "file": "11_active_layers_vs_energy.png",
+      "sha256": "24b2a164aed1c75bcbee43344b037f1ec1ddeed7dd1636165bf81580be34d986"
+    },
+    {
+      "caption": "Mean energy per layer in four incident-energy windows, log scale.",
+      "file": "12_longitudinal_profiles.png",
+      "sha256": "b6139c3a1e810c05b782eb13487a7a5470ab84f4d6b37c12a1d53fd990fd5b82"
+    },
+    {
+      "caption": "Energy-weighted radial density about each event's own transverse centroid.",
+      "file": "13_radial_energy_density.png",
+      "sha256": "e8ddbc728dbde4b51f36aade4d8636229ebbee393b36b3396af106983607791e"
+    },
+    {
+      "caption": "Distribution of individual positive channel energies with the Fast-MC/Geant4 ratio.",
+      "file": "14_cell_energy_spectrum.png",
+      "sha256": "7bb3be8cc68cded49e378c755db3a6ad002d75cf4a32675d0b8e3624d2c6be18"
+    },
+    {
+      "caption": "radial_rms_mm for each calibrated family against Geant4.",
+      "file": "15_per_family_radial_rms.png",
+      "sha256": "3fd0de166f1301d55dd49f14cc4dd004859262c8613ee0b010647322157fd096"
+    },
+    {
+      "caption": "top1_fraction for each calibrated family against Geant4.",
+      "file": "16_per_family_top1_fraction.png",
+      "sha256": "f8e9003c796504bc0f310c51c3d5356dfb70681c4b3e7185504bd68ac8c7991f"
+    },
+    {
+      "caption": "Relative Fast-MC bias for every observable in every energy bin.",
+      "file": "17_relative_bias_heatmap.png",
+      "sha256": "4b46973fae7d2e3f916e167b7182eb9cd6f767806348c2e592e4f85fb3aa00dc"
+    },
+    {
+      "caption": "Selection sharpness of the Gumbel-Top-k support draw against temperature.",
+      "file": "18_gumbel_selection_sharpness.png",
+      "sha256": "d807118d40595991507d24041189b37f393db8e9d94597cf0d316ad38ef7ec01"
+    }
+  ],
+  "geometry_hash": "e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b",
+  "n_events": 80000,
+  "n_fast_mc": 40000,
+  "n_geant4": 40000,
+  "schema_version": 1
+}

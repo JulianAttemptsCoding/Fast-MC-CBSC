@@ -4730,3 +4730,67 @@ the study repository's `logs.md`: a fully-masked attention row for no-response
 events produced a NaN validation loss on PyTorch's fused eval path, which caused
 silent selection of an untrained model in the first run. The generation half of
 that run was unaffected and its corpus was reused, so no events were regenerated.
+
+## 2026-07-29 — C2ST exhibition material and overview deck published here
+
+The comparison figures, the overview presentation, and the improvement analysis
+from the isolated classifier two-sample test are now published in this
+repository under `exhibition/c2st_20260728/`, at the owner's direction.
+
+Placement decision and why it is a subdirectory:
+
+- the parent `exhibition/` gallery is built under `test_events_used = 0`, asserted
+  at `exhibition/build_exhibition.py:733`, recorded in `exhibition/manifest.json`,
+  and printed on its own panels;
+- these artifacts are built from 40,000 test-split events, so mixing them into
+  that gallery would have made its assertions false;
+- `make_gallery` receives an explicit file list rather than globbing `figures/`,
+  so the subdirectory is invisible to the builder. Verified empirically: after
+  adding it, `python exhibition/build_exhibition.py` still reported
+  `visual_count 23` and `test_events_used 0`, and the regenerated
+  `manifest.json` contained zero references to the new folder. The only diff was
+  the `generated_at_utc` timestamp and the eleven SVG byte hashes, which churn on
+  every rebuild independently of this change, so that churn was reverted with
+  `git checkout -- exhibition/manifest.json exhibition/figures exhibition/index.html`.
+
+`CORRECTION`: `exhibition/README.md` previously stated "The test split remains
+unopened." That became false on 2026-07-28. The scientific-boundary section now
+carries the repository-wide accounting: 40,000 of 76,300 test events consumed,
+36,300 untouched, separability measured rather than fidelity, and no feedback
+permitted into CBSC-ZDC training or checkpoint selection.
+
+Published contents:
+
+```text
+exhibition/c2st_20260728/
+  README.md                        placement, headline, boundary
+  CBSC_ZDC_FastMC_overview.pptx    29 slides
+  C2ST_RESULTS.md                  full study write-up
+  IMPROVEMENTS.md                  evidence-backed improvement analysis
+  figures/                         18 energy-binned comparison figures
+  figures_manifest.json            corpus hash, geometry hash, per-figure SHA-256
+```
+
+The presentation is a 29-slide overview for a calorimetry audience new to machine
+learning, roughly half construction and half results, written to be read without
+a presenter. It states the epoch-4 status on the title slide and in a dedicated
+slide, and repeats that a falling training loss is not evidence of physics
+fidelity.
+
+Two numbers in the circulated project notes were corrected against the frozen
+configs before the deck quoted them:
+
+- the response safety cap used by these runs is
+  `min(64.38813572617559 GeV, 0.725470286351178 * K_inc)`, derived from the
+  training-split audit. The `min(500 GeV, 2 * K_inc)` in the notes is the
+  `ResponseHead.sample` default and was not the value used;
+- the effective batch is `24` (batch 6 with 4 accumulation steps) for three
+  families and `12` for the half-batch control, not `12` throughout.
+
+Verified unchanged after the addition: `python -m pytest -q` passes `92/92` and
+`python -m compileall -q src vertex scripts tests exhibition` passes. No training
+artifact, frozen config, checkpoint, or dashboard payload was touched, and no
+paid compute was used.
+
+Reproduction source, tests and builders remain in
+`https://github.com/JulianAttemptsCoding/Fast-MC-tester`.
