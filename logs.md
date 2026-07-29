@@ -4823,3 +4823,44 @@ are built from 40,000 test-split events. Test-split accounting is unchanged:
 40,000 of 76,300 consumed, 36,300 untouched.
 
 No paid compute was used.
+
+## 2026-07-29 — C2ST deck rewritten for a non-ML audience and republished
+
+`exhibition/c2st_20260728/` updated again. The overview deck grew from 37 to 41
+slides and the figure set from 29 to 33, rewritten in the study repository to
+cut jargon and math density for an audience new to machine learning: the
+cascade flowchart is now plain English, a new six-panel figure explains
+sigmoid/softmax/message-passing/Gumbel-sampling/flow-matching as input-output
+pictures instead of re-derived equations, a new four-panel figure shows each of
+the four discriminator architectures, the loss-overview slide now lists what
+each of the nine losses physically measures instead of the combined objective,
+and the diffusion/noise-equivalence material split into a physical-meaning
+slide and a results-with-reading-guide slide. Every derived (non-raw) variable
+in the deck now shows its derivation.
+
+Added figures: the ML-mechanism toolkit, the four classifier architectures, and
+the diffusion schematic. `21`-`24` were re-rendered (unchanged content, new
+byte hashes) alongside the rewrite; `01`-`18`, `25`-`30` are untouched from the
+prior publish.
+
+Full slide-by-slide visual QA (PNG export via PowerPoint COM, all 41 slides
+read) found two real rendering bugs, both fixed in the study repository at
+commit `ff52e86`: a title long enough to wrap to two lines had its second line
+overwritten by the header rule and the slide body, since the title box was
+sized for one line; and three points sharing an x-coordinate plus two sharing a
+y-coordinate on the weight-vs-defect scatter had their labels printed on top of
+each other under a single fixed offset. `510/510` tests passing there.
+
+Verified unchanged in this repository: `python -m pytest -q` passes `92/92`,
+`python -m compileall -q src vertex scripts tests` passes, and
+`python exhibition/build_exhibition.py` still reports `visual_count 23` with
+`test_events_used 0` — the parent gallery does not see this subdirectory.
+
+Counterexample recorded: running `build_exhibition.py` for that verification
+also rewrote the 11 production SVGs and `exhibition/manifest.json`, since the
+SVG backend embeds a fresh random clip-path id and the manifest a fresh
+timestamp on every render — same content, different bytes. That regeneration
+was reverted (`git checkout --`) before committing, since it is unrelated
+churn, not a real change; only the `c2st_20260728/` files were staged.
+
+No paid compute was used.

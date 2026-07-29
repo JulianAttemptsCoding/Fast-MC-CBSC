@@ -13,8 +13,8 @@ Presentation-ready material from the classifier two-sample test (C2ST) study.
 
 | Item | What it is |
 |---|---|
-| `CBSC_ZDC_FastMC_overview.pptx` | 37-slide overview: model construction and objective stated in LaTeX, then the measured state at epoch 4. Reads without a presenter. |
-| `figures/` | 29 figures: 24 Geant4 vs Fast-MC comparisons binned in incident energy, plus the cascade flowchart, loss-weight calibration, weight-versus-defect, loss against epoch, and the nine component losses. |
+| `CBSC_ZDC_FastMC_overview.pptx` | 41-slide overview for a non-ML audience: plain-English cascade and toolkit figures first, then model construction, the loss functions in physical terms, and the measured state at epoch 4. Reads without a presenter. |
+| `figures/` | 33 figures: 24 Geant4 vs Fast-MC comparisons binned in incident energy, plus the cascade flowchart, the ML-mechanism toolkit, the four classifier architectures, loss-weight calibration, weight-versus-defect, loss against epoch, the nine component losses, and the diffusion/noise-equivalence schematic and results. |
 | `figures_manifest.json` | Corpus hash, geometry hash, event counts, and a SHA-256 for every comparison figure. |
 | `method_manifest.json` | Training-history hash and SHA-256 for every method figure. |
 | `C2ST_RESULTS.md` | Full write-up of the discrimination study. |

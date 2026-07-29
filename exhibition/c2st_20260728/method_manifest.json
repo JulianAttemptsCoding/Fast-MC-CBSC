@@ -1,31 +1,52 @@
 {
   "figures": [
     {
-      "caption": "Block diagram of the generative cascade with its per-stage losses and exact constraints.",
+      "caption": "Plain-English roadmap of the nine-stage cascade with a colour-coded legend and the exact bookkeeping rule.",
       "file": "20_cascade_flowchart.png",
-      "sha256": "13642c0da3aa110cb174b4e7cc7b95f1bfdedfdcbbe0b61b2feda4f4b3c9de52"
+      "sha256": "1b9f49d776bd018cdf2bb1dc7a205f46ce9227d3076b2c43e5cf1a885552d8e8"
     },
     {
-      "caption": "The four-step weight calibration; red bars were clipped.",
+      "caption": "The six machine-learning mechanisms reused across the cascade, shown as input/output pictures rather than as equations.",
+      "file": "31_toolkit.png",
+      "sha256": "4220e3707444c9b47e590759049024523372baffdcba3d91a8648c97bbc127d3"
+    },
+    {
+      "caption": "Input, processing, and output for the primary hybrid discriminator and its three controls.",
+      "file": "32_classifier_architectures.png",
+      "sha256": "89f09ca1e5484300457d1b66dfaf59ac4d8807fd4f0a2c1738a263506e37df75"
+    },
+    {
+      "caption": "Energy from a single cell spread by Gaussian (Brownian) diffusion at three noise levels; each panel captures exactly the same total energy.",
+      "file": "33_diffusion_schematic.png",
+      "sha256": "72bfc80f517285cf310a280a091907190ff5d10016b7deac611bbf8dc8549ce1"
+    },
+    {
+      "caption": "Simplified fixed-classifier-versus-retrained-classifier view of the diffusion sweep, for presentation.",
+      "file": "34_diffusion_results_simplified.png",
+      "sha256": "b2ac81961b216aff80ab6bdebbcc5ff45377a8a69ea7a46fb85ff0165379b135"
+    },
+    {
+      "caption": "The four-step loss-weight calibration; red bars were capped at the limit.",
       "file": "21_loss_weight_calibration.png",
-      "sha256": "3a2c1c1c4a5530984f58bb414bee6158d37409e4b0c0bb89479cce06ac6bf2f6"
+      "sha256": "3fb01da55bd90709b59840a8feb0424220ebe94f7f8a9b183fe179ac6623c34a"
     },
     {
       "caption": "Calibrated weight against the measured bias of the observable each loss governs.",
       "file": "22_weight_versus_defect.png",
-      "sha256": "7f6bfacba76dfd7a75087963cdd461511885df3aeda5be5d948b2f6158f7615c"
+      "sha256": "3e57237c9f820a6ef078a1b1db19802f4c62fe446b96b742e6afe4d77a603a66"
     },
     {
       "caption": "Weighted training and validation objective against epoch for all four variants.",
       "file": "23_loss_versus_epoch.png",
-      "sha256": "5a1d18c337799f616f77e82b4f7482c13c8b92d30165283816aad35346a3e884"
+      "sha256": "723f567fab2672f46812db326d52ead9a7610fed1207ca4d93efc58f6ba8f2aa"
     },
     {
       "caption": "Each of the nine unweighted loss components against epoch.",
       "file": "24_component_losses_versus_epoch.png",
-      "sha256": "b2626965f67462ab00216011f9dd43747f9df82b27f52845cc7724ef07838e58"
+      "sha256": "86cf3f4eb1f8430b3af2d5f0a2fcc4f647793d938b9fa481b6b95efe3db437da"
     }
   ],
   "history_sha256": "fedb7e434ac2240735ca334c9f4cd25a552ce7dadf6b1431546ab8a4cb80f3aa",
+  "results_sha256": "523eb50e6a571df67292b5850b65cc779b2dbdd83f1dc2eba41fa1fedf623f78",
   "schema_version": 1
 }
