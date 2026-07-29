@@ -1,0 +1,31 @@
+{
+  "figures": [
+    {
+      "caption": "Block diagram of the generative cascade with its per-stage losses and exact constraints.",
+      "file": "20_cascade_flowchart.png",
+      "sha256": "13642c0da3aa110cb174b4e7cc7b95f1bfdedfdcbbe0b61b2feda4f4b3c9de52"
+    },
+    {
+      "caption": "The four-step weight calibration; red bars were clipped.",
+      "file": "21_loss_weight_calibration.png",
+      "sha256": "3a2c1c1c4a5530984f58bb414bee6158d37409e4b0c0bb89479cce06ac6bf2f6"
+    },
+    {
+      "caption": "Calibrated weight against the measured bias of the observable each loss governs.",
+      "file": "22_weight_versus_defect.png",
+      "sha256": "7f6bfacba76dfd7a75087963cdd461511885df3aeda5be5d948b2f6158f7615c"
+    },
+    {
+      "caption": "Weighted training and validation objective against epoch for all four variants.",
+      "file": "23_loss_versus_epoch.png",
+      "sha256": "5a1d18c337799f616f77e82b4f7482c13c8b92d30165283816aad35346a3e884"
+    },
+    {
+      "caption": "Each of the nine unweighted loss components against epoch.",
+      "file": "24_component_losses_versus_epoch.png",
+      "sha256": "b2626965f67462ab00216011f9dd43747f9df82b27f52845cc7724ef07838e58"
+    }
+  ],
+  "history_sha256": "fedb7e434ac2240735ca334c9f4cd25a552ce7dadf6b1431546ab8a4cb80f3aa",
+  "schema_version": 1
+}

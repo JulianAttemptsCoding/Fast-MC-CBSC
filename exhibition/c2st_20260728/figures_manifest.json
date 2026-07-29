@@ -98,6 +98,36 @@
       "sha256": "f8e9003c796504bc0f310c51c3d5356dfb70681c4b3e7185504bd68ac8c7991f"
     },
     {
+      "caption": "Distribution of total_response_gev in four incident-energy windows, both classes.",
+      "file": "25_dist_total_response.png",
+      "sha256": "788c69d9f8e8a553078f094216218997d22f07048d4724f781cf862021b9601a"
+    },
+    {
+      "caption": "Distribution of hit_count in four incident-energy windows, both classes.",
+      "file": "26_dist_hit_count.png",
+      "sha256": "31b3c015066840eeef4022990710f394c2591694865cc33b49d2911088eb380f"
+    },
+    {
+      "caption": "Distribution of radial_rms_mm in four incident-energy windows, both classes.",
+      "file": "27_dist_radial_rms.png",
+      "sha256": "0acb7138ac492201c859cdc292125455d073261ac7b6f58e97a5d3b46256a86a"
+    },
+    {
+      "caption": "Distribution of top1_fraction in four incident-energy windows, both classes.",
+      "file": "28_dist_top1_fraction.png",
+      "sha256": "ce2f2047af7566759fb7516b81c6cb3ff1a34e6c81a0cb9112e7365d770cb8fd"
+    },
+    {
+      "caption": "Distribution of depth_centroid_layer in four incident-energy windows, both classes.",
+      "file": "29_dist_depth_centroid.png",
+      "sha256": "b5470f422c7c65b05d46cd7b4551cea89df1daafa7eb4aab2fff1fcdd17ab045"
+    },
+    {
+      "caption": "Distribution of late_fraction in four incident-energy windows, both classes.",
+      "file": "30_dist_late_fraction.png",
+      "sha256": "041df0c155a6f0d33f80b1c274bfdf99c0bf60ff4d7326bb982a356c75ad8fd3"
+    },
+    {
       "caption": "Relative Fast-MC bias for every observable in every energy bin.",
       "file": "17_relative_bias_heatmap.png",
       "sha256": "4b46973fae7d2e3f916e167b7182eb9cd6f767806348c2e592e4f85fb3aa00dc"

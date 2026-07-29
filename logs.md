@@ -4794,3 +4794,32 @@ paid compute was used.
 
 Reproduction source, tests and builders remain in
 `https://github.com/JulianAttemptsCoding/Fast-MC-tester`.
+
+## 2026-07-29 — C2ST exhibition material rebuilt and republished
+
+`exhibition/c2st_20260728/` updated. The overview deck is now 37 slides stating
+the model in LaTeX rather than prose, and the figure set grew from 18 to 29.
+
+Added figures: the cascade flowchart with per-stage losses and the four exact
+constraints, the four-step loss-weight calibration, calibrated weight against the
+measured bias of the observable each term governs, the weighted objective against
+epoch for all four variants, the nine unweighted loss components against epoch,
+and six Geant4 vs Fast-MC distribution overlays (total response, hit count,
+radial RMS, top-1 fraction, depth centroid, late fraction) in four incident-energy
+windows each.
+
+The loss-against-epoch and component-loss figures are built from
+`exhibition/data/training_history.csv`, whose hash is recorded in
+`c2st_20260728/method_manifest.json`. No other file in this repository was read
+or written.
+
+Layout of the deck is verified geometrically rather than by inspection; ten real
+overlaps were found and corrected in the study repository. Full record there,
+commit `0c77f69`, `486/486` tests passing.
+
+The parent `exhibition/` gallery is unchanged and still asserts
+`test_events_used = 0`; these artifacts remain in the subdirectory because they
+are built from 40,000 test-split events. Test-split accounting is unchanged:
+40,000 of 76,300 consumed, 36,300 untouched.
+
+No paid compute was used.
