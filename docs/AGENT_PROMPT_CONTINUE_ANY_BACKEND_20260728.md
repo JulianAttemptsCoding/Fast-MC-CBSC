@@ -110,7 +110,17 @@ It does not establish:
 - diversity or memorization acceptance;
 - publication-scale timing on a different target backend.
 
-The test split is still unopened for model development and visualization.
+The test split remains sealed for this generator's own development: no test
+event has ever informed preprocessing, thresholds, architecture, loss
+weights, learning rate, stopping, checkpoint selection, or visualization
+here. A disclosed exception exists outside this repository: an external
+classifier two-sample test (C2ST) study, in the separate `Fast-MC-tester`
+repository, exercised 40,000 of the 76,300 test-split events under a
+one-way isolation contract — read-only against the four accepted
+checkpoints, zero feedback into this generator, remaining 36,300 events
+untouched. See that repository's `docs/ISOLATION.md` and this repository's
+own `logs.md` entries recording the disclosure. Do not treat that external
+exposure as license to use the test split here.
 
 ## 4. Exact detector and geometry contract
 
@@ -532,6 +542,97 @@ GCS and Vertex are transport/execution implementations, not part of the model’
 scientific definition. It is valid to use Slurm, Kubernetes, another managed
 service, object storage other than GCS, a shared POSIX filesystem, or a local
 GPU.
+
+### 10a. DiCOS (ASGC) — the active training backend
+
+Training is moving from Vertex to DiCOS at Academia Sinica. Full detail is in
+`docs/DICOS_BACKEND.md`; read it before touching the host. The essentials:
+
+**Access.** ASGC mandates Google-Authenticator OTP on its login services, so
+there is no SSH path an agent can drive. The DiCOSApp JupyterLab is directly
+reachable and its token authenticates the REST and kernel-websocket APIs.
+`scripts/dicos.py` wraps this into a CLI usable by any agent or human:
+
+```bash
+python scripts/dicos.py auth "<launch URL with ?token=...>"   # start of session
+python scripts/dicos.py setup                                  # provision/repair
+python scripts/dicos.py exec "nvidia-smi"                      # remote shell
+python scripts/dicos.py put local remote                       # upload
+python scripts/dicos.py get remote local                       # download
+```
+
+Credentials live in `~/.dicos/config.json`, never in the repository.
+
+**The one thing a human must supply.** DiCOSApp pods are ephemeral and the
+portal mints a fresh Jupyter token into the pod’s environment at each launch
+(`jupyter lab --NotebookApp.token="${DICOS_JUPYTER_TOKEN}"`), so no token can be
+pinned in advance. An agent therefore cannot start a session unaided, and should
+not: launching an app allocates shared GPU time on a multi-tenant academic
+cluster behind mandatory 2FA. **Ask the user to launch the DiCOSApp, then run
+`auth` followed by `setup`.** Do not attempt to bypass OTP or store 2FA
+material.
+
+Getting the token is the one fiddly part, so guide the user precisely rather
+than just asking for "the URL": JupyterLab strips `?token=…` from the address
+bar seconds after login, so a copied URL usually has none. Tell them to open
+*File ▸ New ▸ Terminal* in JupyterLab and run `jupyter server list`, then pass
+both parts:
+
+```bash
+python scripts/dicos.py auth "<address-bar URL>" "<token from server list>"
+```
+
+`auth` also accepts a URL that still contains the token, or a bare token. It
+ignores the pod-internal address that `jupyter server list` prints, verifies
+against the server before saving, and saves nothing on failure.
+
+**`setup` is idempotent and does everything else.** It clones or updates the
+repo, builds or repairs the venv (validated by import, since a GPU app is a
+different image and a venv built against another base env exists but is
+broken), verifies the frozen geometry hash, and reports GPU presence. Run it
+after every `auth`; it is cheap when nothing needs fixing.
+
+**Filesystem contract — binding, see `AGENTS.md` 17-21.** The shared filesystem
+is multi-tenant.
+
+- Writable: **only** `/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC`
+  and below. Not `$HOME`, not `/ceph`, not any other `sharedfs/work/IOP/*`.
+- The two `.root` files under `sharedfs/work/IOP/ZDC_ML_20260620/dataset/` are
+  **read-only and immutable**; never write into that directory.
+- No other data source may be used.
+- `scripts/dicos.py` enforces the above client-side and must not be weakened.
+  Its guards are regression-tested offline in `tests/test_dicos_client.py`.
+
+**Host facts that change how work is planned.**
+
+- **No Slurm from inside a DiCOSApp pod** (`sbatch`/`squeue`/`sinfo` absent).
+  Training runs *inside* a GPU app, so it must be checkpoint/resume-capable,
+  because the pod’s session ends on a schedule and takes running processes with
+  it. This is the main structural difference from Vertex, where a submitted job
+  outlived the client.
+- The CPU app has 128 cores and ~1.5 TB RAM — well suited to the CPU-bound
+  conversion, and currently under-used by the single-threaded reader.
+- `torch 2.8.0+cu128` and `numpy 2.1.3` here, versus `2.6.0+cu124` on Vertex.
+  Record this in the evidence of any run produced here; it also makes bit-exact
+  reproduction of existing checkpoints unlikely.
+- Egress works, so `pip install` and `git clone` succeed.
+
+**Verified invariants (see `logs.md` and `docs/DICOS_BACKEND.md`).** The raw
+ROOT file on DiCOS is byte-identical to the canonical source
+(`b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533`,
+764,940 entries), and the frozen geometry is present under hash
+`e22d4cfb…`, re-verified on the host.
+
+**Two traps already paid for.**
+
+1. `_transformed.root` **must never be used**: it is a dense-grid rebinning with
+   6,400 HCAL cells against the frozen 6,390 (it pads the 90-cell final layer to
+   100), has four fewer events, and discards cell identity.
+2. Derived float artifacts do **not** byte-reproduce across library versions.
+   Regenerating the geometry on DiCOS changed only `edge_features[:,
+   distance_norm]`, by exactly one float32 ULP, which was enough to change the
+   hash. **Transport hash-pinned artifacts; do not regenerate them.** Expect the
+   same for the prepared shard manifest and verify rather than assume.
 
 Keep these invariant across a backend move:
 

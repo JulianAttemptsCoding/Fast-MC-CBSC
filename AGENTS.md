@@ -20,3 +20,32 @@
 16. QA findings identify trustworthy artifacts and follow-up work. They never
     grant or deny permission to continue training, change hardware, or launch a
     separately specified experiment.
+
+## DiCOS (ASGC) filesystem contract — binding, no exceptions
+
+The DiCOS shared filesystem is multi-tenant: other groups' data and other
+people's work live beside this project's. These limits were set by the data
+owner and are not negotiable by an agent.
+
+17. **One writable location.** Create, edit, move, or delete files *only* under
+    `/dicos_ui_home/<account>/sharedfs/work/IOP/julian/Fast MC CBSC`
+    (account `julianjuan`; the same directory appears in JupyterLab as
+    `sharedfs/work/IOP/julian/Fast MC CBSC`). Everything else on that host —
+    including `$HOME` itself, `/ceph`, `/volumes`, and every other directory
+    under `sharedfs/work/IOP/` — is read-only to this project.
+18. **The source datasets are immutable.** The two files under
+    `/dicos_ui_home/<account>/sharedfs/work/IOP/ZDC_ML_20260620/dataset/`
+    (`myTree_20251117_765k_0to300GeV_neutron_All.root` and its `_transformed`
+    variant) may be **read only**. Never write, move, rename, truncate,
+    re-permission, or delete them, and never write any output into that
+    directory. They are not this project's to modify.
+19. **No other dataset.** Data may come only from those two files. Do not read
+    or import any other dataset from the shared filesystem into this project.
+20. `scripts/dicos.py` enforces 17 and 18 client-side and must not be weakened
+    to work around them. If a task appears to require writing outside the
+    permitted directory, that is a signal to stop and ask, not to bypass the
+    guard.
+21. `_transformed.root` is a dense-grid rebinning with a different geometry
+    (6,400 vs 6,390 HCAL channels) and four fewer events. It is incompatible
+    with the frozen geometry and must not be used for training, conversion, or
+    evaluation. See `docs/DICOS_BACKEND.md`.

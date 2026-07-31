@@ -4864,3 +4864,200 @@ was reverted (`git checkout --`) before committing, since it is unrelated
 churn, not a real change; only the `c2st_20260728/` files were staged.
 
 No paid compute was used.
+
+## 2026-07-29 — C2ST deck restructured to an input/output/model/loss format
+
+`exhibition/c2st_20260728/` updated again. The model-construction section (was
+a running-prose equations format) is now 14 slides, one per stage, each stating
+only: the boxed input -> output flow, the inputs (every non-raw variable shown
+with the formula that derives it), the model architecture in one line, the
+loss (or "None" where there is not one), and the output. Deck grew 41 -> 46
+slides. New/split stages: Raw Event Conversion, Derived Truth Variables,
+Condition Encoder, Visibility, Total-Response, First-Positive-Layer,
+Layer-Activity, Longitudinal-Profile, Layer Hit-Count, Geometry-Aware Support,
+Within-Layer Energy-Share, Exact Constrained Decoder, Joint Training
+Objective, Loss-Weight Calibration.
+
+Real bug found and fixed in the study repository: a boxed flow line ending in
+a bare `\hat V`/`\hat T` rendered as two short dashes instead of a hat accent —
+matplotlib's tight-bbox crop was clipping the top of a trailing accent over a
+capital letter at the previous 0.02in pad. Fixed by raising `pad_inches` to
+0.07 in `presentation/equations.py`, which required clearing and regenerating
+the whole equation-image cache, then trimming a handful of slides (including
+one pre-existing root-cause slide, unrelated to this change, whose captions
+were already at the layout budget's edge) that the taller equation images
+pushed just over. `check_layout.py` reports 0 problems across all 46 slides,
+each visually confirmed via PNG export; `566/566` tests pass in the study
+repository, commit to follow.
+
+Verified unchanged in this repository: `python -m pytest -q` passes `92/92`,
+`compileall` passes, `python exhibition/build_exhibition.py` still reports
+`visual_count 23` / `test_events_used 0`. Same incidental SVG/manifest
+regeneration as the prior publish was reverted before staging, for the same
+reason: fresh random clip-path ids and a fresh timestamp, not a real change.
+
+No paid compute was used.
+
+## 2026-07-30 — Handoff doc corrected: test split was not "still unopened"
+
+`docs/AGENT_PROMPT_CONTINUE_ANY_BACKEND_20260728.md` section 3 stated "The
+test split is still unopened for model development and visualization," which
+is no longer true and contradicts this file's own disclosure entries above:
+the external C2ST study (separate `Fast-MC-tester` repository) exercised
+40,000 of the 76,300 test-split events under a disclosed one-way isolation
+contract. Corrected to state the current boundary precisely: this generator's
+own development has never used a test event, and a future agent reading the
+handoff must not treat the external study's disclosed exposure as license to
+use the test split here. No other section of the handoff was changed; nothing
+else in it referenced test-split status.
+
+## 2026-07-30 — First direct test-split use in this repository (disclosed)
+
+**This is the first time this generator's own repository has used test-split
+events directly**, not an extension of the external C2ST isolation contract
+above (that study lives entirely in the separate `Fast-MC-tester` repo). The
+user, who owns this project, explicitly directed sampling "randomly from the
+full 765k event sample" for a one-off HCAL diagnostic (six comparison figures,
+Geant4 vs the `calibrated_lr3e4` checkpoint). I flagged the consequence twice
+before proceeding — once unprompted, once via an explicit clarifying question
+proposing a test-split-free alternative (train+validation only) — and the
+user overrode it both times: "ignore that for this ... that exception was made
+for general warning. use full 765k and sample 2000 randomly from there." Per
+the user's own standing instruction ("always warn me if I'm using test sample
+for anything outside of testing"), the exact breakdown is disclosed here and
+in `exhibition/paired_diagnostics_20260730/README.md`.
+
+**Isolation/exception contract for this run:**
+- Of the 2000 sampled events: **200 (10.0%) from the sealed test split, 219
+  (10.95%) from validation, 1,581 (79.05%) from train** — proportions match
+  each split's share of the full corpus almost exactly (test is 9.97% of
+  764,940), consistent with a genuine uniform random draw, not a targeted one.
+- The sample feeds no preprocessing, threshold, architecture, loss weight,
+  learning rate, stopping, or checkpoint-selection decision — it is a
+  read-only visual diagnostic against one already-accepted checkpoint.
+  `PHYSICS VALIDATION NOT ESTABLISHED` (`docs/QA_POLICY.md`): these figures
+  are descriptive comparisons, not a fidelity claim.
+- No training artifact, frozen config, or checkpoint changed. No feedback
+  into this or any other model.
+- This exception is scoped to this one declared task. It does not relax the
+  standing rule for any future work; the test split remains sealed for this
+  generator's own development going forward.
+
+**Provenance**: checkpoint `calibrated_lr3e4` epoch 4
+(`3f1022b87361b8a14d9f8432273dcd6c72f6a5e599c1be1575e7f37f4014803d`), corpus
+`gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5/artifacts`
+(dataset manifest `5a6d963247091e91c0787dd763b46e3b1189f62785d9cab1d8fda4e76ca08096`,
+production split manifest `9252b8da50934341cce0b9b88e158864067885a3a3bdf1e8c9cef80f4a455c74`
+— confirmed to match the same split referenced elsewhere in this project's
+provenance chain), selection seed `20260730`.
+
+**Compute**: new sibling module `src/cbsc_zdc/cloud/paired_diagnostics.py`
+(does not modify `vertex_stage.py` or its entrypoint — submitted with a
+`command` override on the existing container image rather than the default
+`ENTRYPOINT`). Image rebuilt via `gcloud builds submit` (local Docker not on
+PATH), digest
+`sha256:5918e5a0b62d3b768a3a502562a943a3116d6bd9fd625128bc53ec6d059bd457`.
+Vertex custom job `projects/39719277374/locations/us-central1/customJobs/348753277170483200`
+(training pipeline `6756196870453723136`), `n1-standard-8 + 1x NVIDIA_TESLA_T4`,
+ran `2026-07-30T04:55:46Z`–`2026-07-30T05:05:50Z` (607s / ~10.1 min),
+`JOB_STATE_SUCCEEDED`, no error. Output at
+`gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/paired-diagnostics-20260730-r1-output`.
+Estimated and actual cost both well under $1 against the reconfirmed $100 cap.
+
+95/95 tests pass (3 new, `tests/test_paired_diagnostics.py`, covering the
+HCAL slicing, split-count lookup, and an all-zero-HCAL-event edge case, run
+before any paid compute). `compileall` passes.
+
+Six figures and this disclosure published to
+`exhibition/paired_diagnostics_20260730/`. One real plotting bug found and
+fixed during visual QA before publishing: the raw HCAL/beam-energy fraction
+histogram was dominated by a handful of near-zero-kinetic-energy events
+(8 of 2000, kinetic < 1 GeV) whose fraction blows up numerically (one event
+at kinetic=0.006 GeV produced a fraction of 48.7) — fixed by excluding
+kinetic <= 1 GeV from the two fraction-based panels specifically (histogram
+and vs-energy), which is not a meaningful energy regime for this ratio
+either way.
+
+## 2026-07-31 — DiCOS (ASGC) backend brought up; access, rules, provenance
+
+Training is moving off Vertex to DiCOS at Academia Sinica. This entry records
+the bring-up. Full operating detail is in `docs/DICOS_BACKEND.md`; the binding
+filesystem rules are `AGENTS.md` 17-21 and the DiCOS block in `CLAUDE.md`; the
+handoff doc gained section 10a.
+
+Access. ASGC mandates Google-Authenticator OTP on its login services, so no SSH
+path is drivable by an agent. The DiCOSApp JupyterLab is reachable directly and
+its token authenticates the REST contents API and the kernel websocket, which
+together give file transfer and shell execution. `scripts/dicos.py` wraps this
+as a plain CLI (`auth`, `setup`, `exec`, `ls`, `put`, `get`, `mkdir`, `info`)
+usable by any agent or human. Credentials live in `~/.dicos/config.json`,
+outside the repository.
+
+Full zero-input access was requested and is not achievable, deliberately. The
+portal mints a fresh Jupyter token into each pod's environment at launch
+(`jupyter lab --NotebookApp.token="${DICOS_JUPYTER_TOKEN}"`, from
+`/dicos_ui_home/start_jupyterlabcpu.sh`), so no token can be pinned in advance,
+and `~/.jupyter/` holds no server config that could override a command-line
+flag. Automating around this would mean storing 2FA material to drive the
+portal, which was declined: launching an app allocates shared GPU time on a
+multi-tenant academic cluster behind mandatory 2FA. The residual human step is
+one paste of the launch URL per pod; `setup` covers everything after it.
+
+Verified invariants across the backend move:
+
+- the raw ROOT file on DiCOS is byte-identical to the canonical source,
+  SHA-256 `b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533`,
+  25,022,001,408 bytes, 764,940 entries, tree `myTree`, 40 branches;
+- the frozen geometry is staged at `prep/geometry_frozen/` and its hash
+  `e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b` was
+  recomputed on the host and matched;
+- the backend-neutral test suite passes on DiCOS: 67 passed, 1 failed, the
+  failure being `test_root_fixture.py` for a 24 MB fixture excluded from git by
+  `.gitignore` (`*.root`). The three Vertex modules fail to import for lack of
+  `google.cloud`, which is correct on this backend.
+
+Counterexample recorded, and it changes the migration plan. Regenerating the
+geometry from the DiCOS ROOT did NOT reproduce the frozen hash
+(`a417d29dcae4394cd53a5326840fbd7a0f1e46b3e5e32ba714cd6fa9e533b179`). Diagnosis:
+every array is bit-identical (`positions_mm`, `cell_id`, `layer_index`,
+`subdetector`, `node_features`, `valid_mask`, `edge_index`) except
+`edge_features[:, distance_norm]`, the single sqrt-derived column, differing in
+4,092 of 107,920 values by max abs 1.192e-07 and max rel 1.173e-07 against a
+float32 eps of 1.1920929e-07 — exactly one ULP, a libm/numpy version rounding
+difference, not a different detector. The physical geometry being identical is
+independent confirmation that the DiCOS file is the canonical dataset. The
+resolution is to transport hash-pinned artifacts rather than regenerate them,
+per the portability rule; the regenerated copy was discarded. Expect the same
+for the prepared shard manifest and verify rather than assume.
+
+`_transformed.root` was inspected and must never be used: tree `tree`, 764,936
+entries (four fewer), three branches `cell float[20][20]`, `mcPar float[1][6]`,
+`hcal float[64][10][10]`. That is a dense-grid rebinning with 6,400 HCAL cells
+against the frozen 6,390 — it pads the 90-cell final layer to 100 — and it
+discards cell identity, which the frozen geometry is derived from. Recorded as a
+hard rule.
+
+Host facts that change planning: no Slurm is reachable from a DiCOSApp pod
+(`sbatch`/`squeue`/`sinfo`/`condor_submit` absent), so training runs inside a
+GPU app and must be checkpoint/resume-capable because pods expire on a schedule;
+the CPU app has 128 cores and ~1.5 TB RAM, well suited to the conversion and
+currently under-used by the single-threaded reader; the environment is
+`torch 2.8.0+cu128` / `numpy 2.1.3` against Vertex's `2.6.0+cu124`, which
+belongs in the evidence of any run produced here. A TF32 warning is recorded in
+`docs/DICOS_BACKEND.md`: cuDNN TF32 defaults on for newer accelerators and would
+silently change numerics relative to the FP32 T4 runs.
+
+QA. `scripts/dicos.py` enforces the filesystem contract client-side and the
+guards are regression-tested offline in `tests/test_dicos_client.py` (17 tests,
+no token or network needed). Writing the tests found a real defect: Git Bash
+rewrites POSIX-looking absolute arguments into Windows paths, so a `put` to
+`/dicos_ui_home/...` arrived as `C:/Program Files/Git/dicos_ui_home/...`, which
+`_resolve` treated as relative — the guard never fired and the write was stopped
+only by an incidental server error. `_resolve` now normalises before the prefix
+check (closing `..` traversal too) and rejects drive-letter paths with an
+explanatory message. A second defect: `auth` persisted a token before verifying
+it, so a bad paste left the stored credentials broken; it now verifies first and
+saves nothing on failure. Local suite: 112 passed, `compileall` clean.
+
+No paid compute was used, and no training artifact, frozen config, or
+checkpoint was changed.
