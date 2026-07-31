@@ -490,6 +490,39 @@ fi
 echo "7. source data (read-only)"
 D=~/sharedfs/work/IOP/ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neutron_All.root
 [ -r "$D" ] && ok "readable, $(stat -c%s "$D") bytes" || bad "source dataset not readable"
+
+echo "8. prepared corpus"
+if [ -f prep/data/dataset_manifest.json ]; then
+  .venv/bin/python - <<'PY'
+import json
+from pathlib import Path
+m = json.loads(Path("prep/data/dataset_manifest.json").read_text())
+n, shards = m["n_events"], len(m["shards"])
+good = (n == 764940 and shards == 187
+        and m["geometry_hash"] == "e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b"
+        and all(v == 0 for v in m["rejected"].values()))
+print(f"  [{'ok  ' if good else 'FAIL'}]   {n} events in {shards} shards, "
+      f"rejections {sum(m['rejected'].values())}")
+PY
+else
+  echo "  [note] not built yet -- see docs/DICOS_BACKEND.md step 5"
+fi
+
+echo "9. split"
+if [ -f prep/splits.json ]; then
+  .venv/bin/python - <<'PY'
+import json
+from pathlib import Path
+s = json.loads(Path("prep/splits.json").read_text())
+want = {"train": 612482, "validation": 76158, "test": 76300}
+canon = "f71003e07eb16baf4029387fd8e54b2e22b98981bbd6ee519a6d363167b4c8c8"
+good = s["counts"] == want and s["assignment_sha256"] == canon
+print(f"  [{'ok  ' if good else 'FAIL'}]   {s['counts']}"
+      + ("" if good else "  <- does NOT match the canonical assignment"))
+PY
+else
+  echo "  [note] not built yet -- see docs/DICOS_BACKEND.md step 6"
+fi
 echo
 echo "setup complete"
 """

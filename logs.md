@@ -5061,3 +5061,87 @@ saves nothing on failure. Local suite: 112 passed, `compileall` clean.
 
 No paid compute was used, and no training artifact, frozen config, or
 checkpoint was changed.
+
+## 2026-08-01 — DiCOS data pipeline reproduced bit-exactly; ready for training
+
+Everything required before training now exists on DiCOS and has been verified
+against the canonical artifacts. No GPU was used; no paid compute was used.
+
+**Conversion.** Ran `cbsc-zdc convert` on the permitted ROOT file
+(`b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533`) with
+parameters pinned to the canonical prep: `--shard-size 4096 --step-size 2048
+--target-mode raw_deposit --threshold-gev 0.0 --min-kinetic-gev 0.0
+--max-kinetic-gev 300.0`, against the transported frozen geometry
+(`e22d4cfb…`). The conversion schema on DiCOS hashes to
+`4fbede6b9769d308cc80e69c8540c46b3d2ef36630ba5827e174c9f95bd20aab`, identical
+to the canonical one. Ran ~100 minutes detached on the 128-core CPU pod.
+
+Result: **all 187 shards byte-identical to the canonical manifest.** 764,940
+events, 1,157,840,863 hits, every `shards[].sha256` and `n_hits` equal, zero
+missing or extra shards, all five rejection counters zero, and the sentinel
+accounting exact (738,898 events, 13,251.328791066537 GeV total,
+1.647373832954901 GeV maximum). `dataset_manifest.json`'s own hash necessarily
+differs because the manifest records `source_files[].path`, which is host-
+specific; that is a category difference, not a data difference, and per-shard
+hashes are the meaningful comparison.
+
+**Split.** `--seed 20260723 --group-by event_hash --fractions 0.8 0.1 0.1`
+reproduces the canonical partition exactly: 612,482 / 76,158 / 76,300 with
+`assignment_sha256 = f71003e07eb16baf4029387fd8e54b2e22b98981bbd6ee519a6d363167b4c8c8`,
+matching the `parent_assignment_sha256` recorded in the pilot split.
+
+Counterexample recorded: `--group-by source_group` fails outright with "split
+creation produced an unassigned or empty partition". The corpus derives from a
+single ROOT file so every event has `source_group == 0`; with one group the
+greedy stratified allocation cannot seed three partitions. `event_hash` is the
+correct and canonical choice, now documented.
+
+Taken with the earlier geometry finding, the picture is: **the data pipeline is
+deterministic across hosts and library versions; only the geometry's derived
+`edge_features[:, distance_norm]` column is not**, differing by one float32 ULP
+under numpy 2.1.3, which is why geometry is transported rather than regenerated
+while shards and split are regenerated and verified. Existing epoch-4
+checkpoints remain comparable to anything trained on this corpus.
+
+**Client hardening, driven by a cold-read audit of the handoff.** The audit
+found `scripts/dicos.py` documented a guarantee it did not provide: `AGENTS.md`
+and `docs/DICOS_BACKEND.md` both claimed the one-writable-directory rule was
+enforced, but `_assert_writable` was wired only to `put`/`mkdir`. Every real
+action goes through `exec`, which had no write guard at all — `exec "mkdir
+~/scratch"` would have violated the contract silently. `exec` and `start` now
+refuse redirections and file-mutating verbs naming absolute paths outside the
+workdir.
+
+Two further defects surfaced while testing that guard, both fixed and pinned by
+tests: the workdir contains a space (`Fast MC CBSC`), so a token-based path
+regex truncated at `.../julian/Fast` and rejected legitimate in-workdir writes,
+now resolved by comparing against the full workdir at the match offset; and
+`2>/dev/null` was treated as an escape, which is the fastest way to get a guard
+switched off, so character devices are exempt.
+
+Data scope was narrowed at the owner's instruction to a single readable file.
+Every other dataset in the group directory — the `_transformed` variant and the
+15k/100k/135k files — is now refused outright, reads included.
+
+Also corrected two stale claims the audit caught: the handoff still asserted no
+test event had ever informed visualization here, which the 2026-07-30 diagnostic
+made false (200 sealed-test events appear in published figures), and `CLAUDE.md`
+claimed the token changes on every pod restart, contradicting the observed
+per-user stability.
+
+**Added capability.** Detached execution (`start`/`jobs`/`logs`), without which
+nothing longer than an `exec` timeout could run — the conversion needed it and
+training will. Jobs run under `nohup` with logs on the shared filesystem,
+surviving client disconnects but not the pod's own end time. `setup` now also
+reports prepared-corpus and split readiness, and a checked-in config template
+lets a fresh machine bootstrap without improvising contract values.
+
+Verification: 131 tests pass locally (36 on the access contract, all offline);
+`compileall` clean; `cbsc-zdc doctor` clean on DiCOS; `dicos.py setup` green on
+all nine checks.
+
+**Not done, and deliberately left for a declared decision:** training itself.
+That needs a GPU DiCOSApp, and the TF32 question recorded in
+`docs/DICOS_BACKEND.md` must be settled first — newer accelerators enable TF32
+for cuDNN by default, which would silently change numerics relative to the FP32
+T4 runs.

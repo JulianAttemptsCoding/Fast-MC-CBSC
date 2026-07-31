@@ -282,7 +282,14 @@ over.
 | Test suite passes on DiCOS | **67 passed, 1 failed** — the failure is `test_root_fixture.py`, which needs a 24 MB fixture excluded from git by `.gitignore` (`*.root`), not a science failure |
 | Frozen geometry present on DiCOS with hash `e22d4cfb…` | **VERIFIED** — transported, then recomputed *on the host* and matched |
 | Geometry *regenerated* from the DiCOS ROOT is physically identical | **VERIFIED with one caveat** — see below |
-| Dataset manifest hash `5a6d9632…` reproduces | not yet attempted |
+| Prepared corpus reproduces the canonical shards | **VERIFIED — all 187 shards byte-identical.** 764,940 events, 1,157,840,863 hits, every `shards[].sha256` and `n_hits` equal to the canonical manifest's, all five rejection counters zero, and the sentinel accounting exact (738,898 events, 13,251.328791066537 GeV total, 1.647373832954901 GeV max) |
+| Split reproduces the canonical assignment | **VERIFIED** — 612,482 / 76,158 / 76,300 and `assignment_sha256 = f71003e07eb16baf4029387fd8e54b2e22b98981bbd6ee519a6d363167b4c8c8`, matching the parent recorded in the pilot split |
+
+**The data pipeline reproduces bit-exactly on DiCOS.** Raw ROOT, prepared
+shards, and split assignment are all byte-identical to the artifacts the
+existing checkpoints were trained against, so those checkpoints remain
+comparable and nothing here is a new declared dataset. Only the geometry needed
+transporting rather than regenerating, for the float32 reason below.
 
 ### Geometry: regenerate vs. transport
 
@@ -414,6 +421,20 @@ end-to-end and existing checkpoints stay comparable. If they do not, the DiCOS
 corpus is a **new declared artifact** with its own hashes, and anything trained
 on it is a new experiment rather than a continuation — which must be said
 plainly rather than glossed.
+
+### Splitting: use `event_hash`, not `source_group`
+
+`cbsc-zdc split --group-by source_group` **fails** on this corpus with "split
+creation produced an unassigned or empty partition". The corpus is converted
+from a single ROOT file, so every event carries `source_group == 0`; with one
+group the greedy stratified allocation cannot seed three partitions. The
+canonical production split used `--group-by event_hash`, which assigns per event
+from a stable hash and reproduces the recorded counts and assignment hash
+exactly. Use:
+
+```bash
+cbsc-zdc split --manifest prep/data/dataset_manifest.json   --output prep/splits.json --seed 20260723 --group-by event_hash   --fractions 0.8 0.1 0.1
+```
 
 ### Open questions for step 5-6
 
