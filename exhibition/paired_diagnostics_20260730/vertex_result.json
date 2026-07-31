@@ -1,0 +1,41 @@
+{
+  "checkpoint_sha256": "3f1022b87361b8a14d9f8432273dcd6c72f6a5e599c1be1575e7f37f4014803d",
+  "checkpoint_uri": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/compute-extension-20260727-r1-calibrated-lr3e4-output/progress/epoch_0004/checkpoints/best.pt",
+  "data_inventory_count": 199,
+  "data_prefix": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/prep-20260724-r5/artifacts",
+  "dataset_manifest_sha256": "5a6d963247091e91c0787dd763b46e3b1189f62785d9cab1d8fda4e76ca08096",
+  "environment": {
+    "cuda_available": true,
+    "cuda_device_count": 1,
+    "cuda_device_names": [
+      "Tesla T4"
+    ],
+    "cuda_device_total_memory_bytes": [
+      15655829504
+    ],
+    "cuda_version": "12.4",
+    "cudnn_version": 90100,
+    "git_commit": null,
+    "hostname": "cmle-training-workerpool0-85af64962d-0-z6kgf",
+    "numpy": "2.2.2",
+    "pid": 1,
+    "platform": "Linux-6.6.137+-x86_64-with-glibc2.35",
+    "python": "3.11.11 | packaged by conda-forge | (main, Dec  5 2024, 14:17:24) [GCC 13.3.0]",
+    "torch": "2.6.0+cu124"
+  },
+  "experiment": "paired_geant4_fastmc_hcal_diagnostics",
+  "n_ecal": 400,
+  "n_events_sampled": 2000,
+  "n_nodes": 6790,
+  "note": "Deliberate exception, explicitly authorized by the project owner: sampled from the FULL prepared corpus, which includes the sealed test split. This feeds no preprocessing, threshold, architecture, loss-weight, learning-rate, stopping, or checkpoint-selection decision -- see logs.md for the full disclosure. See 'split_counts' below for the exact train/validation/test breakdown of the events actually sampled.",
+  "output_prefix": "gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/paired-diagnostics-20260730-r1-output",
+  "schema_version": 1,
+  "seconds": 607.1179749965668,
+  "split_counts": {
+    "test": 200,
+    "train": 1581,
+    "validation": 219
+  },
+  "splits_manifest_sha256": "9252b8da50934341cce0b9b88e158864067885a3a3bdf1e8c9cef80f4a455c74",
+  "state": "SUCCEEDED"
+}
