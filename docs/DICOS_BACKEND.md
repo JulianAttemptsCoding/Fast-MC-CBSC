@@ -20,11 +20,27 @@ no agent-specific coupling:
 python scripts/dicos.py auth "<launch URL>"  # 1. every new session
 python scripts/dicos.py setup                # 2. provision/repair, idempotent
 python scripts/dicos.py info                 # probe the remote environment
-python scripts/dicos.py exec "nvidia-smi"    # run a shell command
+python scripts/dicos.py exec "nvidia-smi"    # run a shell command (synchronous)
 python scripts/dicos.py ls .                 # list the workdir
 python scripts/dicos.py put local remote     # upload
 python scripts/dicos.py get remote local     # download
+
+# long work -- conversion, training -- must not run through `exec`
+python scripts/dicos.py start "<cmd>" --name convert   # detached, survives disconnect
+python scripts/dicos.py jobs                           # what is running / finished
+python scripts/dicos.py logs convert --tail 40         # follow its output
 ```
+
+Launch a DiCOSApp from <https://dicos.grid.sinica.edu.tw/dockerapps/>.
+
+### Running work that outlives a command
+
+`exec` is synchronous and bounded by a timeout, so anything measured in hours
+(the ROOT conversion, training) must go through `start`. It runs the command
+under `nohup` with its log on the shared filesystem, so the job survives the
+client disconnecting and its output remains readable from a later session —
+though **not** past the pod's own end time, which kills every process inside it.
+`jobs` reports each job as RUNNING or finished by checking the recorded pid.
 
 Steps 1 and 2 are the whole session start-up. `setup` clones or updates the
 repo, builds or repairs the venv, verifies the frozen geometry hash, and reports
@@ -33,44 +49,60 @@ is ready without any further manual work.
 
 ### Starting a session (do this first, every time)
 
-The DiCOSApp token changes whenever the pod restarts, so a stored token is
-usually stale.
-
-**If you catch the launch URL while it still has `?token=…`** (it appears for a
-moment right after the app opens), one argument is enough:
-
-```bash
-python scripts/dicos.py auth "http://scale-k8s-master01.twgrid.org:32065/?token=abc123…"
-```
-
-**Usually you will not catch it.** JupyterLab moves the token into a cookie and
-rewrites the address bar to `.../lab/tree/...`, so a URL copied even seconds
-later contains no token. Recover it from inside the pod — in JupyterLab open
-*File ▸ New ▸ Terminal* and run:
+**The token appears to be stable per user, not per pod.** The same value was
+observed across two different pods on two different ports. So in the normal case
+you never need to hunt for it — hand over whatever URL the address bar shows and
+`auth` reuses the stored token:
 
 ```bash
-jupyter server list
-# Currently running servers:
-# http://<pod-name>:8888/?token=57115a0b…  ::  /dicos_ui_home/<account>
+python scripts/dicos.py auth "http://scale-k8s-master01.twgrid.org:30122/lab/tree/..."
+# authenticated against http://scale-k8s-master01.twgrid.org:30122 (reused the stored token)
 ```
 
-Then pass the address-bar URL and that token as two arguments:
+If the stored token still works, even that is unnecessary — just run commands.
+Every command preflights the connection and, if it fails, prints exactly what to
+do rather than a bare 403.
+
+#### Recovering the token, when it really has changed
+
+JupyterLab moves the token into a cookie and rewrites the address bar within
+seconds of login, so a URL copied later contains none. There is no need to race
+the clipboard; the token is retrievable at leisure, in decreasing order of
+convenience:
+
+1. **A notebook cell** — no terminal needed, works purely in the Lab UI:
+
+   ```python
+   import json, glob, pathlib
+   print(json.load(open(sorted(glob.glob(str(
+       pathlib.Path.home() / ".local/share/jupyter/runtime/jpserver-*.json")))[-1]))["token"])
+   ```
+
+2. **A JupyterLab terminal** (*File ▸ New ▸ Terminal*):
+
+   ```bash
+   jupyter server list
+   # http://<pod-name>:8888/?token=57115a0b…  ::  /dicos_ui_home/<account>
+   ```
+
+3. **The runtime file itself**, `~/.local/share/jupyter/runtime/jpserver-<pid>.json`,
+   which persists in `HOME` across pods. There is also a clickable
+   `jpserver-<pid>-open.html` beside it containing the same token.
+
+Then pass URL and token together:
 
 ```bash
-python scripts/dicos.py auth "http://scale-k8s-master01.twgrid.org:32065/lab/tree/..." "57115a0b…"
+python scripts/dicos.py auth "<address-bar URL>" "<token>"
 ```
-
-The token is also in `~/.local/share/jupyter/runtime/jpserver-<pid>.json`, which
-persists in `HOME`, if reading a file is easier than running a command.
 
 `auth` accepts any of: a URL containing the token, a URL plus a separate token,
-or a bare token on its own. It verifies against the server before saving, and
-saves nothing if authentication fails.
+a bare token, or a URL alone (reusing the stored token). It verifies against the
+server before saving and saves nothing on failure.
 
 > The address `jupyter server list` prints is the **pod-internal** one
-> (`http://<pod-name>:8888`), which is not reachable from outside the cluster.
-> `auth` detects this and keeps the working external URL rather than storing the
-> internal one, so pasting that line verbatim is safe.
+> (`http://<pod-name>:8888`), unreachable from outside the cluster. `auth`
+> detects this and keeps the working external URL, so pasting that line
+> verbatim is safe.
 
 ### A Git Bash trap worth knowing
 
@@ -85,13 +117,18 @@ Credentials live in `~/.dicos/config.json`, **outside this repository**:
 
 ```json
 {
-  "base_url": "http://scale-k8s-master01.twgrid.org:32065",
+  "base_url": "http://scale-k8s-master01.twgrid.org:30122",
   "token": "<DiCOSApp JupyterLab token>",
   "jupyter_root": "/dicos_ui_home/julianjuan",
   "workdir": "/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC",
-  "readonly_data": ["<the two ROOT files>"]
+  "data_file": ".../ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neutron_All.root",
+  "forbidden_paths": [".../myTree_20251117_765k_0to300GeV_neutron_All_transformed.root"]
 }
 ```
+
+`data_file` is the one dataset this project may read; `forbidden_paths` are
+refused outright, reads included. Only `base_url` normally changes between
+sessions.
 
 ### Two address spaces
 
@@ -104,23 +141,52 @@ directory. `jupyter_root` in the config is what lets the client translate.
 
 ### Write scope
 
-Enforced client-side, matching the constraint agreed with the data owner:
-`put`/`mkdir` refuse any destination outside `workdir`, and `exec` refuses
-commands that redirect into or mutate a declared `readonly_data` path. This is
-a guard against honest mistakes, not a security boundary — the token carries
-whatever permissions the account has.
+Enforced client-side, matching the contract agreed with the data owner
+(`AGENTS.md` 17-21):
+
+- `put`/`mkdir` refuse any destination outside `workdir`, normalising `..`
+  first so traversal cannot slip past;
+- **`exec` and `start` refuse commands that appear to write outside `workdir`**
+  — redirections and file-mutating verbs (`rm`, `mv`, `cp`, `mkdir`, `tee`,
+  `dd`, …) naming an absolute path elsewhere. `/dev/null` and friends are
+  exempt, since discarding output is not a write anyone can be harmed by;
+- `exec` refuses commands that mutate `data_file`, the single permitted
+  dataset;
+- `exec` refuses any command that so much as *names* a `forbidden_paths`
+  entry, because the scope was narrowed to one file and the rest of that
+  directory is out of bounds for reading too.
+
+Reads outside `workdir` remain allowed — `setup` has to inspect `/opt`
+interpreters, and the permitted dataset lives elsewhere by definition.
+
+**Know what this is and is not.** The command guard is a best-effort textual
+check, not a sandbox: a shell cannot be fully parsed, so a glob, a here-doc, or
+a Python one-liner could still write outside scope. It exists to stop the
+plausible mistake. The contract itself is upheld by `AGENTS.md` and by whoever
+is driving; the token carries whatever permissions the account has.
+
+Two subtleties worth knowing, both found by testing rather than reasoning:
+
+- the workdir contains a space (`Fast MC CBSC`), so a token-based path regex
+  truncates at `.../julian/Fast` and would flag legitimate in-workdir writes.
+  The guard compares against the full workdir at the match offset instead;
+- `2>/dev/null` is so common that treating it as an escape made ordinary
+  commands fail, which is the fastest way to get a guard disabled.
 
 ### Operational constraint: pods are ephemeral
 
-DiCOSApp sessions have an end time (the CPU pod observed here ran a 2-hour
-session). **When the pod expires the token changes and any running process
-dies.** Consequences:
+DiCOSApp sessions have an end time chosen at launch — the first pod observed
+here ran 2 hours, a later one 3 days. **When a pod ends, every process inside it
+dies**, so:
 
 - long work must be checkpoint/resume-capable (this project already is) or fit
-  inside one session;
-- after a restart, run `auth` with the new launch URL, then `setup`;
-  everything on the shared filesystem (`.venv/`, `repo/`, `prep/`) persists,
-  so nothing else needs redoing.
+  inside one session. Prefer launching an app with a generous end time before
+  starting anything lengthy;
+- the shared filesystem persists across pods, so `.venv/`, `repo/`, and `prep/`
+  survive. After a relaunch, `auth` with the new URL and `setup` restores a
+  working session, and `setup` is a no-op when nothing needs repair;
+- the port usually changes; the **token has so far not**, appearing to be
+  per-user rather than per-pod, which is why `auth` accepts a bare URL.
 
 ## 2. What the host provides
 
@@ -212,7 +278,7 @@ over.
 
 | Invariant | Status |
 |---|---|
-| Raw ROOT dataset identical to the canonical GCS source | **VERIFIED** — SHA-256 `b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533`, byte-for-byte match with the recorded canonical hash; 764,940 entries |
+| Permitted ROOT dataset identical to the canonical GCS source | **VERIFIED** — SHA-256 `b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533`, byte-for-byte match with the recorded canonical hash; 764,940 entries |
 | Test suite passes on DiCOS | **67 passed, 1 failed** — the failure is `test_root_fixture.py`, which needs a 24 MB fixture excluded from git by `.gitignore` (`*.root`), not a science failure |
 | Frozen geometry present on DiCOS with hash `e22d4cfb…` | **VERIFIED** — transported, then recomputed *on the host* and matched |
 | Geometry *regenerated* from the DiCOS ROOT is physically identical | **VERIFIED with one caveat** — see below |
@@ -252,11 +318,16 @@ The three Vertex-specific test modules (`test_auto_smoke`,
 `test_compute_extensions`, `test_vertex_training_hardening`) fail to import for
 lack of `google.cloud`, which is expected and correct on this backend.
 
-## 4. The two ROOT files
+## 4. The dataset directory: one file in scope, the rest not
 
-Both live in a directory this project must treat as read-only.
+`sharedfs/work/IOP/ZDC_ML_20260620/dataset/` belongs to the group, not to this
+project. It holds ten files: four dataset pairs (15k, 100k, 135k, 765k), each a
+raw tree plus a `_transformed` variant, and two small helpers. **Exactly one is
+in scope.** The findings below are recorded so no future agent needs to re-open
+anything to re-derive them.
 
-**`myTree_20251117_765k_0to300GeV_neutron_All.root`** — 25,022,001,408 bytes,
+**`myTree_20251117_765k_0to300GeV_neutron_All.root`** — the only permitted
+input — 25,022,001,408 bytes,
 tree `myTree`, **764,940 entries**, 40 branches. Raw Geant4 output: per-hit
 vectors (`ecal_cellID`, `ecal_energy`, `hcal_cellID`, `hcal_LayerID`,
 `hcal_energy`, positions), MC truth (`mcPar_*`), and energy sums. **This is the
@@ -285,8 +356,10 @@ This is somebody's **dense-grid rebinning** for a CNN-style model, and it is
    but the frozen geometry (hash `e22d4cfb…`, including the ganged-readout
    centroid rule) is derived from exactly those.
 
-Using it would silently produce a different detector. It should be ignored for
-this project.
+Using it would silently produce a different detector. **It is now out of scope
+entirely — reading included** — and `scripts/dicos.py` refuses any command that
+names it. The record above exists so that decision never needs re-litigating by
+reopening the file.
 
 ## 5. Migration plan and status
 
@@ -308,6 +381,39 @@ sharedfs/work/IOP/julian/Fast MC CBSC/
   prep/geometry_frozen/      canonical geometry, hash e22d4cfb… verified on-host
   _setup/                    scan logs and dataset hashes
 ```
+
+### Regenerate or transport the prepared shards? — settled
+
+Earlier drafts left this open. It is decided, on two grounds.
+
+**Transport is not available.** The prepared shards live on GCS; the contract
+for this host permits exactly one data source, the raw ROOT file. Copying a
+second corpus in would also risk the "two canonical datasets" failure the
+handoff forbids. So the shards are **produced on DiCOS from the permitted
+file**, with the conversion parameters pinned to the canonical ones.
+
+**The manifest hash cannot reproduce, for a reason unrelated to floats.**
+`dataset_manifest.json` records `source_files[].path`, and the canonical run
+read from `/tmp/cbsc_zdc_prepare/source/production.root` while DiCOS reads from
+the shared filesystem. Two different paths, therefore two different manifests,
+therefore `5a6d9632…` can never match no matter how deterministic the pipeline
+is. Comparing it would be a category error.
+
+**What to compare instead**, in decreasing strength:
+
+1. **Per-shard SHA-256** against the canonical manifest's `shards[].sha256`.
+   These cover event content only, so they are the real test of whether the
+   corpus is identical.
+2. Event count (`764,940`), shard count (`187`), the 4,096/3,084 split, and
+   the recorded rejection counters (all zero).
+3. The sentinel-energy accounting: `738,898` events carrying excluded sentinel
+   energy totalling `13,251.328791066537` GeV, maximum `1.647373832954901` GeV.
+
+Record the outcome either way. If the shard hashes match, provenance is
+end-to-end and existing checkpoints stay comparable. If they do not, the DiCOS
+corpus is a **new declared artifact** with its own hashes, and anything trained
+on it is a new experiment rather than a continuation — which must be said
+plainly rather than glossed.
 
 ### Open questions for step 5-6
 

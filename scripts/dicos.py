@@ -6,21 +6,33 @@ OTP on its login services), but the DiCOSApp JupyterLab is directly reachable
 and its token authenticates the REST and kernel-websocket APIs. This client
 wraps those into a small CLI so any agent or shell can drive the remote host:
 
+    python scripts/dicos.py auth "<launch or address-bar URL>"   # start a session
+    python scripts/dicos.py setup                                # provision/repair
     python scripts/dicos.py info
     python scripts/dicos.py exec "nvidia-smi"
-    python scripts/dicos.py exec "python -c 'import torch; print(torch.__version__)'"
     python scripts/dicos.py ls .
     python scripts/dicos.py put local.py remote/path.py
     python scripts/dicos.py get remote/path.json local.json
 
 Credentials live in ~/.dicos/config.json (outside the repository), holding
-base_url, token, workdir, and readonly_data.
+base_url, token, jupyter_root, workdir, data_file, and forbidden_paths.
 
-Write scope is enforced client-side: `put` refuses any destination outside the
-configured workdir, and `exec` refuses commands that redirect into, or mutate,
-the declared read-only dataset paths. These guards are a safety net for honest
-mistakes, not a security boundary -- the token itself carries whatever
-permissions the account has.
+DiCOS has been observed to issue a stable per-user token, so when a pod is
+relaunched usually only its port changes. `auth` therefore accepts a URL with no
+token and reuses the stored one; it verifies before saving and saves nothing on
+failure.
+
+Access scope is enforced client-side and mirrors the contract in AGENTS.md
+17-21:
+
+  * `put`/`mkdir` refuse any destination outside the configured workdir,
+    after normalising `..` so traversal cannot slip past;
+  * `exec` refuses commands that mutate `data_file`, the one permitted dataset;
+  * `exec` refuses any command that so much as names a `forbidden_paths` entry,
+    since those are out of scope for reading too.
+
+These guards catch honest mistakes; they are not a security boundary, because
+the token carries whatever permissions the account has.
 """
 
 from __future__ import annotations
@@ -30,6 +42,7 @@ import base64
 import json
 import posixpath
 import re
+import shlex
 import sys
 import time
 import uuid
@@ -37,12 +50,34 @@ from pathlib import Path
 
 import requests
 
+shlex_quote = shlex.quote
+
 CONFIG_PATH = Path.home() / ".dicos" / "config.json"
 
 
+TEMPLATE_PATH = Path(__file__).resolve().parent / "dicos_config.template.json"
+
+
 def load_config() -> dict:
+    """Credentials, or an actionable explanation of how to create them.
+
+    The config lives outside the repository because it holds a token, so a
+    fresh machine has none. Failing with just a path would leave the next
+    agent guessing at account-specific values, which is exactly how the write
+    guard ends up mis-scoped -- so point at the checked-in template instead.
+    """
     if not CONFIG_PATH.exists():
-        raise SystemExit(f"no credentials at {CONFIG_PATH}")
+        raise SystemExit(f"""no credentials at {CONFIG_PATH}
+
+Create that file by copying the checked-in template:
+    mkdir -p {CONFIG_PATH.parent}
+    cp "{TEMPLATE_PATH}" "{CONFIG_PATH}"
+
+then set `token` (docs/DICOS_BACKEND.md, "Recovering the token"), or run:
+    python scripts/dicos.py auth "<URL containing ?token=...>"
+
+The remaining fields encode the filesystem contract in AGENTS.md 17-21 --
+workdir, data_file, forbidden_paths -- and must not be widened.""")
     return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
 
 
@@ -55,7 +90,11 @@ class Dicos:
         # HOME), while exec/shell paths are absolute. Keeping the root lets the
         # two address spaces be translated instead of confused.
         self.jupyter_root = config.get("jupyter_root", "").rstrip("/")
-        self.readonly = [p.rstrip("/") for p in config.get("readonly_data", [])]
+        # The single permitted data source: readable, never writable.
+        self.data_file = (config.get("data_file") or "").rstrip("/")
+        # Paths that must not be touched at all, reads included.
+        self.forbidden = [p.rstrip("/") for p in config.get("forbidden_paths", [])]
+        self.readonly = [p for p in [self.data_file] if p]
         self.session = requests.Session()
         self.session.headers["Authorization"] = f"token {self.token}"
 
@@ -150,7 +189,78 @@ class Dicos:
             f"  target:  {target}\n  allowed: {self.workdir}/**"
         )
 
+    #: Shell constructs that create or destroy files. Matched against absolute
+    #: paths only; relative paths run with cwd inside the workdir and are fine.
+    _WRITE_VERBS = (
+        "rm", "rmdir", "mv", "cp", "touch", "mkdir", "install", "tee", "dd",
+        "truncate", "shred", "chmod", "chown", "ln", "rsync", "tar", "unzip",
+    )
+
+    def _assert_writes_stay_in_workdir(self, command: str) -> None:
+        """Best-effort check that a shell command writes only inside the workdir.
+
+        A shell cannot be fully parsed here, so this is a guard against the
+        obvious and the accidental -- redirections and file-mutating commands
+        naming an absolute path outside the permitted tree. It is deliberately
+        conservative about what it claims: a determined command (a glob, a
+        here-doc, a Python one-liner) can still escape, which is why the
+        filesystem contract is also stated in AGENTS.md for humans and agents
+        to honour, not left to this function alone.
+        """
+        # Positions are tracked, not just the matched text, because the workdir
+        # itself contains a space ("Fast MC CBSC"): a token-based regex stops at
+        # that space and would mistake a legitimate in-workdir path for an
+        # escape. Comparing against the full workdir at the match offset avoids
+        # depending on how the caller quoted it.
+        suspects: list[tuple[str, int]] = []
+        for match in re.finditer(r">>?\s*(~?/[^\s;|&'\"]+)", command):
+            suspects.append((match.group(1), match.start(1)))
+        verbs = "|".join(self._WRITE_VERBS)
+        for verb_match in re.finditer(rf"\b({verbs})\b([^;|&\n]*)", command):
+            segment, offset = verb_match.group(2), verb_match.start(2)
+            for match in re.finditer(r"(?<![\w=])(~?/[^\s;|&'\"]+)", segment):
+                suspects.append((match.group(1), offset + match.start(1)))
+
+        # Character devices are not files anyone can damage, and `2>/dev/null`
+        # is too common an idiom to treat as an escape attempt.
+        sinks = {"/dev/null", "/dev/stdout", "/dev/stderr", "/dev/tty", "/dev/zero"}
+        home = self.jupyter_root or ""
+        for raw, position in suspects:
+            if raw in sinks:
+                continue
+            # The command may continue with the (space-containing) workdir at
+            # this offset even though the token stopped early.
+            if command.startswith(self.workdir, position):
+                continue
+            candidate = raw
+            if candidate.startswith("~"):
+                if not home:
+                    continue
+                candidate = home + candidate[1:]
+                if candidate == self.workdir or candidate.startswith(self.workdir + "/"):
+                    continue
+            resolved = posixpath.normpath(candidate)
+            if resolved == self.workdir or resolved.startswith(self.workdir + "/"):
+                continue
+            raise SystemExit(
+                "refusing: command appears to write outside the permitted workdir\n"
+                f"  target:  {resolved}\n  allowed: {self.workdir}/**\n"
+                f"  command: {command}\n"
+                "If this is a false positive (the path is only read, not written), "
+                "run the read through a form that does not look like a write, or "
+                "narrow the command."
+            )
+
     def _assert_command_safe(self, command: str) -> None:
+        # Forbidden paths are off-limits entirely -- a mere mention is refused,
+        # since reading them is as much a violation as writing them.
+        for banned in self.forbidden:
+            if banned in command or posixpath.basename(banned) in command:
+                raise SystemExit(
+                    f"refusing: that path is out of scope for this project\n"
+                    f"  forbidden: {banned}\n  command:   {command}\n"
+                    f"The only permitted data source is:\n  {self.data_file}"
+                )
         for protected in self.readonly:
             # Any shell redirection into, or in-place mutation of, a declared
             # read-only dataset file.
@@ -166,14 +276,61 @@ class Dicos:
                         f"refusing: command appears to modify a read-only dataset\n"
                         f"  protected: {protected}\n  command:   {command}"
                     )
+        self._assert_writes_stay_in_workdir(command)
+
+    # ------------------------------------------------------- detached jobs
+    #: Long work cannot run through `exec`: it is synchronous, and a DiCOSApp
+    #: pod outlives any one client call but not indefinitely. Detached jobs are
+    #: started under nohup with their output on the shared filesystem, so they
+    #: survive the client disconnecting and remain inspectable afterwards --
+    #: including from a later session, or after the pod is relaunched.
+    JOBS_DIR = "_runs"
+
+    def start(self, command: str, name: str, cwd: str | None = None) -> int:
+        self._assert_command_safe(command)
+        if not re.fullmatch(r"[A-Za-z0-9._-]+", name):
+            raise SystemExit(f"job name must be simple, got {name!r}")
+        workdir = self._resolve(cwd) if cwd else self.workdir
+        # `&` binds to the whole `&&` chain, so the setup must complete in
+        # separate statements first; otherwise mkdir itself is backgrounded and
+        # the pid write races it.
+        wrapper = (
+            f"cd {shlex_quote(workdir)}; "
+            f"mkdir -p {self.JOBS_DIR}; "
+            f"nohup sh -c {shlex_quote(command)} "
+            f"> {self.JOBS_DIR}/{name}.log 2>&1 & "
+            f"echo $! > {self.JOBS_DIR}/{name}.pid; "
+            f"sleep 1; echo \"started {name} pid=$(cat {self.JOBS_DIR}/{name}.pid)\""
+        )
+        return self._run(wrapper, self.workdir, timeout=120)
+
+    def jobs(self) -> int:
+        script = (
+            f'cd {shlex_quote(self.workdir)} 2>/dev/null || exit 0; '
+            f'[ -d {self.JOBS_DIR} ] || {{ echo "no jobs recorded"; exit 0; }}; '
+            f'for p in {self.JOBS_DIR}/*.pid; do [ -e "$p" ] || continue; '
+            f'n=$(basename "$p" .pid); pid=$(cat "$p"); '
+            f'if kill -0 "$pid" 2>/dev/null; then s=RUNNING; else s=finished; fi; '
+            f'sz=$(wc -c < {self.JOBS_DIR}/"$n".log 2>/dev/null || echo 0); '
+            f'printf "  %-24s %-8s pid=%-8s log=%s bytes\\n" "$n" "$s" "$pid" "$sz"; done'
+        )
+        return self._run(script, self.workdir, timeout=120)
+
+    def logs(self, name: str, tail: int = 40) -> int:
+        return self._run(
+            f"tail -n {int(tail)} {self.JOBS_DIR}/{shlex_quote(name)}.log",
+            self.workdir, timeout=120,
+        )
 
     # ---------------------------------------------------------- execution
     def exec(self, command: str, cwd: str | None = None, timeout: int = 300) -> int:
         """Run a shell command in a transient kernel; stream stdout/stderr."""
-        import websocket  # imported lazily so contents-only use needs no ws dep
-
         self._assert_command_safe(command)
-        workdir = self._resolve(cwd) if cwd else self.workdir
+        return self._run(command, self._resolve(cwd) if cwd else self.workdir, timeout)
+
+    def _run(self, command: str, workdir: str, timeout: int = 300) -> int:
+        """Transport only. Callers are responsible for having applied guards."""
+        import websocket  # imported lazily so contents-only use needs no ws dep
 
         r = self.session.post(f"{self.base}/api/kernels", json={"name": "python3"}, timeout=60)
         r.raise_for_status()
@@ -376,6 +533,18 @@ def main() -> int:
     p.add_argument("--cwd")
     p.add_argument("--timeout", type=int, default=300)
 
+    p = sub.add_parser(
+        "start", help="run a long command detached (survives client disconnect)")
+    p.add_argument("command")
+    p.add_argument("--name", required=True, help="job name, used for its log")
+    p.add_argument("--cwd")
+
+    sub.add_parser("jobs", help="list detached jobs and whether they are running")
+
+    p = sub.add_parser("logs", help="tail a detached job's log")
+    p.add_argument("name")
+    p.add_argument("--tail", type=int, default=40)
+
     p = sub.add_parser("ls", help="list a remote path")
     p.add_argument("path", nargs="?", default=".")
 
@@ -410,22 +579,55 @@ def main() -> int:
 
     args = parser.parse_args()
 
+    STALE = (
+        "DiCOS rejected the stored credentials (HTTP {code}).\n"
+        "\n"
+        "The token has so far been stable per user, so the usual cause is that the\n"
+        "pod moved to a different port, not that the token changed.\n"
+        "\n"
+        "  1. Open the DiCOSApp from https://dicos.grid.sinica.edu.tw/dockerapps/\n"
+        "  2. Re-point at it with the address-bar URL:\n"
+        "       python scripts/dicos.py auth \"<URL>\"\n"
+        "     (the stored token is reused when the URL carries none)\n"
+        "  3. If that still fails, the token did change. Recover it in a\n"
+        "     JupyterLab terminal (File > New > Terminal):\n"
+        "       jupyter server list\n"
+        "     then:\n"
+        "       python scripts/dicos.py auth \"<URL>\" \"<token>\"\n"
+    )
+
     if args.cmd == "auth":
         raw = args.url_or_token.strip()
         explicit = (args.token or "").strip()
         found = re.search(r"[?&]token=([0-9a-fA-F]{16,})", raw)
-        token = explicit or (found.group(1) if found else raw)
-        if not re.fullmatch(r"[0-9a-fA-F]{16,}", token):
-            raise SystemExit(
-                "no token found.\n"
-                "Jupyter removes ?token=... from the address bar after login, so a URL "
-                "copied later will not contain one. Recover it on the pod with:\n"
-                "    jupyter server list\n"
-                "then pass the browser URL and that token together:\n"
-                '    dicos.py auth "<browser URL>" "<token>"'
-            )
-
         config = load_config()
+        stored = config.get("token", "")
+
+        token = explicit or (found.group(1) if found else raw)
+        reused = False
+        if not re.fullmatch(r"[0-9a-fA-F]{16,}", token):
+            # A URL copied from the address bar has no token, because Jupyter
+            # moves it into a cookie after login. DiCOS has been observed to
+            # issue a stable per-user token, so the stored one is very likely
+            # still valid and only the pod's port has changed. Try it rather
+            # than making the user hunt for something that has not changed.
+            if re.match(r"https?://", raw) and re.fullmatch(r"[0-9a-fA-F]{16,}", stored):
+                token, reused = stored, True
+            else:
+                raise SystemExit(
+                    "no token found, and none stored to fall back on.\n"
+                    "Jupyter removes ?token=... from the address bar after login, so a "
+                    "URL copied later will not contain one. Recover it with any of:\n"
+                    "  - JupyterLab: File > New > Terminal, then `jupyter server list`\n"
+                    "  - a notebook cell:\n"
+                    "      import json,glob,pathlib; print(json.load(open(sorted(glob.glob(\n"
+                    "        str(pathlib.Path.home()/'.local/share/jupyter/runtime/"
+                    "jpserver-*.json')))[-1]))['token'])\n"
+                    "then:\n"
+                    '    dicos.py auth "<browser URL>" "<token>"'
+                )
+
+        config = dict(config)
         config["token"] = token
 
         # Candidate hosts, most specific first. `jupyter server list` reports the
@@ -451,7 +653,8 @@ def main() -> int:
                 last_error = exc
                 continue
             CONFIG_PATH.write_text(json.dumps(trial, indent=2), encoding="utf-8")
-            print(f"authenticated against {candidate}")
+            print(f"authenticated against {candidate}"
+                  + (" (reused the stored token)" if reused else ""))
             print(f"workdir: {trial['workdir']}")
             return 0
         raise SystemExit(
@@ -460,9 +663,26 @@ def main() -> int:
         )
 
     client = Dicos(load_config())
+    try:
+        client.status()
+    except requests.HTTPError as exc:
+        code = exc.response.status_code if exc.response is not None else "?"
+        raise SystemExit(STALE.format(code=code))
+    except requests.RequestException as exc:
+        raise SystemExit(
+            f"cannot reach {client.base}: {exc}\n"
+            "The pod may have ended, or its port changed. Relaunch the DiCOSApp "
+            "and re-run auth with the new URL."
+        )
 
     if args.cmd == "exec":
         return client.exec(args.command, cwd=args.cwd, timeout=args.timeout)
+    if args.cmd == "start":
+        return client.start(args.command, args.name, cwd=args.cwd)
+    if args.cmd == "jobs":
+        return client.jobs()
+    if args.cmd == "logs":
+        return client.logs(args.name, tail=args.tail)
     if args.cmd == "setup":
         return client.exec(SETUP_SCRIPT, timeout=1800)
     if args.cmd == "info":

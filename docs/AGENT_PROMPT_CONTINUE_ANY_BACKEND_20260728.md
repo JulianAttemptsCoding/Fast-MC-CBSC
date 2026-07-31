@@ -10,6 +10,27 @@ Treat this message as the controlling technical handoff. Do not assume access to
 the previous chat. Work from repository and artifact evidence, and keep the user
 informed with concise, evidence-backed updates.
 
+**Where the work happens now.** Training has moved from Vertex AI to **DiCOS**
+at Academia Sinica. Read **section 10a** and `docs/DICOS_BACKEND.md` before
+touching that host: they carry the access method, the environment, and a
+filesystem contract that is binding (`AGENTS.md` 17-21). In one line: you may
+write **only** inside
+`/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC`, and you may
+read exactly **one** dataset,
+`.../ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neutron_All.root`
+— everything else in that directory, the `_transformed` variant included, is out
+of scope for reading as well as writing.
+
+To start a DiCOS session, ask the user for the DiCOSApp URL, then:
+
+```bash
+python scripts/dicos.py auth "<URL>"   # reuses the stored token if the URL has none
+python scripts/dicos.py setup          # idempotent; provisions or repairs the pod
+```
+
+The Vertex sections below remain accurate as the historical record and as the
+description of how the existing checkpoints were produced.
+
 ## 1. Find the repositories and establish state
 
 The source repository is:
@@ -42,7 +63,8 @@ Before any experiment or edit:
 3. read `docs/IMPLEMENTATION_GUIDE.md` completely;
 4. read `docs/QA_POLICY.md`, `docs/DATA_CONTRACT.md`,
    `docs/MODEL_WALKTHROUGH.md`, `docs/HARDWARE_PORTABILITY_QA.md`,
-   `docs/VISUALIZATION_DASHBOARD.md`, and this file;
+   `docs/VISUALIZATION_DASHBOARD.md`, **`docs/DICOS_BACKEND.md`** (the active
+   training backend, with a binding filesystem contract), and this file;
 5. inspect `git status --short`, `git log -5 --oneline`, and remotes in both
    repositories;
 6. read the newest entries in `logs.md`;
@@ -110,17 +132,34 @@ It does not establish:
 - diversity or memorization acceptance;
 - publication-scale timing on a different target backend.
 
-The test split remains sealed for this generator's own development: no test
-event has ever informed preprocessing, thresholds, architecture, loss
-weights, learning rate, stopping, checkpoint selection, or visualization
-here. A disclosed exception exists outside this repository: an external
-classifier two-sample test (C2ST) study, in the separate `Fast-MC-tester`
-repository, exercised 40,000 of the 76,300 test-split events under a
-one-way isolation contract — read-only against the four accepted
-checkpoints, zero feedback into this generator, remaining 36,300 events
-untouched. See that repository's `docs/ISOLATION.md` and this repository's
-own `logs.md` entries recording the disclosure. Do not treat that external
-exposure as license to use the test split here.
+The test split has **never** informed preprocessing, thresholds, architecture,
+loss weights, learning rate, stopping, or checkpoint selection. That part of the
+seal is intact and must stay intact.
+
+Two disclosed exceptions exist, both read-only and neither feeding any modelling
+decision. State them accurately; do not repeat the older claim that the split is
+wholly untouched.
+
+1. **External C2ST study** (separate `Fast-MC-tester` repository): exercised
+   40,000 of the 76,300 test events under a one-way isolation contract —
+   read-only against the four accepted checkpoints, zero feedback into this
+   generator, the remaining 36,300 untouched. See that repository's
+   `docs/ISOLATION.md`.
+2. **In-repository diagnostic, 2026-07-30** — the first direct test-split use
+   *inside this repository*. A 2,000-event random draw from the full corpus, at
+   the project owner's explicit instruction after being warned twice, included
+   **200 sealed-test events (10.0%)**; they appear in the six published figures
+   under `exhibition/paired_diagnostics_20260730/`. It fed no preprocessing,
+   threshold, architecture, loss-weight, learning-rate, stopping, or
+   checkpoint-selection decision. `PHYSICS VALIDATION NOT ESTABLISHED`. See
+   `logs.md` and that directory's `README.md`.
+
+Neither exception is licence to widen test-split use. Both were scoped, declared
+in advance, and disclosed; anything further needs the same treatment. Note also
+that `exhibition/build_paired_diagnostics_figures.py` does read test-derived
+data, so the general statement elsewhere in this file that the exhibition
+builder never touches the test split applies to `build_exhibition.py`, not to
+that script.
 
 ## 4. Exact detector and geometry contract
 
@@ -554,12 +593,27 @@ reachable and its token authenticates the REST and kernel-websocket APIs.
 `scripts/dicos.py` wraps this into a CLI usable by any agent or human:
 
 ```bash
-python scripts/dicos.py auth "<launch URL with ?token=...>"   # start of session
+python scripts/dicos.py auth "<launch or address-bar URL>"    # start of session
 python scripts/dicos.py setup                                  # provision/repair
-python scripts/dicos.py exec "nvidia-smi"                      # remote shell
+python scripts/dicos.py exec "nvidia-smi"                      # shell, synchronous
 python scripts/dicos.py put local remote                       # upload
 python scripts/dicos.py get remote local                       # download
+
+python scripts/dicos.py start "<cmd>" --name job   # detached: hours-long work
+python scripts/dicos.py jobs                       # running / finished
+python scripts/dicos.py logs job --tail 40         # follow output
 ```
+
+**Anything measured in hours must go through `start`, not `exec`.** `exec` is
+synchronous and bounded by a timeout; `start` runs under `nohup` with its log on
+the shared filesystem, so it survives the client disconnecting — though not the
+pod's own end time, which kills every process inside it. Launch a long-lived app
+before starting long work.
+
+Apps are launched by the user from <https://dicos.grid.sinica.edu.tw/dockerapps/>.
+If `~/.dicos/config.json` does not exist, the client prints how to create it
+from `scripts/dicos_config.template.json`; the fields other than `token` and
+`base_url` encode the filesystem contract and must not be widened.
 
 Credentials live in `~/.dicos/config.json`, never in the repository.
 
@@ -572,19 +626,38 @@ cluster behind mandatory 2FA. **Ask the user to launch the DiCOSApp, then run
 `auth` followed by `setup`.** Do not attempt to bypass OTP or store 2FA
 material.
 
-Getting the token is the one fiddly part, so guide the user precisely rather
-than just asking for "the URL": JupyterLab strips `?token=…` from the address
-bar seconds after login, so a copied URL usually has none. Tell them to open
-*File ▸ New ▸ Terminal* in JupyterLab and run `jupyter server list`, then pass
-both parts:
+In practice this is one paste, not a hunt. **The token has been observed to be
+stable per user, not per pod** (the same value across two pods on two ports), so
+normally only the port changes and `auth` reuses the stored token:
 
 ```bash
-python scripts/dicos.py auth "<address-bar URL>" "<token from server list>"
+python scripts/dicos.py auth "<address-bar URL>"   # reuses the stored token
+python scripts/dicos.py setup
 ```
 
-`auth` also accepts a URL that still contains the token, or a bare token. It
-ignores the pod-internal address that `jupyter server list` prints, verifies
-against the server before saving, and saves nothing on failure.
+If the stored token is still valid, even that is unnecessary -- just run
+commands. Every command preflights the connection and prints precise recovery
+steps instead of a bare 403.
+
+Only if the token genuinely changed, have the user recover it. JupyterLab moves
+it into a cookie seconds after login, so no clipboard race is needed. Easiest
+first, a notebook cell:
+
+```python
+import json, glob, pathlib
+print(json.load(open(sorted(glob.glob(str(
+    pathlib.Path.home() / ".local/share/jupyter/runtime/jpserver-*.json")))[-1]))["token"])
+```
+
+or a JupyterLab terminal running `jupyter server list`. Then:
+
+```bash
+python scripts/dicos.py auth "<address-bar URL>" "<token>"
+```
+
+`auth` accepts a URL containing the token, a URL plus token, a bare token, or a
+URL alone. It ignores the pod-internal address `jupyter server list` prints,
+verifies before saving, and saves nothing on failure.
 
 **`setup` is idempotent and does everything else.** It clones or updates the
 repo, builds or repairs the venv (validated by import, since a GPU app is a
@@ -597,9 +670,12 @@ is multi-tenant.
 
 - Writable: **only** `/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC`
   and below. Not `$HOME`, not `/ceph`, not any other `sharedfs/work/IOP/*`.
-- The two `.root` files under `sharedfs/work/IOP/ZDC_ML_20260620/dataset/` are
-  **read-only and immutable**; never write into that directory.
-- No other data source may be used.
+- **Exactly one readable data file**, immutable:
+  `sharedfs/work/IOP/ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neutron_All.root`.
+  Never write it, and never write into that directory.
+- **Everything else in that directory is out of scope, reading included** — the
+  `_transformed` variant and the older 15k/100k/135k files. Do not open, hash,
+  or inspect them; the client refuses commands that name the transformed file.
 - `scripts/dicos.py` enforces the above client-side and must not be weakened.
   Its guards are regression-tested offline in `tests/test_dicos_client.py`.
 

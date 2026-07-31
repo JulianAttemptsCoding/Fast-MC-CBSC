@@ -33,14 +33,18 @@ owner and are not negotiable by an agent.
     `sharedfs/work/IOP/julian/Fast MC CBSC`). Everything else on that host —
     including `$HOME` itself, `/ceph`, `/volumes`, and every other directory
     under `sharedfs/work/IOP/` — is read-only to this project.
-18. **The source datasets are immutable.** The two files under
-    `/dicos_ui_home/<account>/sharedfs/work/IOP/ZDC_ML_20260620/dataset/`
-    (`myTree_20251117_765k_0to300GeV_neutron_All.root` and its `_transformed`
-    variant) may be **read only**. Never write, move, rename, truncate,
-    re-permission, or delete them, and never write any output into that
-    directory. They are not this project's to modify.
-19. **No other dataset.** Data may come only from those two files. Do not read
-    or import any other dataset from the shared filesystem into this project.
+18. **Exactly one permitted data source, and it is immutable.** The only file
+    this project may read is
+    `/dicos_ui_home/<account>/sharedfs/work/IOP/ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neutron_All.root`.
+    Read it and nothing else. Never write, move, rename, truncate,
+    re-permission, or delete it, and never write any output into that
+    directory. It is not this project's to modify.
+19. **Everything else in that dataset directory is out of scope**, reading
+    included — most importantly
+    `myTree_20251117_765k_0to300GeV_neutron_All_transformed.root`, and the
+    older 15k/100k/135k files beside it. Do not open, hash, inspect, or import
+    them. `scripts/dicos.py` refuses any command that so much as names the
+    transformed file.
 20. `scripts/dicos.py` enforces 17 and 18 client-side and must not be weakened
     to work around them. If a task appears to require writing outside the
     permitted directory, that is a signal to stop and ask, not to bypass the
