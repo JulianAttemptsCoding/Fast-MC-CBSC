@@ -5495,3 +5495,32 @@ GPU training here is not bitwise deterministic — `torch.use_deterministic_algo
 has never been set in this project — so roughly 0.02 is the resolution floor for
 comparing two runs. +0.057076 clears it; a margin between families below ~0.02
 would not, and will be reported as unresolved rather than ranked.
+
+### wave3 family 2 complete — calibrated_lr1e4, absolute epochs 5..10
+
+Ran 17:54:34Z to 19:12:35Z, EXIT=0. QA PASS: six of six per-epoch structural
+invariants pass, postflight `pass: true`, nonfinite 0, negative 0,
+outside_valid_support 0, support_mask_mismatch 0.
+
+    epoch   5        6        7        8        9        10
+    val     4.912984 4.854264 4.805980 4.766131 4.781654 4.768465
+
+Best is epoch 8 (4.766131), final is epoch 10 (4.768465) — the first family
+where best and final disagree, by 0.002334. Improvement against the parent
+(4.827105) is +0.058640 measured at the final epoch, +0.060974 measured at the
+best epoch. `best_validation_loss` in the run summary is 4.766131, 6,660
+updates.
+
+Both families so far show the same shape: a rise after the cosine restart, then
+monotone descent, then a regression at epoch 9 before epoch 10 settles. Worth
+noting only because it recurred; two runs is not a pattern.
+
+**Selection caution, recorded before the remaining families finish.** By the
+stated criterion — largest validation improvement from beginning to end —
+lr1e4 (+0.058640) currently leads lr3e4 (+0.057076) by 0.001564. The measured
+run-to-run resolution on this hardware is about 0.02 (two runs of an identical
+config differing by 0.016 on byte-identical data), so that ordering is roughly
+twelve times smaller than the noise and cannot be called a result. Absolute
+validation loss separates them the other way and by a margin that does clear
+noise: 4.680965 against 4.768465, a difference of 0.0875. Any recommendation
+must state both and must not present a 0.0016 gap as a finding.
