@@ -329,11 +329,13 @@
     },
     {
       "checkpoint_sha256": "523179a70eb5576ee39d87cf309c7e11cfb60ceb55463f004f8bcedb33599555",
+      "dicos_object": "_runs/calibrated_lr1e4_halfbatch_dicos-r3/reports/visualization/epoch_0005.json",
       "elapsed_seconds": 92.95075217913836,
       "epoch": 5,
       "id": "dicos-r3-calibrated-lr1e4-halfbatch:joint:0005",
       "path": "dicos-r3-calibrated-lr1e4-halfbatch_joint_epoch_0005.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr1e4-halfbatch",
       "sha256": "97ad8139ab0310149a7222f44d7ce0f1968ebff67407388458df8b90a2c0f359",
       "stage": "joint",
       "trend": {
@@ -348,11 +350,13 @@
     },
     {
       "checkpoint_sha256": "bfb1c1bcb0320c677585c9e5ea20c50f1e65b51b901dd21ad3b38dabb2b2e67c",
+      "dicos_object": "_runs/calibrated_lr1e4_halfbatch_dicos-r3/reports/visualization/epoch_0006.json",
       "elapsed_seconds": 89.61300355195999,
       "epoch": 6,
       "id": "dicos-r3-calibrated-lr1e4-halfbatch:joint:0006",
       "path": "dicos-r3-calibrated-lr1e4-halfbatch_joint_epoch_0006.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr1e4-halfbatch",
       "sha256": "2205d4222c569207e0834e7dd81c4fe2fd81b8ada25108c17a86cf643b78cd9b",
       "stage": "joint",
       "trend": {
@@ -367,11 +371,13 @@
     },
     {
       "checkpoint_sha256": "3e48f732428caa254d3668e1ec323f2f6b77f68f228ad6a47da212d4bb77b4eb",
+      "dicos_object": "_runs/calibrated_lr1e4_halfbatch_dicos-r3/reports/visualization/epoch_0007.json",
       "elapsed_seconds": 97.31666570343077,
       "epoch": 7,
       "id": "dicos-r3-calibrated-lr1e4-halfbatch:joint:0007",
       "path": "dicos-r3-calibrated-lr1e4-halfbatch_joint_epoch_0007.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr1e4-halfbatch",
       "sha256": "46b8a207ad8a286b991a0057b80c020df1d17cd2f2ed388b73ce0db589f73df6",
       "stage": "joint",
       "trend": {
@@ -386,11 +392,13 @@
     },
     {
       "checkpoint_sha256": "a9a4a3ba01319337011e6d82aae231f592125c238100cd8e31d4bc703ff3c30b",
+      "dicos_object": "_runs/calibrated_lr1e4_halfbatch_dicos-r3/reports/visualization/epoch_0008.json",
       "elapsed_seconds": 92.4701701104641,
       "epoch": 8,
       "id": "dicos-r3-calibrated-lr1e4-halfbatch:joint:0008",
       "path": "dicos-r3-calibrated-lr1e4-halfbatch_joint_epoch_0008.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr1e4-halfbatch",
       "sha256": "e258a44f2ea6cda7e7903f4ebc0c8d68b18ac7fa6f86bb8ed85883ff6ac791bd",
       "stage": "joint",
       "trend": {
@@ -405,11 +413,13 @@
     },
     {
       "checkpoint_sha256": "6c2e152e5ef4725e2d3e2aeec0a90f15996cf7559d3f1b1b21759208dcd8d986",
+      "dicos_object": "_runs/calibrated_lr1e4_halfbatch_dicos-r3/reports/visualization/epoch_0009.json",
       "elapsed_seconds": 95.72092605754733,
       "epoch": 9,
       "id": "dicos-r3-calibrated-lr1e4-halfbatch:joint:0009",
       "path": "dicos-r3-calibrated-lr1e4-halfbatch_joint_epoch_0009.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr1e4-halfbatch",
       "sha256": "e38130d52572a2df1650214133806305672af91864f739509d1bc491fdfb340a",
       "stage": "joint",
       "trend": {
@@ -424,11 +434,13 @@
     },
     {
       "checkpoint_sha256": "f9fa1b9184e640513a04992a3039ee8b30a529965ba468d49287d05696a377b3",
+      "dicos_object": "_runs/calibrated_lr1e4_halfbatch_dicos-r3/reports/visualization/epoch_0010.json",
       "elapsed_seconds": 99.85965832602233,
       "epoch": 10,
       "id": "dicos-r3-calibrated-lr1e4-halfbatch:joint:0010",
       "path": "dicos-r3-calibrated-lr1e4-halfbatch_joint_epoch_0010.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr1e4-halfbatch",
       "sha256": "22164939d874a3f8429cbef1dd884e207b83be2b85fe3c3d553a3ed07eda6270",
       "stage": "joint",
       "trend": {
@@ -443,11 +455,13 @@
     },
     {
       "checkpoint_sha256": "b0d72c2c1d9f66935baa30d63f6ec88748edd7d519f8d498533066cdf37e4207",
+      "dicos_object": "_runs/calibrated_lr1e4_dicos-r3/reports/visualization/epoch_0005.json",
       "elapsed_seconds": 94.15192368905991,
       "epoch": 5,
       "id": "dicos-r3-calibrated-lr1e4:joint:0005",
       "path": "dicos-r3-calibrated-lr1e4_joint_epoch_0005.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr1e4",
       "sha256": "5b783f9ab7ebfeb2aca237b737f3671393a130b5733bba4747bca7daba3b5b89",
       "stage": "joint",
       "trend": {
@@ -462,11 +476,13 @@
     },
     {
       "checkpoint_sha256": "15946377784d36105777975d27d8c87c9951f502f2aa2c3b1db8d2e60fd8093a",
+      "dicos_object": "_runs/calibrated_lr1e4_dicos-r3/reports/visualization/epoch_0006.json",
       "elapsed_seconds": 90.85710386559367,
       "epoch": 6,
       "id": "dicos-r3-calibrated-lr1e4:joint:0006",
       "path": "dicos-r3-calibrated-lr1e4_joint_epoch_0006.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr1e4",
       "sha256": "bcb165bd3bac3e61be07a7811514f9b8123f59ec212e82012c079e832658893c",
       "stage": "joint",
       "trend": {
@@ -481,11 +497,13 @@
     },
     {
       "checkpoint_sha256": "c46a2d0dd7b2121606d3018bf88125640c80d1a98c5ed62206be05cec5a04ff4",
+      "dicos_object": "_runs/calibrated_lr1e4_dicos-r3/reports/visualization/epoch_0007.json",
       "elapsed_seconds": 97.97980436589569,
       "epoch": 7,
       "id": "dicos-r3-calibrated-lr1e4:joint:0007",
       "path": "dicos-r3-calibrated-lr1e4_joint_epoch_0007.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr1e4",
       "sha256": "13e38a1f0900d247ae004a2e9ee3ae62b49408dd9bcc114bf3dc5626e9ff687f",
       "stage": "joint",
       "trend": {
@@ -500,11 +518,13 @@
     },
     {
       "checkpoint_sha256": "86f0ec8ee1c5e2821a3fcf263de2e8d94cfbbe82929b5d492b61a45eab164a95",
+      "dicos_object": "_runs/calibrated_lr1e4_dicos-r3/reports/visualization/epoch_0008.json",
       "elapsed_seconds": 92.50326974783093,
       "epoch": 8,
       "id": "dicos-r3-calibrated-lr1e4:joint:0008",
       "path": "dicos-r3-calibrated-lr1e4_joint_epoch_0008.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr1e4",
       "sha256": "2c6868d0aa2ace6d0f8635a7c77703c77ea5c843015e8c291ba7380a45babe76",
       "stage": "joint",
       "trend": {
@@ -519,11 +539,13 @@
     },
     {
       "checkpoint_sha256": "ce9bf4ba41d19414fd0cd0786946f10ffef52a5392b74a8f31a3b198123235d9",
+      "dicos_object": "_runs/calibrated_lr1e4_dicos-r3/reports/visualization/epoch_0009.json",
       "elapsed_seconds": 95.42488048691303,
       "epoch": 9,
       "id": "dicos-r3-calibrated-lr1e4:joint:0009",
       "path": "dicos-r3-calibrated-lr1e4_joint_epoch_0009.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr1e4",
       "sha256": "6c28277b1c76155b9bf18a68aeab8fd5e40de82f2fc2e90c08c3e9f5022f4b59",
       "stage": "joint",
       "trend": {
@@ -538,11 +560,13 @@
     },
     {
       "checkpoint_sha256": "d79365693d10f16acdb2502fc3db5462f679b1c29fedbf1b6fbc8ff896321bce",
+      "dicos_object": "_runs/calibrated_lr1e4_dicos-r3/reports/visualization/epoch_0010.json",
       "elapsed_seconds": 96.09074136801064,
       "epoch": 10,
       "id": "dicos-r3-calibrated-lr1e4:joint:0010",
       "path": "dicos-r3-calibrated-lr1e4_joint_epoch_0010.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr1e4",
       "sha256": "5ee4873ca2f15e19fa9aef2c9c768ca9cfec9cbb6af4d357174d2654deaeb4ae",
       "stage": "joint",
       "trend": {
@@ -557,11 +581,13 @@
     },
     {
       "checkpoint_sha256": "c452468bb4cd34cafc55e71abe91b5b62dfc450b87077651502b9d10e723125c",
+      "dicos_object": "_runs/calibrated_lr3e4_dicos-r3/reports/visualization/epoch_0005.json",
       "elapsed_seconds": 97.62335373740643,
       "epoch": 5,
       "id": "dicos-r3-calibrated-lr3e4:joint:0005",
       "path": "dicos-r3-calibrated-lr3e4_joint_epoch_0005.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr3e4",
       "sha256": "a812948e39812ca7185477ce9780b966d51b868ed3ab695c65c2fd1f26dffb08",
       "stage": "joint",
       "trend": {
@@ -576,11 +602,13 @@
     },
     {
       "checkpoint_sha256": "20c69fccfca7ee9078b4cc76f1756fe9bf898ebdf3a8e513bd70169d18b3f8dc",
+      "dicos_object": "_runs/calibrated_lr3e4_dicos-r3/reports/visualization/epoch_0006.json",
       "elapsed_seconds": 93.31529530696571,
       "epoch": 6,
       "id": "dicos-r3-calibrated-lr3e4:joint:0006",
       "path": "dicos-r3-calibrated-lr3e4_joint_epoch_0006.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr3e4",
       "sha256": "47e2cd85fa3155ba285aa2954d2f26b29825e59c81df46e03acfeaa03f358792",
       "stage": "joint",
       "trend": {
@@ -595,11 +623,13 @@
     },
     {
       "checkpoint_sha256": "306e50652c22ddd7000968e04d319857b616391809691d157a88e3b2e49b41e0",
+      "dicos_object": "_runs/calibrated_lr3e4_dicos-r3/reports/visualization/epoch_0007.json",
       "elapsed_seconds": 92.87904947437346,
       "epoch": 7,
       "id": "dicos-r3-calibrated-lr3e4:joint:0007",
       "path": "dicos-r3-calibrated-lr3e4_joint_epoch_0007.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr3e4",
       "sha256": "8f1541cecc9e70056a1bb7050026ba74dad3cbf81bf148fd10a81a9e331c38bd",
       "stage": "joint",
       "trend": {
@@ -614,11 +644,13 @@
     },
     {
       "checkpoint_sha256": "ed9672a0e8806f5bde68d1474b5a394a816e3cce112c070d7c747a316542342a",
+      "dicos_object": "_runs/calibrated_lr3e4_dicos-r3/reports/visualization/epoch_0008.json",
       "elapsed_seconds": 96.38839658908546,
       "epoch": 8,
       "id": "dicos-r3-calibrated-lr3e4:joint:0008",
       "path": "dicos-r3-calibrated-lr3e4_joint_epoch_0008.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr3e4",
       "sha256": "2efeeb179039abff7d8ec02534a858cb0afab495555ae01d7faabeb1b9f1e82d",
       "stage": "joint",
       "trend": {
@@ -633,11 +665,13 @@
     },
     {
       "checkpoint_sha256": "bdef8cc078006d64e65c1bde35ad4c8a91f2cbcb8a16c26e08c6c615bb20c911",
+      "dicos_object": "_runs/calibrated_lr3e4_dicos-r3/reports/visualization/epoch_0009.json",
       "elapsed_seconds": 94.32609565835446,
       "epoch": 9,
       "id": "dicos-r3-calibrated-lr3e4:joint:0009",
       "path": "dicos-r3-calibrated-lr3e4_joint_epoch_0009.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr3e4",
       "sha256": "b12dda0caa8e509da138070916988f6e63a4f5bee56ebc408009dc96d93f9b71",
       "stage": "joint",
       "trend": {
@@ -652,11 +686,13 @@
     },
     {
       "checkpoint_sha256": "8d1e124e6159efb629dc790187afff27a2fd8ca51bb8f558d1be452b85562eb6",
+      "dicos_object": "_runs/calibrated_lr3e4_dicos-r3/reports/visualization/epoch_0010.json",
       "elapsed_seconds": 95.70065921265632,
       "epoch": 10,
       "id": "dicos-r3-calibrated-lr3e4:joint:0010",
       "path": "dicos-r3-calibrated-lr3e4_joint_epoch_0010.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr3e4",
       "sha256": "66207c7e5d7b43e48bce7814a07aa6aa5e2f1bbf93fdf7dfa9ca4853e2f0d4df",
       "stage": "joint",
       "trend": {
@@ -671,11 +707,13 @@
     },
     {
       "checkpoint_sha256": "4b3e7872cf47d132a91ab86d1b15adfe4ffde1121f6e62424d039455172362b0",
+      "dicos_object": "_runs/calibrated_lr3e5_dicos-r3/reports/visualization/epoch_0005.json",
       "elapsed_seconds": 95.67077153176069,
       "epoch": 5,
       "id": "dicos-r3-calibrated-lr3e5:joint:0005",
       "path": "dicos-r3-calibrated-lr3e5_joint_epoch_0005.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr3e5",
       "sha256": "eea26dcbbad60df17eda87427fcbeaddc03708d965beb99ad8e94fdaf4139e02",
       "stage": "joint",
       "trend": {
@@ -690,11 +728,13 @@
     },
     {
       "checkpoint_sha256": "0c05934661d075c31027bacb23e871361997dad8cf420483523cdd492292eae7",
+      "dicos_object": "_runs/calibrated_lr3e5_dicos-r3/reports/visualization/epoch_0006.json",
       "elapsed_seconds": 93.93498482834548,
       "epoch": 6,
       "id": "dicos-r3-calibrated-lr3e5:joint:0006",
       "path": "dicos-r3-calibrated-lr3e5_joint_epoch_0006.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr3e5",
       "sha256": "03b2c650d7243967638d319865ce1ac2fc3a2c505b7f0fe43fa0ea0548e28db9",
       "stage": "joint",
       "trend": {
@@ -709,11 +749,13 @@
     },
     {
       "checkpoint_sha256": "51877e21451bc9fa75b3ac5888b55df983c4a51f6dd690a300c017ab0088ae5c",
+      "dicos_object": "_runs/calibrated_lr3e5_dicos-r3/reports/visualization/epoch_0007.json",
       "elapsed_seconds": 94.77906441502273,
       "epoch": 7,
       "id": "dicos-r3-calibrated-lr3e5:joint:0007",
       "path": "dicos-r3-calibrated-lr3e5_joint_epoch_0007.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr3e5",
       "sha256": "504299c922d818785666111e0c36f8ba4c63b254e3d7d4fb6c64a07898483cee",
       "stage": "joint",
       "trend": {
@@ -728,11 +770,13 @@
     },
     {
       "checkpoint_sha256": "658b71e6a7761ef9dbaffc625e0ed8a6cda25750876a19f4cd4d5c948d0de398",
+      "dicos_object": "_runs/calibrated_lr3e5_dicos-r3/reports/visualization/epoch_0008.json",
       "elapsed_seconds": 95.49486466031522,
       "epoch": 8,
       "id": "dicos-r3-calibrated-lr3e5:joint:0008",
       "path": "dicos-r3-calibrated-lr3e5_joint_epoch_0008.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr3e5",
       "sha256": "8620922b0c5833a00bc7f5fe752de4e189df83438d5a39c7f4c793c99f1d52b7",
       "stage": "joint",
       "trend": {
@@ -747,11 +791,13 @@
     },
     {
       "checkpoint_sha256": "ecbf241f29f6e88c8e7bef13b29105dd87af31adf987186d1fc191cd2a9fb528",
+      "dicos_object": "_runs/calibrated_lr3e5_dicos-r3/reports/visualization/epoch_0009.json",
       "elapsed_seconds": 95.13209249824286,
       "epoch": 9,
       "id": "dicos-r3-calibrated-lr3e5:joint:0009",
       "path": "dicos-r3-calibrated-lr3e5_joint_epoch_0009.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr3e5",
       "sha256": "7a8410ea1db9109bbd5d8787b27577ce2df403c7a210153185fc0a7792147a4f",
       "stage": "joint",
       "trend": {
@@ -766,11 +812,13 @@
     },
     {
       "checkpoint_sha256": "213fc9658b8b5033d989968ce65cbd275975132a917f30e6a2a0764166e1ae68",
+      "dicos_object": "_runs/calibrated_lr3e5_dicos-r3/reports/visualization/epoch_0010.json",
       "elapsed_seconds": 94.83278352580965,
       "epoch": 10,
       "id": "dicos-r3-calibrated-lr3e5:joint:0010",
       "path": "dicos-r3-calibrated-lr3e5_joint_epoch_0010.json",
       "qa_pass": true,
+      "run_label": "dicos-r3-calibrated-lr3e5",
       "sha256": "8a50765b2c6a2e01b75bb6b4432806074c1944b3944944230cbd2fc90edb27b0",
       "stage": "joint",
       "trend": {
