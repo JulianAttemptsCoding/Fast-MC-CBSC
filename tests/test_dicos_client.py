@@ -200,6 +200,30 @@ def test_job_names_must_be_simple(client: Dicos, name: str) -> None:
         client.start("echo hi", name)
 
 
+# ------------------------------------------------- continuation epoch algebra
+# `training.epochs` is an absolute target, not a count of additional epochs:
+# the trainer resumes at checkpoint_epoch + 1 and runs range(start, epochs).
+# The first wave was built with epochs=6 against parents ending at epoch 4 and
+# so ran a single epoch, annealing the cosine restart to min_learning_rate
+# across it. These pin the algebra that fixes it.
+
+def test_continuation_epochs_are_an_absolute_target() -> None:
+    import build_dicos_continuations as builder
+
+    assert builder.EPOCHS == builder.PARENT_LAST_EPOCH + 1 + builder.ADDITIONAL_EPOCHS
+    start_epoch = builder.PARENT_LAST_EPOCH + 1
+    assert len(range(start_epoch, builder.EPOCHS)) == builder.ADDITIONAL_EPOCHS
+
+
+def test_continuation_requests_six_more_epochs() -> None:
+    import build_dicos_continuations as builder
+
+    assert builder.ADDITIONAL_EPOCHS == 6
+    # Patience must not be able to cut the comparison phase short, and must not
+    # be confused with the absolute epoch target.
+    assert builder.ADDITIONAL_EPOCHS <= builder.EPOCHS
+
+
 # ------------------------------------------------------------ setup contract
 # A GPU DiCOSApp is a different image from the CPU one. The first GPU pod
 # exposed three defects at once: the base interpreter fell back to Python 3.9

@@ -68,8 +68,19 @@ CHECKPOINTS: dict[str, dict[str, str]] = {
     },
 }
 
-RUN_TAG = "dicos-r1"
-EPOCHS = 6
+RUN_TAG = "dicos-r2"
+
+#: `training.epochs` is an ABSOLUTE epoch target, not a count of additional
+#: epochs. The trainer resumes at `checkpoint_epoch + 1` and runs
+#: `range(start_epoch, epochs)`, so a parent that ended at epoch 4 with
+#: `epochs: 6` yields a single epoch, and the cosine restart anneals to
+#: min_learning_rate across that one epoch. The first wave was launched with
+#: `epochs: 6` and did exactly that before being stopped.
+#:
+#: All four parents end at epoch 4, read from the staged `*_last.pt` payloads.
+PARENT_LAST_EPOCH = 4
+ADDITIONAL_EPOCHS = 6
+EPOCHS = PARENT_LAST_EPOCH + 1 + ADDITIONAL_EPOCHS  # 11 -> epochs 5..10
 
 
 @dataclass(frozen=True)
@@ -104,7 +115,7 @@ def build(family: str, parent_path: Path, output_dir: Path) -> Built:
     training = config["training"]
     training["device"] = "cuda"
     training["epochs"] = EPOCHS
-    training["early_stopping_patience"] = EPOCHS
+    training["early_stopping_patience"] = ADDITIONAL_EPOCHS
     training["resume_from"] = None
     training["resume_best_from"] = None
     training["resume_progress_from"] = None
@@ -157,7 +168,10 @@ def main(argv=None) -> None:
     manifest = {
         "format_version": 1,
         "run_tag": RUN_TAG,
-        "epochs": EPOCHS,
+        "epochs_absolute_target": EPOCHS,
+        "parent_last_epoch": PARENT_LAST_EPOCH,
+        "additional_epochs": ADDITIONAL_EPOCHS,
+        "epochs_run": f"{PARENT_LAST_EPOCH + 1}..{EPOCHS - 1}",
         "early_stopping_disabled_for_comparison": True,
         "templates": [
             {
