@@ -5524,3 +5524,38 @@ twelve times smaller than the noise and cannot be called a result. Absolute
 validation loss separates them the other way and by a margin that does clear
 noise: 4.680965 against 4.768465, a difference of 0.0875. Any recommendation
 must state both and must not present a 0.0016 gap as a finding.
+
+### wave3 family 3 complete — calibrated_lr1e4_halfbatch, absolute epochs 5..10
+
+Ran 19:12:35Z to 20:36:11Z, EXIT=0. QA PASS: six of six per-epoch invariants,
+postflight `pass: true`, nonfinite 0, negative 0, outside_valid_support 0,
+event closure 3.81e-06 GeV. 13,314 updates — double the other families, since
+this one runs batch 3 against their 6, giving 8,874 loader batches per epoch.
+
+    epoch   5        6        7        8        9        10
+    val     4.843495 4.894865 4.751082 4.835405 4.736289 4.710829
+
+Final epoch is also the best. Improvement against the parent (4.845029) is
+**+0.134200**, more than double any other family so far.
+
+The trace is far noisier than the full-batch families: adjacent epochs swing by
+up to 0.09 (4.894865 to 4.751082, then back to 4.835405), against 0.01-0.04 for
+lr3e4 and lr1e4. That is the expected consequence of halving the batch — more
+gradient noise, noisier validation — and it means this family's endpoint carries
+more uncertainty than the others', in both directions. It also means selecting
+on a family's *best* epoch would have rewarded a dip rather than a level, which
+is why the ranker uses the final epoch.
+
+Standings with one family outstanding:
+
+    family                     final val   improvement   best==final
+    calibrated_lr1e4_halfbatch  4.710829     +0.134200   yes
+    calibrated_lr1e4            4.768465     +0.058640   no (epoch 8)
+    calibrated_lr3e4            4.680965     +0.057076   yes
+
+The two readings disagree. By the stated criterion — largest improvement from
+beginning to end — halfbatch wins decisively and well clear of the noise floor.
+By absolute validation loss, lr3e4 is still lowest, by 0.029864 over halfbatch;
+that clears the ~0.02 resolution floor, but not by much, and halfbatch's own
+epoch-to-epoch volatility is three times that gap. Neither reading is
+dismissable and the final recommendation must present both.
