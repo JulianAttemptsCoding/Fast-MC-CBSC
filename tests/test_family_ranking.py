@@ -92,6 +92,20 @@ def test_a_missing_family_is_refused(tmp_path: Path) -> None:
         ranker.summarise("calibrated_lr1e4", tmp_path)
 
 
+def test_the_parent_baselines_match_the_published_training_history() -> None:
+    """The baselines decide the winner, so they must come from the same record
+    the public site publishes -- not from a number copied into a docstring."""
+    import csv
+
+    history = Path(__file__).resolve().parents[1] / "exhibition" / "data" / "training_history.csv"
+    published = {
+        row["variant"]: round(float(row["validation_loss"]), 6)
+        for row in csv.DictReader(history.open(encoding="utf-8"))
+        if int(row["epoch"]) == ranker.PARENT_LAST_EPOCH
+    }
+    assert published == ranker.PARENT_VALIDATION
+
+
 def test_the_expected_epoch_span_matches_the_builder(tmp_path: Path) -> None:
     """If the builder's horizon and the ranker's expectation ever disagree, the
     ranker would reject every complete run or accept a short one."""

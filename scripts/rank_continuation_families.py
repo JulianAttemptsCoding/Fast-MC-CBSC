@@ -37,6 +37,11 @@ PARENT_VALIDATION: dict[str, float] = {
     "calibrated_lr3e5": 4.897327,
 }
 
+#: Last epoch of the accepted parents, and so the epoch whose validation loss
+#: PARENT_VALIDATION records. Cross-checked against
+#: exhibition/data/training_history.csv by the test suite.
+PARENT_LAST_EPOCH = 4
+
 FIRST_EPOCH = 5
 LAST_EPOCH = 10
 EXPECTED_EPOCHS = 6
