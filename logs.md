@@ -5259,3 +5259,111 @@ computation flagged as owed before any publication depending on the figure.
 
 Verification: 138 tests pass, 43 on the access contract and all offline;
 `compileall` clean; `dicos.py verify` 18/18; `dicos.py setup` 9/9.
+
+## 2026-08-01 — RTX 4090 pod; six-epoch continuation of all four calibrated families
+
+New GPU DiCOSApp (port 32545, RTX 4090 24 GB, 40 cores, 1.5 TB RAM). Goal set by
+the user: continue each calibrated family six more epochs, then carry the family
+with the largest start-to-end validation-loss improvement forward under real
+early stopping. No budget cap in force this session.
+
+**Bring-up found three defects in `setup`, none of which the CPU pod could
+show.** A GPU image is not the CPU image: `/opt/miniconda3/envs/asgc` is absent,
+so the base-interpreter search fell through to `/usr/bin/python3` = 3.9.21, below
+this project's `requires-python >= 3.10`; that interpreter could never install
+the repo. `setup` also never installed torch at all — it assumed
+`--system-site-packages` would inherit it from the base env, true only on the CPU
+image. And the failed build still printed `setup complete` and exited 0, because
+failures were printed rather than counted. Fixed: interpreter floor enforced and
+the image's own 3.13.9 considered; torch pinned to 2.6.0+cu124, matching
+`pytorch/pytorch:2.6.0-cuda12.4` that every accepted run used, so the move does
+not silently change numerics; pip output kept in `_setup/venv_build.log`; every
+failure routed through a tally that sets the exit code. Verified: torch
+2.6.0+cu124, sm_89, `torch.cuda.is_available()` true, 9/9 setup checks, exit 0.
+
+**Two client defects surfaced the same way.** The write guard read a URL's
+`//authority` as an absolute path and refused `pip --index-url https://...`;
+URLs are now blanked before the path scan, with a test that a real escape beside
+a URL is still caught. And `logs` died with `UnicodeEncodeError` on Windows
+cp1252 the moment pip emitted progress glyphs, losing whole job logs. The guard
+also correctly refused one of my own probes (`touch /opt/miniconda3/.wtest`) —
+rule 17 working as intended.
+
+**The continuation blocker was a path string, not a data difference.** Every
+calibrated config pins `dataset_manifest_sha256 = 5a6d9632...`; the DiCOS
+manifest is `688b440c...`. The two manifests record the same 764,940 events, the
+same 187 shard hashes, the same geometry `e22d4cfb...` and the same source ROOT
+`b7c66604...`, differing only in `source_files[].path`.
+
+**Corrected a wrong reading of my own before it could mislead.** I first took
+`prep-20260724-r5/artifacts/pilot_splits.json` (338 train / 104 validation) for
+the families' training split. It is not: every frozen calibrated config pins
+`training_pilot_splits.json`, sha256 `a4d09675...`, assignment `084f0dfd...`,
+26,624 train / 6,656 validation, drawn 2048/512 per energy bin.
+
+**Regeneration is not portable; transport is.** Regenerating the 26/8 draw
+reproduced `ee7572c6...` bit-exactly, but the 2048/512 draw did not — numpy's
+`Generator.choice(replace=False)` switches algorithm with the sample fraction, so
+the large draw is version-dependent. The authoritative assignment was therefore
+transported from GCS and verified at `084f0dfd...`, and the split json rewritten
+to record this host's manifest hash. That is not a weakened check: the loader
+compares the split's manifest hash against the manifest it is used with, and
+these manifests describe byte-identical shards in identical order. Both hashes
+are recorded in the file's provenance block.
+
+Three independent confirmations that the transported split selects the same
+events on the same data: the pilot partition is a strict subset of the parent
+split (pilot-train outside parent-train = 0, pilot-validation outside
+parent-validation = 0, pilot events inside parent test = 0, so no leakage and no
+test event touched); a fresh audit of the pilot train split reproduced the
+calibrated response caps bit-exactly (`0.725470286351178`,
+`64.38813572617559`); and preflight verified all 187 shards with `"pass": true`.
+
+**Staged artifacts.** All eight checkpoints (best and last for four families)
+downloaded from their latest run per family — resolved from the `project.name`
+resume chain, not from filenames — and uploaded, hashes byte-identical on the
+host. `calibrated_lr3e4_best.pt` equals the pre-existing
+`calibrated_lr3e4_best_epoch4.pt` at `3f1022b8...`, and `calibrated_lr3e4_last`
+is `42782827...`, the checkpoint recorded as missing earlier today.
+
+**Configs.** `scripts/build_dicos_continuations.py` derives four continuation
+templates from each family's latest frozen parent rather than hand-editing a
+frozen config, changing only: paths returned to UNFROZEN for re-freezing here,
+`epochs` 6, `early_stopping_patience` 6, and the hash-verified resume pair.
+Patience is widened deliberately and is a declared change: this phase exists to
+compare all four families over the same six epochs, so no family may stop early;
+the winner's continuation restores real early stopping. `batch_size`,
+`gradient_accumulation`, `num_workers`, `seed`, `amp=False` and solver steps
+carry over untouched per the backend-portability contract. Frozen via the CLI
+against this host's artifacts:
+
+    calibrated_lr1e4            1d0708c658bb52c517030dfa4f44943aa44f4410c8d57a958f7770a2cf739a92
+    calibrated_lr1e4_halfbatch  9baf9cd695e836c03c37af88517bc603ba5a5e54aba210f14c00d4410a06468c
+    calibrated_lr3e4            2e5dc83827cffc33d4a54c82dd3383a0d0af0863810678db3ec6c438a059bad3
+    calibrated_lr3e5            12d72359baf2e010d7a4ab2fdb2ab123537c7603060591546466e4d29cbaf806
+
+**Launched.** `scripts/dicos_train.py` is the DiCOS twin of `vertex_stage`:
+identical config validation, hash-verified resume, per-epoch snapshots and
+postflight, with the shared filesystem in place of GCS. Snapshots land on CephFS,
+so an expiring pod costs at most the epoch in flight. Wave started
+2026-08-01T11:56:16Z, families run one at a time because the GPU is serial.
+
+Measured throughput: about 2.7 optimizer steps/s at batch 6, 4,437 loader batches
+per epoch, so roughly 28 min/epoch, 2.8 h/family, 11 h for the wave. The run is
+data-loader bound, not GPU bound — four loader workers at about 87% CPU with the
+GPU near 0%, because the dataset re-verifies a shard's SHA-256 on every load
+against a four-shard cache. `num_workers` was deliberately left at 4: the
+portability contract lists it as invariant across a backend move, and 11 h fits
+the pod's three-day life. Raising it would be a separately declared change.
+
+Cost, from the published ASGC tables (dated 2022, and they do not list an RTX
+4090): 1 SRU = NTD 2; RTX 3090 79 SRU/board-day, A100 173 SRU/board-day, so a
+10 h wave brackets to roughly NTD 65-150, about USD 2-5. CPU and storage are
+negligible beside that. Whether this account is billed or draws on a project
+allocation is not visible from the client.
+
+Verification: 146 tests pass (138 before, 8 added on the setup and URL-guard
+contracts); `compileall` clean; `dicos.py setup` 9/9 exit 0; preflight
+`"pass": true` over 187 shards. Note for the record: commit 52a52e3's message
+says "138 -> 155 tests"; the true count is 146. The commit was already pushed, so
+the number is corrected here rather than by rewriting published history.
