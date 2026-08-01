@@ -1,0 +1,44 @@
+{
+  "early_stopping_disabled_for_comparison": true,
+  "epochs": 6,
+  "format_version": 1,
+  "run_tag": "dicos-r1",
+  "templates": [
+    {
+      "family": "calibrated_lr1e4",
+      "parent_config": "frozen_calibrated_lr1e4_compute-extension-r2.yaml",
+      "parent_config_sha256": "ca73b1b435d5cb10133ea3a1b57a39150b516d85a80a362a2d3c9d3749b757c8",
+      "resume_best_from_sha256": "f4469a912275480507f758c9bdcd98bc58e94c459e50f5c73d9916446bebf945",
+      "resume_from_sha256": "0a9a229495004681e2df9ebe5099889e40de5af2def05eb2cf48098f0ccb8915",
+      "template": "calibrated_lr1e4_dicos-r1.yaml",
+      "template_sha256": "4dbdb7752300a05a165a990111c59dd533474819f51272f95a08bf92a54f3e40"
+    },
+    {
+      "family": "calibrated_lr1e4_halfbatch",
+      "parent_config": "frozen_calibrated_lr1e4_halfbatch_compute-extension-r1.yaml",
+      "parent_config_sha256": "76eaa5e11008bc55acb6920e336daeb126e2077f23b536f19800c3adb66a91bc",
+      "resume_best_from_sha256": "d14458bba3fcfbc35d5c3da0b106735fc8041ea2c191969ccb0b86eb484d91ca",
+      "resume_from_sha256": "999d4e3a49c18941a20eeb001a01f56d2d77a2e5e3147e940e0d8347f0d475d4",
+      "template": "calibrated_lr1e4_halfbatch_dicos-r1.yaml",
+      "template_sha256": "5ea28fda6bef5676a3809f139ba6ed67e19f1ac306be724b44a898f698b7272b"
+    },
+    {
+      "family": "calibrated_lr3e4",
+      "parent_config": "frozen_calibrated_lr3e4_compute-extension-r1.yaml",
+      "parent_config_sha256": "7b34b61121e38a42e05431389cd06f754c18d102dfdac7c7b76555fcef64f79a",
+      "resume_best_from_sha256": "3f1022b87361b8a14d9f8432273dcd6c72f6a5e599c1be1575e7f37f4014803d",
+      "resume_from_sha256": "42782827de374dedcbba50a784460833ad16129c474f98553622b39d6467720a",
+      "template": "calibrated_lr3e4_dicos-r1.yaml",
+      "template_sha256": "c2732beb937ba8ad75493499814735bec57ed6f154167c105fb476f818123ac6"
+    },
+    {
+      "family": "calibrated_lr3e5",
+      "parent_config": "frozen_calibrated_lr3e5_compute-extension-r2.yaml",
+      "parent_config_sha256": "6a119c419a5bbeb03c790023157734f221b9b11f970bf4f253df15959ecfc83f",
+      "resume_best_from_sha256": "949c8e0e199def5eba8cc6cc3f7be7d76aa9e110297fc4382b0e2f82c3b2e064",
+      "resume_from_sha256": "83758012275d20a4a23c1495ccc30e240913c95a416f3fb31c0b5d472c10aaf8",
+      "template": "calibrated_lr3e5_dicos-r1.yaml",
+      "template_sha256": "fb6b54ba33352ff604c0c0dce57fc793e8ea2158ce40e6845650a81108848641"
+    }
+  ]
+}

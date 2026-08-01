@@ -155,6 +155,25 @@ def test_discarding_output_to_dev_null_is_not_an_escape(
     client._assert_command_safe(command)
 
 
+@pytest.mark.parametrize("command", [
+    "pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124",
+    "curl -sSI https://pypi.org/simple/",
+    "git clone https://github.com/JulianAttemptsCoding/Fast-MC-CBSC.git repo",
+])
+def test_urls_are_not_mistaken_for_absolute_paths(client: Dicos, command: str) -> None:
+    """A URL's authority starts with '//', which matches the absolute-path
+    pattern; setup was refused as a write to //download.pytorch.org/whl."""
+    client._assert_command_safe(command)
+
+
+def test_a_url_does_not_mask_a_real_escape_next_to_it(client: Dicos) -> None:
+    """Blanking URLs must not blank the rest of the command."""
+    with pytest.raises(SystemExit, match="outside the permitted workdir"):
+        client._assert_command_safe(
+            "curl -s https://example.com/x.tar > /dicos_ui_home/julianjuan/x.tar"
+        )
+
+
 def test_reading_outside_the_workdir_is_still_permitted(client: Dicos) -> None:
     """The rule constrains writes and named datasets, not every read: setup has
     to inspect /opt interpreters and the venv to do its job."""
@@ -179,6 +198,47 @@ def test_job_names_must_be_simple(client: Dicos, name: str) -> None:
     before it can be interpolated."""
     with pytest.raises(SystemExit, match="job name"):
         client.start("echo hi", name)
+
+
+# ------------------------------------------------------------ setup contract
+# A GPU DiCOSApp is a different image from the CPU one. The first GPU pod
+# exposed three defects at once: the base interpreter fell back to Python 3.9
+# (below the project floor), torch was never installed because the script
+# assumed it came from the base env's site-packages, and a failed build still
+# reported "setup complete" and exited 0. These pin all three.
+
+def test_setup_requires_an_interpreter_new_enough_to_build_the_project() -> None:
+    """pyproject sets requires-python >= 3.10; a 3.9 base can never install it."""
+    from dicos import SETUP_SCRIPT
+    assert "(3,10)" in SETUP_SCRIPT
+    assert "/opt/miniconda3/bin/python" in SETUP_SCRIPT, (
+        "the GPU image's own interpreter must be a candidate; without it the "
+        "search falls through to /usr/bin/python3, which was 3.9.21"
+    )
+
+
+def test_setup_installs_the_pinned_torch_itself() -> None:
+    """Torch must not be inherited from the base env: the accepted runs all used
+    pytorch/pytorch:2.6.0-cuda12.4, and a GPU image need not ship torch at all."""
+    from dicos import SETUP_SCRIPT
+    assert "torch==2.6.0" in SETUP_SCRIPT
+    assert "cu124" in SETUP_SCRIPT
+    assert "-m venv --system-site-packages" not in SETUP_SCRIPT
+
+
+def test_setup_failures_reach_the_exit_code() -> None:
+    from dicos import SETUP_SCRIPT
+    assert "_setup/.setup_failures" in SETUP_SCRIPT
+    assert "exit 1" in SETUP_SCRIPT
+    # Each check that can fail must route through bad() or exit non-zero.
+    for expected in ("|| bad ", "setup INCOMPLETE"):
+        assert expected in SETUP_SCRIPT
+
+
+def test_setup_keeps_the_venv_build_log() -> None:
+    """The original build discarded pip's output, so the failure was invisible."""
+    from dicos import SETUP_SCRIPT
+    assert "_setup/venv_build.log" in SETUP_SCRIPT
 
 
 def test_job_command_is_guarded_before_being_detached(client: Dicos) -> None:

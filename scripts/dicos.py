@@ -248,11 +248,18 @@ class Dicos:
         # that space and would mistake a legitimate in-workdir path for an
         # escape. Comparing against the full workdir at the match offset avoids
         # depending on how the caller quoted it.
+        # A URL is not a filesystem path, but its authority begins with "//" and
+        # so matches the absolute-path patterns below -- `pip --index-url
+        # https://download.pytorch.org/whl/cu124` was refused as a write to
+        # //download.pytorch.org/whl. Blank the URLs out first, preserving
+        # offsets so the workdir comparison below stays aligned.
+        scan = re.sub(r"\w+://\S*", lambda m: " " * len(m.group(0)), command)
+
         suspects: list[tuple[str, int]] = []
-        for match in re.finditer(r">>?\s*(~?/[^\s;|&'\"]+)", command):
+        for match in re.finditer(r">>?\s*(~?/[^\s;|&'\"]+)", scan):
             suspects.append((match.group(1), match.start(1)))
         verbs = "|".join(self._WRITE_VERBS)
-        for verb_match in re.finditer(rf"\b({verbs})\b([^;|&\n]*)", command):
+        for verb_match in re.finditer(rf"\b({verbs})\b([^;|&\n]*)", scan):
             segment, offset = verb_match.group(2), verb_match.start(2)
             for match in re.finditer(r"(?<![\w=])(~?/[^\s;|&'\"]+)", segment):
                 suspects.append((match.group(1), offset + match.start(1)))
@@ -502,10 +509,13 @@ REPO_URL="https://github.com/JulianAttemptsCoding/Fast-MC-CBSC.git"
 GEOM_HASH="e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b"
 ok(){ printf '  [ok]   %s\n' "$1"; }
 fix(){ printf '  [fix]  %s\n' "$1"; }
-bad(){ printf '  [FAIL] %s\n' "$1"; }
+#: Every failure must reach the exit code. Earlier this only printed, so a pod
+#: with a broken venv still reported "setup complete" and exited 0.
+bad(){ printf '  [FAIL] %s\n' "$1"; echo "$1" >> _setup/.setup_failures; }
 
 echo "1. workdir"
 mkdir -p _setup prep && ok "$(pwd)"
+rm -f _setup/.setup_failures
 
 echo "2. repository"
 if [ -d repo/.git ]; then
@@ -516,13 +526,17 @@ else
 fi
 
 echo "3. base interpreter"
+# pyproject requires >=3.10, so an older interpreter can never build the repo.
+# Candidates are ordered most- to least-preferred; the first that satisfies the
+# floor wins. A GPU image need not ship torch -- step 4 installs it.
 BASE=""
-for cand in /opt/miniconda3/envs/asgc/bin/python /opt/conda/bin/python3 /usr/bin/python3; do
+for cand in /opt/miniconda3/envs/asgc/bin/python /opt/miniconda3/bin/python \
+            /opt/conda/bin/python3 /usr/local/bin/python3 /usr/bin/python3; do
   [ -x "$cand" ] || continue
-  if "$cand" -c "import torch" >/dev/null 2>&1; then BASE="$cand"; break; fi
-  [ -n "$BASE" ] || BASE="$cand"
+  "$cand" -c 'import sys; sys.exit(0 if sys.version_info[:2] >= (3,10) else 1)' 2>/dev/null || continue
+  BASE="$cand"; break
 done
-[ -n "$BASE" ] && ok "base $BASE ($($BASE -V 2>&1))" || bad "no interpreter found"
+[ -n "$BASE" ] && ok "base $BASE ($($BASE -V 2>&1))" || bad "no interpreter >= 3.10 found"
 
 echo "4. venv"
 NEED=0
@@ -532,25 +546,35 @@ if [ -x .venv/bin/python ]; then
 else
   NEED=1; fix "venv missing -> creating"
 fi
-if [ "$NEED" = 1 ]; then
-  rm -rf .venv
-  "$BASE" -m venv --system-site-packages .venv >/dev/null 2>&1
-  .venv/bin/pip install -q --upgrade pip >/dev/null 2>&1
-  .venv/bin/pip install -q uproot awkward >/dev/null 2>&1
-  .venv/bin/pip install -q -e repo >/dev/null 2>&1
+if [ "$NEED" = 1 ] && [ -n "$BASE" ]; then
+  # Every accepted run used pytorch/pytorch:2.6.0-cuda12.4; pin that so a
+  # backend move does not silently change the numerics. Isolated from the base
+  # env on purpose: --system-site-packages once let a foreign torch decide
+  # whether this step was even needed.
+  BUILDLOG=_setup/venv_build.log
+  fix "building venv (torch 2.6.0+cu124), log -> $BUILDLOG"
+  { rm -rf .venv
+    "$BASE" -m venv .venv \
+    && .venv/bin/python -m pip install --upgrade pip setuptools wheel \
+    && .venv/bin/pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124 \
+    && .venv/bin/pip install "numpy<3" pyyaml uproot awkward scikit-learn \
+    && .venv/bin/pip install -e repo ; } >"$BUILDLOG" 2>&1
   .venv/bin/python -c "import torch,numpy,uproot,cbsc_zdc" >/dev/null 2>&1 \
-    && ok "venv built" || bad "venv build failed"
+    && ok "venv built ($(.venv/bin/python -c 'import torch;print(torch.__version__)'))" \
+    || bad "venv build failed -- see $BUILDLOG"
 fi
 
 echo "5. frozen geometry"
 if [ -f prep/geometry_frozen/geometry.npz ]; then
-  .venv/bin/python - <<PY
+  .venv/bin/python - <<PY || bad "geometry hash mismatch"
 import json,sys,numpy as np
 sys.path.insert(0,"repo/src")
 from cbsc_zdc.data.geometry import geometry_hash
 got=geometry_hash(dict(np.load("prep/geometry_frozen/geometry.npz")))
-print(("  [ok]   geometry hash verified" if got=="$GEOM_HASH"
-       else "  [FAIL] geometry hash MISMATCH "+got))
+if got=="$GEOM_HASH":
+    print("  [ok]   geometry hash verified")
+else:
+    print("  [FAIL] geometry hash MISMATCH "+got); sys.exit(1)
 PY
 else
   bad "prep/geometry_frozen/geometry.npz absent -- upload it (see docs/DICOS_BACKEND.md)"
@@ -570,8 +594,8 @@ D=~/sharedfs/work/IOP/ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neu
 
 echo "8. prepared corpus"
 if [ -f prep/data/dataset_manifest.json ]; then
-  .venv/bin/python - <<'PY'
-import json
+  .venv/bin/python - <<'PY' || bad "prepared corpus does not match the canonical corpus"
+import json, sys
 from pathlib import Path
 m = json.loads(Path("prep/data/dataset_manifest.json").read_text())
 n, shards = m["n_events"], len(m["shards"])
@@ -580,6 +604,7 @@ good = (n == 764940 and shards == 187
         and all(v == 0 for v in m["rejected"].values()))
 print(f"  [{'ok  ' if good else 'FAIL'}]   {n} events in {shards} shards, "
       f"rejections {sum(m['rejected'].values())}")
+sys.exit(0 if good else 1)
 PY
 else
   echo "  [note] not built yet -- see docs/DICOS_BACKEND.md step 5"
@@ -587,8 +612,8 @@ fi
 
 echo "9. split"
 if [ -f prep/splits.json ]; then
-  .venv/bin/python - <<'PY'
-import json
+  .venv/bin/python - <<'PY' || bad "split does not match the canonical assignment"
+import json, sys
 from pathlib import Path
 s = json.loads(Path("prep/splits.json").read_text())
 want = {"train": 612482, "validation": 76158, "test": 76300}
@@ -596,11 +621,17 @@ canon = "f71003e07eb16baf4029387fd8e54b2e22b98981bbd6ee519a6d363167b4c8c8"
 good = s["counts"] == want and s["assignment_sha256"] == canon
 print(f"  [{'ok  ' if good else 'FAIL'}]   {s['counts']}"
       + ("" if good else "  <- does NOT match the canonical assignment"))
+sys.exit(0 if good else 1)
 PY
 else
   echo "  [note] not built yet -- see docs/DICOS_BACKEND.md step 6"
 fi
 echo
+if [ -s _setup/.setup_failures ]; then
+  printf 'setup INCOMPLETE -- %s check(s) failed:\n' "$(wc -l < _setup/.setup_failures)"
+  sed 's/^/  - /' _setup/.setup_failures
+  exit 1
+fi
 echo "setup complete"
 """
 
@@ -744,6 +775,13 @@ df -h . 2>&1 | tail -2
 
 
 def main() -> int:
+    # Remote output is UTF-8 (pip progress bars use box-drawing glyphs). A
+    # Windows console defaults to cp1252 and raises UnicodeEncodeError on them,
+    # which would lose an entire job log to a rendering detail.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="cmd", required=True)
