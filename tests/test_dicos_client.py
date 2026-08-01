@@ -174,6 +174,27 @@ def test_a_url_does_not_mask_a_real_escape_next_to_it(client: Dicos) -> None:
         )
 
 
+@pytest.mark.parametrize(
+    "command",
+    [
+        "(nvidia-smi --query-gpu=name --format=csv 2>/dev/null) || echo none",
+        "{ python3 -V; } >/dev/null 2>&1",
+        "(cat /etc/os-release 2>/dev/null)",
+    ],
+)
+def test_a_closing_paren_does_not_stick_to_a_path(client: Dicos, command: str) -> None:
+    """`info`'s own probe is `(nvidia-smi ... 2>/dev/null)`. If the token regex
+    swallows the paren the candidate becomes '/dev/null)', which misses the
+    sink whitelist and refuses a command that writes nothing."""
+    client._assert_command_safe(command)
+
+
+def test_a_paren_does_not_hide_a_real_escape(client: Dicos) -> None:
+    """Ending the token at ')' must not stop the check from seeing the path."""
+    with pytest.raises(SystemExit, match="outside the permitted workdir"):
+        client._assert_command_safe("(echo x > /dicos_ui_home/julianjuan/escape.txt)")
+
+
 def test_reading_outside_the_workdir_is_still_permitted(client: Dicos) -> None:
     """The rule constrains writes and named datasets, not every read: setup has
     to inspect /opt interpreters and the venv to do its job."""

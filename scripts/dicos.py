@@ -255,13 +255,17 @@ class Dicos:
         # offsets so the workdir comparison below stays aligned.
         scan = re.sub(r"\w+://\S*", lambda m: " " * len(m.group(0)), command)
 
+        # Parentheses and braces end a path token as surely as a space does:
+        # `(nvidia-smi 2>/dev/null)` must yield "/dev/null", not "/dev/null)",
+        # which would miss the sink whitelist below and refuse a pure read.
+        token = r"~?/[^\s;|&'\"()}{]+"
         suspects: list[tuple[str, int]] = []
-        for match in re.finditer(r">>?\s*(~?/[^\s;|&'\"]+)", scan):
+        for match in re.finditer(rf">>?\s*({token})", scan):
             suspects.append((match.group(1), match.start(1)))
         verbs = "|".join(self._WRITE_VERBS)
         for verb_match in re.finditer(rf"\b({verbs})\b([^;|&\n]*)", scan):
             segment, offset = verb_match.group(2), verb_match.start(2)
-            for match in re.finditer(r"(?<![\w=])(~?/[^\s;|&'\"]+)", segment):
+            for match in re.finditer(rf"(?<![\w=])({token})", segment):
                 suspects.append((match.group(1), offset + match.start(1)))
 
         # Character devices are not files anyone can damage, and `2>/dev/null`
