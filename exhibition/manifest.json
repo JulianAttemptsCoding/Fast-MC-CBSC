@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-07-28T00:30:14.699116+00:00",
+  "generated_at_utc": "2026-08-01T22:07:17.408989+00:00",
   "test_events_used": 0,
   "selected_validation_position": 21,
   "selection_sha256": "f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6",
   "source_files": [
     {
       "path": "exhibition/data/training_history.csv",
-      "bytes": 6101,
-      "sha256": "fedb7e434ac2240735ca334c9f4cd25a552ce7dadf6b1431546ab8a4cb80f3aa"
+      "bytes": 13253,
+      "sha256": "6a0f51a0ce8e5c4c4e5630f96e405d1640fb366b63023156d6728d89595a6616"
     },
     {
       "path": "audit/compute_extension_20260727_r2_terminal_analysis.json",
@@ -17,8 +17,8 @@
     },
     {
       "path": "dashboard/public/data/manifest.json",
-      "bytes": 31966,
-      "sha256": "86149a85561cc7a65e3290c738b831f85c1ebe4c7d167d14fe1da00b1f7bed9d"
+      "bytes": 59806,
+      "sha256": "00b5fd7e102bd79b3ec596073668a1f61d664350419fae82400c8de9598e46b5"
     },
     {
       "path": "dashboard/public/data/geometry.json",
@@ -49,53 +49,53 @@
   "visuals": [
     {
       "path": "figures/01_train_validation_loss_each_model.png",
-      "bytes": 226633,
-      "sha256": "ed49f5c0b77b950ff5f3846f12bcadd92251cc9cfe89c5f73eea55c91063c586"
+      "bytes": 258359,
+      "sha256": "c90ddd6a42ce3195c0fac082e295b5dbb39668f371b8d5480c782a3708b5a5fa"
     },
     {
       "path": "figures/01_train_validation_loss_each_model.svg",
-      "bytes": 53332,
-      "sha256": "d42fa422bf6aa9847c6300d7504f9abe3f84b01607ccdc433f19a1e3f891cb54"
+      "bytes": 72969,
+      "sha256": "da319adc17185a766b591a4163b71c10efcf9e7fac47ae48b65f836d3ee3fb6e"
     },
     {
       "path": "figures/02_validation_loss_comparison.png",
-      "bytes": 223965,
-      "sha256": "462893ddeaf89fd0ec34184470034f91605656a79554938c587da223017b4e74"
+      "bytes": 270718,
+      "sha256": "63557b8df54650959cd5914b305ab789a7bb042b9647b8e92ab55c7a61cfa8d6"
     },
     {
       "path": "figures/02_validation_loss_comparison.svg",
-      "bytes": 38982,
-      "sha256": "1cbfb2c9f2b3458f4e142c59f58e2171f73792f636ca824e45f3ddb5c178e7fd"
+      "bytes": 46766,
+      "sha256": "b8b5be821a34d769e409c885539c2191d8e895d4d54b9bf3614533c15ff80e55"
     },
     {
       "path": "figures/03_objective_component_evolution.png",
-      "bytes": 213652,
-      "sha256": "ca1e31729b4385a58907eeb2c9dae7a2af53bbf99e486b1b7cce73a08085873f"
+      "bytes": 275671,
+      "sha256": "960645d25451ba0373a26acd9842d986fc179724c23d9a112b71ce6b21db052d"
     },
     {
       "path": "figures/03_objective_component_evolution.svg",
-      "bytes": 79746,
-      "sha256": "2189608aadb33c421a88904bc7761aa55714eb059f60dd4364ad521cc23f2efe"
+      "bytes": 134231,
+      "sha256": "e064f104bb843da17489df6cfd330bbedc4136f4198a28584065eacdbe930541"
     },
     {
       "path": "figures/04_fixed_sample_proxy_trajectories.png",
-      "bytes": 262935,
-      "sha256": "b7a06029408dcb359a1cc252d250cb20eff559ccf54b7a21be78ebe9fd997acd"
+      "bytes": 369446,
+      "sha256": "efa1380182d66f058babe0f26ceed553da8efe04a9dda18fbbd9a81268d36805"
     },
     {
       "path": "figures/04_fixed_sample_proxy_trajectories.svg",
-      "bytes": 36968,
-      "sha256": "4152884def829e8791f360962b65ff31a0a6764675d507460b5bb331266be5a2"
+      "bytes": 51813,
+      "sha256": "86f88a78c33e16bc7ca319008b075e5d582ac00eaa67a244ed41ba8874683490"
     },
     {
       "path": "figures/05_loss_vs_visual_proxy_boundary.png",
-      "bytes": 163450,
-      "sha256": "b8c6b37e5171ffe17221a5edad02499e64b2adf54fa2fd0b323eff50dd64f930"
+      "bytes": 153442,
+      "sha256": "4a14ecde865f466b0cf521cc232bc9f82a9602f283ed6decc64acb1c00a5bd20"
     },
     {
       "path": "figures/05_loss_vs_visual_proxy_boundary.svg",
-      "bytes": 34718,
-      "sha256": "08d8d981bbd5b1c5c6385a05af05e7e4ad44a24ba6700df5fe3e6425e4336003"
+      "bytes": 34023,
+      "sha256": "6716f1f8577d69d870a9c2ee9b7a0836e728b7a7fadfb072bfcac981261e74cb"
     },
     {
       "path": "figures/06_vertex_compute_and_budget.png",
@@ -105,7 +105,7 @@
     {
       "path": "figures/06_vertex_compute_and_budget.svg",
       "bytes": 23948,
-      "sha256": "f9fb0ed54619ddd8136135b1a361191a22f4756ab22c274b86656845044ba06d"
+      "sha256": "abb0159e63fad439eca68526354ca55650d727070b5df3ee9b821ff917836196"
     },
     {
       "path": "figures/07_model_architecture_and_exact_decoder.png",
@@ -115,7 +115,7 @@
     {
       "path": "figures/07_model_architecture_and_exact_decoder.svg",
       "bytes": 26329,
-      "sha256": "5dc7ca6d4ecbd9253f513814ec472fae1591d28fdd378f0872cc9b0cbfcd79e5"
+      "sha256": "c3e335f0d8fb81967babcbcf79f7e0a9bfa5d57e5ecbee5444b5f804ac9d7922"
     },
     {
       "path": "figures/08_data_geometry_and_split_contract.png",
@@ -125,7 +125,7 @@
     {
       "path": "figures/08_data_geometry_and_split_contract.svg",
       "bytes": 17564,
-      "sha256": "7b4af9e7aea0359c3a389999a94702375388a956ec4cd493e73b2d007cf0eb62"
+      "sha256": "e4e30682f9f356606abc47f3c5b7ac6fb198e4c96ee1fcf60123e1da68fb9eb9"
     },
     {
       "path": "figures/09_evidence_and_claim_boundary.png",
@@ -135,7 +135,7 @@
     {
       "path": "figures/09_evidence_and_claim_boundary.svg",
       "bytes": 21218,
-      "sha256": "4f7ec4526455f5863a1d650838c5abc1474b2877f6e45a534287d1751a956a85"
+      "sha256": "38ae43c694db6e79b9697647858360ae7613a131c20153794243af7a09d386a3"
     },
     {
       "path": "figures/10_same_condition_longitudinal_profiles.png",
@@ -145,7 +145,7 @@
     {
       "path": "figures/10_same_condition_longitudinal_profiles.svg",
       "bytes": 100161,
-      "sha256": "7d4b4e5c391224d418f57e136f68d1aa4c964dcf8bf24b027e5dad2805cd0291"
+      "sha256": "4406eba98a6219ca1b565f6fd0f0f2779f71045503af8474308417e3c21fd37f"
     },
     {
       "path": "figures/11_best_model_sample_distributions.png",
@@ -155,7 +155,7 @@
     {
       "path": "figures/11_best_model_sample_distributions.svg",
       "bytes": 68276,
-      "sha256": "5e567ce5af20d44187e2738b8cec9500281f66cb8d26f1039ddf9da598419e78"
+      "sha256": "ab01b31d7c51f47c84bbadd3836397815bc06a1b5ac4f7a0f0cefb1102bc5187"
     },
     {
       "path": "figures/12_same_condition_3d_energy_deposits.png",
@@ -176,28 +176,52 @@
         1,
         2,
         3,
-        4
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
       ],
       "calibrated_lr1e4": [
         0,
         1,
         2,
         3,
-        4
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
       ],
       "calibrated_lr3e4": [
         0,
         1,
         2,
         3,
-        4
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
       ],
       "calibrated_lr1e4_halfbatch": [
         0,
         1,
         2,
         3,
-        4
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
       ]
     },
     "all_numeric_values_finite": true,

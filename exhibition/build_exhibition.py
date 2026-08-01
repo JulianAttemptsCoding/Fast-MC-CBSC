@@ -101,7 +101,10 @@ def read_history() -> dict[str, list[dict[str, float]]]:
             rows[variant].append(parsed)
     for variant, series in rows.items():
         series.sort(key=lambda x: x["epoch"])
-        expected = list(range(5))
+        # Epochs 0..4 are the accepted parents; 5..10 are the six-epoch DiCOS
+        # continuation (dicos-r3). Still an exact contract, not a relaxed one:
+        # a missing or duplicated epoch fails here exactly as before.
+        expected = list(range(11))
         actual = [r["epoch"] for r in series]
         assert actual == expected, (variant, actual, expected)
         assert all(math.isfinite(value) for row in series for value in row.values())
@@ -204,7 +207,8 @@ def fig02_validation_comparison(history: dict) -> list[Path]:
     fig, (ax, ax2) = plt.subplots(1, 2, figsize=(13.333, 7.5), gridspec_kw={"width_ratios": [1.65, 1]})
     title(
         fig,
-        "More T4 compute lowered validation loss in all four calibrated families",
+        "More compute lowered validation loss in all four calibrated families",
+        "Epochs 0–4 on T4; epochs 5–10 continued on an RTX 4090. "
         "Absolute trajectories at left; total change from each family’s first completed epoch at right",
     )
     for variant in VARIANTS:
@@ -216,8 +220,12 @@ def fig02_validation_comparison(history: dict) -> list[Path]:
     clean_axis(ax)
     ax.set_xlabel("Completed epoch")
     ax.set_ylabel("Validation loss")
-    ax.set_xticks(range(5))
-    ax.set_xlim(-0.1, 5.35)
+    # Derived from the data, not hard-coded: the axis silently clipped the
+    # continuation epochs when the history grew past epoch 4, drawing the tails
+    # outside the axes and over the right panel.
+    last_epoch = max(r["epoch"] for rows in history.values() for r in rows)
+    ax.set_xticks(range(last_epoch + 1))
+    ax.set_xlim(-0.1, last_epoch + 1.6)
     changes = []
     for variant in VARIANTS:
         rows = history[variant]
@@ -291,12 +299,15 @@ def visualization_payloads() -> dict[str, dict[int, dict]]:
                 and "viability-wave2-r1-" not in ident
                 and "compute-extension-r1-" not in ident
                 and "compute-extension-r2-" not in ident
+                and "dicos-r3-" not in ident
             ):
                 continue
             epoch = int(entry["epoch"])
             current = selected[variant].get(epoch)
             priority = (
-                4
+                5
+                if "dicos-r3-" in ident
+                else 4
                 if "compute-extension-r2-" in ident
                 else 3
                 if "compute-extension-r1-" in ident
@@ -307,14 +318,24 @@ def visualization_payloads() -> dict[str, dict[int, dict]]:
             current_priority = current["_priority"] if current else -1
             if priority >= current_priority:
                 payload = load_json(DASH / entry["path"])
-                payload["_priority"] = priority
-                payload["_path"] = entry["path"]
-                selected[variant][epoch] = payload
+                # Keep only what the figures read. Each payload is ~13 MB of
+                # per-draw detail on disk and several times that once parsed;
+                # retaining 44 of them whole exhausted memory. The per-draw
+                # data is still read in full, but only from the BEST_FILES
+                # payloads, which are loaded separately and are few.
+                selected[variant][epoch] = {
+                    "aggregate": {"trend": dict(payload["aggregate"]["trend"])},
+                    "checkpoint_sha256": payload.get("checkpoint_sha256"),
+                    "selection_sha256": payload.get("selection_sha256"),
+                    "_priority": priority,
+                    "_path": entry["path"],
+                }
+    full = list(range(11))
     expected = {
-        "calibrated_lr3e5": [0, 1, 2, 3, 4],
-        "calibrated_lr1e4": [0, 1, 2, 3, 4],
-        "calibrated_lr3e4": [0, 1, 2, 3, 4],
-        "calibrated_lr1e4_halfbatch": [0, 1, 2, 3, 4],
+        "calibrated_lr3e5": full,
+        "calibrated_lr1e4": full,
+        "calibrated_lr3e4": full,
+        "calibrated_lr1e4_halfbatch": full,
     }
     for variant, epochs in expected.items():
         assert sorted(selected[variant]) == epochs, (variant, sorted(selected[variant]), epochs)
@@ -341,7 +362,7 @@ def fig04_proxy_trajectories(payloads: dict) -> list[Path]:
                 values = [100 * x for x in values]
             ax.plot(epochs, values, marker="o", lw=2, color=COLORS[variant], label=SHORT[variant])
         ax.set_ylabel(f"{label}{' (%)' if unit == '%' else ''}")
-        ax.set_xticks(range(5))
+        ax.set_xticks(sorted({e for v in VARIANTS for e in payloads[v]}))
         clean_axis(ax)
     axes[-1].set_xlabel("Completed epoch")
     handles = [Line2D([0], [0], color=COLORS[v], marker="o", lw=2, label=SHORT[v]) for v in VARIANTS]
