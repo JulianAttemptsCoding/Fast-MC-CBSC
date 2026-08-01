@@ -490,7 +490,7 @@ Three launches exist and only the third is live:
 | tag | fate |
 |---|---|
 | `dicos-r1` | Aborted. Launched with `epochs: 6`, which is an **absolute** target, so it ran one epoch per family with the cosine annealed to `min_learning_rate` across it. Archived at `_runs/aborted_r1_epochs_misread/`. |
-| `dicos-r2` (wave2) | Stopped after one epoch to free the GPU for the A100 evaluation, then archived at `_runs/aborted_r2_slow_loader/` because it ran under the slow loader and an earlier commit. |
+| `dicos-r2` (wave2) | Stopped after one epoch to free the GPU while a second pod was evaluated, then archived at `_runs/aborted_r2_slow_loader/` because it ran under the slow loader and an earlier commit. |
 | `dicos-r3` | **Live.** Same frozen `*_dicos-r2.yaml` configs; only the run directory and the loader's shard-cache setting differ. |
 
 Do not compare a number from an aborted run against a `dicos-r3` number.
