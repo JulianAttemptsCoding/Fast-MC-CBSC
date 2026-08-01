@@ -561,6 +561,13 @@ if [ "$NEED" = 1 ] && [ -n "$BASE" ]; then
   # whether this step was even needed.
   BUILDLOG=_setup/venv_build.log
   fix "building venv (torch 2.6.0+cu124), log -> $BUILDLOG"
+  # `rm -rf .venv` succeeds on a pod whose shared filesystem has died in a way
+  # that later blocks creation, and this workdir is shared with another pod --
+  # so a failed rebuild here once left a healthy pod with no interpreter.
+  # Prove a write works before destroying anything.
+  if ! ( touch .venv_write_probe && rm -f .venv_write_probe ) 2>/dev/null; then
+    bad "cannot write to the workdir -- refusing to delete the existing venv"
+  else
   { rm -rf .venv
     "$BASE" -m venv .venv \
     && .venv/bin/python -m pip install --upgrade pip setuptools wheel \
@@ -570,6 +577,7 @@ if [ "$NEED" = 1 ] && [ -n "$BASE" ]; then
   .venv/bin/python -c "import torch,numpy,uproot,cbsc_zdc" >/dev/null 2>&1 \
     && ok "venv built ($(.venv/bin/python -c 'import torch;print(torch.__version__)'))" \
     || bad "venv build failed -- see $BUILDLOG"
+  fi
 fi
 
 echo "5. frozen geometry"

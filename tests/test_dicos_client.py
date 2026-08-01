@@ -292,6 +292,22 @@ def test_setup_updates_the_repo_without_git_dash_c() -> None:
     assert "( cd repo && git pull --ff-only )" in code
 
 
+def test_setup_proves_it_can_write_before_deleting_the_venv() -> None:
+    """A pod whose shared filesystem had died still ran `rm -rf .venv`, which
+    succeeded, and then could not rebuild -- leaving the *other*, healthy pod
+    sharing that workdir with no interpreter. Destroying a working venv is only
+    acceptable once a write has been shown to work."""
+    from dicos import SETUP_SCRIPT
+
+    code = "\n".join(
+        line for line in SETUP_SCRIPT.splitlines() if not line.lstrip().startswith("#")
+    )
+    probe = code.index(".venv_write_probe")
+    destroy = code.index("rm -rf .venv\n")
+    assert probe < destroy, "the write probe must come before the removal"
+    assert "cannot write" in code
+
+
 def test_setup_never_builds_a_dependency_from_source() -> None:
     """On the A100 image (Python 3.11, GCC < 9.3) pip found no matching numpy
     wheel and fell back to an sdist, which failed with 'NumPy requires GCC >=
