@@ -5625,3 +5625,60 @@ Standing boundary unchanged. This is short-horizon optimization evidence on the
 26,624/6,656 pilot bank. It establishes nothing about Geant4 fidelity, nothing
 about untouched-test performance, and the 76,300-event test split remains
 sealed and untouched.
+
+### Sites updated for the continuation; and a risk on the final run
+
+**Exhibition** (`f2258b6`). Extended from epochs 0-4 to 0-10 for all four
+families. The per-epoch visualization payloads were checked for comparability
+before being merged rather than assumed: `selection_sha256` identical at
+`f70529198aa9...` (same 50 validation conditions), same geometry hash, same
+split, same 50-by-5 draw contract, same solver steps. The generation seeds
+differ only because the epoch differs — both follow `20260725 + epoch*1000003`,
+which reproduces 24260737 at epoch 4 and 30260755 at epoch 10 exactly.
+`manifest_sha256` and `splits_sha256` differ by the already-recorded
+path-string rewrite, not by content.
+
+Three defects were found by looking at the rendered figures, not by trusting a
+clean build: fig02 and fig04 hard-coded five x-ticks and a five-epoch x-limit,
+so the continuation drew outside the axes and over the neighbouring panel;
+fig02's title claimed "More T4 compute" when epochs 5-10 ran on an RTX 4090;
+and retaining every matched payload exhausted memory at 44 epochs, since only
+`aggregate.trend` is ever read from them. The epoch contracts were extended to
+an exact 0..10, not relaxed — a missing or duplicated epoch still fails. The
+"4/4 final epochs beat their family's first completed epoch" claim was
+re-verified against the new endpoints and still holds.
+
+**Public site** (`fde0d91`). The four epoch-4 snapshots were replaced with the
+accepted continuation checkpoints. The published epoch is deliberately *not*
+uniform, because the documented policy is "lowest verified validation-loss
+checkpoint per calibrated family", not "latest":
+
+    calibrated_lr3e4            epoch 10   4.680965
+    calibrated_lr1e4_halfbatch  epoch 10   4.710829
+    calibrated_lr1e4            epoch  8   4.766131   (epoch 10 was 4.768465)
+    calibrated_lr3e5            epoch  8   4.843471   (epoch 10 was 4.874426)
+
+Publishing epoch 10 across the board would have contradicted that basis for two
+families. Each published snapshot is the one its own run summary records as
+best. The exporter re-verified source hashes, geometry, the fixed selection,
+the 50-by-5 contract and zero test events before writing; 7/7 public tests pass
+and the Vite build is clean. Pages deployment not yet confirmed at time of
+writing — a push is not a deployment.
+
+Note on two different baselines, so the site and the selection do not look
+contradictory. Exhibition figure 02 measures reduction from each family's
+*first completed epoch* (epoch 0) and ranks lr3e4 first at 5.45%. The winner
+selection measured improvement from the *parent epoch-4* checkpoint and ranked
+halfbatch first at +0.134200. Both are correct for their stated baseline.
+
+**Final continuation, epoch 11: train 4.912513, validation 4.785436, lr
+9.971e-05.** Up from the resumed best of 4.710829, which is the expected cosine
+restart. **This is a real risk to flag.** Early stopping is patience 3 against
+a best that carries over at 4.710829. During wave3 this family needed five
+epochs after its restart to get clearly below its own starting point, and its
+trace swings by up to 0.09 between adjacent epochs. If epochs 12, 13 and 14 all
+fail to beat 4.710829, the run stops at epoch 14 having improved nothing — not
+because the configuration is wrong, but because a cosine restart and a patience
+of 3 are an awkward pair. Patience 3 was restored deliberately and per
+instruction; recording the interaction here so that an early stop is read as
+the schedule's doing rather than as evidence the family has converged.
