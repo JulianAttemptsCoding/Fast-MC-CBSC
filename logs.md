@@ -5682,3 +5682,56 @@ because the configuration is wrong, but because a cosine restart and a patience
 of 3 are an awkward pair. Patience 3 was restored deliberately and per
 instruction; recording the interaction here so that an early stop is read as
 the schedule's doing rather than as evidence the family has converged.
+
+### Final continuation stopped by early stopping without improving
+
+`calibrated_lr1e4_halfbatch_dicos-final` ran 21:55:22Z to 22:38:25Z, EXIT=0,
+three epochs, 6,657 updates. QA PASS: three of three per-epoch invariants,
+postflight `pass: true`, nonfinite 0, negative 0, outside_valid_support 0.
+
+    epoch   11        12        13
+    val     4.785436  4.763828  4.791463
+    lr      9.971e-5  9.884e-5  9.741e-5
+
+`best_validation_loss` in the run summary is 4.710828610604539 — unchanged,
+the value carried in from wave3 epoch 10. **The run improved on nothing.**
+Early stopping fired after three consecutive epochs above that best, exactly as
+patience 3 specifies.
+
+This was predicted before epoch 13 completed and is recorded here as a design
+fault, not a result about the model. The 4.710829 best was reached at the *end*
+of a cosine anneal, at lr 1e-6. This run set `restart_scheduler_on_resume`, so
+the cosine restarted at 1e-4 and was spread across epochs 11..39; lr moved only
+from 9.971e-05 to 9.741e-05 in three epochs. The run was therefore asked to beat
+a fully annealed optimum while training at a hundred times that learning rate,
+with three epochs to do it.
+
+**A shorter cosine horizon would not have fixed it**, which is worth recording
+because it was my first proposed remedy. On a relaunch the stale counter resets
+but the best still resumes at 4.710829, and the first epochs after any 1e-4
+restart are worse than an annealed best regardless of how the remaining anneal
+is scheduled. The incompatibility is between patience 3 and a high-LR restart,
+not between patience 3 and a particular horizon. wave3 avoided it only because
+its patience was widened to 6 for precisely this reason.
+
+No relaunch was attempted. Every remaining option changes a parameter that was
+explicitly specified — patience 3 — or one that was chosen here
+(`restart_scheduler_on_resume`), so the choice belongs to the user:
+
+  A. patience 5-6 with the restart kept: mirrors wave3, the only configuration
+     that has produced improvement for this family.
+  B. `restart_scheduler_on_resume: false`: continues near lr 1e-6, so very
+     little learning; likely three flat epochs and another stop.
+  C. accept epoch 10 as this family's annealed optimum and stop here.
+
+The honest reading of C is that 4.710829 may simply be where this family lands
+under its schedule, and that six more epochs at a restarted learning rate is
+not evidence to the contrary.
+
+GPU is now idle; no job is running on the pod. All checkpoints from all four
+families and from this run are retained, so any of the three options can be
+started from a clean state.
+
+Standing boundary unchanged: optimization evidence on the pilot bank only.
+Nothing here bears on Geant4 fidelity or untouched-test performance, and the
+76,300-event test split remains sealed.
