@@ -5467,3 +5467,31 @@ source commit `3c5ff0f`, families serial because the GPU is serial.
 
 Tests: 165 pass (146 → 165; +10 shard-cache contracts, +1 evidence contract,
 +4 client guard contracts). `compileall` clean.
+
+### wave3 family 1 complete — calibrated_lr3e4, absolute epochs 5..10
+
+Ran 16:37:28Z to 17:54:34Z, 77.0 min for six epochs — 12.2 min/epoch steady
+after a ~3 min dataset warmup, against 35.5 min/epoch before the shard-cache
+fix. GPU held 93–97% at ~383 W, so the run is now compute-bound rather than
+loader-bound.
+
+    epoch   5        6        7        8        9        10
+    val     4.909547 4.772425 4.727558 4.684972 4.698573 4.680965
+    lr      2.800e-4 2.253e-4 1.505e-4 7.575e-5 2.103e-5 (min)
+
+Validation rose above the parent before falling, which is the expected shape of
+`restart_scheduler_on_resume`: the cosine restarts at 2.8e-4 and anneals. Epoch
+9 broke monotonicity (4.698573 against epoch 8's 4.684972) while train loss kept
+falling, the ordinary signature of a cosine tail beginning to overfit; epoch 10
+recovered to 4.680965, so for this family the final epoch is also the best and
+the final/best ambiguity the ranker guards against does not arise.
+
+Improvement against the accepted parent (4.738041) is **+0.057076**.
+
+Interpreting that number honestly: two runs of this identical config on this
+identical GPU produced validation losses differing by 0.016 (wave2 epoch 5
+4.925427 against wave3 epoch 5 4.909547), on data proven byte-identical. FP32
+GPU training here is not bitwise deterministic — `torch.use_deterministic_algorithms`
+has never been set in this project — so roughly 0.02 is the resolution floor for
+comparing two runs. +0.057076 clears it; a margin between families below ~0.02
+would not, and will be reported as unresolved rather than ranked.
