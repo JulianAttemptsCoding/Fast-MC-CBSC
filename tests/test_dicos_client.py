@@ -259,6 +259,15 @@ def test_setup_failures_reach_the_exit_code() -> None:
         assert expected in SETUP_SCRIPT
 
 
+def test_setup_never_builds_a_dependency_from_source() -> None:
+    """On the A100 image (Python 3.11, GCC < 9.3) pip found no matching numpy
+    wheel and fell back to an sdist, which failed with 'NumPy requires GCC >=
+    9.3'. Wheels only: a missing wheel must fail loudly, not invoke a
+    toolchain whose version nobody controls."""
+    from dicos import SETUP_SCRIPT
+    assert "--only-binary=:all:" in SETUP_SCRIPT
+
+
 def test_setup_keeps_the_venv_build_log() -> None:
     """The original build discarded pip's output, so the failure was invisible."""
     from dicos import SETUP_SCRIPT

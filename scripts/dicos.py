@@ -557,7 +557,7 @@ if [ "$NEED" = 1 ] && [ -n "$BASE" ]; then
     "$BASE" -m venv .venv \
     && .venv/bin/python -m pip install --upgrade pip setuptools wheel \
     && .venv/bin/pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124 \
-    && .venv/bin/pip install "numpy<3" pyyaml uproot awkward scikit-learn \
+    && .venv/bin/pip install --only-binary=:all: "numpy<3" pyyaml uproot awkward scikit-learn \
     && .venv/bin/pip install -e repo ; } >"$BUILDLOG" 2>&1
   .venv/bin/python -c "import torch,numpy,uproot,cbsc_zdc" >/dev/null 2>&1 \
     && ok "venv built ($(.venv/bin/python -c 'import torch;print(torch.__version__)'))" \
