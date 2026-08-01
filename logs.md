@@ -5367,3 +5367,103 @@ contracts); `compileall` clean; `dicos.py setup` 9/9 exit 0; preflight
 `"pass": true` over 187 shards. Note for the record: commit 52a52e3's message
 says "138 -> 155 tests"; the true count is 146. The commit was already pushed, so
 the number is corrected here rather than by rewriting published history.
+
+
+## 2026-08-01 — A100 pod evaluated and lost; the loader, not the GPU, was the bottleneck
+
+A second GPU DiCOSApp was provisioned (port 31785, A100-SXM4-80GB, 64 cores,
+1 TB RAM, driver 575.51.03, base Python 3.11.5) with the intent of moving the
+six-epoch continuation onto it and deleting whichever pod proved worse. The
+4090 wave was stopped first: both pods mount the same CephFS workdir, so two
+trainers must never run concurrently.
+
+**The A100 pod lost its filesystem access mid-session and could not be
+recovered from inside it.** At 15:53–15:57 UTC it read and wrote the workdir
+normally — `setup` created `.venv` and `_setup`, and a write probe succeeded.
+By 16:17 `setup` was failing every write with `Permission denied`, and by 16:22
+even `ls .` on the workdir returned `Permission denied` while `stat` of the same
+directory still returned `drwxrwxr-x+ julianjuan:julianjuan 775`. Evidence
+gathered before drawing any conclusion: `id` = uid 21595(julianjuan)
+gid 10007(julianjuan) — unchanged; the CephFS mount still present with `acl`;
+`getfacl` showing `user::rwx`, `group:julianjuan:rwx`, `mask::rwx`;
+`.../work/IOP/julian` mode 775 with group `julianjuan`; and `stat` of the
+workdir's child inode succeeding, so directory *search* was still granted while
+*read* was refused. No POSIX mode or ACL can produce that combination.
+
+The discriminating test was to point the client at the other pod. From the 4090,
+at the same moment, `ls .../work/IOP/julian` returned `Fast MC CBSC`, the workdir
+listed, and a write probe succeeded. Same path, same uid, same gid, same mode.
+The fault is therefore the A100 pod's own CephFS client — its capabilities were
+lost or blocklisted — not a permission change, not the data owner, and not this
+repository's code. Repairing it needs a remount, which needs root inside the
+pod; relaunching the DiCOSApp is the only remedy available to the account
+holder. **No verdict on A100 vs 4090 compute has been established**, because the
+A100 never held the filesystem long enough to run a comparable step.
+
+**The failed A100 `setup` destroyed the 4090's working venv.** `.venv` lives in
+the shared workdir, and step 4 does `rm -rf .venv` before rebuilding. The
+removal succeeded while the rebuild did not, so a pod that could no longer write
+left the healthy pod without an interpreter. Rebuilt from the 4090: 9/9 checks,
+exit 0, torch 2.6.0+cu124. Recorded as a design consequence of one workdir
+shared by two pods; a lock is the obvious follow-up.
+
+Two client defects were found and fixed on the way, both with regression tests.
+The A100 image ships **git 1.8.3.1, which predates `git -C`**, so
+`git -C repo pull --ff-only` failed into the `||` branch and reported "repo
+present (pull skipped)" while running stale code and still exiting 0 — a worse
+failure than none. Replaced with a subshell (`8b71694`). And the write guard's
+absolute-path token did not stop at a bracket, so `info`'s own probe
+`(nvidia-smi ... 2>/dev/null)` produced the candidate `/dev/null)`, missed the
+sink whitelist, and was refused as a write (`d40b111`).
+
+### The real finding: 35.5 min/epoch was loader overhead, not compute
+
+The wave1/wave2 runs were data-loader bound with the GPU near idle, previously
+noted but not root-caused. It is now measured. `ShardedSparseDataset._load_shard`
+verified a shard's SHA-256 and decompressed it on every cache miss, behind an
+`lru_cache(maxsize=4)` against a corpus of **187 shards**. With a shuffled
+sampler nearly every sample missed, and a batch of six paid the miss six times.
+
+Measured on this host, production shards: 30 MB on disk, **49.9 MB
+decompressed**, **25 ms to hash, 225 ms to decompress**. 26,624 training events
+at ~233 ms each is ~103 min of single-threaded loading per epoch, ~26 min across
+four workers — which is the observed 35.5 min/epoch, with the GPU idle behind it.
+The arithmetic reproduces the measurement, so the cause is established rather
+than hypothesised.
+
+The cache decides how often bytes are rebuilt, never which bytes. It is
+therefore not a scientific variable, and the change was admitted only after
+proving that:
+
+* on the production corpus, 400 samples drawn from the same training split read
+  through a 4-shard cache and through an unbounded cache are **byte-identical** —
+  0 tensor mismatches, and one SHA-256 over all sample bytes,
+  `4ba4d7a713c9c1a574a5f27857a5fe46d8fe1e4a7fa8f456692ea4d367507c9b`, from both
+  (`_setup/cache_equivalence.json`);
+* verification is unchanged in kind: still performed on every load, so each
+  shard is verified once per worker instead of thousands of times, never zero
+  times, and preflight still hashes all 187 independently;
+* a corrupted shard is still caught with an unbounded cache;
+* samples survive eviction and reload identically, so cache size cannot leak
+  into results.
+
+`DEFAULT_SHARD_CACHE` stays at 4, so no existing caller changes behaviour.
+Opt-in is `CBSC_ZDC_SHARD_CACHE` (0 = hold every shard), which needs no edit to
+a frozen config and changes no config hash; the value is recorded in each run's
+`environment.json` so it cannot be an invisible difference between runs
+(`7b203c3`, `3c5ff0f`). Holding all 187 shards costs 9.3 GB per dataset
+instance, ~18.6 GB for the train and validation pair, against 1,463 GB free.
+`num_workers` was **not** changed: the portability contract lists it as
+invariant, and the cache removes the need.
+
+### wave3
+
+`_runs/calibrated_lr3e4_dicos-r2` (one epoch, run under the slow loader and an
+earlier commit) was archived to `_runs/aborted_r2_slow_loader/`. All four
+families restart from their parent epoch-4 checkpoints so that every family runs
+the same code, the same absolute epoch target (`epochs: 11` → epochs 5..10) and
+the same cosine restart. Launched 2026-08-01T16:37:28Z as job `wave3` from
+source commit `3c5ff0f`, families serial because the GPU is serial.
+
+Tests: 165 pass (146 → 165; +10 shard-cache contracts, +1 evidence contract,
++4 client guard contracts). `compileall` clean.

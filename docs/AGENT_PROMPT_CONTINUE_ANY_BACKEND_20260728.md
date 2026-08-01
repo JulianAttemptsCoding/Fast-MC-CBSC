@@ -484,6 +484,29 @@ Two things this phase does **not** establish, regardless of outcome: anything
 about Geant4 fidelity, and anything about untouched-test performance. The bank
 is the pilot bank; the 76,300-event test split remains sealed and untouched.
 
+**Run history for this phase — read before interpreting any `_runs` directory.**
+Three launches exist and only the third is live:
+
+| tag | fate |
+|---|---|
+| `dicos-r1` | Aborted. Launched with `epochs: 6`, which is an **absolute** target, so it ran one epoch per family with the cosine annealed to `min_learning_rate` across it. Archived at `_runs/aborted_r1_epochs_misread/`. |
+| `dicos-r2` (wave2) | Stopped after one epoch to free the GPU for the A100 evaluation, then archived at `_runs/aborted_r2_slow_loader/` because it ran under the slow loader and an earlier commit. |
+| `dicos-r3` | **Live.** Same frozen `*_dicos-r2.yaml` configs; only the run directory and the loader's shard-cache setting differ. |
+
+Do not compare a number from an aborted run against a `dicos-r3` number.
+
+**`CBSC_ZDC_SHARD_CACHE=0` is set for this wave.** It makes each loader worker
+hold all 187 shards resident instead of 4. This is a transport property, not a
+scientific one, and it was admitted only after proving byte-identity on the
+production corpus: 400 samples read through both cache sizes give 0 tensor
+mismatches and the same SHA-256 over all sample bytes,
+`4ba4d7a713c9c1a574a5f27857a5fe46d8fe1e4a7fa8f456692ea4d367507c9b`
+(`_setup/cache_equivalence.json`; contracts in `tests/test_shard_cache.py`).
+Shard verification still happens on every load, so each shard is verified once
+per worker rather than thousands of times — never zero times. The value is
+recorded in each run's `environment.json`. `num_workers` was deliberately left
+at 4, since the portability contract lists it as invariant.
+
 ## 8. Repository map and where to look
 
 ```text
