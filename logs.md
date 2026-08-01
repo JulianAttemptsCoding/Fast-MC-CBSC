@@ -5559,3 +5559,69 @@ By absolute validation loss, lr3e4 is still lowest, by 0.029864 over halfbatch;
 that clears the ~0.02 resolution floor, but not by much, and halfbatch's own
 epoch-to-epoch volatility is three times that gap. Neither reading is
 dismissable and the final recommendation must present both.
+
+### wave3 family 4 complete, wave complete, winner selected and launched
+
+`calibrated_lr3e5` ran 20:36:11Z to 21:53:28Z, EXIT=0, QA PASS (six of six
+per-epoch invariants, postflight `pass: true`, nonfinite 0). Wave complete
+21:53:28Z.
+
+    epoch   5        6        7        8        9        10
+    lr3e5   4.949966 4.889733 4.894838 4.843471 4.886510 4.874426
+
+All four families passed structural QA. Nothing quarantined. Full ranking by
+the declared criterion — largest validation-loss improvement from the beginning
+of the continuation (the parent's epoch-4 loss) to its end (epoch 10):
+
+    family                       parent        e5       e10      best   improve
+    calibrated_lr1e4_halfbatch  4.845029  4.843495  4.710829  4.710829 +0.134200
+    calibrated_lr1e4            4.827105  4.912984  4.768465  4.766131 +0.058640
+    calibrated_lr3e4            4.738041  4.909547  4.680965  4.680965 +0.057076
+    calibrated_lr3e5            4.897327  4.949966  4.874426  4.843471 +0.022901
+
+Winner: **calibrated_lr1e4_halfbatch, +0.134200**, 2.3x the runner-up. The
+0.0756 gap to second place is roughly four times the ~0.02 run-to-run
+resolution, so this ordering is a result rather than noise. By contrast the
+gap between second and third (+0.058640 against +0.057076, 0.001564) is an
+order of magnitude below that floor and orders nothing.
+
+**Recorded against the winner, because it is not the whole picture.**
+calibrated_lr3e4 still holds the lowest absolute validation loss of the four,
+4.680965 against the winner's 4.710829 — a difference of 0.029864 that does
+clear the resolution floor. The selection rule for this phase was explicitly
+"the model that changed the most in loss value", and by that rule halfbatch
+wins unambiguously; but a reader who cares about which model is currently best,
+rather than which improved most, should be looking at lr3e4. Two further
+cautions on the winner: its trace is the noisiest of the four, swinging up to
+0.09 between adjacent epochs (batch 3 against the others' 6), so its endpoint
+carries more uncertainty than the others'; and it starts from the second-worst
+parent, so a large improvement is partly room to improve. All four families'
+checkpoints are retained, so changing this decision later costs one relaunch.
+
+Also noted: every family regressed at epoch 9 and recovered at epoch 10. Four
+for four is suggestive, but the cosine schedule and seeds are shared, so this
+is one observation, not four independent ones.
+
+**Winner's solo continuation launched 21:55:22Z** as job `final`, run dir
+`_runs/calibrated_lr1e4_halfbatch_dicos-final`. Built by
+`scripts/build_final_continuation.py` from the frozen parent, never by editing
+a frozen config, then frozen through the CLI:
+
+    template  0da5b1a449d53a2984c9aad57f7e060570a992bfead73357a1f693c6afacc5e9
+    frozen    fa0496ef2c405b418039d30bd6f1c84262d74c038cc37d773ce4c45e71d8033c
+    resume    f9fa1b9184e640513a04992a3039ee8b30a529965ba468d49287d05696a377b3 (last)
+    resume    74a989aa398023ef7fbfd5d0b73de4517df8ad8bc76e1257c73139a2e8c7c182 (best)
+
+Checkpoints were copied from the wave3 run into `prep/checkpoints` and re-hashed
+after the copy; both digests match the source byte for byte. **Early stopping is
+restored to patience 3** — the comparison phase's widened 6 is deliberately not
+inherited, and `tests/test_final_continuation.py` fails if it ever is.
+`epochs: 40` is an absolute target giving epochs 11..39; it is a ceiling that
+early stopping is expected to reach first, not a planned horizon. Learning rate
+1e-4, batch 3, accumulation 4, workers 4, `amp: false`, seed 20260723 all carry
+over unchanged. Verified in the frozen file before launch.
+
+Standing boundary unchanged. This is short-horizon optimization evidence on the
+26,624/6,656 pilot bank. It establishes nothing about Geant4 fidelity, nothing
+about untouched-test performance, and the 76,300-event test split remains
+sealed and untouched.
