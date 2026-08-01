@@ -5198,3 +5198,64 @@ relaxed to work around this.**
 138 tests pass, 43 of them on the access contract and all offline. The verified
 GPU procedure, including the TF32 decision that must be made before any run
 compared against the epoch-4 checkpoints, is in `docs/DICOS_BACKEND.md` section 6.
+
+## 2026-08-01 — pre-deletion verification; audit fixes; handoff readiness
+
+The CPU DiCOSApp used to prepare the data is being deleted. Everything in the
+workdir was re-verified from disk first, and a second cold-read audit of the
+handoff was run; its findings are fixed below. No GPU and no paid compute used.
+
+**Pre-deletion verification.** `dicos.py verify`, a new built-in that re-hashes
+artifacts rather than trusting recorded values: geometry recomputed from its
+arrays to `e22d4cfb…`; `cell_map.json` bijective over 6,790; all 187 shards
+re-hashed from disk with an aggregate digest over the sorted (path, sha256)
+pairs of `6932abdd5b9bc5d844b5f388cc8df845cf1dd859c1afb95ef5d33a8fcf96f362`;
+764,940 events and 1,157,840,863 hits; zero rejections; split assignment file
+re-hashed to `f71003e0…` with counts 612,482 / 76,158 / 76,300; audit values
+exact; `calibrated_lr3e4_best_epoch4.pt` at `3f1022b8…`. 18/18, and `setup`
+green on all nine checks.
+
+**Deletion is safe.** The workdir sits on CephFS (`/9_global_share`, 13 PB) and
+HOME on NFS; neither is pod-local, so `prep/`, `repo/`, and `.venv/` (5.7 GB
+total) survive. The only pod-local dependency is the venv's base interpreter
+`/opt/miniconda3/envs/asgc`, which lives in the image; `setup` validates the
+venv by import and rebuilds it when a new image differs.
+
+**Rule compliance, self-corrected.** Two lapses of mine, both fixed:
+`forbidden_paths` listed only the seven `.root` files, leaving `c1.png` and
+`data_viewer.cc` in the group dataset directory unguarded although rule 19 puts
+everything there out of scope — both now refused. And `_setup/hash_transformed.txt`,
+data derived from the now-forbidden transformed file before the scope was
+narrowed, was deleted.
+
+**Defect found in the documented token-recovery snippet.** It used
+`sorted(glob(...))[-1]`, which is lexicographic on PID and can return a *dead*
+pod's stale token, producing a confusing authentication failure. Now selects the
+newest by mtime, in all three places it appears.
+
+**Staleness corrected**, each verified against the code rather than assumed:
+`CLAUDE.md` still said "expect 92 passed" (now 138); migration steps 5-6 were
+unstruck although complete; the "Open questions" section still posed questions
+that step 5 answered, including one that recommended transporting shards from
+GCS, contradicting the one-data-source rule; the handoff's verified-invariants
+list named only the ROOT file and geometry, omitting the shards, split, audit,
+and checkpoint.
+
+**Two scientific gaps now documented rather than left to be discovered.** The
+fixed 50x5 visual bank is *not* on this host — its selection
+(`f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6`) was drawn
+from the pilot validation partition, which does not exist here, so an epoch
+visualised on this host will use a different bank and will not be visually
+comparable to published epochs unless that is declared. And only the `best`
+checkpoint is staged; handoff section 11 asks for `best` and `last` before a
+continuation, and `last` (`42782827…`) plus the other three families are absent.
+
+**Test-split accounting corrected.** The handoff claimed 36,300 test events
+remain untouched. That is no longer exact: the external C2ST study consumed a
+specific 40,000, and the 2026-07-30 in-repository draw took 200 more from the
+full corpus without recording whether they overlap that set. The untouched count
+is between 36,100 and 36,300; the flat claim has been removed and the overlap
+computation flagged as owed before any publication depending on the figure.
+
+Verification: 138 tests pass, 43 on the access contract and all offline;
+`compileall` clean; `dicos.py verify` 18/18; `dicos.py setup` 9/9.

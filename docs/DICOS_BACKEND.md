@@ -19,6 +19,7 @@ no agent-specific coupling:
 ```bash
 python scripts/dicos.py auth "<launch URL>"  # 1. every new session
 python scripts/dicos.py setup                # 2. provision/repair, idempotent
+python scripts/dicos.py verify               # re-hash every artifact from disk
 python scripts/dicos.py info                 # probe the remote environment
 python scripts/dicos.py exec "nvidia-smi"    # run a shell command (synchronous)
 python scripts/dicos.py ls .                 # list the workdir
@@ -32,6 +33,12 @@ python scripts/dicos.py logs convert --tail 40         # follow its output
 ```
 
 Launch a DiCOSApp from <https://dicos.grid.sinica.edu.tw/dockerapps/>.
+
+`verify` re-hashes the geometry, all 187 shards, the split assignment, and any
+staged checkpoint **from disk**, rather than trusting the values recorded in the
+manifests, so a truncated or corrupted file cannot pass. Run it after any pod
+change and before relying on the corpus for a training run. It also reports
+leftover upload parts and any job still running.
 
 ### Running work that outlives a command
 
@@ -73,9 +80,11 @@ convenience:
 1. **A notebook cell** — no terminal needed, works purely in the Lab UI:
 
    ```python
-   import json, glob, pathlib
-   print(json.load(open(sorted(glob.glob(str(
-       pathlib.Path.home() / ".local/share/jupyter/runtime/jpserver-*.json")))[-1]))["token"])
+   import json, glob, os, pathlib
+   # newest by mtime -- sorting by name is lexicographic on PID and can return
+   # a dead pod's stale token, which then fails authentication confusingly
+   files = glob.glob(str(pathlib.Path.home() / ".local/share/jupyter/runtime/jpserver-*.json"))
+   print(json.load(open(max(files, key=os.path.getmtime)))["token"])
    ```
 
 2. **A JupyterLab terminal** (*File ▸ New ▸ Terminal*):
@@ -376,8 +385,10 @@ reopening the file.
 3. ~~Stand up the environment and prove the code runs~~ — **done**, 67 tests pass
 4. ~~Establish the frozen geometry on DiCOS under hash `e22d4cfb…`~~ — **done**,
    transported and verified on-host
-5. Produce the prepared shards from the raw ROOT and record their manifest hash
-6. Produce the split, then train inside a GPU DiCOSApp
+5. ~~Produce the prepared shards and verify them~~ — **done**, all 187
+   byte-identical to canonical
+6. ~~Produce the split~~ — **done**, reproduces the canonical assignment
+7. Train inside a GPU DiCOSApp — the only step remaining; see section 6
 
 ### Current remote layout
 
@@ -519,6 +530,27 @@ python scripts/dicos.py put local_checkpoint.pt prep/checkpoints/<name>.pt
 `calibrated_lr3e4_best_epoch4.pt` was moved this way and verified on-host
 (hash `3f1022b8…`, `epoch=4`, `best_metric=4.7380412609301406`).
 
+### Two things that are NOT on the host, and matter
+
+**The fixed 50x5 visual bank is absent.** Epoch visualisation (handoff section
+12, `docs/VISUALIZATION_DASHBOARD.md`) expects a frozen selection of 50
+validation conditions, recorded under selection hash
+`f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6`. That
+selection was drawn from the **pilot** validation partition, which does not
+exist here — this host has the production split. A run configured with
+`evaluation.visualization.enabled` will therefore draw its own bank, with a
+different selection hash, and its epochs will not be visually comparable to the
+existing published epochs. Decide deliberately: either accept a new bank for a
+new declared experiment and record its hash, or reconstruct the pilot partition
+first. Do not silently publish a differently-banked epoch alongside the old ones.
+
+**Only the `best` checkpoint is staged.** `prep/checkpoints/` holds
+`calibrated_lr3e4_best_epoch4.pt` (`3f1022b8…`). Handoff section 11 asks for
+both `best` and `last` hashes to be verified before a continuation, and `last`
+(`42782827de374dedcbba50a784460833ad16129c474f98553622b39d6467720a`) is not
+here. Transfer it the same way if a continuation is intended; the other three
+families are absent entirely.
+
 ### Decide TF32 before the first real run
 
 Accepted runs are FP32 on a T4. Newer accelerators enable **TF32 for cuDNN by
@@ -533,18 +565,15 @@ Leaving it on is defensible for a newly declared experiment and is a real
 speed-up, but it is a numerics change. It must not enter a run being compared
 against the existing epoch-4 checkpoints without being declared and recorded.
 
-### Open questions for step 5-6
+### Resolved during step 5-6
 
-- **Conversion cost.** The geometry scan alone read the 25 GB file in ~20 min at
-  ~465 entries/s single-threaded. Full conversion writes 187 shards and will be
-  materially longer; the pod's session limit means it should be run resumably or
-  on a longer-lived app. The CPU pod's 128 cores are unused by the current
-  single-threaded reader — worth revisiting before committing to a long run.
-- **Manifest reproducibility.** Given the float32 finding above, the shard
-  manifest hash `5a6d9632…` may or may not byte-reproduce. Either outcome is
-  informative and must be recorded, not worked around: if it does, provenance is
-  end-to-end; if it does not, the prepared artifacts should be transported from
-  GCS instead, and the reason documented.
+- **Conversion cost — measured.** ~100 minutes single-threaded on the CPU pod
+  for the full 25 GB. The 128 cores go unused by the reader; if the corpus is
+  ever rebuilt, parallelising by entry range is the obvious win.
+- **Manifest reproducibility — answered.** Every shard reproduced byte-
+  identically; only the manifest's own hash differs, because it records the
+  source path. Provenance is end-to-end. Transport from GCS was never needed
+  and is not available under the one-data-source rule.
 - **Torch version.** 2.8.0+cu128 here vs 2.6.0+cu124 on Vertex. Fine for new
   runs, but it is an environment difference that belongs in the evidence of any
   result produced here, and it makes bit-exact reproduction of existing

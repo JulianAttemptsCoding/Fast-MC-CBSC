@@ -143,8 +143,7 @@ wholly untouched.
 1. **External C2ST study** (separate `Fast-MC-tester` repository): exercised
    40,000 of the 76,300 test events under a one-way isolation contract —
    read-only against the four accepted checkpoints, zero feedback into this
-   generator, the remaining 36,300 untouched. See that repository's
-   `docs/ISOLATION.md`.
+   generator. See that repository's `docs/ISOLATION.md`.
 2. **In-repository diagnostic, 2026-07-30** — the first direct test-split use
    *inside this repository*. A 2,000-event random draw from the full corpus, at
    the project owner's explicit instruction after being warned twice, included
@@ -153,6 +152,14 @@ wholly untouched.
    threshold, architecture, loss-weight, learning-rate, stopping, or
    checkpoint-selection decision. `PHYSICS VALIDATION NOT ESTABLISHED`. See
    `logs.md` and that directory's `README.md`.
+
+**How many test events remain untouched is no longer exactly established.** The
+C2ST study consumed a specific 40,000; the 2026-07-30 draw took 200 more from
+the full corpus without recording whether they overlap that set. The untouched
+count is therefore between 36,100 and 36,300, and the earlier flat claim of
+"36,300 untouched" should not be repeated. Computing the overlap from the two
+recorded selections would settle it, and should be done before any publication
+that depends on the figure.
 
 Neither exception is licence to widen test-split use. Both were scoped, declared
 in advance, and disclosed; anything further needs the same treatment. Note also
@@ -644,9 +651,11 @@ it into a cookie seconds after login, so no clipboard race is needed. Easiest
 first, a notebook cell:
 
 ```python
-import json, glob, pathlib
-print(json.load(open(sorted(glob.glob(str(
-    pathlib.Path.home() / ".local/share/jupyter/runtime/jpserver-*.json")))[-1]))["token"])
+import json, glob, os, pathlib
+# newest by mtime; sorting by name is lexicographic on PID and can hand back
+# a dead pod's stale token
+files = glob.glob(str(pathlib.Path.home() / ".local/share/jupyter/runtime/jpserver-*.json"))
+print(json.load(open(max(files, key=os.path.getmtime)))["token"])
 ```
 
 or a JupyterLab terminal running `jupyter server list`. Then:
@@ -693,11 +702,31 @@ is multi-tenant.
   reproduction of existing checkpoints unlikely.
 - Egress works, so `pip install` and `git clone` succeed.
 
-**Verified invariants (see `logs.md` and `docs/DICOS_BACKEND.md`).** The raw
-ROOT file on DiCOS is byte-identical to the canonical source
-(`b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533`,
-764,940 entries), and the frozen geometry is present under hash
-`e22d4cfb…`, re-verified on the host.
+**Verified invariants (see `logs.md` and `docs/DICOS_BACKEND.md`).** The whole
+data pipeline reproduces on DiCOS and is re-checkable at any time with
+`python scripts/dicos.py verify`, which re-hashes from disk rather than trusting
+recorded values:
+
+- raw ROOT byte-identical to the canonical source
+  (`b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533`,
+  764,940 entries);
+- frozen geometry present under `e22d4cfb…`, recomputed on the host;
+- **all 187 prepared shards byte-identical** to the canonical manifest
+  (764,940 events, 1,157,840,863 hits, zero rejections);
+- **split reproduces the canonical assignment**, 612,482 / 76,158 / 76,300,
+  `f71003e07eb16baf4029387fd8e54b2e22b98981bbd6ee519a6d363167b4c8c8`;
+- `train_data_audit.json` reproduces the canonical audit exactly;
+- `calibrated_lr3e4_best_epoch4.pt` staged and verified (`3f1022b8…`).
+
+So existing epoch-4 checkpoints remain comparable to work done here.
+
+**Not present on the host, and easy to miss:** the fixed 50x5 visual bank (its
+selection was drawn from the pilot partition, which this host does not have), and
+every checkpoint except `calibrated_lr3e4_best_epoch4.pt`. Section 10 of this
+file (backend-neutral procedure) also predates DiCOS: its step 1, "copy or mount
+`prep-20260724-r5`", does not apply here — the corpus is produced on-host from
+the one permitted ROOT file, and copying a second corpus in would violate the
+data-source rule. See `docs/DICOS_BACKEND.md` sections 5-6.
 
 **Two traps already paid for.**
 

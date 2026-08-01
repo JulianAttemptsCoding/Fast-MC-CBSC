@@ -8,11 +8,12 @@ wraps those into a small CLI so any agent or shell can drive the remote host:
 
     python scripts/dicos.py auth "<launch or address-bar URL>"   # start a session
     python scripts/dicos.py setup                                # provision/repair
-    python scripts/dicos.py info
-    python scripts/dicos.py exec "nvidia-smi"
-    python scripts/dicos.py ls .
-    python scripts/dicos.py put local.py remote/path.py
-    python scripts/dicos.py get remote/path.json local.json
+    python scripts/dicos.py verify                               # re-hash artifacts
+    python scripts/dicos.py info                                 # probe environment
+    python scripts/dicos.py exec "nvidia-smi"                    # synchronous shell
+    python scripts/dicos.py ls / put / get / mkdir                # files
+    python scripts/dicos.py start "<cmd>" --name job             # detached, for hours
+    python scripts/dicos.py jobs / logs job / stop job           # job control
 
 Credentials live in ~/.dicos/config.json (outside the repository), holding
 base_url, token, jupyter_root, workdir, data_file, and forbidden_paths.
@@ -28,6 +29,7 @@ Access scope is enforced client-side and mirrors the contract in AGENTS.md
   * `put`/`mkdir` refuse any destination outside the configured workdir,
     after normalising `..` so traversal cannot slip past;
   * `exec` refuses commands that mutate `data_file`, the one permitted dataset;
+  * `exec`/`start` refuse commands that appear to write outside the workdir;
   * `exec` refuses any command that so much as names a `forbidden_paths` entry,
     since those are out of scope for reading too.
 
@@ -602,6 +604,116 @@ echo
 echo "setup complete"
 """
 
+#: Full integrity check of the prepared artifacts, re-hashing from disk rather
+#: than trusting recorded values, so a truncated or corrupted file cannot pass.
+#: The 187 shard hashes are compared through a single aggregate digest over the
+#: sorted (path, sha256) pairs, which is as strong as listing them and small
+#: enough to inline. Run this after any pod change, and before relying on the
+#: corpus for a training run.
+VERIFY_SCRIPT = r"""
+./.venv/bin/python - <<'PY'
+import hashlib, json, os, sys
+from pathlib import Path
+sys.path.insert(0, "repo/src")
+import numpy as np
+from cbsc_zdc.data.geometry import geometry_hash
+
+GEOM   = "e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b"
+SHARDS = "6932abdd5b9bc5d844b5f388cc8df845cf1dd859c1afb95ef5d33a8fcf96f362"
+ASSIGN = "f71003e07eb16baf4029387fd8e54b2e22b98981bbd6ee519a6d363167b4c8c8"
+SCHEMA = "4fbede6b9769d308cc80e69c8540c46b3d2ef36630ba5827e174c9f95bd20aab"
+COUNTS = {"train": 612482, "validation": 76158, "test": 76300}
+
+fails, n = [], 0
+def check(label, got, want):
+    global n
+    n += 1
+    if got == want:
+        print(f"  [ok]   {label}")
+    else:
+        fails.append(label)
+        print(f"  [FAIL] {label}\n           got  {got}\n           want {want}")
+
+def sha(path, chunk=1 << 22):
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        while b := fh.read(chunk):
+            h.update(b)
+    return h.hexdigest()
+
+print("geometry")
+check("hash recomputed from arrays",
+      geometry_hash(dict(np.load("prep/geometry_frozen/geometry.npz"))), GEOM)
+cm = json.loads(Path("prep/geometry_frozen/cell_map.json").read_text())
+check("cell_map bijective over 6790", sorted(cm.values()) == list(range(6790)), True)
+
+print("prepared corpus")
+man = json.loads(Path("prep/data/dataset_manifest.json").read_text())
+pairs, ev, hits, bad = [], 0, 0, 0
+for e in man["shards"]:
+    actual = sha(Path("prep/data") / e["path"])
+    bad += actual != e["sha256"]
+    pairs.append((e["path"], actual)); ev += e["n_events"]; hits += e["n_hits"]
+agg = hashlib.sha256("".join(f"{p}:{h}" for p, h in sorted(pairs)).encode()).hexdigest()
+check("shard count", len(man["shards"]), 187)
+check("shards matching their manifest entry", bad, 0)
+check("aggregate of all 187 content hashes", agg, SHARDS)
+check("total events", ev, 764940)
+check("total hits", hits, 1157840863)
+check("geometry_hash", man["geometry_hash"], GEOM)
+check("schema_sha256", man["schema_sha256"], SCHEMA)
+check("rejections", sum(man["rejected"].values()), 0)
+
+print("split")
+sp = json.loads(Path("prep/splits.json").read_text())
+check("counts", sp["counts"], COUNTS)
+check("assignment re-hashed", sha("prep/splits_assignments.npz"), ASSIGN)
+check("split pins this manifest", sp["manifest_sha256"], sha("prep/data/dataset_manifest.json"))
+
+print("audit")
+au = json.loads(Path("prep/train_data_audit.json").read_text())
+check("n_events", au["n_events"], 612482)
+check("response_cap_ratio", au["response_cap_ratio"], 0.6301101273502666)
+
+print("checkpoints")
+ck = Path("prep/checkpoints")
+found = sorted(p.name for p in ck.glob("*.pt")) if ck.exists() else []
+print(f"  [info] {len(found)} staged: {found}")
+if (ck / "calibrated_lr3e4_best_epoch4.pt").exists():
+    check("calibrated_lr3e4 epoch4 sha256",
+          sha(ck / "calibrated_lr3e4_best_epoch4.pt"),
+          "3f1022b87361b8a14d9f8432273dcd6c72f6a5e599c1be1575e7f37f4014803d")
+
+print("hygiene")
+mine, pid = set(), os.getpid()
+while pid > 1:
+    mine.add(pid)
+    try:
+        pid = int(Path(f"/proc/{pid}/stat").read_text().split(")")[-1].split()[1])
+    except Exception:
+        break
+alive = []
+for f in Path("_runs").glob("*.pid") if Path("_runs").exists() else []:
+    try:
+        q = int(f.read_text().strip())
+    except ValueError:
+        continue
+    if q in mine:
+        continue
+    try:
+        os.kill(q, 0); alive.append(f.stem)
+    except OSError:
+        pass
+check("no other job running", alive, [])
+check("no leftover upload parts", [str(p) for p in Path("prep").rglob("*.part*")], [])
+
+print()
+print(f"{n - len(fails)}/{n} checks passed")
+print("VERIFIED" if not fails else f"PROBLEMS: {fails}")
+sys.exit(1 if fails else 0)
+PY
+"""
+
 INFO_SCRIPT = r"""
 echo "=== identity / host ==="
 whoami; hostname; echo "pwd: $(pwd)"
@@ -685,6 +797,7 @@ def main() -> int:
     )
 
     sub.add_parser("setup", help="idempotently provision the remote workdir")
+    sub.add_parser("verify", help="re-hash and verify the prepared artifacts")
     sub.add_parser("info", help="probe the remote environment")
     sub.add_parser("status", help="server status")
 
@@ -730,10 +843,12 @@ def main() -> int:
                     "Jupyter removes ?token=... from the address bar after login, so a "
                     "URL copied later will not contain one. Recover it with any of:\n"
                     "  - JupyterLab: File > New > Terminal, then `jupyter server list`\n"
-                    "  - a notebook cell:\n"
-                    "      import json,glob,pathlib; print(json.load(open(sorted(glob.glob(\n"
-                    "        str(pathlib.Path.home()/'.local/share/jupyter/runtime/"
-                    "jpserver-*.json')))[-1]))['token'])\n"
+                    "  - a notebook cell (newest by mtime; sorting by name is\n"
+                    "    lexicographic on PID and can return a dead pod's token):\n"
+                    "      import json,glob,os,pathlib\n"
+                    "      f=glob.glob(str(pathlib.Path.home()/\n"
+                    "        '.local/share/jupyter/runtime/jpserver-*.json'))\n"
+                    "      print(json.load(open(max(f,key=os.path.getmtime)))['token'])\n"
                     "then:\n"
                     '    dicos.py auth "<browser URL>" "<token>"'
                 )
@@ -798,6 +913,8 @@ def main() -> int:
         return client.logs(args.name, tail=args.tail)
     if args.cmd == "setup":
         return client.exec(SETUP_SCRIPT, timeout=1800)
+    if args.cmd == "verify":
+        return client.exec(VERIFY_SCRIPT, timeout=1800)
     if args.cmd == "info":
         return client.exec(INFO_SCRIPT, timeout=180)
     if args.cmd == "status":
