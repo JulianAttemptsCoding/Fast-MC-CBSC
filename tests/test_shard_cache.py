@@ -94,6 +94,19 @@ def test_an_explicit_size_beats_the_environment(
     assert len(dataset._shard_cache) == 5
 
 
+def test_the_environment_snapshot_records_the_cache_size(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An environment variable that changes how a run executes must appear in
+    that run's evidence, or the record of the run is incomplete."""
+    from cbsc_zdc.utils import environment_snapshot
+
+    monkeypatch.setenv("CBSC_ZDC_SHARD_CACHE", "0")
+    assert environment_snapshot()["shard_cache_size"] == 0
+    monkeypatch.delenv("CBSC_ZDC_SHARD_CACHE")
+    assert environment_snapshot()["shard_cache_size"] == DEFAULT_SHARD_CACHE
+
+
 def test_a_corrupt_shard_is_still_caught_with_a_large_cache(tmp_path: Path) -> None:
     """A bigger cache means each shard is verified once per process instead of
     thousands of times -- but never zero times. Every shard's bytes are still

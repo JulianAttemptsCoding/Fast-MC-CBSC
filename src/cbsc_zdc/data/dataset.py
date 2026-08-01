@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import bisect
-import os
 from collections import OrderedDict
 from pathlib import Path
 from typing import Any
@@ -10,7 +9,21 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from ..utils import load_json, sha256_file
+from ..utils import (
+    DEFAULT_SHARD_CACHE,
+    SHARD_CACHE_ENV,
+    load_json,
+    resolve_shard_cache_size,
+    sha256_file,
+)
+
+__all__ = [
+    "DEFAULT_SHARD_CACHE",
+    "SHARD_CACHE_ENV",
+    "ShardedSparseDataset",
+    "load_geometry",
+    "resolve_shard_cache_size",
+]
 
 
 def load_geometry(path: str | Path, device: str | torch.device = "cpu") -> dict[str, torch.Tensor]:
@@ -29,26 +42,6 @@ def load_geometry(path: str | Path, device: str | torch.device = "cpu") -> dict[
         "edge_features": torch.from_numpy(arrays["edge_features"].astype(np.float32, copy=False)).to(device),
     }
     return result
-
-
-#: Shards resident per dataset instance (so per DataLoader worker) unless a
-#: caller or CBSC_ZDC_SHARD_CACHE says otherwise. Kept at the historical value
-#: so no existing run changes behaviour by upgrading.
-DEFAULT_SHARD_CACHE = 4
-
-#: Environment override, so a run on a host with the memory to hold the corpus
-#: can opt in without hand-editing a frozen config or changing a config hash.
-#: 0 or negative means "hold every shard".
-SHARD_CACHE_ENV = "CBSC_ZDC_SHARD_CACHE"
-
-
-def resolve_shard_cache_size(explicit: int | None = None) -> int:
-    if explicit is not None:
-        return int(explicit)
-    raw = os.environ.get(SHARD_CACHE_ENV)
-    if raw is None or not raw.strip():
-        return DEFAULT_SHARD_CACHE
-    return int(raw)
 
 
 class ShardedSparseDataset(Dataset):

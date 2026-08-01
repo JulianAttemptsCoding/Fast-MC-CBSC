@@ -15,6 +15,30 @@ import torch
 import yaml
 
 
+#: Shards held resident per dataset instance, so per DataLoader worker, unless
+#: a caller or CBSC_ZDC_SHARD_CACHE says otherwise. Kept at the historical
+#: value so no existing run changes behaviour by upgrading.
+DEFAULT_SHARD_CACHE = 4
+
+#: Environment override, so a run on a host with the memory to hold the corpus
+#: can opt in without hand-editing a frozen config or changing a config hash.
+#: 0 or negative means "hold every shard".
+SHARD_CACHE_ENV = "CBSC_ZDC_SHARD_CACHE"
+
+
+def _shard_cache_size(explicit: int | None = None) -> int:
+    if explicit is not None:
+        return int(explicit)
+    raw = os.environ.get(SHARD_CACHE_ENV)
+    if raw is None or not raw.strip():
+        return DEFAULT_SHARD_CACHE
+    return int(raw)
+
+
+#: Public name; `_shard_cache_size` is the same function used by the snapshot.
+resolve_shard_cache_size = _shard_cache_size
+
+
 def sha256_file(path: str | Path, chunk_size: int = 1 << 20) -> str:
     digest = hashlib.sha256()
     with Path(path).open("rb") as handle:
@@ -104,6 +128,10 @@ def environment_snapshot() -> dict[str, Any]:
             for index in range(cuda_device_count)
         ],
         "cudnn_version": torch.backends.cudnn.version() if torch.backends.cudnn.is_available() else None,
+        # How many shards each loader worker holds resident. Changes no sample,
+        # only how often one is rebuilt -- but it changes how a run executes, so
+        # it belongs in that run's evidence.
+        "shard_cache_size": _shard_cache_size(),
         "hostname": platform.node(),
         "pid": os.getpid(),
         "git_commit": git_commit,
