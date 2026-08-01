@@ -519,7 +519,11 @@ rm -f _setup/.setup_failures
 
 echo "2. repository"
 if [ -d repo/.git ]; then
-  git -C repo pull --ff-only >/dev/null 2>&1 && ok "repo updated" || ok "repo present (pull skipped)"
+  # A subshell, not `git -C`: the A100 image ships git 1.8.3.1, which has no
+  # -C flag and would fail into the "pull skipped" branch, silently running
+  # stale code while reporting success.
+  ( cd repo && git pull --ff-only ) >/dev/null 2>&1 \
+    && ok "repo updated" || ok "repo present (pull skipped)"
 else
   fix "cloning"; git clone --depth 1 "$REPO_URL" repo >/dev/null 2>&1 \
     && ok "cloned" || bad "clone failed"

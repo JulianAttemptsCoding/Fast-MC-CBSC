@@ -259,6 +259,18 @@ def test_setup_failures_reach_the_exit_code() -> None:
         assert expected in SETUP_SCRIPT
 
 
+def test_setup_updates_the_repo_without_git_dash_c() -> None:
+    """The A100 image ships git 1.8.3.1, which has no -C flag. `git -C repo
+    pull` there fails into the "pull skipped" branch and runs stale code while
+    reporting success -- worse than failing."""
+    from dicos import SETUP_SCRIPT
+    code = "\n".join(
+        line for line in SETUP_SCRIPT.splitlines() if not line.lstrip().startswith("#")
+    )
+    assert "git -C" not in code
+    assert "( cd repo && git pull --ff-only )" in code
+
+
 def test_setup_never_builds_a_dependency_from_source() -> None:
     """On the A100 image (Python 3.11, GCC < 9.3) pip found no matching numpy
     wheel and fell back to an sdist, which failed with 'NumPy requires GCC >=
