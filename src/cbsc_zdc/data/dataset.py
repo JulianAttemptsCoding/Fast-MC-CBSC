@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import bisect
-from functools import lru_cache
+import os
+from collections import OrderedDict
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +31,26 @@ def load_geometry(path: str | Path, device: str | torch.device = "cpu") -> dict[
     return result
 
 
+#: Shards resident per dataset instance (so per DataLoader worker) unless a
+#: caller or CBSC_ZDC_SHARD_CACHE says otherwise. Kept at the historical value
+#: so no existing run changes behaviour by upgrading.
+DEFAULT_SHARD_CACHE = 4
+
+#: Environment override, so a run on a host with the memory to hold the corpus
+#: can opt in without hand-editing a frozen config or changing a config hash.
+#: 0 or negative means "hold every shard".
+SHARD_CACHE_ENV = "CBSC_ZDC_SHARD_CACHE"
+
+
+def resolve_shard_cache_size(explicit: int | None = None) -> int:
+    if explicit is not None:
+        return int(explicit)
+    raw = os.environ.get(SHARD_CACHE_ENV)
+    if raw is None or not raw.strip():
+        return DEFAULT_SHARD_CACHE
+    return int(raw)
+
+
 class ShardedSparseDataset(Dataset):
     """Random-access dataset over compressed sparse event shards.
 
@@ -45,7 +66,14 @@ class ShardedSparseDataset(Dataset):
         split: str | None = None,
         kinetic_range_gev: tuple[float, float] | None = None,
         n_nodes: int | None = None,
+        shard_cache_size: int | None = None,
     ):
+        self.shard_cache_size = resolve_shard_cache_size(shard_cache_size)
+        # Per instance, not a decorator on the method: lru_cache on a method is
+        # keyed by (self, index) and so is shared by every dataset in the
+        # process and pins each one alive. A DataLoader worker holds one
+        # dataset, and its cache should belong to it.
+        self._shard_cache: OrderedDict[int, dict[str, np.ndarray]] = OrderedDict()
         self.manifest_path = Path(manifest_path)
         self.manifest = load_json(self.manifest_path)
         self.root = self.manifest_path.parent
@@ -90,14 +118,29 @@ class ShardedSparseDataset(Dataset):
             selected = selected[(kinetic[selected] >= low) & (kinetic[selected] <= high)]
         self.indices = selected
 
-    @lru_cache(maxsize=4)
     def _load_shard(self, shard_index: int) -> dict[str, np.ndarray]:
+        """Return a shard's arrays, verifying its SHA-256 before any first read.
+
+        Verification is per load, exactly as before -- what the cache size
+        changes is how often a load happens, never what a load returns.
+        """
+        cached = self._shard_cache.get(shard_index)
+        if cached is not None:
+            self._shard_cache.move_to_end(shard_index)
+            return cached
+
         shard = self.shards[shard_index]
         path = self.root / shard["path"]
         if "sha256" in shard and sha256_file(path) != shard["sha256"]:
             raise RuntimeError(f"shard hash mismatch: {path}")
         arrays = np.load(path, allow_pickle=False)
-        return {key: arrays[key] for key in arrays.files}
+        payload = {key: arrays[key] for key in arrays.files}
+
+        self._shard_cache[shard_index] = payload
+        if self.shard_cache_size > 0:
+            while len(self._shard_cache) > self.shard_cache_size:
+                self._shard_cache.popitem(last=False)
+        return payload
 
     def _all_kinetic(self) -> np.ndarray:
         values = []
