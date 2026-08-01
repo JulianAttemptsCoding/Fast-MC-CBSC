@@ -1,0 +1,15 @@
+{
+  "early_stopping_patience": 3,
+  "epochs_absolute_target": 40,
+  "epochs_available": "11..39",
+  "family": "calibrated_lr1e4_halfbatch",
+  "format_version": 1,
+  "parent_config": "calibrated_lr1e4_halfbatch_dicos-r2.yaml",
+  "parent_config_sha256": "7d07adca5e8e3e4e6005d5ee3b669ee8972db8eea4cf419f6f4f97c9c499b6d8",
+  "parent_last_epoch": 10,
+  "resume_best_from_sha256": "74a989aa398023ef7fbfd5d0b73de4517df8ad8bc76e1257c73139a2e8c7c182",
+  "resume_from_sha256": "f9fa1b9184e640513a04992a3039ee8b30a529965ba468d49287d05696a377b3",
+  "run_tag": "dicos-final",
+  "template": "calibrated_lr1e4_halfbatch_dicos-final.yaml",
+  "template_sha256": "0da5b1a449d53a2984c9aad57f7e060570a992bfead73357a1f693c6afacc5e9"
+}
