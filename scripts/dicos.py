@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import hashlib
 import json
 import posixpath
 import re
@@ -133,30 +134,63 @@ class Dicos:
         local.write_bytes(data)
         return len(data)
 
-    def put(self, local: Path, remote: str) -> int:
-        target = self._resolve(remote)
-        self._assert_writable(target)
-        data = local.read_bytes()
+    #: The contents API takes the whole body as base64 JSON, and the server
+    #: rejects large payloads outright (a 29 MB checkpoint returns HTTP 500).
+    #: Anything above this is uploaded in parts and reassembled on the host.
+    CHUNK_BYTES = 4 * 1024 * 1024
+
+    def _put_bytes(self, data: bytes, target: str, timeout: int = 300) -> None:
         body = {
             "type": "file", "format": "base64",
             "content": base64.b64encode(data).decode("ascii"),
         }
         r = self.session.put(
             f"{self.base}/api/contents/{self._contents(target)}",
-            json=body, timeout=300,
+            json=body, timeout=timeout,
         )
         r.raise_for_status()
+
+    def put(self, local: Path, remote: str, log=None) -> int:
+        target = self._resolve(remote)
+        self._assert_writable(target)
+        data = local.read_bytes()
+        self.mkdir(posixpath.dirname(target))
+
+        if len(data) <= self.CHUNK_BYTES:
+            self._put_bytes(data, target)
+            return len(data)
+
+        # Chunked: upload parts, then concatenate on the host in one shell step
+        # and verify by SHA-256 before removing them, so a truncated transfer
+        # cannot masquerade as a complete file.
+        parts = [data[i:i + self.CHUNK_BYTES] for i in range(0, len(data), self.CHUNK_BYTES)]
+        digest = hashlib.sha256(data).hexdigest()
+        for index, part in enumerate(parts):
+            self._put_bytes(part, f"{target}.part{index:04d}")
+            if log:
+                log(f"  part {index + 1}/{len(parts)} ({len(part)} bytes)")
+        base = posixpath.basename(target)
+        directory = posixpath.dirname(target)
+        script = (
+            f"cd {shlex_quote(directory)} && "
+            f"cat {shlex_quote(base)}.part* > {shlex_quote(base)} && "
+            f"rm -f {shlex_quote(base)}.part* && "
+            f'test "$(sha256sum {shlex_quote(base)} | cut -d" " -f1)" = {digest} '
+            f'&& echo VERIFIED || {{ echo "CHECKSUM MISMATCH"; exit 1; }}'
+        )
+        if self._run(script, directory, timeout=600) != 0:
+            raise SystemExit(f"chunked upload of {target} failed verification")
         return len(data)
 
     def mkdir(self, remote: str) -> None:
+        """Create a directory (and parents).
+
+        The contents API answers 405 for a directory PUT here, so this goes
+        through the shell, which also keeps parent creation available.
+        """
         target = self._resolve(remote)
         self._assert_writable(target)
-        r = self.session.put(
-            f"{self.base}/api/contents/{self._contents(target)}",
-            json={"type": "directory"}, timeout=60,
-        )
-        if r.status_code not in (200, 201):
-            r.raise_for_status()
+        self._run(f"mkdir -p {shlex_quote(target)}", self.workdir, timeout=60)
 
     # -------------------------------------------------------------- guards
     def _resolve(self, path: str) -> str:
@@ -316,6 +350,25 @@ class Dicos:
         )
         return self._run(script, self.workdir, timeout=120)
 
+    def stop(self, name: str) -> int:
+        """Terminate a detached job by its recorded pid.
+
+        SIGTERM first so the process can checkpoint or clean up; the caller can
+        re-run to escalate if it is still alive.
+        """
+        script = (
+            f'p={self.JOBS_DIR}/{shlex_quote(name)}.pid; '
+            f'[ -e "$p" ] || {{ echo "no such job: {name}"; exit 1; }}; '
+            f'pid=$(cat "$p"); '
+            f'if kill -0 "$pid" 2>/dev/null; then '
+            f'  pkill -TERM -P "$pid" 2>/dev/null; kill -TERM "$pid" 2>/dev/null; '
+            f'  sleep 2; '
+            f'  if kill -0 "$pid" 2>/dev/null; then echo "still running, re-run to escalate"; '
+            f'  else echo "stopped {name} (pid $pid)"; fi; '
+            f'else echo "{name} was already finished"; fi'
+        )
+        return self._run(script, self.workdir, timeout=120)
+
     def logs(self, name: str, tail: int = 40) -> int:
         return self._run(
             f"tail -n {int(tail)} {self.JOBS_DIR}/{shlex_quote(name)}.log",
@@ -344,7 +397,20 @@ class Dicos:
             # the overall budget: a command that is working but silent (a clone,
             # a long hash) must not look like a dead connection. The loop below
             # tolerates idle recvs and enforces the real deadline itself.
-            ws = websocket.create_connection(ws_url, timeout=30)
+            #
+            # Retries cover *establishing* the connection only. Once the command
+            # has been sent it may already have had effects, so a drop mid-flight
+            # is reported rather than silently re-run -- re-running `start` would
+            # launch a second training job.
+            ws = None
+            for attempt in range(3):
+                try:
+                    ws = websocket.create_connection(ws_url, timeout=30)
+                    break
+                except (ConnectionError, OSError, websocket.WebSocketException) as exc:
+                    if attempt == 2:
+                        raise SystemExit(f"could not open a kernel channel: {exc}")
+                    time.sleep(2 * (attempt + 1))
             code = (
                 "import subprocess,sys\n"
                 f"_p=subprocess.run({command!r},shell=True,cwd={workdir!r},"
@@ -378,6 +444,15 @@ class Dicos:
                     raw = ws.recv()
                 except websocket.WebSocketTimeoutException:
                     continue  # silent-but-working command; keep waiting
+                except (ConnectionError, OSError) as exc:
+                    # The command may still be running on the host. Say so
+                    # rather than implying it failed.
+                    sys.stderr.write(
+                        f"\n[dicos] connection dropped: {exc}\n"
+                        "[dicos] the remote command may still be running; "
+                        "check with `jobs` / `logs` before re-running.\n"
+                    )
+                    return 75
                 message = json.loads(raw)
                 if message.get("parent_header", {}).get("msg_id") != msg_id:
                     continue
@@ -574,6 +649,9 @@ def main() -> int:
 
     sub.add_parser("jobs", help="list detached jobs and whether they are running")
 
+    p = sub.add_parser("stop", help="terminate a detached job")
+    p.add_argument("name")
+
     p = sub.add_parser("logs", help="tail a detached job's log")
     p.add_argument("name")
     p.add_argument("--tail", type=int, default=40)
@@ -714,6 +792,8 @@ def main() -> int:
         return client.start(args.command, args.name, cwd=args.cwd)
     if args.cmd == "jobs":
         return client.jobs()
+    if args.cmd == "stop":
+        return client.stop(args.name)
     if args.cmd == "logs":
         return client.logs(args.name, tail=args.tail)
     if args.cmd == "setup":
@@ -727,7 +807,7 @@ def main() -> int:
             size = entry.get("size")
             print(f"{entry['type']:9} {str(size) if size is not None else '':>14}  {entry['name']}")
     elif args.cmd == "put":
-        n = client.put(Path(args.local), args.remote)
+        n = client.put(Path(args.local), args.remote, log=print)
         print(f"uploaded {n} bytes -> {client._resolve(args.remote)}")
     elif args.cmd == "get":
         n = client.get(args.remote, Path(args.local))

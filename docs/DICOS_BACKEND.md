@@ -436,6 +436,103 @@ exactly. Use:
 cbsc-zdc split --manifest prep/data/dataset_manifest.json   --output prep/splits.json --seed 20260723 --group-by event_hash   --fractions 0.8 0.1 0.1
 ```
 
+## 6. Training on a GPU — the verified path
+
+Everything up to training is done and checked. This section is the procedure,
+and every step below was executed successfully on the host (the training step
+as a CPU smoke run that was stopped once it was confirmed stepping).
+
+### What is already on the host
+
+```
+prep/geometry_frozen/   canonical geometry, hash e22d4cfb… verified on-host
+prep/data/              187 shards + manifest, byte-identical to canonical
+prep/splits.json        612,482 / 76,158 / 76,300, assignment f71003e0…
+prep/train_data_audit.json   reproduces the canonical audit exactly
+prep/checkpoints/       calibrated_lr3e4_best_epoch4.pt, sha 3f1022b8…
+```
+
+`cbsc-zdc` preflight passes against these with `verified_shards: 187`.
+
+### Session start
+
+```bash
+python scripts/dicos.py auth "<address-bar URL>"   # token is reused
+python scripts/dicos.py setup                      # expect all nine checks green
+python scripts/dicos.py exec "nvidia-smi"          # confirm the GPU is present
+```
+
+`setup` rebuilds the venv automatically if the GPU image's base environment
+differs from the CPU pod's — it validates by import, not by existence.
+
+### Freezing a config, then training
+
+Never hand-edit a frozen config. Write a template, freeze it, record both
+hashes:
+
+```bash
+# 1. template (a copy of a repo template with device/paths adjusted) --
+#    keep it in prep/, not in repo/, so the clone stays clean
+# 2. freeze it against the on-host artifacts
+cbsc-zdc freeze-config   --template ../prep/<your_template>.yaml   --audit    ../prep/train_data_audit.json   --geometry ../prep/geometry_frozen   --manifest ../prep/data/dataset_manifest.json   --splits   ../prep/splits.json   --output   ../prep/<your_frozen>.yaml
+
+# 3. train, detached -- never through `exec`
+python scripts/dicos.py start   "cd repo && PYTHONPATH=src ../.venv/bin/python -m cbsc_zdc.cli train      --config ../prep/<your_frozen>.yaml" --name train_r1
+python scripts/dicos.py jobs
+python scripts/dicos.py logs train_r1 --tail 40
+python scripts/dicos.py stop train_r1        # if it must be ended early
+```
+
+Preflight hashes all 187 shards before the first step, which takes a few
+minutes and produces no output; that is expected, not a hang. Progress after
+that goes to the run directory rather than stdout, so `jobs` showing RUNNING
+with a small log is normal — confirm real work with
+`exec "ps -eo pid,%cpu,rss,cmd | grep [c]bsc_zdc"`.
+
+### Choosing the experiment: two different things
+
+**A fresh run on the full split** is ready now. The existing families trained on
+a 26,624-event bank, 4.3% of what is available, and "trained on only a fraction"
+is one of the recorded limitations — so a full-split run is the more valuable
+experiment and needs nothing further.
+
+**Continuing an existing family** is possible but has a wrinkle worth
+understanding before committing. The accepted epoch-4 runs used the *pilot*
+bank, and `training_pilot_splits.json` pins `manifest_sha256 = 5a6d9632…`, the
+canonical manifest. The DiCOS manifest hashes to `688b440c…` — not because the
+data differs (all 187 shard hashes match) but because a manifest records its
+source **path**. `ShardedSparseDataset` compares that hash and would refuse the
+transported pilot split. Regenerating the pilot bank on DiCOS, via the logic in
+`cloud/vertex_prepare.py`, is the way to continue those exact families. Do not
+"fix" this by relaxing the hash check.
+
+### Getting checkpoints onto the host
+
+DiCOS has no `gcloud`, `gsutil`, `rclone`, or `google-cloud-storage`, so it
+cannot pull from GCS itself. Transfer via this machine instead — download with
+`gcloud` locally, then `put`, which chunks and verifies by SHA-256:
+
+```bash
+python scripts/dicos.py put local_checkpoint.pt prep/checkpoints/<name>.pt
+```
+
+`calibrated_lr3e4_best_epoch4.pt` was moved this way and verified on-host
+(hash `3f1022b8…`, `epoch=4`, `best_metric=4.7380412609301406`).
+
+### Decide TF32 before the first real run
+
+Accepted runs are FP32 on a T4. Newer accelerators enable **TF32 for cuDNN by
+default**, which silently lowers precision:
+
+```python
+torch.backends.cuda.matmul.allow_tf32   # False by default
+torch.backends.cudnn.allow_tf32         # True by default -- this is the one
+```
+
+Leaving it on is defensible for a newly declared experiment and is a real
+speed-up, but it is a numerics change. It must not enter a run being compared
+against the existing epoch-4 checkpoints without being declared and recorded.
+
 ### Open questions for step 5-6
 
 - **Conversion cost.** The geometry scan alone read the 25 GB file in ~20 min at

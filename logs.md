@@ -5145,3 +5145,56 @@ That needs a GPU DiCOSApp, and the TF32 question recorded in
 `docs/DICOS_BACKEND.md` must be settled first — newer accelerators enable TF32
 for cuDNN by default, which would silently change numerics relative to the FP32
 T4 runs.
+
+## 2026-08-01 — GPU path verified end to end; transfer and job-control gaps closed
+
+Follow-up to the pipeline entry above, verifying rather than assuming that the
+training path works on DiCOS. No GPU and no paid compute were used; the training
+step was a CPU smoke run, stopped once confirmed stepping.
+
+Verified, each by execution:
+
+- `audit-dataset` on the DiCOS corpus reproduces the canonical audit exactly --
+  612,482 events, `zero_response_fraction 0.010023151700784676`,
+  `response_cap_ratio 0.6301101273502666`,
+  `response_cap_absolute_gev 61.23382753262882`;
+- `freeze-config` accepts the DiCOS artifacts and emits a frozen config;
+- `cbsc-zdc train` runs: preflight passed with `"pass": true` and
+  `verified_shards: 187`, confirming the split assignment hash
+  `f71003e0…`, and the trainer then reached ~878% CPU and 8.2 GB RSS before
+  being stopped deliberately;
+- `cbsc-zdc doctor` clean on the host.
+
+Two blocking gaps were found and closed.
+
+**Large-file transfer.** `put` sent the whole body as base64 JSON in one
+request; a 29 MB checkpoint returned HTTP 500. Without this there was no way to
+get any checkpoint onto DiCOS at all, since the host has no `gcloud`, `gsutil`,
+`rclone`, or `google-cloud-storage`. `put` now splits files above 4 MB, uploads
+parts, concatenates them on the host, and verifies the reassembled file by
+SHA-256 before deleting the parts, so a truncated transfer cannot pass as
+complete. `calibrated_lr3e4_best_epoch4.pt` was moved this way and verified
+on-host: hash `3f1022b87361b8a14d9f8432273dcd6c72f6a5e599c1be1575e7f37f4014803d`,
+`epoch=4`, `best_metric=4.7380412609301406`. `mkdir` also answered HTTP 405
+through the contents API and now goes through the shell.
+
+**Job control.** Added `stop`, and hardened the transport: connection
+establishment retries three times, but a drop *after* the command was sent is
+reported rather than retried, since re-running `start` would launch a second
+training job. A `&` binding to a whole `&&` chain had also backgrounded the
+setup for detached jobs and raced the pid write; fixed.
+
+Counterexample recorded, and it constrains how the existing families can be
+continued. `training_pilot_splits.json` pins `manifest_sha256 = 5a6d9632…`,
+while the DiCOS manifest hashes to `688b440c…`. The data is identical -- all 187
+shard hashes match -- but a manifest records its source *path*, so the hashes
+differ by construction and `ShardedSparseDataset` would refuse the transported
+pilot split. Continuing the exact epoch-4 families therefore requires
+regenerating the pilot bank on DiCOS via the logic in `cloud/vertex_prepare.py`.
+The production-split path has no such issue: `prep/splits.json` was generated
+from the DiCOS manifest and preflight accepts it. **The hash check must not be
+relaxed to work around this.**
+
+138 tests pass, 43 of them on the access contract and all offline. The verified
+GPU procedure, including the TF32 decision that must be made before any run
+compared against the epoch-4 checkpoints, is in `docs/DICOS_BACKEND.md` section 6.

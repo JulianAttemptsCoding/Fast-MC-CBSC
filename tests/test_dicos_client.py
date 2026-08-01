@@ -160,3 +160,31 @@ def test_reading_outside_the_workdir_is_still_permitted(client: Dicos) -> None:
     to inspect /opt interpreters and the venv to do its job."""
     client._assert_command_safe("/opt/miniconda3/envs/asgc/bin/python -V")
     client._assert_command_safe("ls /opt")
+
+
+# ------------------------------------------------------- job / transfer shape
+# These pin behaviour that was only discovered by running against the host:
+# the contents API rejects large bodies, and `&` binds to a whole `&&` chain.
+
+def test_large_files_are_chunked(client: Dicos) -> None:
+    """A 29 MB checkpoint returns HTTP 500 from the contents API, so anything
+    over the chunk size must be split and reassembled rather than sent whole."""
+    assert client.CHUNK_BYTES <= 8 * 1024 * 1024
+    assert 29_366_432 > client.CHUNK_BYTES
+
+
+@pytest.mark.parametrize("name", ["../escape", "a b", "semi;colon", "", "sl/ash"])
+def test_job_names_must_be_simple(client: Dicos, name: str) -> None:
+    """Job names become filenames and shell tokens; anything exotic is refused
+    before it can be interpolated."""
+    with pytest.raises(SystemExit, match="job name"):
+        client.start("echo hi", name)
+
+
+def test_job_command_is_guarded_before_being_detached(client: Dicos) -> None:
+    """`start` must apply the same contract as `exec` -- a detached job that
+    escapes the workdir is worse, not better, than an interactive one."""
+    with pytest.raises(SystemExit, match="outside the permitted workdir"):
+        client.start("rm -rf /dicos_ui_home/julianjuan/.jupyter", "evil")
+    with pytest.raises(SystemExit, match="out of scope"):
+        client.start(f"cp {TRANSFORMED} .", "evil")
