@@ -484,29 +484,171 @@ Two things this phase does **not** establish, regardless of outcome: anything
 about Geant4 fidelity, and anything about untouched-test performance. The bank
 is the pilot bank; the 76,300-event test split remains sealed and untouched.
 
-**Status 2026-08-02.** The six-epoch comparison is complete and a winner was
-selected: `calibrated_lr1e4_halfbatch`, largest validation improvement over
-epochs 5..10 (+0.134200). Its solo continuation is running as job `finalr2`
-(`_runs/calibrated_lr1e4_halfbatch_dicos-final-r2`, epochs 11..16, patience 6).
-An earlier solo attempt under patience 3 stopped after three epochs without
-improving; see `logs.md` for why patience 3 cannot survive a high-LR scheduler
-restart. `calibrated_lr3e4` still holds the lowest absolute validation loss of
-the four (4.680965 against the winner's 4.710829) — the selection rule was
-largest improvement, not lowest loss, and both numbers should be quoted
-together.
+### 7b. STATE AS OF 2026-08-02T15:00Z — read this before doing anything
+
+**Nothing is training. All three pods are idle.** The next action is a
+decision, not a rescue.
+
+**Best model in the project: `calibrated_lr3e4`, validation 4.605498 at absolute
+epoch 15**, from run `dicos-p6`. That is 0.105331 below the next best and far
+outside the ~0.02 run-to-run resolution, so it is a real lead.
+
+    family                      best val    at epoch   run
+    calibrated_lr3e4            4.605498    15         dicos-p6      <- best
+    calibrated_lr1e4_halfbatch  4.710829    10         dicos-r3
+    calibrated_lr1e4            4.766131     8         dicos-r3
+    calibrated_lr3e5            4.843471     8         dicos-r3
+
+`calibrated_lr3e4` run `dicos-p6` (epochs 11..16, patience 6) finished
+`EXIT=0` at 14:52:06Z. QA PASS: six of six per-epoch invariants, postflight
+`pass: true`, nonfinite 0, negative 0, outside_valid_support 0, 6,660 updates.
+
+    epoch   11        12        13        14        15        16
+    val     4.685929  4.693405  4.741021  4.638183  4.605498  4.637055
+
+    best.pt  d73aa900a367c8cb1d1fdc53309822b07366e9cb66073513741e867514e3fcba
+    last.pt  763d45bbe3c075d9c0256df7e40b1946ab47816f28fa28767049f275116c964d
+    frozen   a7765a93c6f1a190b8c921e2fa8adbacc54e9e86e6e947f22f4e60c96e208ef3
+
+**Unfinished work, in priority order.**
+
+1. `calibrated_lr1e4` epochs 11..16 has **not** run to completion. Its frozen
+   config exists (`prep/configs/frozen_calibrated_lr1e4_dicos-p6.yaml`, sha
+   `ae5247650b3260495e5dcad117d329082ceb0f1f1d6885633dc95789dd84161e`,
+   resume `d79365693d10f16acdb2502fc3db5462f679b1c29fedbf1b6fbc8ff896321bce`)
+   and its checkpoints are staged. Launch it on the **3090** (venv
+   `.venv_3090`, runner `_setup/run_p6_3090.sh`). Two earlier attempts were
+   discarded, see the run table.
+2. The public site still publishes epoch-8/epoch-10 snapshots. It does **not**
+   yet carry `calibrated_lr3e4` epoch 15 at 4.605498, which is now the lowest
+   verified loss for that family and so is what the documented policy
+   ("lowest verified validation-loss checkpoint per calibrated family")
+   requires. Republishing needs that epoch's visualization payload transported
+   from `_runs/calibrated_lr3e4_dicos-p6/reports/visualization/epoch_0015.json`.
+3. The exhibition figures stop at epoch 16 for half-batch only; `lr3e4`'s
+   epochs 11..16 are not in `exhibition/build_continuation_loss_figures.py`'s
+   `CONTINUATION` dict yet.
+4. About 5.0 GB of packages sit in `~/.local/lib/python3.13/site-packages` on
+   the 80 GB datacentre-GPU pod, written there by mistake (see `logs.md`, entry
+   of 2026-08-02). The user was asked to remove them; an agent must not write
+   there.
+
+**Measured GPU comparison — settled, do not re-derive.** Same architecture,
+batch 6, 4,437 batches per epoch, rates sampled the same way on each:
+
+    RTX 4090                  7.31 batch/s   10.1 min/epoch   not in price list
+    RTX 3090                  4.04 batch/s   18.3 min/epoch   NT$395/board-day
+    80 GB datacentre GPU      2.30 batch/s   32.2 min/epoch   NT$865/board-day
+
+**Caveat that must travel with the third number:** it was sampled while two
+trainers shared that GPU, so it understates a solo run there. A clean solo
+re-measurement was attempted and failed (that process had had its run directory
+moved out from under it), so **the true solo rate for that card is unmeasured**
+and could be up to about 2x the figure above. The 4090 and 3090 numbers were
+each taken with a single verified trainer and are sound. Ranking 4090 > 3090 is
+solid; 3090 ahead of the datacentre card is likely but **not established**.
+
+Pricing is from ASGC's own table dated February 2022, and their docs disagree
+on the SRU price (NT$2, NT$3, and the table implies NT$5), so absolute NT$
+figures may be off by up to 2.5x. The 2.19x ratio between the two priced cards
+is unaffected. No RTX 4090 appears in either the price list or resource list,
+so the machine actually in use has no published rate.
 
 **Run history for this phase — read before interpreting any `_runs` directory.**
-Five launches exist and only the last is live:
 
 | tag | fate |
 |---|---|
 | `dicos-r1` | Aborted. Launched with `epochs: 6`, which is an **absolute** target, so it ran one epoch per family with the cosine annealed to `min_learning_rate` across it. Archived at `_runs/aborted_r1_epochs_misread/`. |
 | `dicos-r2` (wave2) | Stopped after one epoch to free the GPU while a second pod was evaluated, then archived at `_runs/aborted_r2_slow_loader/` because it ran under the slow loader and an earlier commit. |
-| `dicos-r3` | Complete, all four families, epochs 5..10, all QA PASS. This is the comparison the winner was chosen from. |
-| `dicos-final` | Stopped by early stopping after epochs 11..13 with **no improvement** on 4.710829. Patience 3 against a best reached at lr 1e-6 cannot survive a restart at lr 1e-4. Not a statement about the model. |
-| `dicos-final-r2` | **Live.** Winner alone, epochs 11..16, patience 6, restart kept — the wave3 shape. `early_stopping_can_fire: false` is recorded in the config, because six epochs against patience six means early stopping cannot trigger; it is effectively a fixed six-epoch run. |
+| `dicos-r3` | Complete, all four families, epochs 5..10, all QA PASS. The comparison the first winner was chosen from. |
+| `dicos-final` | half-batch epochs 11..13, patience 3. Stopped by early stopping with **no improvement** on 4.710829. Patience 3 cannot survive a high-LR scheduler restart; not a statement about the model. |
+| `dicos-final-r2` | half-batch epochs 11..16, patience 6. Completed, `EXIT=0`, QA PASS, ended 4.715659 — **did not beat** its own 4.710829. |
+| `dicos-p6` (lr3e4) | **Complete, QA PASS, the current best: 4.605498 at epoch 15.** |
+| `dicos-p6` (lr1e4) | **Never completed.** Two discarded attempts: one on the datacentre-GPU pod (crashed at epoch 12, archived `_runs/aborted_dcgpu_crash/`), one on the 3090 (wiped, its directory had been written by a stray process). |
+| quarantined | `_runs/quarantine_duplicate_writer/` — an lr3e4 attempt with two concurrent writers. Never resume, compare or publish from it. |
 
-Do not compare a number from an aborted run against a `dicos-r3` number.
+Do not compare a number from an aborted run against a completed one.
+
+### 7c. Driving several pods at once
+
+All pods mount the **same** CephFS workdir. Credentials live one file per pod
+and are selected with `DICOS_CONFIG`; without it the client uses
+`~/.dicos/config.json`, which is the 4090.
+
+| pod | port | credentials file | venv |
+|---|---|---|---|
+| RTX 4090 (primary) | 32545 | `~/.dicos/config.json` | `.venv` |
+| RTX 3090 | 32705 | `~/.dicos/config_3090.json` | `.venv_3090` |
+| 80 GB datacentre GPU | 31785 | `~/.dicos/config_dcgpu.json` | `.venv_dcgpu` |
+
+```bash
+DICOS_CONFIG=$HOME/.dicos/config_3090.json PYTHONPATH=src \
+  python scripts/dicos.py exec 'nvidia-smi'
+```
+
+**Access URLs.** Tokens are deliberately **not** written here: this file is
+committed and pushed, and a token in the repository is pod access for anyone
+who can read it. The live tokens are already in the `~/.dicos/*.json` files
+above, which is the only place they belong.
+
+    RTX 4090   http://scale-k8s-master01.twgrid.org:32545/
+    RTX 3090   http://scale-k8s-master01.twgrid.org:32705/
+    80 GB DC   http://scale-k8s-master01.twgrid.org:31785/
+
+If a credentials file is missing, ask the user for the launch URL — it contains
+the token — or recover it from the pod itself (§10a, "Recovering the token").
+Never paste a token into a tracked file, a commit message, or `logs.md`.
+
+**Keeping these current.** DiCOS has issued a *stable per-user* token, so when
+a pod is relaunched usually only the **port** changes and the token still
+works. To re-point at a moved pod:
+
+```bash
+DICOS_CONFIG=$HOME/.dicos/config_3090.json PYTHONPATH=src \
+  python scripts/dicos.py auth "http://scale-k8s-master01.twgrid.org:<new-port>/"
+```
+
+`auth` accepts a URL with or without a token, reuses the stored one when the
+URL carries none, verifies against the server before saving, and saves nothing
+on failure. If the token really has changed, pass it explicitly as a second
+argument, or recover it from a JupyterLab terminal with `jupyter server list`
+(§10a has the notebook-cell variant). **Whenever a port or token changes here,
+update the table above in the same commit** — a stale entry sends the next
+agent to a dead pod or, worse, to the wrong one.
+
+To add a pod, copy an existing credentials file and change `base_url` and
+`token` only. Every other field encodes the filesystem contract — `workdir`,
+`data_file`, `forbidden_paths` — and must not be widened.
+
+**Never run `dicos.py setup` on a second pod.** It rebuilds the shared
+`.venv`, which belongs to whatever is training. Build a per-pod venv instead —
+`_setup/build_venv_dcgpu.sh` is the pattern: a fresh directory name, then
+asserts that `sys.prefix` is the venv and `site.ENABLE_USER_SITE` is false
+*before* any install, with `PIP_USER=0` and `PYTHONNOUSERSITE=1` exported. That
+combination exists because without it a broken venv silently redirected 5 GB of
+torch into `$HOME`, outside the one writable directory.
+
+**Traps that cost real time today, all of them mine:**
+
+* `dicos.py start` output is easy to swallow with a pipeline. **Never re-issue a
+  start because the output looked empty** — check the process tree
+  (`ps -eo pid,ppid,args | grep dicos_train`). Counting `START` lines in the log
+  or looking at the pid file does **not** distinguish one wrapper from two; both
+  write the same paths. `scripts/dicos_train.py` now takes a run-directory lock
+  (`src/cbsc_zdc/training/run_lock.py`) so a second writer is refused outright,
+  but the habit still matters.
+* **Never move or delete a run directory while a process holds it.** Paths are
+  resolved per write, not held open, so a moved directory makes the live process
+  start writing to whatever now occupies that path — which is how the
+  datacentre-GPU trainer ended up writing into the 3090's run directory.
+* The datacentre-GPU and 3090 images have **no `ps`, `pkill`, or `free`**, and
+  the datacentre pod's
+  default `python3` predates 3.12 (no nested same-quote f-strings). Use each
+  pod's venv interpreter and `_setup/kill_bench.py` or `_setup/kill_dcgpu.py`, which scan `/proc`.
+* `pkill -f <pattern>` matches the probe shell's own command line and kills the
+  probe; the resulting `__DICOS_EXIT__-15` is your own command dying.
+* `dicos.py stop` kills the wrapper, not the trainer. Verify the GPU is actually
+  released before assuming a run has ended.
 
 **`CBSC_ZDC_SHARD_CACHE=0` is set for this wave.** It makes each loader worker
 hold all 187 shards resident instead of 4. This is a transport property, not a

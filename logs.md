@@ -5911,3 +5911,87 @@ slower end to end than queueing both on the 4090. Parallel finishes in about
 Caveat on scope: this measures this workload — FP32, batch 6, this model. It
 says nothing about a configuration that uses `amp`, larger batches, or anything
 that would engage the A100's tensor cores or its memory bandwidth advantage.
+
+### 2026-08-02 — calibrated_lr3e4 continuation is the new best; three-GPU comparison; run lock
+
+**New project best: `calibrated_lr3e4`, validation 4.605498 at absolute epoch
+15**, run `dicos-p6` on the RTX 4090, 13:33:31Z to 14:52:06Z, EXIT=0. QA PASS:
+six of six per-epoch invariants, postflight `pass: true`, nonfinite 0,
+negative 0, outside_valid_support 0, 6,660 updates.
+
+    epoch   11        12        13        14        15        16
+    val     4.685929  4.693405  4.741021  4.638183  4.605498  4.637055
+    lr      2.800e-4  2.253e-4  1.505e-4  7.575e-5  2.103e-5  1.000e-6
+
+    best.pt  d73aa900a367c8cb1d1fdc53309822b07366e9cb66073513741e867514e3fcba
+    last.pt  763d45bbe3c075d9c0256df7e40b1946ab47816f28fa28767049f275116c964d
+
+4.605498 is 0.105331 below the previous best (half-batch, 4.710829) and far
+outside the ~0.02 resolution, so the lead is real. It also **overturns the
+earlier selection**: half-batch won the six-epoch comparison on largest
+improvement (+0.134200) but never beat its own epoch-10 checkpoint in two solo
+continuations, while lr3e4 — second on that criterion — improved substantially
+when given the same treatment. Selecting on largest improvement rather than
+lowest absolute loss picked the wrong model here. Recorded because the
+criterion was the user's and was applied faithfully; the outcome is evidence
+about the criterion, not about the execution.
+
+Also recorded: at epoch 13 I predicted from a 4.686/4.693/4.741 drift that this
+family would finish above its bar. It finished 0.075 below it. The late cosine
+anneal did the work, exactly as the half-batch run had already hinted. A
+three-point trend inside a cosine cycle is not a forecast.
+
+**Three-GPU throughput, identical work** (same architecture, batch 6, 4,437
+batches/epoch, rates sampled the same way):
+
+    RTX 4090                7.31 batch/s   10.1 min/epoch
+    RTX 3090                4.04 batch/s   18.3 min/epoch
+    80 GB datacentre card   2.30 batch/s   32.2 min/epoch   (see caveat)
+
+With ASGC's February 2022 price table (NT$395/board-day for the 3090,
+NT$865 for the datacentre card, no entry for a 4090), the 3090 is 2.19x cheaper
+and measured 1.76x faster than that card — about 3.9x better per epoch.
+
+**Caveat that must travel with the datacentre number, and it is a real one.**
+That 2.30 batch/s was sampled while **two trainers shared the GPU**, which I did
+not realise at the time; it understates a solo run there, possibly by up to 2x.
+A clean solo re-measurement was attempted and failed, so the true solo rate for
+that card **is unmeasured**. 4090 > 3090 is solid. 3090 ahead of the datacentre
+card is likely but not established, and the earlier claim that it was measured
+is withdrawn.
+
+**Duplicate writers, and the fix.** Three runs were lost to two trainers sharing
+one run directory. `atomic_torch_save` builds a fixed `progress.pt.tmp` and
+renames it, so the second process dies with FileNotFoundError and the survivor's
+artifacts have provenance nobody can vouch for. Every pod mounts the same
+filesystem, so the second writer can be on another machine.
+
+My own diagnosis oscillated and is worth recording. I suspected a double start,
+retracted it because the log had one START line and one pid file, then found the
+process tree showed two wrappers — neither log lines nor pid files distinguish
+one wrapper from two, because both write the same paths. Later I retracted the
+same conclusion a second time on the other pod and was wrong again. The process
+tree is the only reliable check.
+
+Fixed properly rather than by care: `src/cbsc_zdc/training/run_lock.py` takes an
+O_EXCL lock naming its holder, `scripts/dicos_train.py` acquires it before
+training and releases it in a `finally`, a stale lock from a dead pid on the
+same host is reclaimed, and a lock from another host is never reclaimed because
+this process cannot know whether that pid is alive. `_pid_alive` handles the
+Windows case explicitly, since `os.kill(pid, 0)` raises ProcessLookupError on
+POSIX but OSError(winerror=87) on Windows — caught by the test, not by reading.
+
+**Two further mistakes of mine, both recorded so they are not repeated.** I
+moved a run directory while a live process held it; paths resolve per write, so
+that process began writing into whatever then occupied the path — which is how
+the datacentre trainer ended up writing into the 3090's run directory. And a
+broken venv rebuild silently redirected about 5.0 GB of torch into `$HOME`,
+outside the one writable directory; the build script now exports `PIP_USER=0`
+and `PYTHONNOUSERSITE=1` and asserts `sys.prefix` and `ENABLE_USER_SITE` before
+installing anything. The user was asked to remove the stray packages; no agent
+should write there.
+
+State at the end of this session: nothing training, all pods idle,
+`calibrated_lr1e4` epochs 11..16 still not run, public site not yet republished
+at lr3e4 epoch 15. 191 tests pass. Tokens are not recorded in this repository —
+history was scanned across all refs and contains none.
