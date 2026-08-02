@@ -533,6 +533,78 @@ outside the ~0.02 run-to-run resolution, so it is a real lead.
    of 2026-08-02). The user was asked to remove them; an agent must not write
    there.
 
+**Next task, concretely.** Item 1 is the one that unblocks the decision. Nothing
+needs building: the config is frozen, the checkpoints are staged, and the runner
+script is already on the host.
+
+```bash
+export DICOS_CONFIG=$HOME/.dicos/config_3090.json PYTHONPATH=src
+
+# 1. Prove nothing is already training. The process tree, not the log.
+python scripts/dicos.py exec 'nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader'
+python scripts/dicos.py exec '.venv_3090/bin/python _setup/kill_bench.py'   # lists before killing; 0 targets means clear
+
+# 2. Launch once. Read the output; do NOT re-issue if it looks empty.
+python scripts/dicos.py start 'bash _setup/run_p6_3090.sh' --name p6lr1e4_3090
+
+# 3. Confirm a single writer.
+python scripts/dicos.py exec 'cat _runs/calibrated_lr1e4_dicos-p6/run.lock'
+```
+
+`run_p6_3090.sh` runs `calibrated_lr1e4` over absolute epochs 11..16 with
+patience 6 and `CBSC_ZDC_SHARD_CACHE=0`, writing to
+`_runs/calibrated_lr1e4_dicos-p6`. About 18.3 min/epoch on the 3090, so roughly
+2 h. It is a fixed-length run: six epochs against patience 6 means early
+stopping cannot fire, and the config records `early_stopping_can_fire: false`.
+
+When it exits: read `training_summary.json`, confirm six of six
+`invariant_epoch_*.json` pass and `training_postflight_invariants.json` has
+`pass: true`, then state plainly whether it beat **4.766131** (its own best) and
+how it compares with lr3e4's **4.605498**. Then items 2 and 3 — republish the
+site at whichever checkpoint is lowest per family, and add both families'
+epochs 11..16 to the `CONTINUATION` dict in
+`exhibition/build_continuation_loss_figures.py` before rebuilding the figures.
+Look at the rendered PNGs; three separate rendering faults this session were
+caught that way and none of them by a clean build.
+
+**Current direction — what this phase is trying to do.**
+
+The goal has not changed: take the strongest calibrated family and continue it
+until validation stops improving, on the 26,624/6,656 pilot bank, so that a
+single best generator exists to carry into the next stage. Everything since
+epoch 4 has been in service of that.
+
+The route there has been revised once, by evidence, and the next agent needs to
+understand why rather than inherit the conclusion:
+
+* The four families were compared over identical absolute epochs 5..10
+  (`dicos-r3`). The user's selection rule was **largest improvement from the
+  start of the continuation to its end**, which chose `calibrated_lr1e4_halfbatch`
+  (+0.134200).
+* That family then failed to beat its own epoch-10 checkpoint in **two** solo
+  continuations — once under patience 3 (stopped in three epochs) and once under
+  patience 6 over a full six-epoch anneal (ended 4.715659 against 4.710829).
+* `calibrated_lr3e4`, which came *third* on improvement but held the lowest
+  absolute loss, was then given the same six-epoch treatment and reached
+  **4.605498**, the best result in the project.
+
+So the improvement criterion selected the weaker model here. It measured how far
+a family had climbed out of its own restart, not how good it was. **Absolute
+validation loss has been the better predictor of what continues to improve**,
+and unless the user directs otherwise the next continuation should follow
+`calibrated_lr3e4`. Say this to the user rather than silently switching rules —
+the original criterion was theirs.
+
+The immediate open question is whether `calibrated_lr1e4` (item 1 below, never
+completed) changes that picture. It sat second on absolute loss at 4.766131. If
+its epochs 11..16 land near lr3e4's 4.605498 the comparison is live again; if
+they land where its trend suggested, lr3e4 is the clear continuation candidate
+and the project can move on to a longer run on that family alone.
+
+Two boundaries that do not move whatever the outcome: this is optimization
+evidence on the pilot bank, and it establishes nothing about Geant4 fidelity or
+untouched-test performance. The 76,300-event test split stays sealed.
+
 **Measured GPU comparison — settled, do not re-derive.** Same architecture,
 batch 6, 4,437 batches per epoch, rates sampled the same way on each:
 
