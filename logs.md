@@ -5735,3 +5735,59 @@ started from a clean state.
 Standing boundary unchanged: optimization evidence on the pilot bank only.
 Nothing here bears on Geant4 fidelity or untouched-test performance, and the
 76,300-event test split remains sealed.
+
+### 2026-08-02 — state at local shutdown
+
+**Running, and independent of the local machine.** Job `finalr2`, pid 8204 under
+detached wrapper 8201 on the RTX 4090 pod (port 32545). It was started through
+`dicos.py start`, so it runs under `nohup` with its log on CephFS and survives
+the client disconnecting. It does **not** survive the pod's own expiry; if the
+pod ends, resume from the checkpoints in
+`_runs/calibrated_lr1e4_halfbatch_dicos-final-r2/checkpoints/`.
+
+    config   prep/configs/frozen_calibrated_lr1e4_halfbatch_dicos-final-r2.yaml
+    frozen   516443d93556e892243e947b9ce9e2d788fa2e296b66b096b3ee43d6f99dd2e8
+    run dir  _runs/calibrated_lr1e4_halfbatch_dicos-final-r2
+    epochs   11..16 absolute, patience 6, cosine restart kept
+    e11      train 4.909868  val 4.785943   (bar to beat: 4.710829)
+
+`early_stopping_can_fire` is recorded as **false** in that config: six epochs
+against patience six means early stopping cannot trigger, so this is in effect
+a fixed six-epoch run, the same shape as wave3. Recorded rather than implied.
+
+Epoch 11 came in at 4.785943 against 4.785436 for the same epoch of the
+abandoned patience-3 attempt — two runs of the same restart from the same
+checkpoint agreeing to 5e-4. That is a useful side observation about
+reproducibility, not a result.
+
+**To resume monitoring in a new session**
+
+    PYTHONPATH=src python scripts/dicos.py auth "http://scale-k8s-master01.twgrid.org:32545/lab?token=<token>"
+    PYTHONPATH=src python scripts/dicos.py logs finalr2 --tail 20
+    PYTHONPATH=src python scripts/dicos.py exec 'ls _runs/calibrated_lr1e4_halfbatch_dicos-final-r2/reports/'
+
+When it finishes: check `training_summary.json` and the per-epoch and postflight
+invariants, rebuild `python exhibition/build_continuation_loss_figures.py` so the
+per-family graphs include epochs 11..16, inspect the rendered PNG rather than
+trusting a clean build, and state plainly whether 4.710829 was beaten. If it was
+not, the family did not improve — do not describe that as convergence.
+
+**Second A100 pod (port 31570) is healthy**, unlike the first. Read-only probe
+returns HTTP 200 for the jupyter root, `sharedfs` (23 entries) and the workdir
+(4 entries), so the earlier pod's `HTTP 500` was pod-specific, not an account or
+permission problem. A benchmark against the 4090 was prepared but not run,
+because the 4090 is mid-run and `setup` would `rm -rf` the shared `.venv` and
+kill it. `scripts/dicos.py` now supports `DICOS_CONFIG`, so a second pod can be
+driven from a separate credentials file without rewriting the one the running
+pod's watcher reads. To benchmark it later: point `DICOS_CONFIG` at a second
+config, build `.venv_a100` inside the workdir (never run `setup`), and run a
+short fixed-step timing into `_bench/`, not into `_runs/`.
+
+**GPU verdict stands: keep the RTX 4090.** The workload is FP32-bound since the
+loader fix, which favours the 4090 (~82 TFLOPS FP32 against ~19.5), and the two
+pods share one `.venv` built on different base Pythons. The honest limit is
+unchanged: no measured A100 training number exists.
+
+Verification at shutdown: 185 tests pass, `compileall` clean, both repos pushed
+and in sync with origin, public site verified live serving the dicos-r3
+snapshots.
