@@ -1,0 +1,133 @@
+project:
+  name: cbsc-zdc-v2-2-viability-calibrated_lr3e4-continuation-compute-extension-r1-dicos-r2-dicos-p6
+  run_dir: runs/calibrated_lr3e4_dicos_p6
+  pilot: true
+data:
+  manifest: UNFROZEN
+  splits: UNFROZEN
+  target_mode: raw_deposit
+  threshold_gev: 0.0
+  train_kinetic_gev:
+  - 0.0
+  - 300.0
+  evaluation_kinetic_gev:
+  - 50.0
+  - 250.0
+  split_fraction:
+  - 0.8
+  - 0.1
+  - 0.1
+  response_cap_ratio: 0.725470286351178
+  response_cap_absolute_gev: 64.38813572617559
+geometry:
+  path: UNFROZEN
+  n_nodes: 6790
+  n_layers: 65
+  geometry_hash: e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b
+model:
+  condition_dim: 128
+  hidden_dim: 96
+  response_hidden: 192
+  response_components: 4
+  response_scale_gev: 10.0
+  profile_hidden: 128
+  count_hidden: 192
+  graph_blocks: 3
+  attention_heads: 4
+  attention_layers: 2
+  layer_context: bidirectional
+  dropout: 0.0
+training:
+  stage: joint
+  seed: 20260723
+  device: cuda
+  batch_size: 6
+  gradient_accumulation: 4
+  num_workers: 4
+  epochs: 17
+  learning_rate: 0.0003
+  min_learning_rate: 1.0e-06
+  betas:
+  - 0.9
+  - 0.999
+  eps: 1.0e-08
+  weight_decay: 0.01
+  gradient_clip_norm: 1.0
+  amp: false
+  deterministic_debug: false
+  early_stopping_patience: 6
+  checkpoint_interval_updates: 50
+  initialize_from: null
+  initialize_from_relative: null
+  initialize_from_sha256: null
+  resume_from: null
+  train_condition_encoder: true
+  resume_from_relative: checkpoints/calibrated_lr3e4_r3_last.pt
+  resume_from_sha256: 8d1e124e6159efb629dc790187afff27a2fd8ca51bb8f558d1be452b85562eb6
+  resume_best_from: null
+  resume_best_from_relative: checkpoints/calibrated_lr3e4_r3_best.pt
+  resume_best_from_sha256: c1df1041a83b7ac3ac64c227b28a62d67f49b8d69ec85282ed130c13f37bfd73
+  restart_scheduler_on_resume: true
+  resume_progress_from: null
+  resume_progress_from_relative: null
+  resume_progress_from_sha256: null
+loss_weights:
+  active: 0.5367704371463009
+  count: 0.16090104449935363
+  first_layer: 2.159450729859089
+  profile_flow: 0.16090104449935363
+  response: 0.16090104449935363
+  share_flow: 0.44496024094966563
+  support_bce: 1.3241075363035668
+  support_rank: 1.4775912102536604
+  visible: 2.574416711989658
+evaluation:
+  energy_bin_edges_gev:
+  - 50
+  - 75
+  - 100
+  - 125
+  - 150
+  - 175
+  - 200
+  - 225
+  - 250.0001
+  profile_steps: 8
+  share_steps: 8
+  closure_tolerance_gev: 2.0e-05
+  visualization:
+    enabled: true
+    split: validation
+    sample_count: 50
+    draws_per_condition: 5
+    selection_seed: 20260725
+    generation_seed: 20260725
+    required: true
+provenance:
+  parent_config: calibrated_lr3e4_dicos-r2.yaml
+  parent_config_sha256: 7788151e52ded5e479f99f4fdb0c4776c31e7a6bb9eee8239977a885359dadd1
+  parent_project_name: cbsc-zdc-v2-2-viability-calibrated_lr3e4-continuation-compute-extension-r1-dicos-r2
+  parent_last_epoch: 10
+  selected_by: largest validation-loss improvement over absolute epochs 5..10
+  epochs_available: 6
+  early_stopping_patience: 6
+  early_stopping_can_fire: false
+viability:
+  screening_only: true
+  selection_split: validation
+  test_events_used: 0
+  weight_source: calibrated
+  baseline_calibration_report_sha256: 280e1b7f08bdc3bf3d8b8d075ce21379123a8ba16c7bc852f9290107537d6ac3
+  baseline_checkpoint_sha256: 03c7960861d6f6f3012a8e4469421d51e33d1a8dad7fc8ec8c8406d547f1adb7
+  successive_halving_wave: 2
+  max_parallel_jobs: 5
+  continuation_epochs: 2
+  parent_result_sha256: e53c741e3152a0d893677801b28f6f69d0b34f26099290f8f51262a1064469e2
+  selection_analysis_sha256: fefd010227a213f3a8419d5b665097863c1b77eb6d1fec36f9dbcfbbc0898efa
+  scheduler_contract: preserve model/optimizer/scaler/RNG and paired historical best;
+    restart exhausted cosine over exactly two new epochs
+  compute_extension_round: compute-extension-r1
+  parent_epoch: 2
+  parent_output_uri: gs://asiop-zdc-1-zdc-reco-us-central1/cbsc-v2-2/viability-20260727-wave2-r1-calibrated-lr3e4-output
+  parent_template_sha256: 6f551d976ee58152cadcce316573034250a57baf3da8ddfded3057380c2cc16c
+  frozen_a100_decision_unchanged: true

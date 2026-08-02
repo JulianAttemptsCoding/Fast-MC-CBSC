@@ -33,6 +33,7 @@ from cbsc_zdc.cloud.vertex_stage import (  # noqa: E402
     run_training_postflight,
 )
 from cbsc_zdc.config import validate_config  # noqa: E402
+from cbsc_zdc.training.run_lock import acquire_run_lock  # noqa: E402
 from cbsc_zdc.training.trainer import train_from_config  # noqa: E402
 from cbsc_zdc.utils import (  # noqa: E402
     dump_json,
@@ -59,6 +60,13 @@ def main(argv=None) -> int:
     config_path = Path(args.config)
     run_dir = Path(args.run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
+
+    # One writer per run directory. Two trainers sharing one corrupted three
+    # runs in a single session: the checkpoint writer renames a fixed
+    # progress.pt.tmp, so the second one dies and the survivor's artifacts have
+    # unprovable provenance. Every pod mounts this same filesystem, so the
+    # second writer can be on another machine and no local check would see it.
+    lock = acquire_run_lock(run_dir)
 
     config = load_yaml(config_path)
     config["project"]["run_dir"] = str(run_dir.resolve())
@@ -129,6 +137,10 @@ def main(argv=None) -> int:
             result_path,
         )
         raise
+    finally:
+        # Released on success and on failure alike, so a crashed run does not
+        # leave a lock that blocks its own relaunch.
+        lock.release()
 
     print(json.dumps(json.loads(result_path.read_text())["training"], indent=2))
     return 0

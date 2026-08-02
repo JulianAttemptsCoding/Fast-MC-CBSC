@@ -1,0 +1,17 @@
+{
+  "early_stopping_patience": 6,
+  "epochs_absolute_target": 17,
+  "epochs_available": "11..16",
+  "family": "calibrated_lr1e4",
+  "format_version": 1,
+  "manifest_note": "epochs is an ABSOLUTE target; the trainer resumes at checkpoint_epoch + 1",
+  "parent_config": "calibrated_lr1e4_dicos-r2.yaml",
+  "parent_config_sha256": "3eab805ed93bc31a72706b013f407681295b6f1dbfc4b0f61630c8bff34c7331",
+  "parent_last_epoch": 10,
+  "patience_widened_from_default": true,
+  "resume_best_from_sha256": "7eb16ca67d564724c9886bf830aec3b5a62bcde00d2c30c732e90930c58582a0",
+  "resume_from_sha256": "d79365693d10f16acdb2502fc3db5462f679b1c29fedbf1b6fbc8ff896321bce",
+  "run_tag": "dicos-p6",
+  "template": "calibrated_lr1e4_dicos-p6.yaml",
+  "template_sha256": "6fab08188bbd4c7ede9c9261280e4737dc2f59b1a6542264b3c995e60236b523"
+}
