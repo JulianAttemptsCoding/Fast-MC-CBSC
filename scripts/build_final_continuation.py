@@ -83,16 +83,35 @@ def build(
     last_sha256: str,
     best_sha256: str,
     output_dir: Path,
+    patience: int | None = None,
+    epochs: int | None = None,
+    run_tag: str = RUN_TAG,
 ) -> Built:
     last_sha256 = _check("last_sha256", last_sha256)
     best_sha256 = _check("best_sha256", best_sha256)
+
+    # Defaults restore the real early stopping; widening is possible but only
+    # by asking, so the comparison phase's patience can never be inherited.
+    patience = EARLY_STOPPING_PATIENCE if patience is None else int(patience)
+    epochs = EPOCHS if epochs is None else int(epochs)
+    available = epochs - (PARENT_LAST_EPOCH + 1)
+    if available <= 0:
+        raise ValueError(
+            f"horizon leaves no epochs to run: epochs={epochs} against a parent "
+            f"ending at {PARENT_LAST_EPOCH}. `epochs` is an ABSOLUTE target."
+        )
+    # A horizon no longer than the patience is a legitimate declared choice --
+    # the comparison wave used exactly that to guarantee a fixed six epochs --
+    # but it means early stopping can never fire. The hazard is getting that
+    # silently, so it is recorded rather than forbidden.
+    early_stopping_can_fire = available > patience
 
     parent_path = Path(parent_path)
     parent = yaml.safe_load(parent_path.read_text())
     config = copy.deepcopy(parent)
 
-    config["project"]["name"] = f"{parent['project']['name']}-{RUN_TAG}"
-    config["project"]["run_dir"] = f"runs/{family}_{RUN_TAG.replace('-', '_')}"
+    config["project"]["name"] = f"{parent['project']['name']}-{run_tag}"
+    config["project"]["run_dir"] = f"runs/{family}_{run_tag.replace('-', '_')}"
 
     # Re-pinned by freeze-config against the host's artifacts; a frozen config
     # is never hand-edited.
@@ -102,8 +121,8 @@ def build(
 
     training = config["training"]
     training["device"] = "cuda"
-    training["epochs"] = EPOCHS
-    training["early_stopping_patience"] = EARLY_STOPPING_PATIENCE
+    training["epochs"] = epochs
+    training["early_stopping_patience"] = patience
     training["restart_scheduler_on_resume"] = True
     for key in (
         "resume_from", "resume_best_from", "resume_progress_from",
@@ -122,11 +141,14 @@ def build(
         "parent_project_name": parent["project"]["name"],
         "parent_last_epoch": PARENT_LAST_EPOCH,
         "selected_by": "largest validation-loss improvement over absolute epochs 5..10",
+        "epochs_available": available,
+        "early_stopping_patience": patience,
+        "early_stopping_can_fire": early_stopping_can_fire,
     }
 
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    out = output_dir / f"{family}_{RUN_TAG}.yaml"
+    out = output_dir / f"{family}_{run_tag}.yaml"
     out.write_text(yaml.safe_dump(config, sort_keys=False))
     return Built(
         family=family,
@@ -148,6 +170,16 @@ def main(argv=None) -> None:
         type=Path,
         default=Path("configs/templates/dicos_final_20260802"),
     )
+    parser.add_argument("--run-tag", default=RUN_TAG)
+    parser.add_argument(
+        "--patience",
+        type=int,
+        default=EARLY_STOPPING_PATIENCE,
+        help="Widen only deliberately: patience 3 cannot survive a high-LR "
+             "scheduler restart, because the resumed best was reached at the "
+             "end of an anneal.",
+    )
+    parser.add_argument("--epochs", type=int, default=EPOCHS)
     args = parser.parse_args(argv)
 
     built = build(
@@ -156,16 +188,21 @@ def main(argv=None) -> None:
         last_sha256=args.last_sha256,
         best_sha256=args.best_sha256,
         output_dir=args.output_dir,
+        patience=args.patience,
+        epochs=args.epochs,
+        run_tag=args.run_tag,
     )
 
     manifest = {
         "format_version": 1,
-        "run_tag": RUN_TAG,
+        "run_tag": args.run_tag,
         "family": built.family,
-        "epochs_absolute_target": EPOCHS,
+        "epochs_absolute_target": args.epochs,
         "parent_last_epoch": PARENT_LAST_EPOCH,
-        "early_stopping_patience": EARLY_STOPPING_PATIENCE,
-        "epochs_available": f"{PARENT_LAST_EPOCH + 1}..{EPOCHS - 1}",
+        "early_stopping_patience": args.patience,
+        "patience_widened_from_default": args.patience != EARLY_STOPPING_PATIENCE,
+        "epochs_available": f"{PARENT_LAST_EPOCH + 1}..{args.epochs - 1}",
+        "manifest_note": "epochs is an ABSOLUTE target; the trainer resumes at checkpoint_epoch + 1",
         "template": built.path.name,
         "template_sha256": built.sha256,
         "parent_config": built.parent,

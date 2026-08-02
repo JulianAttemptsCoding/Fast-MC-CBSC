@@ -65,6 +65,61 @@ def test_early_stopping_is_restored_to_three(tmp_path: Path) -> None:
     assert config["training"]["early_stopping_patience"] == 3
 
 
+def test_patience_can_be_widened_only_by_asking(tmp_path: Path) -> None:
+    """Patience 3 cannot survive a high-LR scheduler restart: the resumed best
+    was reached at lr 1e-6, so the first epochs after a 1e-4 restart are always
+    worse and three of them exhaust the budget. Widening is therefore a real
+    option -- but it must be an explicit argument, so it can never be inherited
+    from the comparison phase by accident, which is what the default guards."""
+    built = builder.build(
+        family="calibrated_lr3e4",
+        parent_path=_parent(tmp_path),
+        last_sha256="c" * 64,
+        best_sha256="d" * 64,
+        output_dir=tmp_path / "out",
+        patience=6,
+        epochs=17,
+    )
+    training = yaml.safe_load(built.path.read_text())["training"]
+    assert training["early_stopping_patience"] == 6
+    assert training["epochs"] == 17
+
+
+def test_an_inert_early_stop_is_recorded_not_hidden(tmp_path: Path) -> None:
+    """A horizon no longer than the patience means early stopping can never
+    fire. That is a legitimate declared choice -- the comparison wave used it to
+    guarantee a fixed six epochs -- but getting it by accident is the hazard, so
+    the config must say which it is."""
+    inert = builder.build(
+        family="calibrated_lr3e4", parent_path=_parent(tmp_path),
+        last_sha256="c" * 64, best_sha256="d" * 64,
+        output_dir=tmp_path / "inert", patience=6, epochs=17, run_tag="t-inert",
+    )
+    assert yaml.safe_load(inert.path.read_text())["provenance"][
+        "early_stopping_can_fire"
+    ] is False
+
+    live = builder.build(
+        family="calibrated_lr3e4", parent_path=_parent(tmp_path),
+        last_sha256="c" * 64, best_sha256="d" * 64,
+        output_dir=tmp_path / "live", patience=3, epochs=17, run_tag="t-live",
+    )
+    assert yaml.safe_load(live.path.read_text())["provenance"][
+        "early_stopping_can_fire"
+    ] is True
+
+
+def test_a_horizon_with_no_epochs_is_refused(tmp_path: Path) -> None:
+    """`epochs` is absolute, so a value at or below the parent's last epoch
+    silently runs nothing at all -- the exact trap that wasted the first wave."""
+    with pytest.raises(ValueError, match="no epochs to run"):
+        builder.build(
+            family="calibrated_lr3e4", parent_path=_parent(tmp_path),
+            last_sha256="c" * 64, best_sha256="d" * 64,
+            output_dir=tmp_path / "out", epochs=11,
+        )
+
+
 def test_the_epoch_target_is_absolute_and_leaves_room_to_improve(
     tmp_path: Path,
 ) -> None:
