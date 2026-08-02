@@ -292,6 +292,21 @@ def test_setup_updates_the_repo_without_git_dash_c() -> None:
     assert "( cd repo && git pull --ff-only )" in code
 
 
+def test_the_config_path_can_be_overridden(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
+    """Two pods mount the same workdir, so a second pod has to be driven
+    without rewriting the credentials the first one's watcher is reading.
+    DICOS_CONFIG points at a separate file; auth writes to whichever is
+    selected, so neither session can clobber the other."""
+    import dicos
+
+    override = tmp_path / "other.json"
+    monkeypatch.setenv("DICOS_CONFIG", str(override))
+    assert dicos.config_path() == override
+
+    monkeypatch.delenv("DICOS_CONFIG")
+    assert dicos.config_path() == dicos.CONFIG_PATH
+
+
 def test_setup_proves_it_can_write_before_deleting_the_venv() -> None:
     """A pod whose shared filesystem had died still ran `rm -rf .venv`, which
     succeeded, and then could not rebuild -- leaving the *other*, healthy pod

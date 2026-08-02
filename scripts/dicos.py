@@ -43,6 +43,7 @@ import argparse
 import base64
 import hashlib
 import json
+import os
 import posixpath
 import re
 import shlex
@@ -61,6 +62,19 @@ CONFIG_PATH = Path.home() / ".dicos" / "config.json"
 TEMPLATE_PATH = Path(__file__).resolve().parent / "dicos_config.template.json"
 
 
+def config_path() -> Path:
+    """Where credentials live, overridable with DICOS_CONFIG.
+
+    Two pods can mount the same workdir at once -- one training, one being
+    benchmarked -- and driving the second must not rewrite the credentials the
+    first one's watcher is reading. A separate file keeps the two sessions
+    independent; the filesystem contract in each is still enforced from that
+    file's own workdir/forbidden_paths, so an override cannot widen scope.
+    """
+    override = os.environ.get("DICOS_CONFIG")
+    return Path(override).expanduser() if override else CONFIG_PATH
+
+
 def load_config() -> dict:
     """Credentials, or an actionable explanation of how to create them.
 
@@ -69,19 +83,20 @@ def load_config() -> dict:
     agent guessing at account-specific values, which is exactly how the write
     guard ends up mis-scoped -- so point at the checked-in template instead.
     """
-    if not CONFIG_PATH.exists():
-        raise SystemExit(f"""no credentials at {CONFIG_PATH}
+    path = config_path()
+    if not path.exists():
+        raise SystemExit(f"""no credentials at {path}
 
 Create that file by copying the checked-in template:
-    mkdir -p {CONFIG_PATH.parent}
-    cp "{TEMPLATE_PATH}" "{CONFIG_PATH}"
+    mkdir -p {path.parent}
+    cp "{TEMPLATE_PATH}" "{path}"
 
 then set `token` (docs/DICOS_BACKEND.md, "Recovering the token"), or run:
     python scripts/dicos.py auth "<URL containing ?token=...>"
 
 The remaining fields encode the filesystem contract in AGENTS.md 17-21 --
 workdir, data_file, forbidden_paths -- and must not be widened.""")
-    return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 class Dicos:
@@ -932,7 +947,9 @@ def main() -> int:
             except Exception as exc:  # noqa: BLE001 - try the next candidate
                 last_error = exc
                 continue
-            CONFIG_PATH.write_text(json.dumps(trial, indent=2), encoding="utf-8")
+            target = config_path()
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(json.dumps(trial, indent=2), encoding="utf-8")
             print(f"authenticated against {candidate}"
                   + (" (reused the stored token)" if reused else ""))
             print(f"workdir: {trial['workdir']}")
