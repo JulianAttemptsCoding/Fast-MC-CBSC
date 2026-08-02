@@ -1,0 +1,34 @@
+{
+  "calibrated_lr1e4": {
+    "best_validation_loss": 4.766131002068694,
+    "improvement_from_parent": 0.0586404305339947,
+    "latest_epoch": 10,
+    "latest_validation_loss": 4.768464569466006,
+    "parent_epoch4": 4.827105,
+    "slope_last_3_epochs": 0.0011667836986554055
+  },
+  "calibrated_lr1e4_halfbatch": {
+    "best_validation_loss": 4.710828610604539,
+    "improvement_from_parent": 0.12937000000000065,
+    "latest_epoch": 16,
+    "latest_validation_loss": 4.715659,
+    "parent_epoch4": 4.845029,
+    "slope_last_3_epochs": -0.020724000000000232
+  },
+  "calibrated_lr3e4": {
+    "best_validation_loss": 4.680964561367454,
+    "improvement_from_parent": 0.057076438632545745,
+    "latest_epoch": 10,
+    "latest_validation_loss": 4.680964561367454,
+    "parent_epoch4": 4.738041,
+    "slope_last_3_epochs": -0.00200380360923075
+  },
+  "calibrated_lr3e5": {
+    "best_validation_loss": 4.843470557018744,
+    "improvement_from_parent": 0.02290119920735556,
+    "latest_epoch": 10,
+    "latest_validation_loss": 4.874425800792644,
+    "parent_epoch4": 4.897327,
+    "slope_last_3_epochs": 0.015477621886949913
+  }
+}
