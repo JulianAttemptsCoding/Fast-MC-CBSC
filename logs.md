@@ -5879,3 +5879,35 @@ pod, separate GPU, separate run directory, and its log carries a single START.
 Standing state: two parallel runs, epochs 11..16, patience 6, both batch 6 with
 4,437 batches per epoch, so per-epoch wall time will give the first measured
 A100-versus-4090 comparison on identical work.
+
+### 2026-08-02 — measured A100 versus RTX 4090 on identical work
+
+Both pods ran the same architecture, the same frozen-config family, batch 6 and
+4,437 optimizer batches per epoch, differing only in learning rate, which does
+not change the compute. Rates sampled the same way on both, from
+`progress_inflight.json` deltas mid-epoch:
+
+    RTX 4090          7.31 batch/s   10.1 min/epoch   89% util   361 W   2700 MHz
+    A100-SXM4-80GB    2.30 batch/s   32.2 min/epoch  100% util   283 W   1410 MHz
+
+**The 4090 is 3.2x faster.** The A100 is not handicapped: `mig.mode.current` is
+`Disabled` so it is a whole GPU rather than a partition, `nvidia-smi -L` shows a
+single device, its SM clock is at the rated 1410 MHz, and it sits at 100%
+utilisation — it is working flat out and still losing. This is the expected
+shape for `amp: false`: FP32 without tensor cores is roughly 82.6 TFLOPS on the
+4090 against 19.5 on the A100, a 4.2x spec ratio, and 3.2x measured.
+
+This supersedes the earlier recommendation's basis. That recommendation was
+inference from published FP32 figures plus the fact that the first A100 pod had
+lost its filesystem; it is now a measurement on this workload, and it points the
+same way. **Keep the 4090.**
+
+A practical consequence, recorded because it inverts the obvious plan: with the
+A100 3.2x slower, running the two families in parallel across both pods is
+slower end to end than queueing both on the 4090. Parallel finishes in about
+3.2 h, bounded by the A100; sequential on the 4090 alone finishes in about
+2.1 h. Two GPUs help only when the second is within roughly the first's speed.
+
+Caveat on scope: this measures this workload — FP32, batch 6, this model. It
+says nothing about a configuration that uses `amp`, larger batches, or anything
+that would engage the A100's tensor cores or its memory bandwidth advantage.
