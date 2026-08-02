@@ -53,3 +53,9 @@ venv/
 Thumbs.db
 *.swp
 *~
+
+# Local credential notes. Pod tokens are access to the shared filesystem, so
+# they must never be tracked. Anything matching these stays on the machine.
+/POD_ACCESS.local.md
+*.local.md
+*.secrets

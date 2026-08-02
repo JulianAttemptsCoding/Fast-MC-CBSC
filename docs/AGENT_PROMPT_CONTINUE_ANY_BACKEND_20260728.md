@@ -588,16 +588,23 @@ DICOS_CONFIG=$HOME/.dicos/config_3090.json PYTHONPATH=src \
 
 **Access URLs.** Tokens are deliberately **not** written here: this file is
 committed and pushed, and a token in the repository is pod access for anyone
-who can read it. The live tokens are already in the `~/.dicos/*.json` files
-above, which is the only place they belong.
+who can read it.
 
     RTX 4090   http://scale-k8s-master01.twgrid.org:32545/
     RTX 3090   http://scale-k8s-master01.twgrid.org:32705/
     80 GB DC   http://scale-k8s-master01.twgrid.org:31785/
 
-If a credentials file is missing, ask the user for the launch URL — it contains
-the token — or recover it from the pod itself (§10a, "Recovering the token").
-Never paste a token into a tracked file, a commit message, or `logs.md`.
+> **Read `POD_ACCESS.local.md` in the repository root for the tokens.** It is
+> untracked and git-ignored on purpose, so it exists only on the user's machine
+> and will **not** arrive with a fresh clone. It carries the launch URLs with
+> tokens, the `DICOS_CONFIG` mapping, and the procedure for refreshing a token
+> when a pod moves. If it is absent — a different machine, a new clone — ask the
+> user for the launch URL, or recover the token from the pod itself (§10a,
+> "Recovering the token"). Never copy its contents into a tracked file, a commit
+> message, or `logs.md`.
+
+Keep the ports in the table above in step with that file whenever a pod moves;
+this file carries ports, that file carries secrets.
 
 **Keeping these current.** DiCOS has issued a *stable per-user* token, so when
 a pod is relaunched usually only the **port** changes and the token still
