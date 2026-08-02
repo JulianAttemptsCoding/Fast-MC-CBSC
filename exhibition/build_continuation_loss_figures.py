@@ -39,13 +39,23 @@ LABELS = {
 ORDER = ["calibrated_lr3e5", "calibrated_lr1e4", "calibrated_lr3e4",
          "calibrated_lr1e4_halfbatch"]
 
-#: Epochs 11-13 of calibrated_lr1e4_halfbatch, the solo continuation that early
-#: stopping ended without improving on the epoch-10 best of 4.710829.
+#: Epochs 11-16 of calibrated_lr1e4_halfbatch: the solo continuation
+#: (dicos-final-r2), six epochs of a fresh cosine anneal from the epoch-10
+#: checkpoint. It ended at 4.715659, which does NOT beat the epoch-10 best of
+#: 4.710829.
+#:
+#: An earlier attempt (dicos-final) covered epochs 11-13 under patience 3 and
+#: was stopped without improving; it is deliberately not plotted, because it
+#: occupies the same epoch numbers and two series at one epoch would misread as
+#: contradictory data rather than as one superseded run.
 CONTINUATION = {
     "calibrated_lr1e4_halfbatch": [
-        {"epoch": 11, "train_loss": 4.912513, "validation_loss": 4.785436},
-        {"epoch": 12, "train_loss": 4.889776, "validation_loss": 4.763828},
-        {"epoch": 13, "train_loss": 4.886688, "validation_loss": 4.791463},
+        {"epoch": 11, "train_loss": 4.909868, "validation_loss": 4.785943},
+        {"epoch": 12, "train_loss": 4.878609, "validation_loss": 4.765122},
+        {"epoch": 13, "train_loss": 4.859714, "validation_loss": 4.755307},
+        {"epoch": 14, "train_loss": 4.805463, "validation_loss": 4.757107},
+        {"epoch": 15, "train_loss": 4.789202, "validation_loss": 4.722938},
+        {"epoch": 16, "train_loss": 4.772677, "validation_loss": 4.715659},
     ]
 }
 
@@ -97,11 +107,12 @@ def build() -> Path:
         x=0.02, ha="left", fontsize=17, fontweight="bold", color=NAVY, y=0.975,
     )
     fig.text(
-        0.02, 0.925,
-        "Solid = training, dashed = validation. Epochs 0-4 on T4; 5-10 on the "
-        "RTX 4090. Only the half-batch family has 11-13, from the solo "
-        "continuation early stopping ended.",
-        ha="left", fontsize=10.5, color="#4a6178",
+        0.02, 0.945,
+        "Solid = training, dashed = validation. Epochs 0-4 on T4, 5-10 on the "
+        "RTX 4090.\nOnly the half-batch family has 11-16, its solo "
+        "continuation: it ended at 4.7157 and did not beat its epoch-10 best "
+        "of 4.7108.",
+        ha="left", va="top", fontsize=10.5, color="#4a6178", linespacing=1.5,
     )
 
     for ax, variant in zip(axes.ravel(), ORDER):
@@ -113,7 +124,7 @@ def build() -> Path:
         for start, stop, _label, shade in PHASES:
             ax.axvspan(start - 0.5, stop + 0.5, color=shade, zorder=0)
         if variant in CONTINUATION:
-            ax.axvspan(10.5, 13.5, color="#faf0ee", zorder=0)
+            ax.axvspan(10.5, 16.5, color="#faf0ee", zorder=0)
 
         ax.plot(epochs, train, color=COLORS[variant], marker="o", lw=2.2, ms=5,
                 label="Training")
@@ -142,7 +153,7 @@ def build() -> Path:
         ax.set_axisbelow(True)
 
     axes.ravel()[0].legend(loc="upper right", frameon=False, fontsize=10)
-    fig.subplots_adjust(left=0.07, right=0.97, top=0.855, bottom=0.09,
+    fig.subplots_adjust(left=0.07, right=0.97, top=0.835, bottom=0.09,
                         hspace=0.42, wspace=0.20)
     fig.text(
         0.02, 0.015,

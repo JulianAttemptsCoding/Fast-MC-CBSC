@@ -34,9 +34,12 @@
       10,
       11,
       12,
-      13
+      13,
+      14,
+      15,
+      16
     ],
-    "final_validation_loss": 4.791463
+    "final_validation_loss": 4.715659
   },
   "calibrated_lr3e4": {
     "best_epoch": 10,

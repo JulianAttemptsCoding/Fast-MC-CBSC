@@ -5791,3 +5791,47 @@ unchanged: no measured A100 training number exists.
 Verification at shutdown: 185 tests pass, `compileall` clean, both repos pushed
 and in sync with origin, public site verified live serving the dicos-r3
 snapshots.
+
+### finalr2 complete — the winner did not improve on its epoch-10 checkpoint
+
+`calibrated_lr1e4_halfbatch_dicos-final-r2` ran 00:54:40Z to 02:19:27Z,
+EXIT=0, six epochs, 13,314 updates. QA PASS: six of six per-epoch invariants,
+postflight `pass: true`, nonfinite 0, negative 0, outside_valid_support 0.
+
+    epoch   11        12        13        14        15        16
+    val     4.785943  4.765122  4.755307  4.757107  4.722938  4.715659
+    lr      9.337e-5  7.525e-5  5.050e-5  2.575e-5  7.632e-6  1.000e-6
+
+**The family did not improve.** `best_validation_loss` is unchanged at
+4.710828610604539, still the epoch-10 checkpoint. The run's own best, 4.715659
+at epoch 16, is 0.004830 above it. This is not convergence being declared; it is
+a run that failed to beat its starting point.
+
+What it does establish is worth stating carefully. Unlike the abandoned
+patience-3 attempt, this schedule annealed properly -- lr fell 9.337e-05 to
+1.000e-06 across the six epochs, against 9.971e-05 to 9.741e-05 in three epochs
+before -- and validation descended cleanly to within 0.0048 of the epoch-10
+best. Two independent six-epoch cosine cycles from the same checkpoint therefore
+land at 4.710829 and 4.715659, a spread well under the ~0.02 run-to-run
+resolution on this hardware. That is the first real evidence that this family
+has reached the level its schedule produces, rather than being starved of
+epochs. Two cycles is not a convergence proof and is not claimed as one.
+
+The gap is also smaller than the noise floor, so epoch 16 and epoch 10 are not
+distinguishable on this evidence; epoch 10 remains the accepted checkpoint
+because it is the lower of the two, not because it is meaningfully better.
+
+**No public republication.** The documented policy is the lowest verified
+validation-loss checkpoint per calibrated family. For this family that is still
+epoch 10 at 4.710829, which is already what the site publishes, so nothing
+changes. `calibrated_lr3e4` at 4.680965 remains the lowest absolute of all four.
+
+Per-family loss graphs rebuilt over epochs 0..16 and inspected as rendered
+images, not merely rebuilt: `exhibition/continuation_20260802/`. Two rendering
+faults were found and fixed that way -- the best-epoch annotation collided with
+the x tick labels, and the subtitle overran the figure width. The superseded
+patience-3 attempt (epochs 11..13) is deliberately not plotted: it occupies the
+same epoch numbers, and two series at one epoch would read as contradictory data
+rather than as one abandoned run.
+
+GPU idle; no job running.
