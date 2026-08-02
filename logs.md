@@ -5835,3 +5835,47 @@ same epoch numbers, and two series at one epoch would read as contradictory data
 rather than as one abandoned run.
 
 GPU idle; no job running.
+
+### 2026-08-02 — duplicate job submission on the 4090; run quarantined and relaunched
+
+Two `calibrated_lr3e4_dicos-p6` trainers ran against the same run directory
+between 13:21:49Z and 13:28:30Z. One died with
+
+    FileNotFoundError: .../checkpoints/progress.pt.tmp -> .../checkpoints/progress.pt
+
+in `atomic_torch_save`: both processes were writing the mid-epoch progress
+checkpoint, and the loser's temporary file had already been renamed away by the
+winner. The wrapper logged `EXIT=1`; the other trainer kept running.
+
+**Cause: I submitted the job twice.** The first `dicos.py start` was the last
+command in a shell pipeline whose output I truncated with `tail -1`, so its
+`started ... pid=` line was not displayed; I read the absence of output as the
+command not having taken effect and issued it again. That is precisely the
+failure `CLAUDE.md` warns about -- never submit a duplicate job because a CLI
+appeared not to respond; list and describe first.
+
+Two diagnostic missteps are worth recording with it. I first suspected the
+double submission, then talked myself out of it because `grep -c "P6-4090 START"`
+returned 1 and there was a single pid file -- neither of which distinguishes one
+wrapper from two, since both write the same log path and the pid file is
+overwritten. The process tree settled it: one wrapper alive with four workers,
+plus a crashed sibling. Check the process tree, not the log line count. Later,
+`pkill -f "dicos_train.py --config ..."` matched the probe shell's own command
+line and killed the probe, returning `__DICOS_EXIT__-15`; that signal was my own
+command dying, not the trainer.
+
+**Disposition.** No epoch checkpoint had been written yet, and each process held
+its own model state in memory, so the surviving run was probably uncontaminated.
+"Probably" is not an acceptable provenance answer under the quarantine rule, and
+the run was seven minutes old, so it was stopped and the directory moved to
+`_runs/quarantine_duplicate_writer/` rather than reused. Nothing from it will be
+compared, published, or resumed from.
+
+Relaunched once as job `p6lr3e4b` at 13:33:31Z after verifying exactly one
+wrapper, one trainer parent and one START line. The A100 run
+(`calibrated_lr1e4_dicos-p6`, started 13:29:55Z) was never affected: separate
+pod, separate GPU, separate run directory, and its log carries a single START.
+
+Standing state: two parallel runs, epochs 11..16, patience 6, both batch 6 with
+4,437 batches per epoch, so per-epoch wall time will give the first measured
+A100-versus-4090 comparison on identical work.
