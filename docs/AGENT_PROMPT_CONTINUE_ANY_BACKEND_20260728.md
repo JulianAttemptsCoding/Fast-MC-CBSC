@@ -484,14 +484,27 @@ Two things this phase does **not** establish, regardless of outcome: anything
 about Geant4 fidelity, and anything about untouched-test performance. The bank
 is the pilot bank; the 76,300-event test split remains sealed and untouched.
 
+**Status 2026-08-02.** The six-epoch comparison is complete and a winner was
+selected: `calibrated_lr1e4_halfbatch`, largest validation improvement over
+epochs 5..10 (+0.134200). Its solo continuation is running as job `finalr2`
+(`_runs/calibrated_lr1e4_halfbatch_dicos-final-r2`, epochs 11..16, patience 6).
+An earlier solo attempt under patience 3 stopped after three epochs without
+improving; see `logs.md` for why patience 3 cannot survive a high-LR scheduler
+restart. `calibrated_lr3e4` still holds the lowest absolute validation loss of
+the four (4.680965 against the winner's 4.710829) — the selection rule was
+largest improvement, not lowest loss, and both numbers should be quoted
+together.
+
 **Run history for this phase — read before interpreting any `_runs` directory.**
-Three launches exist and only the third is live:
+Five launches exist and only the last is live:
 
 | tag | fate |
 |---|---|
 | `dicos-r1` | Aborted. Launched with `epochs: 6`, which is an **absolute** target, so it ran one epoch per family with the cosine annealed to `min_learning_rate` across it. Archived at `_runs/aborted_r1_epochs_misread/`. |
 | `dicos-r2` (wave2) | Stopped after one epoch to free the GPU while a second pod was evaluated, then archived at `_runs/aborted_r2_slow_loader/` because it ran under the slow loader and an earlier commit. |
-| `dicos-r3` | **Live.** Same frozen `*_dicos-r2.yaml` configs; only the run directory and the loader's shard-cache setting differ. |
+| `dicos-r3` | Complete, all four families, epochs 5..10, all QA PASS. This is the comparison the winner was chosen from. |
+| `dicos-final` | Stopped by early stopping after epochs 11..13 with **no improvement** on 4.710829. Patience 3 against a best reached at lr 1e-6 cannot survive a restart at lr 1e-4. Not a statement about the model. |
+| `dicos-final-r2` | **Live.** Winner alone, epochs 11..16, patience 6, restart kept — the wave3 shape. `early_stopping_can_fire: false` is recorded in the config, because six epochs against patience six means early stopping cannot trigger; it is effectively a fixed six-epoch run. |
 
 Do not compare a number from an aborted run against a `dicos-r3` number.
 
