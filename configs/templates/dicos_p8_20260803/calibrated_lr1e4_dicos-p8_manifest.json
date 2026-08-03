@@ -1,0 +1,20 @@
+{
+  "early_stopping_patience": 6,
+  "epochs_absolute_target": 41,
+  "epochs_available": "17..40",
+  "family": "calibrated_lr1e4",
+  "format_version": 1,
+  "manifest_note": "epochs is an ABSOLUTE target; the trainer resumes at checkpoint_epoch + 1",
+  "parent_config": "calibrated_lr1e4_dicos-p6.yaml",
+  "parent_config_sha256": "6fab08188bbd4c7ede9c9261280e4737dc2f59b1a6542264b3c995e60236b523",
+  "parent_last_epoch": 16,
+  "patience_widened_from_default": true,
+  "resume_best_from_relative": "checkpoints/calibrated_lr1e4_p6_best.pt",
+  "resume_best_from_sha256": "d93b3ad061dde316864ff30b350bcc456aec7cf6821d18e27c6755ae98f244e7",
+  "resume_from_relative": "checkpoints/calibrated_lr1e4_p6_last.pt",
+  "resume_from_sha256": "36ef3dc4f4ba450452a9413badeb996697a2b6f347ca7cab66bc809d428413a7",
+  "run_tag": "dicos-p8",
+  "selected_by": "most remaining potential of the four families: the only one whose per-cycle improvement had not decayed (ratio 1.044) and six epochs less trained than the leaders; see audit/continuation_20260803_terminal_analysis.json",
+  "template": "calibrated_lr1e4_dicos-p8.yaml",
+  "template_sha256": "b05709c2a9c6660b7eacea5149ee0447a65eaa1f83c2ad815728e1eb303d1f47"
+}
