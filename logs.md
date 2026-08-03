@@ -6307,3 +6307,61 @@ anneal doing the work, with the minimum at the 5th of 6 epochs and a rise on the
 last.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`. Zero test events.
+
+### 2026-08-03 — half-batch finally beats its epoch-10 checkpoint, on the third try
+
+`QA PASS`. `calibrated_lr1e4_halfbatch_dicos-p7` ran 01:38:00Z to 04:08:57Z on
+the RTX 3090, `EXIT=0`, wall 9,056.68 s, 13,314 updates, absolute epochs 17..22.
+Six of six per-epoch invariants pass; postflight `pass: true`. Peak GPU memory
+5.91 GB — half the batch-6 families' 11.74 GB, as expected at `batch_size: 3` —
+with headroom fraction 0.766.
+
+    epoch   17        18        19        20        21        22
+    val     4.754796  4.762150  4.726556  4.684470  4.673036  4.678376
+    train   4.859527  4.826110  4.801963  4.768680  4.735791  4.723869
+
+    best.pt  ffab832ac4798ca75bde5dd5e687ce3f634ab32b6c88f40169d3db59f0ead9b1  (epoch 21)
+    last.pt  79bcdeac0d4550d230f2de5eb12e15be9ba73cf872802ac9f3862e2bf29aa2b9  (epoch 22)
+    frozen   20243703bd3e9866e45a93f5e94489bc823ab38519638bfe67f9fadf27835494
+
+**4.673036 beats the long-standing 4.710829 by 0.037793**, comfortably outside
+the ~0.02 resolution. This family had failed to beat that checkpoint in **two
+previous six-epoch cycles** — `dicos-final` (patience 3, early-stopped without
+improving) and `dicos-final-r2` (patience 6, completed at 4.715659). Both of
+those started from the **epoch-10** checkpoint. This one started from
+**epoch-16** weights, and improved.
+
+That difference is the finding. On 2026-08-02 the two failed cycles were read
+as evidence that "this family has reached the level its schedule produces".
+That reading was too strong: the constraint was the **starting point of the
+cycle**, not a ceiling on the family. Six more epochs of annealing from a later,
+slightly worse checkpoint reached a better place than two cycles from the
+earlier, better one. Recorded plainly because the earlier interpretation was
+mine and it was wrong.
+
+Note what this does **not** say. It does not establish that repeated restart-
+and-anneal cycles keep paying; three cycles on one family is not a trend, and
+`calibrated_lr3e4`'s second cycle produced only 0.008346, inside the noise. It
+says the 2026-08-02 conclusion was drawn from too little evidence.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`. Zero test events.
+
+### 2026-08-03 — all three runs complete; standings
+
+Eighteen of eighteen epochs across the three runs pass their invariant gate;
+three of three postflights pass; three of three `EXIT=0`. No quarantine, no
+nonfinite, no negative energy, no support violation, no duplicate writer.
+
+    family                      best        epoch  run tag        change this session
+    calibrated_lr3e4            4.597152    22     dicos-p7       -0.008346  (inside noise)
+    calibrated_lr1e4_halfbatch  4.673036    21     dicos-p7       -0.037793  (real)
+    calibrated_lr1e4            4.702458    15     dicos-p6       -0.063673  (real)
+    calibrated_lr3e5            4.843471     8     dicos-r3       not continued
+
+`calibrated_lr3e4` remains the best model in the project, and the ordering of
+the other three changed: `calibrated_lr1e4_halfbatch` and `calibrated_lr1e4`
+both moved ahead of where they were, with half-batch now second.
+
+The three runs are **not** a controlled comparison with each other and must not
+be read as one: `calibrated_lr1e4` covered epochs 11..16 while the other two
+covered 17..22, and half-batch runs `batch_size: 3` against the others' 6.
