@@ -2,6 +2,8 @@
   "calibrated_lr1e4": {
     "best_epoch": 8,
     "best_validation_loss": 4.766131002068694,
+    "continuation_epochs": [],
+    "continuation_run_tags": [],
     "epochs": [
       0,
       1,
@@ -20,6 +22,17 @@
   "calibrated_lr1e4_halfbatch": {
     "best_epoch": 10,
     "best_validation_loss": 4.710828610604539,
+    "continuation_epochs": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "continuation_run_tags": [
+      "dicos-final-r2"
+    ],
     "epochs": [
       0,
       1,
@@ -39,11 +52,22 @@
       15,
       16
     ],
-    "final_validation_loss": 4.715659
+    "final_validation_loss": 4.715658986550997
   },
   "calibrated_lr3e4": {
-    "best_epoch": 10,
-    "best_validation_loss": 4.680964561367454,
+    "best_epoch": 15,
+    "best_validation_loss": 4.605497817867497,
+    "continuation_epochs": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "continuation_run_tags": [
+      "dicos-p6"
+    ],
     "epochs": [
       0,
       1,
@@ -55,13 +79,21 @@
       7,
       8,
       9,
-      10
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
     ],
-    "final_validation_loss": 4.680964561367454
+    "final_validation_loss": 4.637054794180271
   },
   "calibrated_lr3e5": {
     "best_epoch": 8,
     "best_validation_loss": 4.843470557018744,
+    "continuation_epochs": [],
+    "continuation_run_tags": [],
     "epochs": [
       0,
       1,
