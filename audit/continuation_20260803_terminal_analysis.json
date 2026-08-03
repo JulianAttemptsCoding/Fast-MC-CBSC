@@ -1,0 +1,213 @@
+{
+  "format_version": 1,
+  "date": "2026-08-03",
+  "source_commit_at_launch": "588be84",
+  "backend": "DiCOS (ASGC)",
+  "bank": {
+    "name": "training_pilot_splits.json",
+    "train": 26624,
+    "validation": 6656,
+    "test": 0,
+    "assignment_sha256": "084f0dfd86e488c63bb41ea50d6783ad22eb57a322288c075a94b1ec12dd3714",
+    "split_manifest_sha256": "8ea9fe7a91cae4e6cb20c9877b9cd1af038d589b3fd060afd043fe0d4a659c41",
+    "audit_sha256": "96ac0773c44efabac1ea81736444d9537523e56559cef00195645aabb4b34514",
+    "geometry_sha256": "e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b",
+    "fraction_of_available_training_events": 0.0435
+  },
+  "runs": [
+    {
+      "family": "calibrated_lr3e4",
+      "run_tag": "dicos-p7",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "epochs": "17..22",
+      "frozen_config_sha256": "4051591355f22fa07f8a8aaea80a86a05cac85f92430fc13bfb52dc034ab609a",
+      "resume_from_sha256": "763d45bbe3c075d9c0256df7e40b1946ab47816f28fa28767049f275116c964d",
+      "resume_best_from_sha256": "d73aa900a367c8cb1d1fdc53309822b07366e9cb66073513741e867514e3fcba",
+      "exit": 0,
+      "wall_seconds": 4786.852,
+      "updates": 6660,
+      "best_validation_loss": 4.597151546143159,
+      "best_epoch": 22,
+      "best_checkpoint_sha256": "31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb",
+      "last_checkpoint_sha256": "eb533f18f08b1080ea367d75e77fb560d3957a2368a70d12e26e57191608460f",
+      "epoch_invariants_pass": 6,
+      "epoch_invariants_total": 6,
+      "postflight_pass": true,
+      "validation_loss_by_epoch": {
+        "17": 4.713293533548604,
+        "18": 4.712746816009589,
+        "19": 4.650437357485033,
+        "20": 4.615801194750897,
+        "21": 4.59958655663151,
+        "22": 4.597151546143159
+      },
+      "improvement_over_parent_best": 0.008346,
+      "improvement_distinguishable": false,
+      "improvement_note": "inside the run-to-run resolution for a cross-parent cycle comparison"
+    },
+    {
+      "family": "calibrated_lr1e4_halfbatch",
+      "run_tag": "dicos-p7",
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "epochs": "17..22",
+      "batch_size": 3,
+      "frozen_config_sha256": "20243703bd3e9866e45a93f5e94489bc823ab38519638bfe67f9fadf27835494",
+      "resume_from_sha256": "15823b346181f7b71b2da9a4ab55d253e802d8adde34a39d68d6c94193c606a9",
+      "resume_best_from_sha256": "74a989aa398023ef7fbfd5d0b73de4517df8ad8bc76e1257c73139a2e8c7c182",
+      "exit": 0,
+      "wall_seconds": 9056.678,
+      "updates": 13314,
+      "best_validation_loss": 4.673036068110655,
+      "best_epoch": 21,
+      "best_checkpoint_sha256": "ffab832ac4798ca75bde5dd5e687ce3f634ab32b6c88f40169d3db59f0ead9b1",
+      "last_checkpoint_sha256": "79bcdeac0d4550d230f2de5eb12e15be9ba73cf872802ac9f3862e2bf29aa2b9",
+      "epoch_invariants_pass": 6,
+      "epoch_invariants_total": 6,
+      "postflight_pass": true,
+      "validation_loss_by_epoch": {
+        "17": 4.75479636359878,
+        "18": 4.762149594015119,
+        "19": 4.726555822359869,
+        "20": 4.684469504377329,
+        "21": 4.673036068110655,
+        "22": 4.678375580300349
+      },
+      "improvement_over_parent_best": 0.037793,
+      "improvement_distinguishable": true,
+      "improvement_note": "first time this family beat its epoch-10 checkpoint, after two prior cycles from epoch 10 failed; this cycle started from epoch-16 weights"
+    },
+    {
+      "family": "calibrated_lr1e4",
+      "run_tag": "dicos-p6",
+      "gpu": "NVIDIA A100-SXM4-80GB",
+      "epochs": "11..16",
+      "frozen_config_sha256": "ae5247650b3260495e5dcad117d329082ceb0f1f1d6885633dc95789dd84161e",
+      "resume_from_sha256": "d79365693d10f16acdb2502fc3db5462f679b1c29fedbf1b6fbc8ff896321bce",
+      "resume_best_from_sha256": "7eb16ca67d564724c9886bf830aec3b5a62bcde00d2c30c732e90930c58582a0",
+      "exit": 0,
+      "wall_seconds": 7001.087,
+      "updates": 6660,
+      "best_validation_loss": 4.702457625555259,
+      "best_epoch": 15,
+      "best_checkpoint_sha256": "d93b3ad061dde316864ff30b350bcc456aec7cf6821d18e27c6755ae98f244e7",
+      "last_checkpoint_sha256": "36ef3dc4f4ba450452a9413badeb996697a2b6f347ca7cab66bc809d428413a7",
+      "epoch_invariants_pass": 6,
+      "epoch_invariants_total": 6,
+      "postflight_pass": true,
+      "validation_loss_by_epoch": {
+        "11": 4.801760611736582,
+        "12": 4.766015078626999,
+        "13": 4.864479030033855,
+        "14": 4.730616844241476,
+        "15": 4.702457625555259,
+        "16": 4.735019611928334
+      },
+      "improvement_over_parent_best": 0.063673,
+      "improvement_distinguishable": true,
+      "improvement_note": "closes the item outstanding since 2026-08-02; two earlier attempts were discarded"
+    }
+  ],
+  "controlled_replicate": {
+    "description": "the RTX 3090 throughput benchmark ran the identical frozen config, seed and parent as the A100 run, differing only in GPU",
+    "bench_run_dir": "_bench/calibrated_lr1e4_3090",
+    "is_declared_training_run": false,
+    "absolute_difference_by_epoch": {
+      "11": 0.013595,
+      "12": 0.009736,
+      "13": 0.00051,
+      "14": 3.4e-05,
+      "15": 5.8e-06,
+      "16": 2.4e-05
+    },
+    "annealed_endpoint_agreement": 5.8e-06,
+    "conclusion": "hardware nondeterminism is not the source of the ~0.02 cross-cycle resolution; mid-cycle epochs are reproducible only to about 0.01, annealed endpoints to about 1e-5"
+  },
+  "gpu_benchmarks": {
+    "conditions": "batch 6, 4437 train batches + 1109 validation batches, 26624/6656 pilot bank, amp false, torch 2.6.0+cu124",
+    "note": "4090 and A100 measured with three trainers on the cluster; the 3090 benchmark ran solo. Contention spread measured on the 4090 is 2.1%.",
+    "epoch_seconds_mean": {
+      "RTX 4090": 649.83,
+      "A100-SXM4-80GB": 990.17,
+      "RTX 3090": 1168.88
+    },
+    "epoch_seconds_n": 6,
+    "ratios": {
+      "A100_over_4090": 1.524,
+      "3090_over_4090": 1.799,
+      "3090_over_A100": 1.18
+    },
+    "peak_memory_bytes": {
+      "RTX 4090": 11742865920,
+      "A100-SXM4-80GB": 11742865920
+    },
+    "pricing": {
+      "source": "https://dicos.grid.sinica.edu.tw/static/docs/accounting.html",
+      "sru_ntd": 2.0,
+      "formula": "SRU = (CPUCore-Day or GPUBoard-Day) x NPIndex",
+      "npindex": {
+        "RTX3090": 79.0,
+        "A100": 173.0,
+        "V100": 70.0,
+        "P100": 47.0,
+        "GTX-1080Ti": 1.0,
+        "RTX4090": null
+      },
+      "ntd_per_board_day": {
+        "RTX 3090": 158.0,
+        "A100-SXM4-80GB": 346.0,
+        "RTX 4090": null
+      },
+      "ntd_per_epoch": {
+        "RTX 3090": 2.14,
+        "A100-SXM4-80GB": 3.97,
+        "RTX 4090": null
+      },
+      "twd_per_usd": 32.31,
+      "superseded": "NT$395/NT$865 came from a Feb 2022 readthedocs mirror that is stale and self-contradictory; too high by 2.5x"
+    }
+  },
+  "potential_assessment": {
+    "cycle_gains": {
+      "calibrated_lr3e4": [0.057077, 0.075467, 0.008346],
+      "calibrated_lr1e4_halfbatch": [0.134201, -0.00483, 0.037793],
+      "calibrated_lr1e4": [0.060974, 0.063673],
+      "calibrated_lr3e5": [0.053856]
+    },
+    "latest_over_previous_gain": {
+      "calibrated_lr3e4": 0.111,
+      "calibrated_lr1e4_halfbatch": 0.282,
+      "calibrated_lr1e4": 1.044
+    },
+    "judgement": "calibrated_lr1e4 has the most remaining potential: the only family whose per-cycle gain has not decayed, and six epochs less trained than the leaders",
+    "confidence": "weak; a ratio from two cycles is thin evidence and 'most potential' is not 'will win'",
+    "largest_untested_lever": "the 26,624-event pilot bank is 4.3% of the 612,482 available training events; a full-split run would likely dominate any family choice",
+    "objective_decomposition_lr3e4_e22": {
+      "share_flow": {"raw": 4.4077, "weighted": 1.9612, "share": 0.422},
+      "first_layer": {"raw": 0.3812, "weighted": 0.8231, "share": 0.177},
+      "support_bce": {"raw": 0.535, "weighted": 0.7084, "share": 0.153},
+      "count": {"raw": 3.0728, "weighted": 0.4944, "share": 0.107},
+      "support_rank": {"raw": 0.1964, "weighted": 0.2902, "share": 0.063},
+      "profile_flow": {"raw": 1.7443, "weighted": 0.2807, "share": 0.06},
+      "visible": {"raw": 0.0439, "weighted": 0.1129, "share": 0.024},
+      "active": {"raw": 0.2097, "weighted": 0.1126, "share": 0.024},
+      "response": {"raw": -0.8781, "weighted": -0.1413, "share": -0.03}
+    }
+  },
+  "publication": {
+    "public_repo_commit": "a81c175",
+    "workflow_run": 30791668476,
+    "workflow_conclusion": "success",
+    "live_url": "https://julianattemptscoding.github.io/Fast-MC-Visual-Tests/",
+    "live_verified": true,
+    "compressed_bytes": 24397736,
+    "selection_sha256": "f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6",
+    "test_events_used": 0,
+    "published": {
+      "calibrated_lr3e5": "dicos-r3-calibrated-lr3e5:joint:0008",
+      "calibrated_lr1e4": "dicos-p6-calibrated-lr1e4:joint:0015",
+      "calibrated_lr3e4": "dicos-p7-calibrated-lr3e4:joint:0022",
+      "calibrated_lr1e4_halfbatch": "dicos-p7-calibrated-lr1e4-halfbatch:joint:0021"
+    }
+  },
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED; optimisation evidence on a validation split only, zero test events"
+}

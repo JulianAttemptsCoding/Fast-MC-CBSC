@@ -6365,3 +6365,132 @@ both moved ahead of where they were, with half-batch now second.
 The three runs are **not** a controlled comparison with each other and must not
 be read as one: `calibrated_lr1e4` covered epochs 11..16 while the other two
 covered 17..22, and half-batch runs `batch_size: 3` against the others' 6.
+
+### 2026-08-03 — an accidental controlled replicate: same config, two GPUs
+
+`QA FINDING`, and an unusually clean one. The RTX 3090 batch-6 throughput
+benchmark was run with `frozen_calibrated_lr1e4_dicos-p6.yaml` into
+`_bench/calibrated_lr1e4_3090`, which is the **same frozen config, same seed
+(20260723), same parent checkpoint and same data** as the run the A100 had just
+completed. It was intended only as a timing probe and it completed all six
+epochs, so it is a full replicate differing **only in GPU** (and Python 3.12.9
+against 3.13.13; torch 2.6.0+cu124 and numpy 2.5.1 identical).
+
+    epoch    A100          RTX 3090      |difference|
+    11       4.801761      4.788166      0.013595
+    12       4.766015      4.775751      0.009736
+    13       4.864479      4.863969      0.000510
+    14       4.730617      4.730651      0.000034
+    15       4.702458      4.702463      0.0000058
+    16       4.735020      4.734996      0.000024
+
+**The two runs diverge early and then contract.** The epoch-11 gap of 0.013595
+is the same order as the improvement margins this project routinely evaluates.
+By the annealed end the two agree to **5.8e-6**, and both select epoch 15 as
+their best.
+
+Two things follow, and they pull in opposite directions, so both must be stated.
+
+1. **Hardware nondeterminism is not the source of the "~0.02 run-to-run
+   resolution."** Two runs of an identical configuration on different GPUs land
+   within 6e-6 of each other at the annealed endpoint. Whatever produces the
+   ~0.02 spread between *different* cycles, it is not floating-point
+   nondeterminism — it is the starting checkpoint and the schedule.
+
+2. **Mid-cycle epochs are much less reproducible than endpoints.** A 0.0136
+   difference at epoch 11 from nothing but a different card means no
+   mid-cycle epoch value should be compared across runs at better than about
+   0.01. Any reasoning from a mid-cycle epoch — including the epoch-13
+   forecast that was wrong on 2026-08-02 — is operating below its own noise.
+
+This does **not** license reinterpreting `calibrated_lr3e4`'s 0.008346 as a real
+improvement. That comparison is between endpoints of cycles with **different
+parent checkpoints**, not a replicate of one configuration, so the 6e-6 figure
+does not apply to it. What the replicate establishes is narrower and still
+useful: run-to-run scatter at the annealed endpoint of a *fixed* configuration
+is negligible, so a future three-seed study will be measuring seed effects and
+not hardware noise.
+
+The benchmark run is a `_bench/` artifact and is not a declared training run.
+It is not published, compared as a result, or resumed from. Its `best.pt` is a
+duplicate of a checkpoint the A100 already produced under the same config.
+
+### 2026-08-03 — which family has the most remaining potential
+
+`QA FINDING`. Research question: given four calibrated families at different
+depths, which is worth the next block of compute? Evidence is every recorded
+epoch of all four, decomposed per cycle. No test events were involved.
+
+**Improvement bought by each six-epoch cycle**, measured as the drop in the
+family's best validation loss:
+
+    family                      e0-4     e5-10      e11-16     e17-22    latest/prev
+    calibrated_lr3e4            4.738041 +0.057077  +0.075467  +0.008346    0.111
+    calibrated_lr1e4_halfbatch  4.845029 +0.134201  -0.004830  +0.037793    0.282
+    calibrated_lr1e4            4.827105 +0.060974  +0.063673       --      1.044
+    calibrated_lr3e5            4.897327 +0.053856       --          --      --
+
+**The leader is saturating and the runner-up is not.** `calibrated_lr3e4` has
+the best absolute loss in the project but its most recent cycle bought only
+11% of what the previous one did, and 0.008346 is at or inside the resolution
+for that kind of comparison. `calibrated_lr1e4`'s second cycle bought slightly
+*more* than its first (ratio 1.044) — it shows no decay at all, and it has had
+six fewer epochs than the two families at epoch 22.
+
+**Assessment: `calibrated_lr1e4` has the most remaining potential**, with
+`calibrated_lr3e5` as the most under-explored unknown. Reasons, in order of
+strength:
+
+- it is the only family whose per-cycle gain has not decayed;
+- it is 6 epochs less trained than the leaders, so it is further from wherever
+  its schedule saturates;
+- it trails the leader by 0.105, which is under two cycles at its own current
+  rate of ~0.06;
+- half-batch has just demonstrated that a later starting checkpoint unlocks
+  further improvement in the same learning-rate family, and that lever has not
+  been applied to `calibrated_lr1e4` at all.
+
+Against that, honestly: a ratio computed from two cycles is weak evidence, and
+"most potential" is not "will win". `calibrated_lr3e4` may simply be near the
+floor this architecture and bank can reach, in which case nothing overtakes it.
+
+`calibrated_lr3e5` has never been continued past epoch 10 and its one
+continuation cycle bought +0.053856, comparable to the others' first cycles. It
+is the largest genuine unknown, but it starts 0.246 behind the leader — roughly
+four cycles at that rate merely to draw level — so it is a cheap way to reduce
+uncertainty, not a contender.
+
+**Where the objective actually lives.** Decomposing the frozen weighted loss at
+`calibrated_lr3e4` epoch 22 (weighted contributions sum to 4.6423 against the
+recorded train_loss of 4.642335, so the decomposition is exact):
+
+    component        raw      weighted   share   moved over e17-22
+    share_flow     4.4077      1.9612    42.2%     -0.0517
+    first_layer    0.3812      0.8231    17.7%     -0.0299
+    support_bce    0.5350      0.7084    15.3%     -0.0122
+    count          3.0728      0.4944    10.7%     -0.0117
+    support_rank   0.1964      0.2902     6.3%     -0.0086
+    profile_flow   1.7443      0.2807     6.0%     -0.0147
+    visible        0.0439      0.1129     2.4%     -0.0059
+    active         0.2097      0.1126     2.4%     -0.0066
+    response      -0.8781     -0.1413    -3.0%     -0.0066
+
+**The share flow is 42% of the objective and the single largest source of
+improvement**, in every family. The conditional share flow places energy
+fractions on the selected cells; it is where the model's remaining error
+concentrates. `response` is negative and becoming more so, which is the correct
+direction for an NLL and not a defect.
+
+This suggests the highest-value *architectural* question is not the learning
+rate at all but the capacity and solver-step count of the share flow — which
+would be a new declared experiment, not a continuation.
+
+**The largest untested lever is not any of this.** Every number above comes from
+the 26,624-event pilot bank, which is **4.3%** of the 612,482 available training
+events. Choosing between these four families optimises within a regime that the
+full split would likely change outright. A full-split run remains the more
+valuable experiment, as `docs/DICOS_BACKEND.md` section 6 already said, and it
+needs nothing that is not already on the host.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`. None of this bears on Geant4 fidelity;
+all of it is optimisation behaviour on a validation split.
