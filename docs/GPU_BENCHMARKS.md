@@ -56,6 +56,24 @@ Mid-epoch training-only rates sampled the same way on the same day:
 The 4090's 7.29 batch/s reproduces the 7.31 recorded on 2026-08-02, which is a
 useful independent check that the sampling method is stable.
 
+### The A100's memory buys nothing here
+
+Peak CUDA memory is **11.74 GB on both cards** — identical, as it should be for
+the same architecture at the same batch size. The A100's 80 GB leaves ~68 GB
+idle, and the 4090's 24 GB is less than half used.
+
+This matters for the choice of card. The A100's headline advantages are memory
+capacity, memory bandwidth, and tensor-core throughput. This workload runs
+`amp: false`, so it never touches a tensor core, and it fits in a third of a
+4090. What remains is FP32 non-tensor-core throughput, where the 4090 is simply
+the faster part. Nothing about that is a defect in the A100; the workload just
+does not ask for anything the A100 is good at.
+
+The corollary is that the A100 would only become interesting under a *separately
+declared* experiment that used its strengths — mixed precision, a substantially
+larger batch, or a larger model. Any of those is a new declared experiment with
+its own QA, not a transport change.
+
 ## Cited — not re-verifiable from artifacts
 
 | GPU | batch/s | batch size | status |
