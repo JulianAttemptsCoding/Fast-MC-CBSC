@@ -484,10 +484,14 @@ def watch(context: DiagnosticContext, queue_dir: Path, output_dir: Path) -> int:
     _log(f"watching {queue_dir}")
 
     while True:
-        if (queue_dir / "STOP").exists():
-            _log("STOP seen, exiting")
-            return 0
         pending = sorted(p for p in queue_dir.glob("*.pt") if p.is_file())
+        # Drain before stopping. Checking STOP first abandoned everything the
+        # producer queued after the last pass -- the producer writes STOP as
+        # soon as training exits, which is exactly when the last few epochs
+        # are still waiting.
+        if (queue_dir / "STOP").exists() and not pending:
+            _log("STOP seen and queue drained, exiting")
+            return 0
         if not pending:
             time.sleep(20)
             continue
