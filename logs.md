@@ -6366,6 +6366,65 @@ The three runs are **not** a controlled comparison with each other and must not
 be read as one: `calibrated_lr1e4` covered epochs 11..16 while the other two
 covered 17..22, and half-batch runs `batch_size: 3` against the others' 6.
 
+### 2026-08-03 — p8 stopped at 6 of 24 epochs: patience cannot be a constant
+
+`QA FINDING`, negative result, and a design fault worth generalising.
+
+`calibrated_lr1e4_dicos-p8` was configured for **24** further epochs, absolute
+17..40, with `early_stopping_patience: 6`. It ran **six**, 08:30:00Z to
+09:49:22Z, `EXIT=0`, wall 4,759.3 s, 6,660 updates. Six of six per-epoch
+invariants pass; postflight `pass: true`. Nothing failed.
+
+    epoch   17        18        19        20        21        22
+    val     4.818539  4.836365  4.769665  4.742476  4.740615  4.735947
+    lr      9.958e-5  9.831e-5  9.623e-5  9.337e-5  8.977e-5  8.550e-5
+
+    best.pt  d93b3ad061dde316864ff30b350bcc456aec7cf6821d18e27c6755ae98f244e7  (epoch 15, INHERITED)
+    last.pt  f668956adf92f56d714437464b34bd6f81c3f2ac9e6fa04984d89f1a632111be  (epoch 22)
+    frozen   53f9894bf24f14b355c5fdf211ab22099f6b0a8d5ae17cf90ad11b1367ef9a82
+
+`best_validation_loss` is **unchanged at 4.702457625555259** — still the
+inherited epoch-15 checkpoint from p6. No epoch beat it, so `stale` incremented
+every epoch and reached the patience of 6 at epoch 22, which ended the run.
+
+**The run was killed while still improving.** Validation fell monotonically
+from epoch 18 onward — 4.836365, 4.769665, 4.742476, 4.740615, 4.735947 — and
+was still falling at the moment it stopped. The learning rate at epoch 22 was
+**8.550e-5, only 14% below its 1.000e-4 start**: a cosine stretched over 24
+epochs has barely begun annealing by epoch 6 of 24.
+
+**Root cause, and it generalises.** Early stopping counts staleness against the
+*inherited* best, and that best was reached at the **end** of a previous anneal
+at `lr = 1e-6`. `restart_scheduler_on_resume` then returns the learning rate to
+1e-4, which makes the model worse by construction. Recovery depends on the
+anneal, and every improvement this project has recorded came from the late part
+of one — p6 and p7 both bottomed in the last third of their cycle. So the
+epochs needed before the bar can be beaten scale with the **horizon**, while a
+fixed patience does not.
+
+`logs.md` already recorded the special case on 2026-08-02: "Patience 3 cannot
+survive a high-LR scheduler restart." That was read as a fact about the number
+3. It is not. The same failure occurred at patience 6, because the horizon grew
+from 6 epochs to 24. The correct statement is:
+
+> With `restart_scheduler_on_resume`, early-stopping patience must exceed the
+> number of epochs the cosine needs before it anneals far enough to beat the
+> inherited best. That is a fraction of the **horizon**, not a constant. For a
+> horizon of N epochs, a patience materially below N will stop the run before
+> its own schedule can pay off.
+
+A patience of 6 over a 24-epoch horizon is therefore not a conservative choice;
+it is a horizon of about 6 epochs with 18 epochs of configuration that can never
+be reached. The configuration was internally consistent and every check passed —
+which is why this needed a completed run to expose rather than a review.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`. Zero test events.
+
+**Disposition.** The run is sound and is not quarantined; it is simply a
+six-epoch continuation that did not beat its parent. `calibrated_lr1e4` remains
+at 4.702458, epoch 15, and the published site is unaffected because the
+selected checkpoint did not change.
+
 ### 2026-08-03 — an accidental controlled replicate: same config, two GPUs
 
 `QA FINDING`, and an unusually clean one. The RTX 3090 batch-6 throughput
