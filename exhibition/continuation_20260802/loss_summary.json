@@ -8,10 +8,13 @@
       13,
       14,
       15,
-      16
+      16,
+      17,
+      18
     ],
     "continuation_run_tags": [
-      "dicos-p6"
+      "dicos-p6",
+      "dicos-p8"
     ],
     "epochs": [
       0,
@@ -30,9 +33,11 @@
       13,
       14,
       15,
-      16
+      16,
+      17,
+      18
     ],
-    "final_validation_loss": 4.735019611928334
+    "final_validation_loss": 4.836365553505424
   },
   "calibrated_lr1e4_halfbatch": {
     "best_epoch": 21,

@@ -1,0 +1,129 @@
+"""Pull new per-epoch artifacts off DiCOS and rebuild every derived output.
+
+One command per epoch, so the refresh is repeatable rather than hand-assembled:
+
+  1. pull any `_diag/metrics_epoch_*.json` not already local (3090 pod);
+  2. pull the training run's `history.csv` (4090 pod);
+  3. rewrite the continuation rows for this family in
+     `exhibition/data/continuation_history.csv`;
+  4. rebuild the loss figure and the diagnostic trend figure.
+
+It does not publish. Publishing changes the selected checkpoint per family and
+is a deliberate step, not something a refresh loop should do on its own.
+
+Usage:
+    python scripts/refresh_continuation_outputs.py \
+        --family calibrated_lr1e4 --run-tag dicos-p8 \
+        --run-dir _runs/calibrated_lr1e4_dicos-p8
+"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+DIAG_LOCAL = ROOT / "exhibition" / "data" / "diagnostics"
+CONTINUATION_CSV = ROOT / "exhibition" / "data" / "continuation_history.csv"
+FIELDS = ["variant", "epoch", "train_loss", "validation_loss", "run_tag"]
+
+
+def dicos(args: list[str], config: str | None = None) -> str:
+    env = dict(os.environ, PYTHONPATH="src")
+    if config:
+        env["DICOS_CONFIG"] = str(Path.home() / ".dicos" / config)
+    result = subprocess.run(
+        [sys.executable, "scripts/dicos.py", *args],
+        cwd=ROOT, env=env, capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"dicos {args[0]} failed: {result.stderr.strip()}")
+    return result.stdout
+
+
+def pull_diagnostics(config: str) -> list[int]:
+    DIAG_LOCAL.mkdir(parents=True, exist_ok=True)
+    listing = dicos(["exec", "ls -1 _diag/ 2>/dev/null | grep -o 'metrics_epoch_[0-9]*'"], config)
+    remote = sorted({line.strip() for line in listing.splitlines() if line.strip()})
+    pulled = []
+    for stem in remote:
+        target = DIAG_LOCAL / f"{stem}.json"
+        if target.exists():
+            continue
+        dicos(["get", f"_diag/{stem}.json", str(target)], config)
+        pulled.append(int(stem.rsplit("_", 1)[1]))
+    return sorted(pulled)
+
+
+def pull_history(run_dir: str, destination: Path) -> None:
+    dicos(["get", f"{run_dir}/logs/history.csv", str(destination)])
+
+
+def rewrite_continuation(history: Path, family: str, run_tag: str) -> int:
+    rows: list[dict] = []
+    if CONTINUATION_CSV.exists():
+        with CONTINUATION_CSV.open(newline="", encoding="utf-8") as fh:
+            rows = [r for r in csv.DictReader(fh)
+                    if not (r["variant"] == family and r["run_tag"] == run_tag)]
+    with history.open(newline="", encoding="utf-8") as fh:
+        for raw in csv.DictReader(fh):
+            rows.append({
+                "variant": family,
+                "epoch": int(float(raw["epoch"])),
+                "train_loss": raw["train_loss"],
+                "validation_loss": raw["validation_loss"],
+                "run_tag": run_tag,
+            })
+    rows.sort(key=lambda r: (r["variant"], int(r["epoch"])))
+    with CONTINUATION_CSV.open("w", newline="", encoding="utf-8") as fh:
+        writer = csv.DictWriter(fh, fieldnames=FIELDS)
+        writer.writeheader()
+        writer.writerows(rows)
+    return sum(1 for r in rows if r["variant"] == family and r["run_tag"] == run_tag)
+
+
+def rebuild(script: str) -> str:
+    result = subprocess.run(
+        [sys.executable, script], cwd=ROOT, capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"{script} failed: {result.stderr.strip()}")
+    return result.stdout.strip()
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--family", required=True)
+    parser.add_argument("--run-tag", required=True)
+    parser.add_argument("--run-dir", required=True)
+    parser.add_argument("--diag-config", default="config_3090.json")
+    args = parser.parse_args(argv)
+
+    pulled = pull_diagnostics(args.diag_config)
+    print(f"diagnostics pulled: {pulled or 'none new'}")
+
+    history = ROOT / ".refresh_history.csv"
+    try:
+        pull_history(args.run_dir, history)
+        written = rewrite_continuation(history, args.family, args.run_tag)
+        print(f"continuation rows for {args.family}/{args.run_tag}: {written}")
+    finally:
+        history.unlink(missing_ok=True)
+
+    print(rebuild("exhibition/build_continuation_loss_figures.py"))
+    print(rebuild("exhibition/build_diagnostic_trend_figure.py"))
+
+    summary = ROOT / "exhibition/diagnostics_20260803/diagnostic_summary.json"
+    if summary.is_file():
+        payload = json.loads(summary.read_text(encoding="utf-8"))
+        print(f"diagnostic epochs: {payload['epochs']}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

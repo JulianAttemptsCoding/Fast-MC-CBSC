@@ -1,0 +1,32 @@
+{
+  "epochs": [
+    17
+  ],
+  "kinetic_range_gev": [
+    50.0,
+    250.0
+  ],
+  "n_events_per_epoch": 4000,
+  "selection_seed": 20260803,
+  "series": {
+    "hit_count_bias_fraction": [
+      -0.09511143268852157
+    ],
+    "mean_longitudinal_profile_relative_l1": [
+      0.2880172202634408
+    ],
+    "response_bias_fraction": [
+      0.15395726974178778
+    ]
+  },
+  "stderr": {
+    "hit_count_bias_fraction": [
+      0.005730256773562515
+    ],
+    "response_bias_fraction": [
+      0.02129217674077756
+    ]
+  },
+  "test_events_used": 0,
+  "validation_pool": 50877
+}
