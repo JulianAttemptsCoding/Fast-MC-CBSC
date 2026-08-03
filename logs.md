@@ -6261,3 +6261,49 @@ instead. Recorded because the expectation was stated in advance.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`. Zero test events; the bank is the pilot
 bank and the 76,300-event test split is untouched.
+
+### 2026-08-03 — calibrated_lr1e4 dicos-p6 complete at last; a real improvement
+
+`QA PASS`. This closes the outstanding item carried since 2026-08-02:
+`calibrated_lr1e4` epochs 11..16 had never run to completion, after one attempt
+crashed on the datacentre-GPU pod and a second was wiped when a stray process
+wrote into its run directory. It ran here on the A100 under the **existing**
+frozen config from 2026-08-02 (`ae5247650b…`), unmodified, 01:38:13Z to
+03:34:54Z, `EXIT=0`, wall 7,001.09 s, 6,660 updates.
+
+Six of six per-epoch invariant reports pass; postflight `pass: true` with
+`best.pt` independently reloaded and re-sampled. Nonfinite 0, negative 0,
+outside_valid_support 0, dust 0. Peak GPU memory 11.74 GB with headroom
+fraction 0.862.
+
+    epoch   11        12        13        14        15        16
+    val     4.801761  4.766015  4.864479  4.730617  4.702458  4.735020
+    train   4.899381  4.878110  4.857551  4.841070  4.784974  4.774121
+
+    best.pt  d93b3ad061dde316864ff30b350bcc456aec7cf6821d18e27c6755ae98f244e7  (epoch 15)
+    last.pt  36ef3dc4f4ba450452a9413badeb996697a2b6f347ca7cab66bc809d428413a7  (epoch 16)
+    frozen   ae5247650b3260495e5dcad117d329082ceb0f1f1d6885633dc95789dd84161e
+
+**4.702458 against a parent best of 4.766131 is an improvement of 0.063673**,
+about three times the ~0.02 run-to-run resolution. Unlike `calibrated_lr3e4`'s
+0.008346 in the same session, this one **is** distinguishable on this evidence
+and is reported as a real improvement.
+
+It reorders the standings: `calibrated_lr1e4` now sits second, ahead of
+`calibrated_lr1e4_halfbatch`'s 4.710829, having previously been third.
+
+One detail worth recording because it nearly became a false result. At epoch 12
+the run posted 4.766015 against the parent best of 4.766131 — lower by
+**0.000116**, which mechanically updated `best.pt` while meaning nothing at all,
+being roughly 170 times smaller than the resolution. Had the run stopped there,
+the honest report would have been "no distinguishable change", not "a new best".
+The real improvement arrived three epochs later. A checkpoint-selection rule
+that fires on any decrease will manufacture ties as results; the margin has to
+be checked against the noise floor every time, not just when it is convenient.
+
+The family shows the same cycle shape as the others: worse after the restart, a
+mid-cycle excursion at epoch 13 (4.864479, the run's worst), then the late
+anneal doing the work, with the minimum at the 5th of 6 epochs and a rise on the
+last.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`. Zero test events.
