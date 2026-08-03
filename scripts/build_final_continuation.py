@@ -91,6 +91,7 @@ def build(
     selected_by: str = (
         "largest validation-loss improvement over absolute epochs 5..10"
     ),
+    restart_scheduler: bool = True,
 ) -> Built:
     last_sha256 = _check("last_sha256", last_sha256)
     best_sha256 = _check("best_sha256", best_sha256)
@@ -133,7 +134,13 @@ def build(
     training["device"] = "cuda"
     training["epochs"] = epochs
     training["early_stopping_patience"] = patience
-    training["restart_scheduler_on_resume"] = True
+    # Restarting sets the learning rate straight back to its peak, which makes
+    # a model resumed from the end of an anneal worse by construction. Not
+    # restarting instead reloads the saved scheduler state, so the cosine
+    # continues from where it stopped -- and because CosineAnnealingLR is
+    # periodic in 2*T_max, it climbs smoothly back toward the peak rather than
+    # jumping there.
+    training["restart_scheduler_on_resume"] = bool(restart_scheduler)
     for key in (
         "resume_from", "resume_best_from", "resume_progress_from",
         "resume_progress_from_relative", "resume_progress_from_sha256",
@@ -154,6 +161,7 @@ def build(
         "epochs_available": available,
         "early_stopping_patience": patience,
         "early_stopping_can_fire": early_stopping_can_fire,
+        "restart_scheduler_on_resume": bool(restart_scheduler),
     }
 
     output_dir = Path(output_dir)
@@ -204,6 +212,11 @@ def main(argv=None) -> None:
              "checkpoints/<family>_<stem>_{last,best}.pt",
     )
     parser.add_argument(
+        "--no-restart-scheduler", action="store_true",
+        help="continue the saved cosine instead of resetting it to the peak "
+             "learning rate; use when resuming from the end of an anneal",
+    )
+    parser.add_argument(
         "--selected-by",
         default="largest validation-loss improvement over absolute epochs 5..10",
         help="Why this family is being continued. Recorded in provenance.",
@@ -222,6 +235,7 @@ def main(argv=None) -> None:
         parent_last_epoch=args.parent_last_epoch,
         checkpoint_stem=args.checkpoint_stem,
         selected_by=args.selected_by,
+        restart_scheduler=not args.no_restart_scheduler,
     )
 
     manifest = {
@@ -234,6 +248,7 @@ def main(argv=None) -> None:
         "patience_widened_from_default": args.patience != EARLY_STOPPING_PATIENCE,
         "epochs_available": f"{args.parent_last_epoch + 1}..{args.epochs - 1}",
         "selected_by": args.selected_by,
+        "restart_scheduler_on_resume": not args.no_restart_scheduler,
         "resume_from_relative": f"checkpoints/{args.family}_{args.checkpoint_stem}_last.pt",
         "resume_best_from_relative": f"checkpoints/{args.family}_{args.checkpoint_stem}_best.pt",
         "manifest_note": "epochs is an ABSOLUTE target; the trainer resumes at checkpoint_epoch + 1",
