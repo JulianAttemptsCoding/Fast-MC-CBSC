@@ -86,6 +86,11 @@ def build(
     patience: int | None = None,
     epochs: int | None = None,
     run_tag: str = RUN_TAG,
+    parent_last_epoch: int | None = None,
+    checkpoint_stem: str = "r3",
+    selected_by: str = (
+        "largest validation-loss improvement over absolute epochs 5..10"
+    ),
 ) -> Built:
     last_sha256 = _check("last_sha256", last_sha256)
     best_sha256 = _check("best_sha256", best_sha256)
@@ -94,11 +99,16 @@ def build(
     # by asking, so the comparison phase's patience can never be inherited.
     patience = EARLY_STOPPING_PATIENCE if patience is None else int(patience)
     epochs = EPOCHS if epochs is None else int(epochs)
-    available = epochs - (PARENT_LAST_EPOCH + 1)
+    # A later phase continues from a later parent. The default keeps the
+    # wave-three value, so an omitted argument cannot silently move the horizon.
+    parent_last_epoch = (
+        PARENT_LAST_EPOCH if parent_last_epoch is None else int(parent_last_epoch)
+    )
+    available = epochs - (parent_last_epoch + 1)
     if available <= 0:
         raise ValueError(
             f"horizon leaves no epochs to run: epochs={epochs} against a parent "
-            f"ending at {PARENT_LAST_EPOCH}. `epochs` is an ABSOLUTE target."
+            f"ending at {parent_last_epoch}. `epochs` is an ABSOLUTE target."
         )
     # A horizon no longer than the patience is a legitimate declared choice --
     # the comparison wave used exactly that to guarantee a fixed six epochs --
@@ -130,17 +140,17 @@ def build(
         "initialize_from", "initialize_from_relative", "initialize_from_sha256",
     ):
         training[key] = None
-    training["resume_from_relative"] = f"checkpoints/{family}_r3_last.pt"
+    training["resume_from_relative"] = f"checkpoints/{family}_{checkpoint_stem}_last.pt"
     training["resume_from_sha256"] = last_sha256
-    training["resume_best_from_relative"] = f"checkpoints/{family}_r3_best.pt"
+    training["resume_best_from_relative"] = f"checkpoints/{family}_{checkpoint_stem}_best.pt"
     training["resume_best_from_sha256"] = best_sha256
 
     config["provenance"] = {
         "parent_config": parent_path.name,
         "parent_config_sha256": _sha256(parent_path),
         "parent_project_name": parent["project"]["name"],
-        "parent_last_epoch": PARENT_LAST_EPOCH,
-        "selected_by": "largest validation-loss improvement over absolute epochs 5..10",
+        "parent_last_epoch": parent_last_epoch,
+        "selected_by": selected_by,
         "epochs_available": available,
         "early_stopping_patience": patience,
         "early_stopping_can_fire": early_stopping_can_fire,
@@ -180,6 +190,24 @@ def main(argv=None) -> None:
              "end of an anneal.",
     )
     parser.add_argument("--epochs", type=int, default=EPOCHS)
+    parser.add_argument(
+        "--parent-last-epoch",
+        type=int,
+        default=PARENT_LAST_EPOCH,
+        help="Absolute last epoch of the parent checkpoint. `epochs` is an "
+             "ABSOLUTE target, so this is what decides how many epochs run.",
+    )
+    parser.add_argument(
+        "--checkpoint-stem",
+        default="r3",
+        help="Infix of the staged resume pair, "
+             "checkpoints/<family>_<stem>_{last,best}.pt",
+    )
+    parser.add_argument(
+        "--selected-by",
+        default="largest validation-loss improvement over absolute epochs 5..10",
+        help="Why this family is being continued. Recorded in provenance.",
+    )
     args = parser.parse_args(argv)
 
     built = build(
@@ -191,6 +219,9 @@ def main(argv=None) -> None:
         patience=args.patience,
         epochs=args.epochs,
         run_tag=args.run_tag,
+        parent_last_epoch=args.parent_last_epoch,
+        checkpoint_stem=args.checkpoint_stem,
+        selected_by=args.selected_by,
     )
 
     manifest = {
@@ -198,10 +229,13 @@ def main(argv=None) -> None:
         "run_tag": args.run_tag,
         "family": built.family,
         "epochs_absolute_target": args.epochs,
-        "parent_last_epoch": PARENT_LAST_EPOCH,
+        "parent_last_epoch": args.parent_last_epoch,
         "early_stopping_patience": args.patience,
         "patience_widened_from_default": args.patience != EARLY_STOPPING_PATIENCE,
-        "epochs_available": f"{PARENT_LAST_EPOCH + 1}..{args.epochs - 1}",
+        "epochs_available": f"{args.parent_last_epoch + 1}..{args.epochs - 1}",
+        "selected_by": args.selected_by,
+        "resume_from_relative": f"checkpoints/{args.family}_{args.checkpoint_stem}_last.pt",
+        "resume_best_from_relative": f"checkpoints/{args.family}_{args.checkpoint_stem}_best.pt",
         "manifest_note": "epochs is an ABSOLUTE target; the trainer resumes at checkpoint_epoch + 1",
         "template": built.path.name,
         "template_sha256": built.sha256,
@@ -210,7 +244,13 @@ def main(argv=None) -> None:
         "resume_from_sha256": args.last_sha256,
         "resume_best_from_sha256": args.best_sha256,
     }
-    manifest_path = args.output_dir / "final_continuation_manifest.json"
+    # Per family and run tag. A fixed name silently overwrote the first
+    # family's provenance when a phase built two of them into one directory --
+    # which is why dicos_p6_20260802/ carries a manifest for only one of the
+    # two templates beside it.
+    manifest_path = (
+        args.output_dir / f"{args.family}_{args.run_tag}_manifest.json"
+    )
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
     print(f"{built.family:<28} {built.path.name:<40} {built.sha256}")

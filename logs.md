@@ -5995,3 +5995,153 @@ State at the end of this session: nothing training, all pods idle,
 `calibrated_lr1e4` epochs 11..16 still not run, public site not yet republished
 at lr3e4 epoch 15. 191 tests pass. Tokens are not recorded in this repository —
 history was scanned across all refs and contains none.
+
+### 2026-08-03 — three families launched in parallel, one per GPU (p7 / p6)
+
+Source commit `588be84`, worktree dirty at launch and deliberately so: modified
+`scripts/build_final_continuation.py` and `tests/test_final_continuation.py`,
+new `configs/templates/dicos_p7_20260803/`. Nothing was discarded; the changes
+are the builder generalisation described below.
+
+**Preconditions proved before any submission.** All three pods reachable and
+idle, GPU utilisation 0% on each, no `dicos_train` process anywhere, no run
+lock under `_runs`, and all three target run directories absent. The trainer
+scan is recorded because it is easy to get wrong: `grep -al dicos_train
+/proc/[0-9]*/cmdline` **matches its own command line**, so it returns two pids
+on an idle pod. The cmdlines were printed and read; the only matches were the
+probe shell and the transient grep. Counting matches would have produced a
+false positive, the same class of error as `pkill -f` killing its own probe.
+
+**Assignment** (user-directed, positional):
+
+    family                      GPU                  run tag     epochs
+    calibrated_lr3e4            RTX 4090             dicos-p7    17..22
+    calibrated_lr1e4_halfbatch  RTX 3090             dicos-p7    17..22
+    calibrated_lr1e4            A100-SXM4-80GB       dicos-p6    11..16
+
+`calibrated_lr1e4` runs under the **existing** `dicos-p6` frozen config
+(`ae5247650b3260495e5dcad117d329082ceb0f1f1d6885633dc95789dd84161e`), which was
+built and frozen on 2026-08-02 and never ran to completion. Reusing it closes
+that outstanding item without hand-editing anything. It therefore covers epochs
+11..16 while the other two cover 17..22 — **these three runs are not a
+same-epoch comparison and must not be read as one.**
+
+**Parent checkpoints, verified on host by embedded epoch, metric, and SHA-256**
+before a weight was loaded. Two of these hashes had not previously been
+recorded anywhere:
+
+    family                      last (epoch)                           best (epoch)
+    calibrated_lr3e4            763d45bb… (16)                         d73aa900… (15)   4.605497817867497
+    calibrated_lr1e4_halfbatch  15823b34… (16)  NEW                    74a989aa… (10)   NEW  4.710828610604539
+    calibrated_lr1e4            d79365693d… (10)                       7eb16ca6… (8)    4.766131002068694
+
+The two new ones were staged as `prep/checkpoints/calibrated_lr3e4_p6_{last,best}.pt`
+and `prep/checkpoints/calibrated_lr1e4_halfbatch_fr2_{last,best}.pt`, then
+re-hashed after the copy and confirmed byte-identical to source.
+
+Note on the half-batch parent: its `best.pt` is **epoch 10** while its `last.pt`
+is epoch 16, because `dicos-final-r2` never beat 4.710829 and the trainer
+carries the selected best forward. Resuming from `last` therefore starts from
+epoch-16 weights (validation 4.715659), which is a *different* starting point
+from the two prior six-epoch cycles that both began at epoch 10. This is a new
+continuation, not a third repeat of the same one.
+
+**Builder generalised rather than configs hand-edited.**
+`scripts/build_final_continuation.py` gained `--parent-last-epoch`,
+`--checkpoint-stem` and `--selected-by`, all defaulting to the previous
+values so an old invocation cannot silently mean something new. The horizon
+arithmetic now follows the parent actually being resumed:
+`epochs` is still an ABSOLUTE target, and 23 against a parent ending at 16
+yields exactly epochs 17..22. Four new contract tests pin this, including that
+a later parent can still leave no epochs to run. 14 tests pass in that module;
+`compileall` clean.
+
+**Defect found and fixed while doing it.** The builder wrote
+`final_continuation_manifest.json` under a fixed name, so building a second
+family into the same directory silently overwrote the first family's
+provenance. That had already happened: `configs/templates/dicos_p6_20260802/`
+holds two templates but a manifest describing only `calibrated_lr1e4`. The
+manifest is now named per family and run tag. The historical directory is left
+as it is, being an immutable record.
+
+**Frozen through the CLI, never hand-edited.** Both new configs were frozen
+with `cbsc-zdc freeze-config` against the on-host artifacts:
+
+    template calibrated_lr3e4_dicos-p7.yaml            f58dca6732213684108450130957c7ef607db83720f62af0c125a0da182f2024
+    frozen   frozen_calibrated_lr3e4_dicos-p7.yaml     4051591355f22fa07f8a8aaea80a86a05cac85f92430fc13bfb52dc034ab609a
+    template calibrated_lr1e4_halfbatch_dicos-p7.yaml  c9032b65d1734a215e3ce5a26417b565ccc70c44afbaf152185fc9431c958c6a
+    frozen   frozen_calibrated_lr1e4_halfbatch_dicos-p7.yaml
+                                                       20243703bd3e9866e45a93f5e94489bc823ab38519638bfe67f9fadf27835494
+
+The lr3e4 template hash reproduced identically across two independent builder
+invocations, which is a free determinism check on the builder.
+
+`freeze-config` overrides `response_cap_ratio` and `response_cap_absolute_gev`
+**from the audit**, so the audit choice is not cosmetic. The pilot audit
+`prep/train_data_audit_pilot.json` (`96ac0773…`) was used, and both frozen
+configs came out carrying the calibrated caps `0.725470286351178` and
+`64.38813572617559` bit-exactly. All three configs — including the pre-existing
+p6 one — share identical data identity:
+
+    split manifest    8ea9fe7a91cae4e6cb20c9877b9cd1af038d589b3fd060afd043fe0d4a659c41
+    split assignment  084f0dfd86e488c63bb41ea50d6783ad22eb57a322288c075a94b1ec12dd3714
+    geometry          e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b
+    audit             96ac0773c44efabac1ea81736444d9537523e56559cef00195645aabb4b34514
+
+Bank is the pilot bank, 26,624 train / 6,656 validation / **0 test**.
+
+**`continuation_epochs: 2` appears in all three frozen configs and is inert.**
+It lives in the inherited `viability:` block from the July 2026 screening wave;
+no source file reads `viability` or `continuation_epochs`. It is superseded
+provenance with no operational force and must not be read as this phase's
+epoch count, which is six.
+
+**Environment, identical where it matters.** All three venvs validated by
+import before launch: torch `2.6.0+cu124` and numpy `2.5.1` on all three, CUDA
+available, correct device. `torch.backends.cudnn.allow_tf32` is `True` and
+`torch.backends.cuda.matmul.allow_tf32` is `False` on all three — the default,
+and the same state the parent DiCOS runs used, so no numerics change is
+introduced relative to what is being continued. It does remain a difference
+from the original T4/Vertex epoch-4 runs, as it has been since dicos-r3.
+Python differs per pod (3.13.9 / 3.12.9 / 3.13.13); torch and numpy do not.
+`CBSC_ZDC_SHARD_CACHE=0` and `PYTHONNOUSERSITE=1` exported on all three.
+
+**A stale launch script was caught before it was used.**
+`_setup/run_p6_a100.sh` invokes `.venv_a100_2`, which does not exist on this
+filesystem — it was written for the superseded A100 pod on port 31570. Launching
+through it would have failed. The A100 run uses `_setup/run_p6_a100_dcgpu.sh`
+against `.venv_dcgpu`, validated by import first.
+
+**Launches, each verified by process tree before the next was issued:**
+
+    job        pod     wrapper/trainer pid   started
+    p7lr3e4    4090    11283 / 11286         2026-08-03T01:37:44Z
+    p7hb       3090    1530  / 1533          2026-08-03T01:38:00Z
+    p6lr1e4    A100    1949  / 1952          2026-08-03T01:38:13Z
+
+Exactly one wrapper and one trainer on each pod, one `START` line in each log.
+Output was read in full rather than piped through `tail`, and no start was
+re-issued.
+
+**Batch geometry differs and this breaks the naive GPU comparison.**
+`calibrated_lr1e4_halfbatch` is `batch_size: 3`; the other two are
+`batch_size: 6`. All three use `gradient_accumulation: 4` on the same
+26,624-sample bank, so per epoch:
+
+    calibrated_lr3e4            batch 6   4,437 batches   4090
+    calibrated_lr1e4            batch 6   4,437 batches   A100
+    calibrated_lr1e4_halfbatch  batch 3   8,874 batches   3090
+
+Every previously recorded batch/s figure in this file was measured at batch 6.
+**batch/s is therefore not comparable between the 3090 run and the other two**,
+and samples/second is the only rate that compares across all three. The
+4090-versus-A100 pair *is* clean: identical architecture, identical batch,
+identical batch count, differing only in learning rate, which does not change
+the compute. That pair is the like-for-like comparison, and the A100 side of it
+is the **first solo measurement of that card** — the earlier 2.30 batch/s was
+sampled while two trainers shared the GPU and understates it.
+
+QA status at launch: `QA PASS` on preconditions, parent identity, config
+freezing, data identity, and single-writer verification.
+`PHYSICS VALIDATION NOT ESTABLISHED` — none of this bears on Geant4 fidelity or
+on the sealed 76,300-event test split, which remains untouched by these runs.

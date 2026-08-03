@@ -173,6 +173,58 @@ def test_the_parent_lineage_is_recorded(tmp_path: Path) -> None:
     assert len(provenance["parent_config_sha256"]) == 64
 
 
+def test_a_later_parent_moves_the_horizon(tmp_path: Path) -> None:
+    """A second continuation resumes from a later epoch, so the same absolute
+    `epochs` value buys fewer epochs. The arithmetic must follow the parent
+    actually being resumed, not the wave-three constant."""
+    built = builder.build(
+        family="calibrated_lr3e4", parent_path=_parent(tmp_path),
+        last_sha256="c" * 64, best_sha256="d" * 64,
+        output_dir=tmp_path / "out", patience=6, epochs=23,
+        parent_last_epoch=16, run_tag="t-p7",
+    )
+    provenance = yaml.safe_load(built.path.read_text())["provenance"]
+    assert provenance["parent_last_epoch"] == 16
+    # epochs 17..22 inclusive
+    assert provenance["epochs_available"] == 6
+    assert provenance["early_stopping_can_fire"] is False
+
+
+def test_a_later_parent_can_also_leave_no_epochs(tmp_path: Path) -> None:
+    """The absolute-target trap does not disappear just because the parent
+    moved; it moves with it."""
+    with pytest.raises(ValueError, match="no epochs to run"):
+        builder.build(
+            family="calibrated_lr3e4", parent_path=_parent(tmp_path),
+            last_sha256="c" * 64, best_sha256="d" * 64,
+            output_dir=tmp_path / "out", epochs=17, parent_last_epoch=16,
+        )
+
+
+def test_the_checkpoint_stem_selects_the_resume_pair(tmp_path: Path) -> None:
+    """Each phase stages its parent under a different name. Resuming from the
+    wrong phase's checkpoint would silently continue the wrong model, so the
+    stem is explicit and the default stays on wave three."""
+    built = builder.build(
+        family="calibrated_lr3e4", parent_path=_parent(tmp_path),
+        last_sha256="c" * 64, best_sha256="d" * 64,
+        output_dir=tmp_path / "out", patience=6, epochs=23,
+        parent_last_epoch=16, checkpoint_stem="p6", run_tag="t-stem",
+    )
+    training = yaml.safe_load(built.path.read_text())["training"]
+    assert training["resume_from_relative"] == "checkpoints/calibrated_lr3e4_p6_last.pt"
+    assert training["resume_best_from_relative"] == "checkpoints/calibrated_lr3e4_p6_best.pt"
+
+
+def test_defaults_are_unchanged_by_the_new_arguments(tmp_path: Path) -> None:
+    """Omitting the new arguments must reproduce the wave-three behaviour
+    exactly, so an old invocation cannot silently mean something new."""
+    built = _build(tmp_path)
+    config = yaml.safe_load(built.path.read_text())
+    assert config["provenance"]["parent_last_epoch"] == builder.PARENT_LAST_EPOCH
+    assert config["training"]["resume_from_relative"].endswith("_r3_last.pt")
+
+
 def test_a_bad_hash_is_refused(tmp_path: Path) -> None:
     """A resume hash is the only thing standing between this run and silently
     training from the wrong checkpoint."""

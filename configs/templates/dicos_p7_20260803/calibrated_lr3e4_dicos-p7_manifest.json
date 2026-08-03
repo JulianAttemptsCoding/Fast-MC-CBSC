@@ -1,0 +1,20 @@
+{
+  "early_stopping_patience": 6,
+  "epochs_absolute_target": 23,
+  "epochs_available": "17..22",
+  "family": "calibrated_lr3e4",
+  "format_version": 1,
+  "manifest_note": "epochs is an ABSOLUTE target; the trainer resumes at checkpoint_epoch + 1",
+  "parent_config": "calibrated_lr3e4_dicos-p6.yaml",
+  "parent_config_sha256": "8a801e5d661c2e504333366347501d42a0131fbd0ee6c9cce089741e83fa4c75",
+  "parent_last_epoch": 16,
+  "patience_widened_from_default": true,
+  "resume_best_from_relative": "checkpoints/calibrated_lr3e4_p6_best.pt",
+  "resume_best_from_sha256": "d73aa900a367c8cb1d1fdc53309822b07366e9cb66073513741e867514e3fcba",
+  "resume_from_relative": "checkpoints/calibrated_lr3e4_p6_last.pt",
+  "resume_from_sha256": "763d45bbe3c075d9c0256df7e40b1946ab47816f28fa28767049f275116c964d",
+  "run_tag": "dicos-p7",
+  "selected_by": "lowest absolute validation loss of all four calibrated families (4.605498 at absolute epoch 15)",
+  "template": "calibrated_lr3e4_dicos-p7.yaml",
+  "template_sha256": "f58dca6732213684108450130957c7ef607db83720f62af0c125a0da182f2024"
+}
