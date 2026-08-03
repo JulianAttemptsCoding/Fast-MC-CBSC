@@ -6145,3 +6145,71 @@ QA status at launch: `QA PASS` on preconditions, parent identity, config
 freezing, data identity, and single-writer verification.
 `PHYSICS VALIDATION NOT ESTABLISHED` — none of this bears on Geant4 fidelity or
 on the sealed 76,300-event test split, which remains untouched by these runs.
+
+### 2026-08-03 — the first clean A100 solo measurement; "3.2x" was wrong
+
+`QA FINDING`. With one trainer per GPU and identical work on the 4090 and the
+A100 — same architecture, batch 6, 4,437 train batches and 1,109 validation
+batches over the same 26,624/6,656 pilot bank, differing only in learning rate,
+which does not change the compute — the first completed epoch on each gives:
+
+    RTX 4090        645.36 s/epoch   10.76 min   41.25 examples/s   (lr3e4 e17)
+    A100-SXM4-80GB  997.18 s/epoch   16.62 min   26.70 examples/s   (lr1e4 e11)
+
+**The 4090 is 1.545x the A100, not 3.2x.** The 2026-08-02 claim of 3.2x rested
+on an A100 rate of 2.30 batch/s that was sampled while two trainers shared that
+card. The solo rate today is 4.65 batch/s — 2.02x higher, almost exactly the
+"understates by up to 2x" that the original caveat predicted. The caveat was
+right and is now discharged; the headline number it qualified was wrong and is
+withdrawn.
+
+A second earlier statement also inverts. "3090 ahead of the datacentre card is
+likely but not established" was a guess. Against today's solo A100 figure and
+the recorded 2026-08-02 3090 figure of 4.04 batch/s at batch 6, the **A100 is
+about 1.15x faster than the 3090**. The 3090's advantage is cost, not speed.
+
+The 4090's 7.29 batch/s sampled today reproduces the 7.31 recorded on
+2026-08-02, which is an independent check that the sampling method itself is
+stable and that only the A100 number was contaminated.
+
+A practical consequence recorded on 2026-08-02 therefore no longer holds: at
+1.545x rather than 3.2x, running two families in parallel across the 4090 and
+the A100 is *faster* end to end than queueing both on the 4090, not slower.
+
+**Cost, with the vendor's own uncertainty carried.** ASGC's February 2022 table
+lists the 3090 at 79 SRU/board-day and the A100 at 173, and lists **no RTX
+4090 at all**, so no cost figure exists for the fastest card. ASGC's documents
+disagree on the value of one SRU — NT$2 in one, NT$3 in another, NT$5 implied
+by the table — so NT$ figures are quoted as a range and only the SRU ratios are
+trustworthy.
+
+    metric              RTX 4090      A100 80GB     RTX 3090
+    min/epoch           10.76         16.62         ~19.3   (estimated)
+    epochs/hour         5.578         3.610         ~3.11   (estimated)
+    SRU/hour            unpriced      7.208         3.292
+    SRU/epoch           unpriced      1.997         ~1.059  (estimated)
+    epochs/SRU          unpriced      0.501         ~0.944  (estimated)
+    NT$/epoch (SRU 2-5) unpriced      3.99 - 9.98   ~2.12 - ~5.29
+
+**The 3090 is about 1.9x more cost-efficient per epoch than the A100** despite
+being slower, because it is 2.19x cheaper per board-day and only ~1.15x slower.
+That ranking is robust to the disputed SRU price, which cancels in the ratio.
+
+Two honesty notes on the 3090 row. Its 4.04 batch/s is a **citation, not a
+re-verifiable measurement**: `_bench/` no longer exists on the filesystem, so
+the artifact behind it is gone. And its epoch time is **estimated**, not
+measured, because that card is currently running the half-batch family at
+`batch_size: 3` — 8,874 batches per epoch instead of 4,437 — which is not
+comparable work. A clean batch-6 benchmark on the 3090 is scheduled for after
+that run finishes, and must not be run concurrently with it, since running a
+probe beside a trainer is precisely what produced the bad A100 number.
+
+All of the above is consolidated in `docs/GPU_BENCHMARKS.md`, which is now the
+single source of truth for GPU throughput and cost and labels every figure
+measured, cited, or estimated. Where it disagrees with an older `logs.md`
+entry, it wins.
+
+Also corrected: `_setup/run_p6_a100.sh` named `.venv_a100_2`, which does not
+exist on this filesystem — it was written for the superseded A100 pod on port
+31570, and launching through it would have failed immediately. It now points at
+`.venv_dcgpu`, validated by import, and carries a note saying why.
