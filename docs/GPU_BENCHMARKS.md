@@ -34,6 +34,23 @@ and even that confounds card speed with batch-shape efficiency.
 **One trainer per GPU, always.** The single worst measurement error in this
 project's history came from sampling a GPU while two trainers shared it.
 
+**Caveat that applies to every 2026-08-03 figure: the GPUs are separate, the
+filesystem is not.** All three measurements were taken with three trainers
+running concurrently on three pods that mount the same CephFS workdir. The
+cards do not contend, but shard loading and checkpoint writes do.
+`CBSC_ZDC_SHARD_CACHE=0` keeps all 187 shards resident per worker, so steady-
+state reads come from memory rather than the filesystem, which should make the
+effect small — but it is not zero, and it is visible: the 4090's first two
+epochs took 645.36 s and 659.18 s, a 2.1% spread on identical work.
+
+The practical consequence is that **the ratios are more trustworthy than the
+absolute epoch times**, because contention depresses all three roughly
+together. Absolute epoch times measured under a solo run would likely be
+slightly faster than the numbers here. Where a decision turns on the ratio —
+which card, which is cheaper per epoch — this caveat does not change the
+answer. Where it turns on absolute wall-clock, treat these as a mild
+upper bound.
+
 ## Measured — 2026-08-03, solo, batch 6, identical work
 
 | GPU | epoch wall time | epochs/hour | examples/s | source |
