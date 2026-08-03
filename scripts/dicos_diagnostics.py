@@ -55,8 +55,15 @@ from cbsc_zdc.cloud.paired_diagnostics import (  # noqa: E402
     load_model,
 )
 from cbsc_zdc.data.dataset import ShardedSparseDataset, load_geometry  # noqa: E402
-from cbsc_zdc.eval.visualization import fixed_validation_indices  # noqa: E402
-from cbsc_zdc.utils import dump_json, environment_snapshot, sha256_file  # noqa: E402
+from cbsc_zdc.eval.metrics import (  # noqa: E402
+    c2st_auc,
+    distribution_metrics,
+    high_level_features,
+    response_bins,
+    wasserstein_1d,
+)
+from cbsc_zdc.eval.visualization import FEATURE_NAMES, fixed_validation_indices  # noqa: E402
+from cbsc_zdc.utils import dump_json, environment_snapshot, load_yaml, sha256_file  # noqa: E402
 
 
 def _log(message: str) -> None:
@@ -130,12 +137,33 @@ class DiagnosticContext:
                 allow_pickle=False,
             )["split_code"]
 
+        self.positions = self.geometry["positions_mm"].cpu().numpy()
+        self.energy_bin_edges = [float(v) for v in args.energy_bin_edges]
+        self.gates = (
+            load_yaml(args.gates) if args.gates and Path(args.gates).is_file() else None
+        )
+
 
 def run_one(context: DiagnosticContext, checkpoint: Path) -> dict:
     started = time.time()
     payload = torch.load(checkpoint, map_location="cpu", weights_only=False)
     epoch = int(payload.get("epoch", -1))
+    # Take the bin edges from the frozen config that produced this checkpoint,
+    # never from a default. A hand-written default silently dropped the whole
+    # 225-250 GeV bin, because the frozen edges end at 250.0001 -- just above
+    # the range, so the half-open [low, high) still catches events at exactly
+    # 250 -- and a default stopping at 225 leaves that bin uncovered.
+    config_edges = (
+        payload.get("config", {}).get("evaluation", {}).get("energy_bin_edges_gev")
+    )
     del payload
+    edges = [float(v) for v in (config_edges or context.energy_bin_edges)]
+    low, high = context.kinetic_range
+    if edges[0] > low or edges[-1] <= high:
+        raise RuntimeError(
+            f"energy bins {edges[0]}..{edges[-1]} do not cover the sampled "
+            f"kinetic range [{low}, {high}]; events would be silently dropped"
+        )
     model = load_model(checkpoint, context.geometry, context.device)
 
     sample = generate_paired_sample(
@@ -216,6 +244,113 @@ def run_one(context: DiagnosticContext, checkpoint: Path) -> dict:
         ),
     }
 
+    # Everything the repository's own evaluator computes. The metric functions
+    # are reused rather than `evaluate_checkpoint` itself, because that wrapper
+    # re-verifies all 187 shards on every call -- two minutes of pure waste per
+    # epoch when the dataset is already built and fixed.
+    truth_features = high_level_features(truth, context.layer_index, context.positions)
+    generated_features = high_level_features(
+        generated, context.layer_index, context.positions
+    )
+    w_response = wasserstein_1d(truth_total, generated_total)
+    w_hits = wasserstein_1d(truth_hits, generated_hits)
+    kinetic = sample["kinetic_energy_gev"]
+
+    evaluation = {
+        "n_events": n,
+        "truth_zero_fraction": float(np.mean(truth_total == 0)),
+        "generated_zero_fraction": float(np.mean(generated_total == 0)),
+        "energy_bin_edges_gev": edges,
+        "energy_bin_events_covered": int(
+            ((kinetic >= edges[0]) & (kinetic < edges[-1])).sum()
+        ),
+        "response_bins": response_bins(
+            kinetic, truth_total, generated_total, np.array(edges),
+        ),
+        "response_wasserstein_gev": w_response,
+        "response_wasserstein_normalized": float(
+            w_response / max(np.std(truth_total), 1e-9)
+        ),
+        "hit_count_wasserstein": w_hits,
+        "hit_count_wasserstein_normalized": float(
+            w_hits / max(np.std(truth_hits), 1e-9)
+        ),
+        "high_level_c2st_auc": c2st_auc(
+            truth_features, generated_features, context.selection_seed
+        ),
+        "distribution_metrics": distribution_metrics(
+            truth, generated, context.layer_index, context.positions,
+            context.selection_seed,
+        ),
+    }
+
+    # Per-feature mean bias, so every one of the nine observables has a
+    # "[metric] vs epoch" series rather than only response and hit count.
+    feature_bias = {}
+    for index, name in enumerate(FEATURE_NAMES):
+        t = truth_features[:, index]
+        g = generated_features[:, index]
+        t_mean = float(t.mean())
+        g_mean = float(g.mean())
+        feature_bias[name] = {
+            "truth_mean": t_mean,
+            "generated_mean": g_mean,
+            "bias_fraction": (g_mean - t_mean) / max(abs(t_mean), 1e-9),
+            "bias_fraction_stderr": float(
+                g.std(ddof=1) / np.sqrt(n) / max(abs(t_mean), 1e-9)
+            ),
+            "truth_std": float(t.std(ddof=1)),
+            "generated_std": float(g.std(ddof=1)),
+            "resolution_difference_fraction": float(
+                (g.std(ddof=1) - t.std(ddof=1)) / max(abs(t.std(ddof=1)), 1e-9)
+            ),
+        }
+    evaluation["feature_bias"] = feature_bias
+
+    if context.gates is not None:
+        gates = context.gates
+        bins = evaluation["response_bins"]
+        minimum = int(gates.get("min_events_per_energy_bin", 2))
+        coverage = all(row["n"] >= minimum for row in bins)
+        auc = evaluation["high_level_c2st_auc"]
+        checks = {
+            "evaluation_event_count": n >= int(
+                gates.get("min_total_evaluation_events", 1)
+            ),
+            "energy_bin_coverage": coverage,
+            "mean_bias_bins": coverage and all(
+                abs(row["mean_bias_fraction"])
+                <= float(gates["max_abs_mean_bias_fraction"]) for row in bins
+            ),
+            "resolution_bins": coverage and all(
+                abs(row["resolution_difference_fraction"])
+                <= float(gates["max_abs_resolution_difference_fraction"])
+                for row in bins
+            ),
+            "zero_response": abs(
+                evaluation["generated_zero_fraction"]
+                - evaluation["truth_zero_fraction"]
+            ) <= float(gates["max_zero_fraction_absolute_difference"]),
+            "response_wasserstein": evaluation["response_wasserstein_normalized"]
+            <= float(gates["max_response_wasserstein_normalized"]),
+            "hit_count_wasserstein": evaluation["hit_count_wasserstein_normalized"]
+            <= float(gates["max_hit_count_wasserstein_normalized"]),
+            "high_level_c2st": auc is not None and np.isfinite(auc)
+            and auc <= float(gates["max_high_level_c2st_auc"]),
+        }
+        evaluation["gate_checks"] = {
+            "checks": checks,
+            "pass": all(checks.values()),
+            "note": (
+                "INFORMATIONAL ONLY. These thresholds were predeclared for a "
+                "final controlled study on at least "
+                f"{gates.get('min_total_evaluation_events')} events; this is a "
+                f"{n}-event per-epoch monitor, so evaluation_event_count is "
+                "expected to fail and the verdict is not a gate result. No "
+                "threshold was altered."
+            ),
+        }
+
     result = {
         "schema_version": 1,
         "kind": "cbsc-zdc-large-validation-diagnostic",
@@ -231,6 +366,7 @@ def run_one(context: DiagnosticContext, checkpoint: Path) -> dict:
         "events_also_in_pilot_validation": seen_in_pilot,
         "trend": trend,
         "trend_stderr": trend_stderr,
+        "evaluation": evaluation,
         "hcal": {
             "truth_total_mean_gev": float(truth_hcal["total"].mean()),
             "generated_total_mean_gev": float(generated_hcal["total"].mean()),
@@ -254,10 +390,21 @@ def run_one(context: DiagnosticContext, checkpoint: Path) -> dict:
         "environment": environment_snapshot(),
         "seconds": time.time() - started,
     }
+    # Every sampled event must fall inside a bin. A bin range that does not
+    # span the sampled range drops events silently, which is how the 225-250
+    # GeV bin went missing once.
+    uncovered = n - evaluation["energy_bin_events_covered"]
+    result["qa"]["events_outside_energy_bins"] = int(uncovered)
+    result["qa"]["energy_bins_cover_sample"] = uncovered == 0
+    result["qa"]["empty_energy_bins"] = int(
+        sum(1 for row in evaluation["response_bins"] if row["n"] == 0)
+    )
     result["qa"]["pass"] = (
         result["qa"]["test_events_used"] == 0
         and result["qa"]["generated_nonfinite"] == 0
         and result["qa"]["generated_negative"] == 0
+        and uncovered == 0
+        and result["qa"]["empty_energy_bins"] == 0
     )
     return result
 
@@ -315,6 +462,17 @@ def main(argv=None) -> int:
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--kinetic-low", type=float, default=50.0)
     parser.add_argument("--kinetic-high", type=float, default=250.0)
+    parser.add_argument(
+        "--energy-bin-edges", type=float, nargs="+",
+        default=[50, 75, 100, 125, 150, 175, 200, 225, 250.0001],
+        help="fallback only; the checkpoint's own frozen config wins. The last "
+             "edge sits just above the range so the half-open [low, high) "
+             "still catches events at exactly 250",
+    )
+    parser.add_argument(
+        "--gates", default="repo/configs/gates_primary.yaml",
+        help="versioned diagnostic thresholds; reported informationally only",
+    )
     parser.add_argument("--device", default="cuda")
     args = parser.parse_args(argv)
 
