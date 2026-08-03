@@ -2,31 +2,73 @@
   "epochs": [
     17
   ],
+  "feature_bias_fraction": {
+    "depth_centroid_layer": [
+      -0.2026477053769538
+    ],
+    "ecal_fraction": [
+      0.2838732693353218
+    ],
+    "hit_count": [
+      -0.09511143268852157
+    ],
+    "late_fraction": [
+      -0.6817027258740908
+    ],
+    "radial_rms_mm": [
+      0.05909179736726041
+    ],
+    "top1_fraction": [
+      -0.205506873819827
+    ],
+    "total_response_gev": [
+      0.1539571865094131
+    ],
+    "x_centroid_mm": [
+      0.021380688774750644
+    ],
+    "y_centroid_mm": [
+      0.20437129701413206
+    ]
+  },
+  "figures": [
+    "bias_vs_epoch.png",
+    "wasserstein_vs_epoch.png",
+    "headline_vs_epoch.png",
+    "energy_bins_vs_epoch.png"
+  ],
+  "high_level_c2st_auc": [
+    0.8714972222222223
+  ],
   "kinetic_range_gev": [
     50.0,
     250.0
   ],
   "n_events_per_epoch": 4000,
   "selection_seed": 20260803,
-  "series": {
+  "test_events_used": 0,
+  "trend": {
+    "generated_hit_count_mean": [
+      1442.59575
+    ],
+    "generated_response_mean_gev": [
+      4.655292987823486
+    ],
     "hit_count_bias_fraction": [
       -0.09511143268852157
     ],
     "mean_longitudinal_profile_relative_l1": [
-      0.2880172202634408
+      0.2880172181843261
     ],
     "response_bias_fraction": [
       0.15395726974178778
-    ]
-  },
-  "stderr": {
-    "hit_count_bias_fraction": [
-      0.005730256773562515
     ],
-    "response_bias_fraction": [
-      0.02129217674077756
+    "truth_hit_count_mean": [
+      1594.22475
+    ],
+    "truth_response_mean_gev": [
+      4.034198760986328
     ]
   },
-  "test_events_used": 0,
   "validation_pool": 50877
 }

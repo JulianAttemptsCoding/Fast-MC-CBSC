@@ -74,11 +74,16 @@ def style() -> None:
 
 
 def _finish(fig, epochs, title, subtitle, name) -> Path:
+    # Positions in inches converted to figure fractions, not fixed fractions.
+    # These figures range from 4.8 to 12 inches tall, and a fraction that
+    # looks right on the tall ones puts the subtitle through the title on the
+    # short ones.
+    height = fig.get_size_inches()[1]
     fig.suptitle(title, x=0.02, ha="left", fontsize=16, fontweight="bold",
-                 color=NAVY, y=0.985)
-    fig.text(0.02, 0.952, subtitle, ha="left", va="top", fontsize=9.5,
-             color=MUTED)
-    fig.text(0.02, 0.012,
+                 color=NAVY, y=1 - 0.36 / height)
+    fig.text(0.02, 1 - 0.66 / height, subtitle, ha="left", va="top",
+             fontsize=9.5, color=MUTED, wrap=True)
+    fig.text(0.02, 0.16 / height,
              "Validation split only, zero test events. Descriptive "
              "diagnostics, not a fidelity gate and not Geant4 validation.",
              ha="left", fontsize=9, color=MUTED)
@@ -88,6 +93,15 @@ def _finish(fig, epochs, title, subtitle, name) -> Path:
     fig.savefig(OUT / f"{name}.svg")
     plt.close(fig)
     return png
+
+
+def _layout(fig, **kwargs) -> None:
+    """Reserve fixed inch bands for the title block and for the footer plus
+    the bottom row's tick labels and axis label."""
+    height = fig.get_size_inches()[1]
+    fig.subplots_adjust(
+        top=1 - 1.10 / height, bottom=0.90 / height, **kwargs
+    )
 
 
 def _ticks(ax, epochs) -> None:
@@ -116,8 +130,7 @@ def bias_figure(rows, epochs, subtitle) -> Path:
         _ticks(ax, epochs)
     for ax in axes[-1]:
         ax.set_xlabel("Completed epoch")
-    fig.subplots_adjust(left=0.07, right=0.98, top=0.90, bottom=0.07,
-                        hspace=0.42, wspace=0.26)
+    _layout(fig, left=0.07, right=0.98, hspace=0.42, wspace=0.26)
     return _finish(fig, epochs, "Mean bias vs epoch, nine high-level observables",
                    subtitle, "bias_vs_epoch")
 
@@ -151,12 +164,11 @@ def wasserstein_figure(rows, epochs, subtitle) -> Path:
     axes.ravel()[0].legend(loc="best", frameon=False, fontsize=8.5)
     for ax in axes[-1]:
         ax.set_xlabel("Completed epoch")
-    fig.subplots_adjust(left=0.07, right=0.98, top=0.92, bottom=0.06,
-                        hspace=0.45, wspace=0.26)
+    _layout(fig, left=0.07, right=0.98, hspace=0.45, wspace=0.26)
     return _finish(
         fig, epochs, "Wasserstein distance vs epoch, against the truth-half floor",
-        subtitle + "  Dashed green is truth compared with itself: values at or "
-        "below it are not distinguishable from sampling noise.",
+        subtitle + "  Dashed green = truth vs itself; at or below it is "
+        "indistinguishable from sampling noise.",
         "wasserstein_vs_epoch",
     )
 
@@ -231,11 +243,10 @@ def headline_figure(rows, epochs, subtitle) -> Path:
 
     for ax in axes[-1]:
         ax.set_xlabel("Completed epoch")
-    fig.subplots_adjust(left=0.07, right=0.98, top=0.87, bottom=0.10,
-                        hspace=0.45, wspace=0.26)
+    _layout(fig, left=0.07, right=0.98, hspace=0.45, wspace=0.26)
     return _finish(fig, epochs, "Headline distribution metrics vs epoch",
-                   subtitle + "  Dotted red marks the predeclared threshold "
-                   "where one exists.", "headline_vs_epoch")
+                   subtitle + "  Dotted red = predeclared threshold.",
+                   "headline_vs_epoch")
 
 
 def energy_bin_figure(rows, epochs, subtitle) -> Path | None:
@@ -271,9 +282,9 @@ def energy_bin_figure(rows, epochs, subtitle) -> Path | None:
         ax.set_xlabel("Completed epoch")
         _ticks(ax, epochs)
     axes[0].legend(frameon=False, fontsize=7.5, ncol=2)
-    fig.subplots_adjust(left=0.06, right=0.98, top=0.82, bottom=0.14, wspace=0.20)
+    _layout(fig, left=0.06, right=0.98, wspace=0.20)
     return _finish(fig, epochs, "Energy-resolved response vs epoch",
-                   subtitle + "  Dotted red marks the predeclared thresholds.",
+                   subtitle + "  Dotted red = predeclared thresholds.",
                    "energy_bins_vs_epoch")
 
 
