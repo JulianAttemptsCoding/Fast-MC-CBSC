@@ -57,7 +57,6 @@ from cbsc_zdc.cloud.paired_diagnostics import (  # noqa: E402
 from cbsc_zdc.data.dataset import ShardedSparseDataset, load_geometry  # noqa: E402
 from cbsc_zdc.eval.metrics import (  # noqa: E402
     c2st_auc,
-    distribution_metrics,
     high_level_features,
     response_bins,
     wasserstein_1d,
@@ -68,6 +67,24 @@ from cbsc_zdc.utils import dump_json, environment_snapshot, load_yaml, sha256_fi
 
 def _log(message: str) -> None:
     print(f"[{time.strftime('%H:%M:%S')}] {message}", flush=True)
+
+
+#: `wasserstein_1d` evaluates `np.quantile` at `max(a.size, b.size)` points, so
+#: its cost is quadratic-ish in the array length. That is fine for the nine
+#: per-event observables (one value per event) but pathological for the pooled
+#: positive-cell spectrum, which is one value per *hit*: 4,000 events at ~1,600
+#: hits each is ~6.4 million, and the call did not return in ten minutes.
+#: Above this cap the spectrum is subsampled deterministically before the
+#: comparison, and the cap is recorded in the output. This changes nothing for
+#: the per-event metrics, which are never near it.
+POOLED_SPECTRUM_CAP = 200_000
+
+
+def _subsample(values: np.ndarray, cap: int, seed: int) -> np.ndarray:
+    if values.size <= cap:
+        return values
+    rng = np.random.default_rng(seed)
+    return values[rng.choice(values.size, size=cap, replace=False)]
 
 
 def longitudinal_profile(
@@ -278,11 +295,55 @@ def run_one(context: DiagnosticContext, checkpoint: Path) -> dict:
         "high_level_c2st_auc": c2st_auc(
             truth_features, generated_features, context.selection_seed
         ),
-        "distribution_metrics": distribution_metrics(
-            truth, generated, context.layer_index, context.positions,
-            context.selection_seed,
-        ),
     }
+
+    # distribution_metrics() is not called wholesale: its pooled positive-cell
+    # Wasserstein does not return at this sample size (see POOLED_SPECTRUM_CAP).
+    # The per-feature parts are computed here with the same definitions.
+    per_feature = {}
+    half = len(truth_features) // 2
+    order = np.random.default_rng(context.selection_seed).permutation(
+        len(truth_features)
+    )
+    for index, name in enumerate(FEATURE_NAMES):
+        t = truth_features[:, index]
+        g = generated_features[:, index]
+        per_feature[name] = {
+            "wasserstein": wasserstein_1d(t, g),
+            "truth_mean": float(t.mean()),
+            "generated_mean": float(g.mean()),
+        }
+    # Truth compared with itself: the distance below which a value is not
+    # distinguishable from sampling noise at this sample size.
+    truth_half_floor = {
+        name: {
+            "wasserstein": wasserstein_1d(
+                truth_features[order[:half], index],
+                truth_features[order[half:2 * half], index],
+            )
+        }
+        for index, name in enumerate(FEATURE_NAMES)
+    } if half >= 2 else None
+
+    positive_t = _subsample(
+        truth[truth > 0], POOLED_SPECTRUM_CAP, context.selection_seed
+    )
+    positive_g = _subsample(
+        generated[generated > 0], POOLED_SPECTRUM_CAP, context.selection_seed + 1
+    )
+    per_feature["positive_cell_energy_gev"] = {
+        "wasserstein": wasserstein_1d(positive_t, positive_g),
+        "truth_mean": float(positive_t.mean()) if positive_t.size else 0.0,
+        "generated_mean": float(positive_g.mean()) if positive_g.size else 0.0,
+        "subsampled_to": int(POOLED_SPECTRUM_CAP),
+        "truth_positive_cells": int((truth > 0).sum()),
+        "generated_positive_cells": int((generated > 0).sum()),
+    }
+    per_feature["mean_longitudinal_profile"] = {
+        "relative_l1": profile_relative_l1,
+    }
+    per_feature["truth_half_floor"] = truth_half_floor
+    evaluation["distribution_metrics"] = per_feature
 
     # Per-feature mean bias, so every one of the nine observables has a
     # "[metric] vs epoch" series rather than only response and hit count.
