@@ -6213,3 +6213,51 @@ Also corrected: `_setup/run_p6_a100.sh` named `.venv_a100_2`, which does not
 exist on this filesystem — it was written for the superseded A100 pod on port
 31570, and launching through it would have failed immediately. It now points at
 `.venv_dcgpu`, validated by import, and carries a note saying why.
+
+### 2026-08-03 — calibrated_lr3e4 dicos-p7 complete; new lowest loss, inside the noise
+
+`QA PASS`. `calibrated_lr3e4_dicos-p7` ran 01:37:44Z to 02:57:33Z on the RTX
+4090, `EXIT=0`, wall 4,786.85 s, 6,660 updates, six absolute epochs 17..22.
+Six of six per-epoch invariant reports pass; training postflight `pass: true`,
+which independently reloads `best.pt` and re-samples it. Nonfinite 0,
+negative 0, outside_valid_support 0, dust 0, count and support mismatch 0.
+Peak GPU memory 11.74 GB of 25.25 GB, headroom fraction 0.535 against a 0.15
+minimum. Full configured solver timing recorded at 8 profile and 8 share
+steps, 54.98 ms/event.
+
+    epoch   17        18        19        20        21        22
+    val     4.713294  4.712747  4.650437  4.615801  4.599587  4.597152
+    train   4.790148  4.747605  4.732025  4.696766  4.645004  4.642335
+
+    best.pt  31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb  (epoch 22)
+    last.pt  eb533f18f08b1080ea367d75e77fb560d3957a2368a70d12e26e57191608460f  (epoch 22)
+    frozen   4051591355f22fa07f8a8aaea80a86a05cac85f92430fc13bfb52dc034ab609a
+
+**4.597152 is the lowest validation loss recorded in this project.** It must
+not be reported as a meaningful improvement. It beats the previous best of
+4.605498 by **0.008346**, which is well inside the ~0.02 run-to-run resolution
+on this hardware, so epoch 22 and epoch 15 are **not distinguishable on this
+evidence**. This is the same standard applied to half-batch epoch 16 against
+epoch 10 on 2026-08-02, and it is applied here unchanged even though this time
+the number moved in the direction we would prefer.
+
+What the run does support is a reproduced shape. Two independent six-epoch
+cosine cycles on this family, from different starting checkpoints, both went
+worse-after-restart, then a mid-cycle excursion, then a late anneal that did
+the work:
+
+    dicos-p6  4.6859  4.6934  4.7410  4.6382  4.6055  4.6371   (min at 5th of 6)
+    dicos-p7  4.7133  4.7127  4.6504  4.6158  4.5996  4.5972   (min at 6th of 6)
+
+Landing at 4.6055 and 4.5972 from different parents is consistent with this
+family having reached the level its schedule produces. Two cycles is not a
+convergence proof and is not claimed as one. Note also that a prediction made
+at p6 epoch 13 from a three-point drift was wrong then; no forecast was made
+this time, and the mid-cycle rise at epoch 18-19 would again have misled.
+
+A prediction that *was* borne out: p6 rose on its final epoch, so a rise at
+epoch 22 was expected and would not have been treated as a regression. It fell
+instead. Recorded because the expectation was stated in advance.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`. Zero test events; the bank is the pilot
+bank and the 76,300-event test split is untouched.

@@ -55,18 +55,25 @@
     "final_validation_loss": 4.715658986550997
   },
   "calibrated_lr3e4": {
-    "best_epoch": 15,
-    "best_validation_loss": 4.605497817867497,
+    "best_epoch": 22,
+    "best_validation_loss": 4.597151546143159,
     "continuation_epochs": [
       11,
       12,
       13,
       14,
       15,
-      16
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22
     ],
     "continuation_run_tags": [
-      "dicos-p6"
+      "dicos-p6",
+      "dicos-p7"
     ],
     "epochs": [
       0,
@@ -85,9 +92,15 @@
       13,
       14,
       15,
-      16
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22
     ],
-    "final_validation_loss": 4.637054794180271
+    "final_validation_loss": 4.597151546143159
   },
   "calibrated_lr3e5": {
     "best_epoch": 8,
