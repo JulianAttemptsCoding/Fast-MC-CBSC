@@ -53,7 +53,7 @@ remains `calibrated_lr1e4`,
 - Final source QA passed 255 tests with eight known Transformer warnings. Both
   DiCOS GPUs were idle after the completed transaction, and no training process
   was present.
-- The RTX 4090 source checkout was safely fast-forwarded to canonical commit
+- The RTX 4090 source checkout was safely fast-forwarded through feature commit
   `189312f5e6b63efcb7ad52861fc52c1fbd3b452c` and left clean. Its prior tracked
   overlay was content-equivalent apart from line endings and was preserved in a
   temporary stash through the fast-forward, verified redundant, then dropped.

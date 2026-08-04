@@ -1705,7 +1705,7 @@ figures are under `exhibition/external_metrics_20260804/`; the determinism proof
 is `audit/external_metrics_determinism_20260804.json`.
 
 At closeout, both GPUs were idle with no trainer process. The RTX 4090 source
-checkout was clean at canonical commit
+checkout was clean and contained accepted-best monitoring feature commit
 `189312f5e6b63efcb7ad52861fc52c1fbd3b452c`; the RTX 3090 job runtime is the
 hash-frozen controller namespace described above (its minimal image has no Git
 binary).
