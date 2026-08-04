@@ -22,6 +22,8 @@
 - `VERTEX_AI_RUNBOOK.md` — Google Vertex transport and execution.
 - `VERTEX_QA_CHECKLIST.md` — per-job and per-epoch Vertex checks.
 - `VISUALIZATION_DASHBOARD.md` — local and public visual evidence.
+- `EXHIBITION_ARCHIVE_AND_MIRROR.md` — immutable historical snapshots and
+  safe synchronization of a dirty presentation checkout.
 - `TROUBLESHOOTING.md` — failure diagnosis.
 
 ## Historical experiment specification

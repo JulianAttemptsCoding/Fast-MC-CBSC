@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-exhibition-archive-and-desktop-sync",
+  "status": "pass",
+  "started_at": "2026-08-04T17:49:57+08:00",
+  "finished_at": "2026-08-04T18:08:14+08:00",
+  "source": {
+    "root": "C:\\Users\\Julia\\OneDrive\\Desktop\\coding\\ASIoP\\Fast MC CBSC",
+    "commit_at_start": "bfae6c0b96e97cc9fdf364e884b1ee7f04131f04",
+    "dirty_at_start": false,
+    "exhibition_files": 151,
+    "exhibition_bytes": 19004353,
+    "png_svg_graphics": 87
+  },
+  "desktop_destination": {
+    "root": "C:\\Users\\Julia\\Desktop\\coding\\ASIoP\\Fast MC CBSC",
+    "commit_at_start": "ca69349bdb6e10f24a050eda874536eb135642f5",
+    "preexisting_dirty_state_preserved": true,
+    "exhibition_files": 134,
+    "exhibition_bytes": 16723787,
+    "png_svg_graphics": 77,
+    "post_sync_files": 145,
+    "post_sync_source_hash_matches": "145/145",
+    "non_exhibition_status_lines_preserved": 73,
+    "archived_cache_files_moved_out": 4
+  },
+  "archive": {
+    "remote": "https://github.com/JulianAttemptsCoding/Fast-MC-CBSCs-archive.git",
+    "remote_initially_empty": true,
+    "source_snapshot": {
+      "id": "source-bfae6c0-pre-refresh",
+      "files": 145,
+      "bytes": 18844757,
+      "sha256s_verified": 147
+    },
+    "desktop_snapshot": {
+      "id": "desktop-ca69349-dirty-pre-sync",
+      "files": 134,
+      "bytes": 16723787,
+      "sha256s_verified": 136
+    },
+    "commit": "041ce150eedb226ccb9a69eddd82dea6067dfd17",
+    "remote_ref_matches_local": true,
+    "git_fsck": "pass",
+    "verified_before_destination_replacement": true
+  },
+  "scientific_boundary": {
+    "training_started": false,
+    "event_generation_started": false,
+    "dicos_io_performed": false,
+    "new_test_events_used": 0,
+    "physics_validation_established": false
+  },
+  "checks": {
+    "offline_epoch_refresh": "pass",
+    "latest_observed_epoch": 40,
+    "latest_observed_status": "quarantined",
+    "best_accepted_epoch": 38,
+    "best_accepted_validation_loss": 4.635219681489869,
+    "validated_png_svg_graphics": 87,
+    "all_png_decoded": true,
+    "all_svg_parsed": true,
+    "all_manifest_hashes_match": true,
+    "accepted_metric_summaries_agree": true,
+    "complete_gallery_contains_every_graphic": true,
+    "public_release_required": false,
+    "consecutive_full_refresh_hashes": "145/145 identical",
+    "desktop_catalog_generation": "not applicable from older dirty repository root; fail-closed on pinned external audit hash before writes",
+    "desktop_presentation_mirror_hashes": "145/145 identical",
+    "desktop_index_http": 200,
+    "desktop_current_http": 200,
+    "desktop_graphic_links_http": "87/87",
+    "representative_direct_visual_inspection": "pass",
+    "interactive_browser": "unavailable: transport closed during setup and retry; no interactive pass claimed",
+    "temporary_preview_cleanup": "exact PID stopped; port 8765 closed",
+    "focused_ruff_compile_json_diff": "pass",
+    "source_pytest": "244 passed, 8 known Transformer warnings",
+    "internal_dashboard": "production build and 2/2 rendered-HTML tests passed",
+    "public_site": "clean/synchronized; 8/8 tests and production build passed; no release required",
+    "final_desktop_inventory": "145 files; 87 PNG/SVG graphics; 145/145 source hashes",
+    "final_focused_suite": "12 passed"
+  },
+  "failed_attempts_and_corrections": [
+    "the first helper test run failed 2/3 because verifier paths omitted the exhibition/ prefix; corrected the namespace while retaining exact inventory and hash guards",
+    "the archive clone succeeded but the combined command ran follow-up Git probes from the parent; repeated them from the resolved clone and verified the empty unborn main checkout",
+    "git diff --cached --check flagged historical Matplotlib SVG trailing spaces; archives/** is marked -diff -text so immutable bytes are preserved without text normalization while SHA-256 verification remains mandatory",
+    "a proposed fresh-clone verification was rejected before execution because it bundled recursive temp cleanup; used fetch, git fsck, exact remote-ref equality, and complete local snapshot re-verification instead",
+    "the broad Desktop cleanup command was rejected before execution; copied the canonical tree first and moved only the four exact archived cache files to a validated temporary backup",
+    "running the catalog builder from the older Desktop root failed closed on a pinned external audit hash; retained that unrelated dirty audit and validated the Desktop as an exact presentation mirror instead",
+    "the first detached preview failed because a spaced directory argument was split and two corrected detached forms were rejected before execution; used a bounded server from the exact working directory",
+    "in-app browser setup closed its transport during setup and retry; retained complete HTTP/link and direct-image QA without claiming an interactive pass",
+    "terminating the blocking preview wrapper left its child listener; resolved the exact command line/PID, stopped only that process, and confirmed the port closed",
+    "the final focused wrapper checked undefined/stale LASTEXITCODE after ConvertFrom-Json and falsely reported parse failure; replaced with PowerShell try/catch",
+    "the corrected wrapper named nonexistent historical test files and pytest ran zero tests; enumerated the actual modules with rg and reran the real focused suite"
+  ]
+}

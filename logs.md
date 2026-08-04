@@ -7266,3 +7266,116 @@ data split, threshold, or test event was touched.
   Removed the self-invalidating commit field; Git probes remain the authority
   for identity, while the generated index now deterministically records layout,
   roles, dirty-state lines, and origin synchronization only.
+
+## 2026-08-04 17:49 Asia/Taipei — exhibition archive and Desktop synchronization started
+
+- Scope is organization/QA only. No training, checkpoint sampling, event
+  generation, DiCOS I/O, GPU work, or new test-split access is authorized or
+  performed. The source checkout began clean and synchronized at
+  `bfae6c0b96e97cc9fdf364e884b1ee7f04131f04` (`origin/main`, 0 behind / 0
+  ahead).
+- The requested Desktop destination is a separate older checkout at
+  `ca69349bdb6e10f24a050eda874536eb135642f5`, with substantial pre-existing
+  user changes outside and inside `exhibition/`. Those changes will not be
+  reset, committed, or discarded. Before replacing only its exhibition tree,
+  the exact old Desktop exhibition and the current source exhibition will be
+  copied to `JulianAttemptsCoding/Fast-MC-CBSCs-archive` with per-file SHA-256
+  manifests and Git-state provenance.
+- Initial inventory: source exhibition 151 files / 19,004,353 bytes / 87
+  PNG+SVG graphics plus one presentation; Desktop exhibition 134 files /
+  16,723,787 bytes / 77 PNG+SVG graphics plus one presentation. The archive
+  remote exists and currently advertises no refs (empty repository).
+- Safety disposition: the archive must be pushed and hash-verified before the
+  Desktop exhibition is cleanly synchronized. Only the exact resolved
+  `C:\Users\Julia\Desktop\coding\ASIoP\Fast MC CBSC\exhibition` tree is in
+  replacement scope; all unrelated dirty paths, including the existing
+  `legacy/` dispositions, remain untouched.
+- The first three-test archive-helper run failed 2/3 because verification
+  compared manifest paths prefixed by `exhibition/` with paths relative to that
+  directory. The refusing-to-overwrite guard passed. Corrected the verifier to
+  use the same root-relative namespace; no guard or assertion was weakened and
+  no project/archive exhibition was changed by the failed fixture-only run.
+- Archive-helper QA then passed 3/3, focused Ruff passed, compileall passed, and
+  diff whitespace passed. Cloning the empty archive repository succeeded, but
+  the combined shell command then ran `git status` from the parent directory
+  and exited nonzero. Re-running from the resolved clone proved a valid unborn
+  `main` checkout with the intended origin. No clone content was overwritten.
+- Both snapshot transactions passed before staging: the canonical commit
+  snapshot contains 145 files / 18,844,757 bytes and verifies 147 SHA-256
+  entries; the exact dirty Desktop snapshot contains 134 files / 16,723,787
+  bytes and verifies 136 entries. The first archive staged-diff check rejected
+  historical Matplotlib SVG trailing spaces. Changing those archived bytes
+  would invalidate the evidence, so the archive now marks `archives/**` as
+  `-diff -text`: Git preserves exact bytes and does not apply text normalization
+  or text-style lint to immutable snapshots. Snapshot SHA-256 guards remain
+  intact; no source assertion was weakened.
+- Archive commit `041ce150eedb226ccb9a69eddd82dea6067dfd17` was pushed to
+  `JulianAttemptsCoding/Fast-MC-CBSCs-archive` `main`. A proposed fresh-clone
+  verification command was rejected before execution because it bundled a
+  recursive temporary-directory cleanup. No file was created or removed by
+  that rejected command. The non-destructive correction fetched `origin/main`,
+  ran `git fsck --full`, proved local HEAD, remote-tracking HEAD, and
+  `ls-remote` all equal `041ce15`, and reverified all 147 + 136 snapshot hashes.
+  The archive is therefore confirmed before any Desktop replacement.
+- The exact offline epoch transaction completed successfully for
+  `calibrated_lr1e4`, lineage `dicos-p9 dicos-p10`, expected epoch 40. It
+  rebuilt loss-vs-epoch, accepted-running-best loss, four ordinary 3090 metric
+  families, the four matching best-loss-so-far metric families, current and
+  complete galleries, and the metrics catalog. Catalog QA reports 87/87
+  PNG/SVG graphics decoded/parsed, every manifest hash matching, accepted
+  summaries agreeing, and the complete index containing every graphic. Epoch
+  40 remains visible and quarantined; accepted best remains epoch 38 at
+  `4.635219681489869`; no public release is required. Git shows no exhibition
+  change versus `bfae6c0`, confirming that the pre-task source was already the
+  deterministic current rendering.
+- A consecutive full offline transaction changed 0/145 tracked exhibition
+  hashes. The Desktop overlay then copied all 145 canonical files and matched
+  145/145 SHA-256 values while preserving all 73 non-exhibition dirty-state
+  lines exactly. The broad deletion form was rejected before execution; no file
+  changed in that attempt. The safe correction copied first, then moved the
+  four already-archived `__pycache__` files as one validated directory to
+  `%TEMP%\cbsc-exhibition-cache-pre-sync-20260804-1755`. The Desktop exhibition
+  now has the exact canonical 145-file inventory and no cache directory.
+- Running the current catalog builder *from the older Desktop repository root*
+  correctly stopped before writing: its manifest pins
+  `audit/compute_extension_20260727_r2_terminal_analysis.json` from the current
+  source commit, while the Desktop checkout deliberately retains its older,
+  dirty audit file. No hash guard was changed and the surrounding Desktop audit
+  was not overwritten. The correction is to validate generation in the clean
+  canonical source (already PASS) and validate the Desktop as a byte-identical
+  presentation mirror; a full merge of unrelated Desktop repository changes is
+  outside this exhibition-only synchronization.
+- Desktop presentation QA passed: `index.html` and `current.html` returned HTTP
+  200, and all 87 unique linked PNG/SVG resources returned HTTP 200 with
+  nonzero bodies. Direct inspection at original/high resolution passed for the
+  complete loss trajectories, accepted running-best loss, ordinary headline
+  diagnostics, best-loss-so-far headline diagnostics, data/split contract, and
+  six-panel 3D deposit figure; titles, subtitles, legends, axes, quarantine
+  marks, footers, and colorbar were legible without collisions or clipping.
+- Interactive in-app browser setup closed its transport twice before a tab was
+  created, so no interactive browser pass is claimed. The first detached HTTP
+  preview attempt also failed to listen because the spaced directory argument
+  was split, and two corrected detached-launch forms were rejected before
+  execution. The working correction used a bounded blocking server from the
+  exact exhibition working directory. Terminating its wrapper left the child
+  listener alive; PID 11720 was proved to be the exact Python
+  `-m http.server 8765 --bind 127.0.0.1` process, stopped explicitly, and port
+  8765 was confirmed closed. No unrelated process was stopped.
+- Final source QA passed focused Ruff, compileall, JSON parsing, diff
+  whitespace, and the complete source suite: `244 passed` with the eight known
+  Transformer nested-tensor warnings in 44.87 s. The internal Event Observatory
+  production build and 2/2 rendered-HTML tests passed. The unchanged public
+  repository remained clean/synchronized; its 8/8 tests and production build
+  passed. The public snapshot selection is unchanged because no accepted best
+  changed. Final Desktop proof is 145 files, 87 PNG/SVG graphics, and 145/145
+  source SHA-256 matches.
+- A final focused recheck wrapper falsely reported JSON failure because it
+  tested stale/undefined `$LASTEXITCODE` after PowerShell `ConvertFrom-Json`,
+  which does not set that native-process variable. The corrected `try/catch`
+  parse passed. That corrected wrapper then named three nonexistent historical
+  test filenames and pytest ran zero tests before exiting nonzero. No result was
+  accepted from either invocation; the actual test modules were enumerated with
+  `rg` and are rerun below. No test configuration or assertion was changed.
+- The corrected final focused suite passed 12/12 archive, exhibition-catalog,
+  and offline-refresh tests; focused Ruff, JSON parsing, and diff whitespace
+  also passed.

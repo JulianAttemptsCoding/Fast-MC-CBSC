@@ -511,7 +511,7 @@ about Geant4 fidelity, and anything about governed-test performance. The phase
 used the pilot bank and zero test events; the separately disclosed historical
 test exceptions and exact remaining-count uncertainty are in §3.
 
-### 7b. STATE VERIFIED 2026-08-04T16:32:58+08:00 — read this before doing anything
+### 7b. STATE VERIFIED 2026-08-04T17:55:00+08:00 — read this before doing anything
 
 **Nothing is training or generating. Both GPUs are idle, proved from their
 process trees.** The RTX 4090 reported `0 MiB / 0%`; the RTX 3090 reported
@@ -520,6 +520,17 @@ producer, or diagnostic consumer on either. The shared checkout is `07c1dda`;
 the updated 4090 pipeline suite passed 21 tests and immutable artifact
 verification passed 18/18. The project owner has explicitly requested
 organization and QA only: do not start or resume training in this phase.
+
+The complete current exhibition was rebuilt offline and is byte-reproducible
+across all 145 tracked files. It contains 87 validated PNG/SVG graphics,
+including loss vs epoch, accepted running-best loss, all 3090 metric-vs-epoch
+families, and their best-validation-loss-so-far companions. The exact clean
+source and dirty Desktop pre-sync exhibitions are preserved in
+`JulianAttemptsCoding/Fast-MC-CBSCs-archive` commit `041ce15`; every archived
+file hash was reverified before synchronization. The requested Desktop
+`exhibition/` is a 145/145 SHA-256-identical presentation mirror. Its unrelated
+dirty repository state is intentionally preserved; see
+`docs/EXHIBITION_ARCHIVE_AND_MIRROR.md` before any future mirror update.
 
 `dicos-p10` died at `2026-08-04T03:13:56Z` after completing epochs 39 and 40:
 
@@ -1618,6 +1629,15 @@ test accounting before replacing `exhibition/metrics_catalog.json` and
 complete logically grouped exhibition. As of 2026-08-04 it covers 87 graphics;
 the compact current-model gallery is `exhibition/current.html`.
 
+Historical pre-sync exhibition states are in
+`https://github.com/JulianAttemptsCoding/Fast-MC-CBSCs-archive`. The current
+Desktop presentation mirror and the safe archive-first synchronization order
+are documented in `docs/EXHIBITION_ARCHIVE_AND_MIRROR.md`. Run builders and
+catalog generation in the canonical current checkout. A byte-identical mirror
+inside an older dirty checkout is verified by inventory/hash equality and
+static/rendered QA; do not overwrite unrelated evidence or weaken a pinned
+source-hash guard to make that older repository act current.
+
 ## 16. Minimum verification before claiming work is done
 
 `pytest` needs `PYTHONPATH=src`. Without it collection fails with
@@ -1628,7 +1648,7 @@ Run from the source repository:
 ```bash
 export PYTHONPATH=src                     # PowerShell: $env:PYTHONPATH='src'
 python -m compileall -q src vertex scripts tests
-PYTHONPATH=src python -m pytest -q         # expect 241 passed as of 2026-08-04
+PYTHONPATH=src python -m pytest -q         # expect 244 passed as of 2026-08-04
 python exhibition/build_exhibition.py     # expect 23 visuals; verify the manifest hash
 ```
 
