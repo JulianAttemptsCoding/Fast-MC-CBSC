@@ -46,13 +46,17 @@ def dicos(args: list[str], config: str | None = None) -> str:
     return result.stdout
 
 
-def pull_diagnostics(config: str) -> list[int]:
-    DIAG_LOCAL.mkdir(parents=True, exist_ok=True)
+def pull_diagnostics(config: str, run_tag: str) -> list[int]:
+    # Namespaced by run tag. Two runs of the same family overlap in epoch
+    # number -- p8 and p9 both covered 17..22 -- and the metrics filenames
+    # carry only the epoch, so a flat directory silently mixes them.
+    destination = DIAG_LOCAL / run_tag
+    destination.mkdir(parents=True, exist_ok=True)
     listing = dicos(["exec", "ls -1 _diag/ 2>/dev/null | grep -o 'metrics_epoch_[0-9]*'"], config)
     remote = sorted({line.strip() for line in listing.splitlines() if line.strip()})
     pulled = []
     for stem in remote:
-        target = DIAG_LOCAL / f"{stem}.json"
+        target = destination / f"{stem}.json"
         if target.exists():
             continue
         dicos(["get", f"_diag/{stem}.json", str(target)], config)
@@ -87,9 +91,9 @@ def rewrite_continuation(history: Path, family: str, run_tag: str) -> int:
     return sum(1 for r in rows if r["variant"] == family and r["run_tag"] == run_tag)
 
 
-def rebuild(script: str) -> str:
+def rebuild(script: str, *args: str) -> str:
     result = subprocess.run(
-        [sys.executable, script], cwd=ROOT, capture_output=True, text=True
+        [sys.executable, script, *args], cwd=ROOT, capture_output=True, text=True
     )
     if result.returncode != 0:
         raise RuntimeError(f"{script} failed: {result.stderr.strip()}")
@@ -104,7 +108,7 @@ def main(argv=None) -> int:
     parser.add_argument("--diag-config", default="config_3090.json")
     args = parser.parse_args(argv)
 
-    pulled = pull_diagnostics(args.diag_config)
+    pulled = pull_diagnostics(args.diag_config, args.run_tag)
     print(f"diagnostics pulled: {pulled or 'none new'}")
 
     history = ROOT / ".refresh_history.csv"
@@ -116,9 +120,9 @@ def main(argv=None) -> int:
         history.unlink(missing_ok=True)
 
     print(rebuild("exhibition/build_continuation_loss_figures.py"))
-    print(rebuild("exhibition/build_diagnostic_trend_figure.py"))
+    print(rebuild("exhibition/build_diagnostic_trend_figure.py", args.run_tag))
 
-    summary = ROOT / "exhibition/diagnostics_20260803/diagnostic_summary.json"
+    summary = ROOT / "exhibition/diagnostics_20260803/diagnostic_summary.json"  # noqa: E501
     if summary.is_file():
         payload = json.loads(summary.read_text(encoding="utf-8"))
         print(f"diagnostic epochs: {payload['epochs']}")

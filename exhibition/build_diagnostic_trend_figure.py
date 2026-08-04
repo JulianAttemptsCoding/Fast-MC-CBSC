@@ -26,6 +26,7 @@ exhibition/diagnostics_20260803/, outside exhibition/manifest.json, so the
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -33,8 +34,13 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 HERE = Path(__file__).resolve().parent
-DATA = HERE / "data" / "diagnostics"
+DATA_ROOT = HERE / "data" / "diagnostics"
 OUT = HERE / "diagnostics_20260803"
+
+#: Diagnostics are namespaced per run tag: two runs of one family overlap in
+#: epoch number, and the metrics filenames carry only the epoch.
+RUN_TAG = sys.argv[1] if len(sys.argv) > 1 else "dicos-p9"
+DATA = DATA_ROOT / RUN_TAG
 
 NAVY = "#0f2a43"
 ACCENT = "#d2691e"
@@ -297,7 +303,7 @@ def build() -> list[Path]:
     epochs = [int(r["epoch"]) for r in rows]
     latest = rows[-1]
     subtitle = (
-        f"calibrated_lr1e4 continuation (dicos-p8). "
+        f"calibrated_lr1e4 continuation ({RUN_TAG}). "
         f"{latest['n_events']:,} fixed validation events per epoch, drawn from a "
         f"{latest['validation_pool']:,}-event pool, against the site's 250."
     )
@@ -312,6 +318,7 @@ def build() -> list[Path]:
         produced.append(energy)
 
     summary = {
+        "run_tag": RUN_TAG,
         "epochs": epochs,
         "n_events_per_epoch": latest["n_events"],
         "validation_pool": latest["validation_pool"],
