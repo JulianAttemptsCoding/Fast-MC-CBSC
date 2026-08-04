@@ -86,6 +86,8 @@ complete 244-test source suite, the internal production build and 2/2 rendered
 tests, and the unchanged public repository's production build and 8/8 tests.
 The Desktop contains 145 files and 87 PNG/SVG graphics with 145/145 canonical
 source hashes. No accepted checkpoint changed, so no public release is needed.
+The source implementation is commit `4d6d357d4568c15308460d24d279b9739c045245`;
+the historical archive is commit `041ce150eedb226ccb9a69eddd82dea6067dfd17`.
 
 Two final wrapper errors were rejected: PowerShell `ConvertFrom-Json` does not
 set `$LASTEXITCODE`, and three guessed historical test filenames did not exist,

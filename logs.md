@@ -7379,3 +7379,8 @@ data split, threshold, or test event was touched.
 - The corrected final focused suite passed 12/12 archive, exhibition-catalog,
   and offline-refresh tests; focused Ruff, JSON parsing, and diff whitespace
   also passed.
+- Committed and pushed the archive/mirror implementation, tests, operating
+  guide, handoff, log, and audit twin as
+  `4d6d357d4568c15308460d24d279b9739c045245`
+  (`chore(exhibition): add archive workflow`). The independently pushed
+  historical archive remains `041ce150eedb226ccb9a69eddd82dea6067dfd17`.

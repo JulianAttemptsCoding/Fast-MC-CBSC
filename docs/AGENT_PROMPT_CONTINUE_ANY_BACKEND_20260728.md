@@ -531,6 +531,7 @@ file hash was reverified before synchronization. The requested Desktop
 `exhibition/` is a 145/145 SHA-256-identical presentation mirror. Its unrelated
 dirty repository state is intentionally preserved; see
 `docs/EXHIBITION_ARCHIVE_AND_MIRROR.md` before any future mirror update.
+The source-side archive/mirror tooling and tests were committed as `4d6d357`.
 
 `dicos-p10` died at `2026-08-04T03:13:56Z` after completing epochs 39 and 40:
 
