@@ -312,7 +312,7 @@ Python older than 3.12. Always invoke the pod's own venv interpreter rather than
 | Invariant | Status |
 |---|---|
 | Permitted ROOT dataset identical to the canonical GCS source | **VERIFIED** — SHA-256 `b7c666040e42352e158a9a3f78158d147cb2e056c6c88248d892c956f5c7b533`, byte-for-byte match with the recorded canonical hash; 764,940 entries |
-| Test suite passes on DiCOS | **67 passed, 1 failed** — the failure is `test_root_fixture.py`, which needs a 24 MB fixture excluded from git by `.gitignore` (`*.root`), not a science failure |
+| DiCOS-relevant suite passes on the 4090 pod | **30 passed, 2 known warnings** at commit `cfa1556` — producer/consumer, visualization, run lock, tracked synthetic ROOT fixture, hydration, and policy tests. The complete 218-test source suite passes locally; the training venv intentionally omits cloud/controller-only `google` and `requests` extras, so those four collection modules are not an on-pod target. |
 | Frozen geometry present on DiCOS with hash `e22d4cfb…` | **VERIFIED** — transported, then recomputed *on the host* and matched |
 | Geometry *regenerated* from the DiCOS ROOT is physically identical | **VERIFIED with one caveat** — see below |
 | Prepared corpus reproduces the canonical shards | **VERIFIED — all 187 shards byte-identical.** 764,940 events, 1,157,840,863 hits, every `shards[].sha256` and `n_hits` equal to the canonical manifest's, all five rejection counters zero, and the sentinel accounting exact (738,898 events, 13,251.328791066537 GeV total, 1.647373832954901 GeV max) |

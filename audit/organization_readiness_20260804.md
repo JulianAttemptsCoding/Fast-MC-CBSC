@@ -39,6 +39,8 @@ QA was not made nonfatal.
 | internal dashboard | clean install, build, lint, 2/2 rendered tests |
 | internal production dependency audit | 0 vulnerabilities |
 | public site | 7/7 tests, production build pass, live HTTP 200 |
+| 4090 checkout | `cfa1556`; 30/30 relevant tests |
+| DiCOS artifact verification | 18/18 checks passed |
 
 The internal dashboard development toolchain retains 12 audit advisories (8
 high, 4 moderate) whose reported automatic fixes require breaking/out-of-range

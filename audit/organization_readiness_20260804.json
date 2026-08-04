@@ -54,7 +54,10 @@
     "internal_dashboard_dev_audit": "12 remaining: 8 high, 4 moderate; breaking/out-of-range fixes not forced",
     "public_site_tests": "7/7",
     "public_site_build": "pass",
-    "public_site_live": "HTTP 200"
+    "public_site_live": "HTTP 200",
+    "dicos_checkout": "cfa15566606cc94542f253b8f4588797bb3c2d4e",
+    "dicos_relevant_pytest": "30 passed, 2 known warnings",
+    "dicos_artifact_verify": "18/18 passed"
   },
   "fixture": {
     "path": "fixtures/outfile_neutron1_schema_fixture.root",
