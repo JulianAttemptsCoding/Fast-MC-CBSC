@@ -39,6 +39,8 @@ def category(path: Path) -> str:
         return "continuation_and_standings"
     if relative.startswith("diagnostics_20260803/"):
         return "large_validation_diagnostics"
+    if relative.startswith("external_metrics_20260804/"):
+        return "accepted_best_external_metrics"
     if relative.startswith("c2st_20260728/"):
         return "historical_c2st_test_study"
     if relative.startswith("paired_diagnostics_20260730/"):
@@ -115,6 +117,13 @@ def current_metrics() -> dict:
     diagnostic = read_json(
         HERE / "diagnostics_20260803" / "diagnostic_summary.json"
     )
+    all_metrics = read_json(
+        HERE / "diagnostics_20260803" / "all_metric_trends.json"
+    )
+    external_path = (
+        HERE / "external_metrics_20260804" / "external_metric_summary.json"
+    )
+    external = read_json(external_path) if external_path.is_file() else None
     if loss.get("schema_version") != 2 or choice.get("schema_version") != 2:
         raise ValueError("accepted-family metric summaries must use schema 2")
     if diagnostic.get("schema_version") != 2:
@@ -131,6 +140,18 @@ def current_metrics() -> dict:
         raise ValueError("diagnostic per-epoch provenance is incomplete")
     if diagnostic.get("test_events_used") != 0:
         raise ValueError("current diagnostic summary used test events")
+    if (
+        all_metrics.get("all_numeric_metric_leaves_complete_every_epoch") is not True
+        or all_metrics.get("epochs") != epochs
+        or all_metrics.get("test_events_used") != 0
+    ):
+        raise ValueError("comprehensive numeric metric trends are incomplete")
+    if external is not None and (
+        external.get("source_split") != "validation"
+        or external.get("test_events_used") != 0
+        or external.get("external_metrics_may_select_or_tune_cbsc") is not False
+    ):
+        raise ValueError("accepted-best external metric boundary failed")
 
     for family, row in loss["families"].items():
         other = choice["families"][family]
@@ -147,6 +168,26 @@ def current_metrics() -> dict:
         ):
             if row[key] != other[key]:
                 raise ValueError(f"family summaries disagree: {family}/{key}")
+    accepted = choice["families"]["calibrated_lr1e4"]
+    if external is not None:
+        current_external = external["current"]
+        if (
+            current_external["epoch"] != accepted["best_accepted_epoch"]
+            or current_external["run_tag"] != accepted["best_accepted_run_tag"]
+            or current_external["validation_loss"]
+            != accepted["best_accepted_validation_loss"]
+        ):
+            raise ValueError("external metrics are not current with the accepted best")
+    else:
+        current_external = {
+            "status": "pending",
+            "run_tag": accepted["best_accepted_run_tag"],
+            "epoch": accepted["best_accepted_epoch"],
+            "validation_loss": accepted["best_accepted_validation_loss"],
+            "source_split": "validation",
+            "test_events_used": 0,
+            "selection_role": "descriptive only; may not select or tune CBSC",
+        }
     return {
         "families": choice["families"],
         "noise_resolution": choice["noise_resolution"],
@@ -159,6 +200,14 @@ def current_metrics() -> dict:
             "quarantined_epochs": diagnostic["quarantined_epochs"],
             "scientific_status": diagnostic["scientific_status"],
         },
+        "all_numeric_diagnostic_metrics": {
+            "leaf_count": all_metrics["numeric_metric_leaf_count"],
+            "complete_every_epoch": all_metrics[
+                "all_numeric_metric_leaves_complete_every_epoch"
+            ],
+            "epochs": all_metrics["epochs"],
+        },
+        "accepted_best_external_metrics": current_external,
     }
 
 
@@ -182,6 +231,9 @@ def comprehensive_gallery(graphics: list[dict]) -> Path:
         "common_window_gallery": "Current comparison and model graphics",
         "continuation_and_standings": "Loss vs epoch and accepted standings",
         "large_validation_diagnostics": "3090 validation metrics vs epoch",
+        "accepted_best_external_metrics": (
+            "Accepted-best four-momentum and AUROC validation monitors"
+        ),
         "historical_c2st_test_study": "Historical isolated C2ST test study",
         "historical_paired_test_exception": "Historical paired test exception",
         "other": "Other exhibition assets",
@@ -279,6 +331,17 @@ def markdown(payload: dict) -> str:
     for name, count in sorted(counts.items()):
         lines.append(f"| `{name}` | {count} |")
     diagnostics = payload["metrics"]["large_validation_diagnostics"]
+    external = payload["metrics"]["accepted_best_external_metrics"]
+    external_pending = external.get("status") == "pending"
+    if external_pending:
+        external = {
+            **external,
+            "checkpoint_sha256": "pending",
+            "auroc_mean": float("nan"),
+            "auroc_std": float("nan"),
+            "four_momentum_macro_rms": float("nan"),
+        }
+    all_metrics = payload["metrics"]["all_numeric_diagnostic_metrics"]
     lines.extend([
         "",
         "## Scientific boundary",
@@ -288,6 +351,18 @@ def markdown(payload: dict) -> str:
         "validation events per epoch. Quarantined epochs: "
         f"{diagnostics['quarantined_epochs'] or 'none'}. These are descriptive,",
         "not a fidelity gate or Geant4 validation.",
+        f"All **{all_metrics['leaf_count']}** numeric diagnostic leaves are present "
+        "at every epoch and are stored in `all_metric_trends.json`.",
+        "",
+        "## Current accepted-best external monitors",
+        "",
+        f"- Accepted checkpoint: `{external['run_tag']}` epoch "
+        f"{external['epoch']} (`{external['checkpoint_sha256']}`).",
+        f"- Low-level validation C2ST AUROC: {external['auroc_mean']:.6f} "
+        f"± {external['auroc_std']:.6f} across evaluator seeds.",
+        f"- Fast-MC macro RMS relative four-vector error: "
+        f"{external['four_momentum_macro_rms']:.6f}.",
+        "- These validation monitors cannot select or tune the generator.",
         "",
         "The current gallery, training decisions, and validation diagnostics use zero",
         "test events. Historical isolated evidence remains separated:",
@@ -301,6 +376,15 @@ def markdown(payload: dict) -> str:
         "`metrics_catalog.json`.",
         "",
     ])
+    if external_pending:
+        section = lines.index("## Current accepted-best external monitors")
+        lines[section + 2 : section + 7] = [
+            f"- Accepted checkpoint: `{external['run_tag']}` epoch "
+            f"{external['epoch']}.",
+            "- Four-momentum and AUROC validation monitors are pending; no "
+            "placeholder scientific value is reported.",
+            "- These validation monitors cannot select or tune the generator.",
+        ]
     return "\n".join(lines)
 
 

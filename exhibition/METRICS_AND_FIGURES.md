@@ -15,20 +15,30 @@ remain visible as negative evidence.
 
 ## Graphics inventory
 
-Validated graphics: **87**.
+Validated graphics: **117**.
 
 | Category | PNG/SVG files |
 |---|---:|
+| `accepted_best_external_metrics` | 9 |
 | `common_window_gallery` | 24 |
 | `continuation_and_standings` | 6 |
 | `historical_c2st_test_study` | 33 |
 | `historical_paired_test_exception` | 6 |
-| `large_validation_diagnostics` | 18 |
+| `large_validation_diagnostics` | 34 |
+| `other` | 5 |
 
 ## Scientific boundary
 
 Current large-sample diagnostics cover epochs 16–40 on 4,000 fixed validation events per epoch. Quarantined epochs: [40]. These are descriptive,
 not a fidelity gate or Geant4 validation.
+All **348** numeric diagnostic leaves are present at every epoch and are stored in `all_metric_trends.json`.
+
+## Current accepted-best external monitors
+
+- Accepted checkpoint: `dicos-p9` epoch 38 (`4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e`).
+- Low-level validation C2ST AUROC: 0.872656 ± 0.011687 across evaluator seeds.
+- Fast-MC macro RMS relative four-vector error: 0.346645.
+- These validation monitors cannot select or tune the generator.
 
 The current gallery, training decisions, and validation diagnostics use zero
 test events. Historical isolated evidence remains separated:

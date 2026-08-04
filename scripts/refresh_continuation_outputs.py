@@ -38,6 +38,7 @@ VISUAL_LOCAL = ROOT / "exhibition" / "data" / "visualizations"
 CONTINUATION_CSV = ROOT / "exhibition" / "data" / "continuation_history.csv"
 CONTINUATION_STATUS = ROOT / "exhibition" / "data" / "continuation_status.json"
 DASHBOARD_DATA = ROOT / "dashboard" / "public" / "data"
+EXTERNAL_STATE = ROOT / "audit" / "current_external_metrics.json"
 FIELDS = ["variant", "epoch", "train_loss", "validation_loss", "run_tag"]
 RUN_TAG_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 FAMILY_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_]*$")
@@ -332,6 +333,127 @@ def rebuild(script: str, *args: str) -> str:
     return result.stdout.strip()
 
 
+def _write_json_atomic(path: Path, payload: dict) -> None:
+    temporary = path.with_name(f".{path.name}.tmp")
+    temporary.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    temporary.replace(path)
+
+
+def _external_controller(action: str, identity: dict) -> dict:
+    command = [
+        sys.executable,
+        "scripts/dicos_external_metrics_controller.py",
+        action,
+        "--family", identity["family"],
+        "--run-tag", identity["run_tag"],
+        "--epoch", str(identity["epoch"]),
+        "--validation-loss", repr(identity["validation_loss"]),
+        "--checkpoint-sha256", identity["checkpoint_sha256"],
+    ]
+    env = dict(os.environ, PYTHONPATH="src")
+    result = subprocess.run(
+        command, cwd=ROOT, env=env, capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"external metric controller {action} failed: "
+            f"{result.stderr.strip() or result.stdout.strip()}"
+        )
+    return json.loads(result.stdout)
+
+
+def advance_external_metrics(
+    family: str,
+    previous_best: dict | None,
+    *,
+    offline: bool,
+) -> dict | None:
+    """Advance the validation-only external transaction for a new best.
+
+    A persisted matching pending state lets a later refresh finish the release
+    even though the family-choice file already contains the newly selected best.
+    """
+    current = _read_best(family)
+    if current is None:
+        raise RuntimeError(f"rebuilt standings omit family {family}")
+    best_changed = previous_best is not None and (
+        previous_best.get("best_accepted_epoch")
+        != current.get("best_accepted_epoch")
+        or previous_best.get("best_accepted_validation_loss")
+        != current.get("best_accepted_validation_loss")
+    )
+    prior_state = (
+        json.loads(EXTERNAL_STATE.read_text(encoding="utf-8"))
+        if EXTERNAL_STATE.is_file()
+        else None
+    )
+    run_tag = current.get("best_accepted_run_tag")
+    epoch = int(current["best_accepted_epoch"])
+    validation_loss = float(current["best_accepted_validation_loss"])
+    same_pending = bool(
+        prior_state
+        and prior_state.get("family") == family
+        and prior_state.get("run_tag") == run_tag
+        and int(prior_state.get("epoch", -1)) == epoch
+        and prior_state.get("status") != "complete"
+    )
+    if not best_changed and not same_pending:
+        return prior_state
+    if not run_tag:
+        raise RuntimeError("new accepted best has no run tag for external metrics")
+    metric_path = DIAG_LOCAL / run_tag / f"metrics_epoch_{epoch:04d}.json"
+    metric = validate_metric(metric_path, epoch)
+    identity = {
+        "family": family,
+        "run_tag": run_tag,
+        "epoch": epoch,
+        "validation_loss": validation_loss,
+        "checkpoint_sha256": metric["checkpoint_sha256"],
+    }
+    state = {
+        "schema_version": 1,
+        "kind": "cbsc-zdc-current-external-metrics-state",
+        **identity,
+        "source_split": "validation",
+        "cbsc_test_events_used": 0,
+        "selection_role": "descriptive only; may not select or tune CBSC",
+        "release_pending": bool(
+            best_changed or (prior_state and prior_state.get("release_pending"))
+        ),
+        "status": "pending_offline" if offline else "pending_remote",
+    }
+    if not offline:
+        outcome = _external_controller("start", identity)
+        if outcome.get("action") == "started validation-bank export":
+            # The second call installs a detached evaluator waiter, allowing the
+            # transaction to finish through a workstation disconnect.
+            outcome = _external_controller("start", identity)
+        if outcome.get("results_ready"):
+            outcome = _external_controller("pull", identity)
+        state["controller"] = outcome
+        manifest = (
+            ROOT / "exhibition" / "data" / "external_metrics" / run_tag
+            / f"epoch_{epoch:04d}" / "manifest.json"
+        )
+        state["status"] = "complete" if manifest.is_file() else "running_remote"
+        state["local_manifest"] = (
+            manifest.relative_to(ROOT).as_posix() if manifest.is_file() else None
+        )
+    _write_json_atomic(EXTERNAL_STATE, state)
+    return state
+
+
+def mark_external_release_prepared(state: dict | None) -> None:
+    if not state or state.get("release_pending") is not True:
+        return
+    updated = dict(state)
+    updated["release_pending"] = False
+    updated["public_release_prepared_and_qa_passed"] = True
+    _write_json_atomic(EXTERNAL_STATE, updated)
+
+
 def _read_best(family: str) -> dict | None:
     path = ROOT / "exhibition/continuation_20260802/family_choice.json"
     if not path.is_file():
@@ -343,6 +465,7 @@ def write_epoch_record(
     *, family: str, run_tag: str, lineage: list[str], expected_epoch: int,
     offline: bool, previous_best: dict | None,
     public_release_prepared: bool = False,
+    external_state: dict | None = None,
 ) -> dict:
     diagnostics_path = ROOT / "exhibition/diagnostics_20260803/diagnostic_summary.json"
     diagnostics = json.loads(diagnostics_path.read_text(encoding="utf-8"))
@@ -383,9 +506,16 @@ def write_epoch_record(
         "best_before_refresh": previous_best,
         "best_after_refresh": current_best,
         "best_changed": best_changed,
+        "external_metrics": external_state,
+        "public_release_pending_external_metrics": bool(
+            external_state
+            and external_state.get("release_pending") is True
+            and external_state.get("status") != "complete"
+        ),
         "public_release_required": (
             not offline
-            and best_changed
+            and bool(external_state and external_state.get("release_pending") is True)
+            and external_state.get("status") == "complete"
             and current_best["best_accepted_epoch"] == expected_epoch
             and per_epoch[expected_epoch]["status"] == "accepted"
         ),
@@ -416,6 +546,10 @@ def write_epoch_record(
         f"- Best accepted: e{current_best['best_accepted_epoch']} / "
         f"{current_best['best_accepted_validation_loss']:.12g}\n"
         f"- Best changed: `{str(best_changed).lower()}`\n"
+        f"- External accepted-best metrics: "
+        f"`{external_state.get('status') if external_state else 'not-required'}`\n"
+        f"- Public release waiting on external metrics: "
+        f"`{str(record['public_release_pending_external_metrics']).lower()}`\n"
         f"- Public release required: "
         f"`{str(record['public_release_required']).lower()}`\n"
         f"- Public candidate prepared and QA-passed: "
@@ -503,6 +637,19 @@ def main(argv=None) -> int:
     print(rebuild("exhibition/build_continuation_loss_figures.py"))
     print(rebuild("exhibition/build_family_choice_figure.py"))
     print(rebuild("exhibition/build_diagnostic_trend_figure.py", *lineage))
+    print(rebuild("exhibition/build_all_metric_trends.py", *lineage))
+    external_state = advance_external_metrics(
+        args.family, previous_best, offline=args.offline,
+    )
+    if external_state:
+        print(
+            "external metrics: "
+            f"{external_state.get('run_tag')} e{external_state.get('epoch')} "
+            f"status={external_state.get('status')}"
+        )
+    external_data = ROOT / "exhibition/data/external_metrics"
+    if any(external_data.glob("*/epoch_*/manifest.json")):
+        print(rebuild("exhibition/build_external_metric_figures.py"))
     print(rebuild("exhibition/build_exhibition.py"))
     print(rebuild("exhibition/build_metrics_catalog.py"))
 
@@ -517,6 +664,7 @@ def main(argv=None) -> int:
         expected_epoch=args.expected_epoch,
         offline=args.offline,
         previous_best=previous_best,
+        external_state=external_state,
     )
     if record["public_release_required"]:
         print(
@@ -534,7 +682,9 @@ def main(argv=None) -> int:
             offline=args.offline,
             previous_best=previous_best,
             public_release_prepared=True,
+            external_state=external_state,
         )
+        mark_external_release_prepared(external_state)
     print(
         "epoch evidence: "
         f"e{record['epoch']} status={record['epoch_status']} "

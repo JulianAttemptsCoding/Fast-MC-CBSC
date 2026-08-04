@@ -73,6 +73,7 @@ def generate_paired_sample(
     n_events = len(dataset)
     truth = np.zeros((n_events, model.n_nodes), dtype=np.float32)
     generated = np.zeros((n_events, model.n_nodes), dtype=np.float32)
+    p4_total = np.zeros((n_events, 4), dtype=np.float32)
     kinetic = np.zeros(n_events, dtype=np.float32)
     global_index = np.zeros(n_events, dtype=np.int64)
 
@@ -97,6 +98,7 @@ def generate_paired_sample(
             continue
         truth[start:stop] = torch.stack([item["cell_energy_gev"] for item in items]).numpy()
         generated[start:stop] = output.cell_energy.detach().cpu().numpy()
+        p4_total[start:stop] = p4.detach().cpu().numpy()
         kinetic[start:stop] = torch.stack([item["kinetic_energy_gev"] for item in items]).numpy()
         global_index[start:stop] = torch.stack([item["global_index"] for item in items]).numpy()
         log(f"generated {stop}/{n_events} (batch={current_batch})")
@@ -105,6 +107,7 @@ def generate_paired_sample(
     return {
         "truth_cell_energy_gev": truth,
         "generated_cell_energy_gev": generated,
+        "p4_total_gev": p4_total,
         "kinetic_energy_gev": kinetic,
         "global_index": global_index,
     }

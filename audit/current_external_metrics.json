@@ -1,0 +1,26 @@
+{
+  "cbsc_test_events_used": 0,
+  "checkpoint_sha256": "4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e",
+  "controller": {
+    "bank_ready": true,
+    "evaluate": {
+      "state": "complete"
+    },
+    "export": {
+      "state": "complete"
+    },
+    "results_ready": true
+  },
+  "epoch": 38,
+  "family": "calibrated_lr1e4",
+  "kind": "cbsc-zdc-current-external-metrics-state",
+  "determinism_audit": "audit/external_metrics_determinism_20260804.json",
+  "local_manifest": "exhibition/data/external_metrics/dicos-p9/epoch_0038/manifest.json",
+  "release_pending": false,
+  "run_tag": "dicos-p9",
+  "schema_version": 1,
+  "selection_role": "descriptive only; may not select or tune CBSC",
+  "source_split": "validation",
+  "status": "complete",
+  "validation_loss": 4.635219681489869
+}

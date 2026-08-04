@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-accepted-best-external-metric-config",
+  "source_split": "validation",
+  "partition_fractions": [
+    0.7,
+    0.15,
+    0.15
+  ],
+  "partition_seed": 20260804,
+  "seeds": [
+    20260804,
+    20260805,
+    20260806
+  ],
+  "train": {
+    "epochs": 20,
+    "batch_size": 128,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.01,
+    "dropout": 0.1,
+    "top_k": 384,
+    "patience": 4,
+    "num_workers": 4
+  },
+  "n_bootstrap": 2000,
+  "n_permutations": 2000,
+  "checkpoint_selection_quantity": "accepted CBSC validation loss only",
+  "external_metrics_may_select_or_tune_cbsc": false,
+  "cbsc_test_events_used": 0
+}

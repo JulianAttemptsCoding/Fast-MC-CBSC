@@ -45,3 +45,25 @@ def test_current_policy_is_explicitly_nonblocking() -> None:
     assert required in normalized_agents
     assert "does not grant or deny permission" in normalized_policy
     assert "does not grant or deny permission" in normalized_handoff
+
+
+def test_self_contained_continuity_rule_is_binding_and_indexed() -> None:
+    agents = " ".join((ROOT / "AGENTS.md").read_text("utf-8").lower().split())
+    focused = " ".join(
+        (ROOT / "docs" / "FOCUSED_OPERATING_RULES.md")
+        .read_text("utf-8")
+        .lower()
+        .split()
+    )
+    for phrase in (
+        "make the current state self-contained",
+        "without reconstructing chat or repository history",
+        "missing context is a fail-closed documentation defect",
+    ):
+        assert phrase in agents
+    for phrase in (
+        "self-contained continuity",
+        "one current-state audit",
+        "superseded and quarantined material explicitly",
+    ):
+        assert phrase in focused

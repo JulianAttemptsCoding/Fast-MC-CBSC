@@ -1,0 +1,108 @@
+{
+  "accepted_best": {
+    "checkpoint_sha256": "4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e",
+    "epoch": 38,
+    "family": "calibrated_lr1e4",
+    "run_tag": "dicos-p9",
+    "validation_loss": 4.635219681489869
+  },
+  "auroc_evaluator": {
+    "commit": "1e7abc593805c633d5e42a44ce073ca6287e8972",
+    "historical_test_result_isolated": true,
+    "path": "C:/Users/Julia/Desktop/coding/ASIoP/Fast-MC-tester",
+    "working_tree_note": "main is two commits ahead of origin; no remote action taken"
+  },
+  "continuity_rule_added": true,
+  "four_momentum_evaluator": {
+    "champion": "M1_xgb_focus_only",
+    "commit": "34aeaa61622fba69341bebc3813ca20485b65ace",
+    "path": "C:/Users/Julia/Desktop/coding/ASIoP/ML ZDC all 1",
+    "working_tree_note": "unrelated pre-existing dirty files preserved"
+  },
+  "kind": "cbsc-zdc-external-metrics-pipeline-audit",
+  "current_metrics": {
+    "angular_median_mrad": 15.559848215446166,
+    "auroc_mean": 0.8726555555555556,
+    "auroc_std": 0.011687150998288242,
+    "condition_only_auroc": 0.5,
+    "energy_relative_rmse": 0.24941970758526708,
+    "four_momentum_macro_rms": 0.3466445061663238,
+    "geant4_reference_macro_rms": 0.20779912872768125,
+    "high_level_auroc": 0.9290972222222222
+  },
+  "determinism_proof": "audit/external_metrics_determinism_20260804.json",
+  "no_cbsc_training_started": true,
+  "execution_attempts": [
+    {
+      "artifact_published": false,
+      "events_generated": 4000,
+      "failure": "missing p4_total_gev in paired-sample output contract",
+      "gpu": "RTX 3090",
+      "stage": "validation_bank_export",
+      "status": "failed_closed"
+    },
+    {
+      "artifact_published": false,
+      "events_generated": 0,
+      "failure": "controller launch was not nohup-detached; interrupted during numpy import",
+      "gpu": "RTX 3090",
+      "stage": "validation_bank_export",
+      "status": "failed_closed"
+    },
+    {
+      "artifact_published": false,
+      "events_generated": 0,
+      "failure": "deliberately terminated after underutilization profiling; retry uses frozen batch_size=128",
+      "gpu": "RTX 3090",
+      "stage": "validation_bank_export",
+      "status": "terminated_for_bounded_optimization"
+    },
+    {
+      "artifact_published": false,
+      "failure": "inherited unavailable matplotlib inline backend; retry freezes MPLBACKEND=Agg",
+      "gpu": "RTX 3090",
+      "stage": "accepted_best_evaluation",
+      "status": "failed_closed"
+    },
+    {
+      "artifact_published": false,
+      "failure": "seeded CUDA rerun changed AUROC ensemble mean; deterministic execution now mandatory",
+      "gpu": "RTX 3090",
+      "stage": "accepted_best_evaluation",
+      "status": "failed_closed"
+    }
+  ],
+  "per_epoch_diagnostic_schema": {
+    "epochs_audited": 25,
+    "numeric_leaf_fields_complete_each_epoch": 348,
+    "missing_fields": 0,
+    "run_tags": [
+      "dicos-p9",
+      "dicos-p10"
+    ]
+  },
+  "remote_current_state": {
+    "bank_ready": true,
+    "evaluate_state": "complete",
+    "export_batch_size": 128,
+    "export_state": "complete",
+    "results_ready": true
+  },
+  "completion_evidence": {
+    "canonical_exhibition_files": 190,
+    "cataloged_graphics": 117,
+    "desktop_mirror_hash_mismatches": 0,
+    "full_pytest": "255 passed, 8 known warnings",
+    "rtx_3090_idle": true,
+    "rtx_4090_idle": true,
+    "visual_qa": "passed at original resolution for all 15 new comprehensive/external figures"
+  },
+  "schema_version": 1,
+  "scientific_boundary": {
+    "automatic_external_metric_split": "CBSC validation only",
+    "checkpoint_selection_quantity": "accepted validation loss only",
+    "external_metrics_may_select_or_tune_cbsc": false,
+    "new_test_events_used": 0
+  },
+  "status": "complete"
+}

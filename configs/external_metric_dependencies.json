@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-external-metric-dependency-lock",
+  "source_archives": {
+    "_external_metrics/deps/archives/ml-zdc-34aeaa6.zip": {
+      "repository": "C:/Users/Julia/Desktop/coding/ASIoP/ML ZDC all 1",
+      "commit": "34aeaa61622fba69341bebc3813ca20485b65ace",
+      "sha256": "57c9bf6a070cce4bc57016d292b7991b2e80b868e5797e6324aa229d0f647455"
+    },
+    "_external_metrics/deps/archives/fastmc-tester-1e7abc5.zip": {
+      "repository": "C:/Users/Julia/Desktop/coding/ASIoP/Fast-MC-tester",
+      "commit": "1e7abc593805c633d5e42a44ce073ca6287e8972",
+      "sha256": "b68ddceb95ad121f68c26e97f3f950e7280896a4398bed5b73417479e24640e5"
+    }
+  },
+  "reconstruction_contract": {
+    "config_sha256": "46496e82f43cb39b197f148fb4397d7a29ed0c9ad96adf6c9444aaeebc724dee",
+    "frame_report_sha256": "cd0e0e15c5f77b9f7f36f3bd4845594b298ee2f93598838d3e4d352d4b6252ba",
+    "gcs_prefix": "gs://asiop-zdc-1-zdc-reco-us-central1/runs/full-cpu-20260710-finalfix2/outputs/models/M1_xgb_focus_only",
+    "model_id": "M1_xgb_focus_only",
+    "model_artifacts": {
+      "calibration.json": "d667c46e20673c5b58b4f7b13e97e1255778443e4bf74d9ab92acdc83778b454",
+      "log1p_kinetic.json": "ddf1e3d682aa6a2b063413a5dad6360b5940fabe2fd3a24ce25fca0a522a03c9",
+      "metadata.json": "c740b8eff046c0323929b14e99476036b9f3d1c7fd1325da616efdef49dd0620",
+      "ux.json": "fccb9f67a9d14418d9ab50866903604a3c63c3c35deab22c2007e99af6d3a204",
+      "uy.json": "e41a8ecc29354e12129eade1b9840349dbf5057dde0c8a0d55362061395d161c",
+      "uz.json": "ec9137dfbc58128e386c8518ef16bc8353a610d8def4f4fbcb18da0e4a557383"
+    }
+  },
+  "remote_python_environment": ".venv_3090",
+  "remote_role": "RTX 3090 validation event generation, evaluator training, metrics, and figures",
+  "cbsc_test_events_used": 0
+}

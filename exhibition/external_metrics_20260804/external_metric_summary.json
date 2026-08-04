@@ -1,0 +1,48 @@
+{
+  "current": {
+    "angular_median_mrad": 15.559848215446166,
+    "auroc_mean": 0.8726555555555556,
+    "auroc_std": 0.011687150998288242,
+    "checkpoint_sha256": "4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e",
+    "condition_only_auroc": 0.5,
+    "energy_relative_rmse": 0.24941970758526708,
+    "epoch": 38,
+    "four_momentum_macro_rms": 0.3466445061663238,
+    "geant4_reference_macro_rms": 0.20779912872768125,
+    "high_level_auroc": 0.9290972222222222,
+    "run_tag": "dicos-p9",
+    "validation_loss": 4.635219681489869
+  },
+  "external_metrics_may_select_or_tune_cbsc": false,
+  "figures": [
+    "external_metrics_at_new_accepted_bests.png",
+    "current_accepted_best_external_metrics.png",
+    "current_auroc_evaluator_training.png",
+    "current_auroc_seed_spread.png",
+    "current_auroc_vs_energy.png",
+    "current_four_momentum_accuracy.png",
+    "current_four_momentum_vs_energy.png"
+  ],
+  "kind": "cbsc-zdc-accepted-best-external-metric-summary",
+  "schema_version": 1,
+  "scientific_status": "downstream validation monitors; not a fidelity gate or final test evidence",
+  "selection_quantity": "accepted validation loss only",
+  "source_split": "validation",
+  "test_events_used": 0,
+  "transactions": [
+    {
+      "angular_median_mrad": 15.559848215446166,
+      "auroc_mean": 0.8726555555555556,
+      "auroc_std": 0.011687150998288242,
+      "checkpoint_sha256": "4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e",
+      "condition_only_auroc": 0.5,
+      "energy_relative_rmse": 0.24941970758526708,
+      "epoch": 38,
+      "four_momentum_macro_rms": 0.3466445061663238,
+      "geant4_reference_macro_rms": 0.20779912872768125,
+      "high_level_auroc": 0.9290972222222222,
+      "run_tag": "dicos-p9",
+      "validation_loss": 4.635219681489869
+    }
+  ]
+}

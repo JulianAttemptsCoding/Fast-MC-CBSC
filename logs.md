@@ -7384,3 +7384,180 @@ data split, threshold, or test event was touched.
   `4d6d357d4568c15308460d24d279b9739c045245`
   (`chore(exhibition): add archive workflow`). The independently pushed
   historical archive remains `041ce150eedb226ccb9a69eddd82dea6067dfd17`.
+
+## 2026-08-04 — external accepted-best metrics and self-contained continuity rule
+
+- The owner added a binding continuity rule: whenever reasonably possible and
+  useful, active artifacts and procedures must be organized and labeled well
+  enough that a future operator can continue without reconstructing chat or
+  repository history. Added binding rule 26 to `AGENTS.md` and the matching
+  focused operator section. The rule requires purpose, provenance, split,
+  checkpoint/run identity, scientific status, artifact state, current audit,
+  handoff, catalogs, and executable commands to agree.
+- Began a read-only audit for per-epoch metrics plus accepted-best external
+  four-momentum and AUROC studies. No CBSC training was started. Both DiCOS
+  endpoints authenticated; the 4090 endpoint reported one idle kernel and the
+  3090 endpoint zero kernels. The shared workdir still holds the accepted
+  `dicos-p9` epoch-38 checkpoint (`4c967cfc...e71e`) and its immutable 4,000-event
+  validation diagnostic.
+- All 25 p9+p10 lineage epochs currently expose the same 190 leaf fields in
+  their diagnostic JSON schema; no per-epoch field is missing. The current
+  trend figures intentionally promote only selected metric families, so the
+  catalog/figure layer still needs comprehensive coverage.
+- The historical Fast-MC-tester study is test-derived and hard-coded to four
+  epoch-4 checkpoints. Its one-way isolation remains binding. Automatic
+  accepted-best AUROC will therefore use a fixed CBSC validation bank and an
+  evaluator-internal train/validation/holdout partition; it must never select a
+  CBSC checkpoint or alter training. The historical 40,000-event test result
+  remains isolated and will not be silently relabeled as the current model.
+- The four-momentum repository's accepted frozen reconstruction champion is
+  `M1_xgb_focus_only`; its model metadata and five XGBoost JSON artifacts remain
+  available at the exact recorded GCS prefix. The CBSC 6,790-channel global
+  positions align with the reconstruction study's frozen detector frame after
+  the recorded mm-to-cm conversion, so an explicit hash-bound adapter is
+  technically possible. No new Vertex job or paid compute was launched.
+- The first 3090 validation-bank export attempt generated all 4,000 paired
+  validation events and then failed closed before writing a bank or manifest:
+  the shared paired-sample helper did not return its already-loaded
+  `p4_total_gev` tensor, while the new hash-bound exporter correctly required
+  that field. The failed process exited, the RTX 3090 returned idle, and no
+  incomplete artifact was accepted. The helper and its end-to-end test were
+  updated to preserve the exact per-event four-vector in the returned sample;
+  the export will be relaunched only after focused QA and remote-source hash
+  verification. No CBSC generator training was started.
+- The first controller-managed retry also failed closed before event generation:
+  its detached shell inherited the interactive DiCOS session lifetime and was
+  interrupted during NumPy import (`EXIT=130`). This exposed two orchestration
+  defects: stale terminal files were not archived before a retry, and the
+  controller did not use `nohup`. The launcher now archives every prior
+  PID/exit/log triplet under the transaction's `attempts/` directory and starts
+  a new hash-bound stage under `nohup`, preserving evidence while preventing
+  stale state or client disconnects from masquerading as the current attempt.
+- The first valid detached export was then deliberately stopped before its first
+  completed batch after live profiling showed batch 32 saturated compute while
+  using only about 2.6 GiB of the 24 GiB RTX 3090. The exact child command was
+  verified as PID 9190 before `SIGTERM`; it exited 143 and the GPU returned
+  idle. The controller's frozen export command now uses batch 128 (with its
+  existing automatic OOM halving) to reduce wall time without changing event
+  count, validation selection, seed, checkpoint, or split. The dependent
+  evaluator waiter correctly failed when its producer failed. Both stages were
+  relaunched under `nohup`: export PID 9642 and evaluator-waiter PID 9836.
+  They can continue through workstation shutdown; no generator training began.
+- The per-epoch figure contract now flattens and verifies all 348 numeric
+  scientific/QA leaves for every accepted/quarantined lineage epoch 16–40 and
+  produces eight ordinary/best-loss-so-far metric figure families in PNG/SVG,
+  in addition to loss-vs-epoch and accepted running-best loss. The complete
+  exhibition catalog passed with 103 decoded/parsed scientific graphics. Until
+  the accepted-best external transaction completes, the catalog shows a
+  labeled `pending` state and reports no placeholder AUROC or four-momentum
+  value.
+- The normal per-epoch refresh now persists a new-best external transaction,
+  installs an unattended evaluator waiter, resumes it on later refreshes,
+  pulls results only after the remote result manifest exists, and holds a
+  new-best public release until external artifacts/figures/catalog pass. State
+  is explicit in `audit/current_external_metrics.json`; external metrics remain
+  descriptive and cannot select/tune CBSC. Focused refresh/controller/gallery
+  QA passed 18 tests and Ruff passed.
+- Complete source QA passed `253 passed` with the eight known Transformer
+  nested-tensor warnings. Focused Ruff over every file changed or added by this
+  transaction passed; compileall and diff-whitespace checks passed. A separate
+  whole-tree Ruff probe reported 371 pre-existing style findings in legacy and
+  compact production sources (for example semicolon-packed `cli.py` and
+  `trainer.py`); no result from that probe is represented as a clean whole-tree
+  lint pass, and unrelated historical source was not reformatted.
+- The batch-128 3090 export completed `EXIT=0`; its manifest proves 4,000
+  validation source pairs, zero train/test, selection seed 20260803, and the
+  exact accepted epoch/checkpoint identity. The first evaluator attempt then
+  failed closed while importing Matplotlib because the Jupyter pod exported an
+  unavailable inline backend. Four-momentum computation had reached plotting,
+  but no result manifest was written and no partial evidence was accepted. The
+  controller now freezes `MPLBACKEND=Agg`; retry archiving preserves the failed
+  partial result/log before clean evaluation.
+- Original-resolution visual QA passed for all eight comprehensive metric
+  figure families (ordinary and accepted-best-so-far feature means, feature
+  resolutions, energy-bin moments, and profile/QA/HCAL summaries). Titles,
+  subtitles, axes, legends, quarantine marks, footer boundaries, heatmaps, and
+  colorbar are legible without clipping or collisions. A resized preview briefly
+  appeared to crop a long title; the original-resolution artifact proved the
+  file itself was complete, so no unnecessary redraw was made.
+- Internal Event Observatory production build and both rendered-HTML tests
+  passed. The unchanged public Fast-MC-Visual-Tests repository passed all eight
+  tests and its TypeScript/Vite production build. No public selection changed
+  and no deployment was claimed or triggered.
+- The completed external result pull initially failed closed before downloading
+  because the DiCOS transport included a blank line around the otherwise valid
+  `sha256sum` listing and the parser treated it as an unsafe record. The parser
+  now ignores only whitespace-only transport lines while retaining strict
+  full-line hash/path validation for every actual record; a regression test
+  covers the exact boundary. No partial local result was accepted.
+- The first complete AUROC report exposed an academic-labeling ambiguity from
+  the pinned evaluator library: its code-2 monitoring holdout appeared inside
+  `corpus.partition_counts` under the generic key `test`, even though all 8,000
+  paired records originate from the CBSC validation bank and top-level
+  `cbsc_test_events_used` was correctly zero. The adapter now fail-closed checks
+  that upstream schema and publishes the key as `monitoring_holdout`. The first
+  complete result is preserved as invalidated attempt evidence; the short
+  evaluator transaction is rerun so remote/local manifests and hashes remain
+  consistent rather than locally rewriting scientific JSON.
+- Moved the eight invalidated metric/figure files out of the live exhibition
+  into `Fast-MC-CBSCs-archive`, added an explicit invalidation README and 8/8
+  verified checksum inventory, then committed and pushed archive commit
+  `de6eee7` (`chore(archive): preserve invalid metric run`). The move is
+  recoverable from that public archive and prevents ambiguous evidence from
+  appearing in the current catalog.
+- Comparing the label-corrected rerun with the first archived run revealed that
+  identical evaluator seeds produced AUROC ensemble means 0.864693 and
+  0.848931. The difference is within the earlier three-seed spread but proves
+  the CUDA evaluator was seeded, not deterministic. The transaction is again
+  failed closed for publication: PyTorch deterministic algorithms, deterministic
+  cuDNN, disabled cuDNN benchmarking, and
+  `CUBLAS_WORKSPACE_CONFIG=:4096:8` are now mandatory and recorded in the AUROC
+  report. Unsupported nondeterministic operations will abort rather than
+  silently weaken reproducibility.
+- A combined remote job/log probe used an unsupported `dicos.py logs --lines`
+  option and exited nonzero after the preceding `jobs` output also exposed a
+  historical missing `wave2.log`. No job state changed. The corrected supported
+  `dicos.py logs extmetrics-repro-e38-20260804` command succeeded; the dedicated
+  deterministic repeat remained running under PID 12676.
+- Archived the seeded-but-nondeterministic raw transaction and its seven derived
+  current/trend figures with 18/18 verified hashes, an explicit invalidation
+  README, and no live-exhibition references. Committed and pushed archive
+  commit `7a50882` (`chore(archive): add nondeterministic run`).
+- The deterministic accepted candidate and a separate AUROC-only repeat matched
+  exactly after removing wall-time fields: complete model reports, ensemble
+  values, per-seed AUROCs, and evaluator checkpoint hash
+  `ed2dda9c...06dacf`. Final low-level validation C2ST AUROC is
+  `0.8726555555555556 ± 0.011687150998288242`; condition-only is `0.5` and the
+  high-level control is `0.9290972222222222`. The determinism audit twin records
+  both metrics-file hashes and the exact comparison.
+- Final downstream reconstruction values are Fast-MC macro RMS relative
+  four-vector error `0.3466445061663238`, Geant4 adapter/reference macro RMS
+  `0.20779912872768125`, energy relative RMSE `0.24941970758526708`, and median
+  angular error `15.559848215446166 mrad`. These are fixed-validation,
+  channel-summed-adapter measurements—not final test evidence or a checkpoint
+  selection gate.
+- Updated the archive root index and pushed commit `0d5ac59` so future operators
+  can find both invalidated external-metric attempts without reconstructing
+  source history.
+- Original-resolution visual QA passed for all seven final accepted-best
+  external figures: current control summary, new-best trend, four-momentum
+  accuracy, four-momentum-vs-energy, evaluator validation loss, three-seed
+  AUROC spread, and AUROC-vs-energy. All final values, labels, axes, legends,
+  chance baselines, reference/Fast-MC distinctions, and validation-only
+  boundary text are legible without clipping or overlap.
+- Final rebuild produced 25 complete lineage epochs (16–40), 348 numeric metric
+  leaves per epoch, eight comprehensive trend families, seven external-metric
+  figures, and 117 cataloged graphics. Catalog QA passed every PNG decode, SVG
+  parse, manifest hash, accepted-summary agreement, and gallery inclusion check.
+- Verified the RTX 3090 transaction status as export `EXIT=0`, evaluation
+  `EXIT=0`, bank ready, and results ready, with zero CBSC test events and no
+  generator training. Direct GPU probes reported RTX 3090 at 1 MiB/0% and RTX
+  4090 at 0 MiB/0%; self-match-safe process scans found no trainer on either.
+- Mirrored the canonical exhibition from the OneDrive source repository into
+  `C:\Users\Julia\Desktop\coding\ASIoP\Fast MC CBSC\exhibition` without deleting
+  destination content. The destination had zero extra files before the copy;
+  all 190 canonical source files now exist there with identical SHA-256 hashes.
+- Final source QA passed `255 passed` with the eight known Transformer
+  nested-tensor warnings. An initial plain-interpreter probe failed collection
+  because it omitted this src-layout repository's required `PYTHONPATH=src`;
+  the contract-correct invocation passed and no code defect was involved.

@@ -30,7 +30,15 @@ The only active compute roles are:
 | `prep/` | immutable prepared inputs and frozen configurations |
 | `_runs/<family>_<tag>/` | namespaced training evidence |
 | `_diag/<tag>/` | namespaced checkpoint/diagnostic handoff |
+| `_external_metrics/deps/` | hash-pinned read-only evaluator source/model dependencies |
+| `_external_metrics/runtime/` | frozen bank/evaluator entry points and configuration |
+| `_external_metrics/runs/<tag>/epoch_NNNN/` | accepted-best bank, attempt logs, and downstream results |
 | `_workspace/` | generated non-destructive workspace index |
+
+External-metric stage retries preserve their prior PID/exit/log and partial
+output under the transaction-local `attempts/` directory. The active
+`validation_bank.manifest.json` and `results/manifest.json` are the only ready
+sentinels; filenames, PIDs, or partial output alone never establish success.
 
 The retired 80 GB datacentre environment, `.venv_dcgpu`, `_bench`, and `_setup`
 are preserved historical material and are not current execution paths. Loose launcher logs/PID records

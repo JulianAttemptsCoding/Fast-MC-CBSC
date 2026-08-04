@@ -79,3 +79,12 @@ owner and are not negotiable by an agent.
 25. **Namespace per-run artifacts by run tag.** Runs of one family share
     absolute epoch numbers whenever one resumes from another's best checkpoint,
     so a flat metrics directory silently overwrites the older run.
+26. **Make the current state self-contained.** Whenever reasonably possible and
+    useful, organize and label every active artifact, metric, figure, decision,
+    command, failure, and next action with its purpose, provenance, split,
+    checkpoint/run identity, scientific status, and current/superseded/
+    quarantined state. Keep the binding rules, current-state audit, handoff,
+    catalogs, and operator commands synchronized so a future operator can
+    continue safely without reconstructing chat or repository history. Missing
+    context is a fail-closed documentation defect: add it before relying on the
+    artifact or procedure.

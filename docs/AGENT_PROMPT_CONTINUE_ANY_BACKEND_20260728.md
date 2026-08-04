@@ -1627,7 +1627,7 @@ It verifies every PNG/SVG, exhibition and historical C2ST manifest hash,
 accepted/latest/quarantined metric agreement, active lineage, and conservative
 test accounting before replacing `exhibition/metrics_catalog.json` and
 `exhibition/METRICS_AND_FIGURES.md`, and builds `exhibition/index.html` as the
-complete logically grouped exhibition. As of 2026-08-04 it covers 87 graphics;
+complete logically grouped exhibition. As of 2026-08-04 it covers 117 graphics;
 the compact current-model gallery is `exhibition/current.html`.
 
 Historical pre-sync exhibition states are in
@@ -1675,6 +1675,50 @@ descriptor the repo uses — rather than exempting your file from the test.
 
 A push is not a deployment. Verify the GitHub Pages workflow and fetch the live
 URL before saying the site is updated.
+
+### 16a. Current accepted-best external-metric transaction (2026-08-04)
+
+Purpose: bring four-momentum accuracy and low-level C2ST AUROC current for the
+accepted `calibrated_lr1e4` best without using test events or allowing these
+descriptive metrics to influence CBSC selection.
+
+Identity and scientific boundary:
+
+- run `dicos-p9`, epoch 38, validation loss `4.635219681489869`;
+- generator checkpoint SHA-256
+  `4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e`;
+- fixed 4,000-pair CBSC validation bank, exact pair grouping, zero train/test
+  source events;
+- RTX 3090 only for bank generation/evaluation; no generator training;
+- external source/model hashes are frozen in
+  `configs/external_metric_dependencies.json`;
+- current audit twins are `audit/external_metrics_pipeline_20260804.{json,md}`;
+- local current-state sentinel is `audit/current_external_metrics.json` once a
+  normal refresh creates or advances it.
+
+The batch-128 bank export, deterministic evaluator, and independent AUROC-only
+repeat all completed `EXIT=0`. The candidate and repeat match exactly after
+excluding wall-time fields. The accepted low-level validation C2ST is
+`0.8726555555555556 ± 0.011687150998288242`; Fast-MC macro RMS relative
+four-vector error is `0.3466445061663238`. The complete result and seven derived
+figures are under `exhibition/external_metrics_20260804/`; the determinism proof
+is `audit/external_metrics_determinism_20260804.json`. Re-establish remote state
+with:
+
+```bash
+PYTHONPATH=src python scripts/dicos_external_metrics_controller.py status \
+  --family calibrated_lr1e4 --run-tag dicos-p9 --epoch 38 \
+  --validation-loss 4.635219681489869 \
+  --checkpoint-sha256 4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e
+```
+
+The current result is already pulled and cataloged; do not rerun it unless an
+accepted validation-loss best changes. For a future new best, normal refresh
+creates the transaction. If export/evaluation fails, `start` safely archives the
+failed attempt and retries; call it a second time while export is running to
+reinstall the unattended evaluator waiter. Never treat a PID, bank file without
+its manifest, partial result directory, or evaluator checkpoint as a completed
+transaction.
 
 ## 17. First response and first actions
 

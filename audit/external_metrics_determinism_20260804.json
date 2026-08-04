@@ -1,0 +1,26 @@
+{
+  "candidate_metrics_sha256": "b1475cc87b9baca7cace7ef2d9634d69b3f53b1b7a825af4d38cb54aa0bbd13e",
+  "candidate_path": "exhibition/data/external_metrics/dicos-p9/epoch_0038/auroc/metrics.json",
+  "checkpoint_sha256_equal": true,
+  "determinism_contract_equal": true,
+  "evaluator_checkpoint_sha256": "ed2dda9c4b6d35a027ae2ecd4ce0739788baa6b78087f04d4e7c9477a906dacf",
+  "kind": "cbsc-zdc-external-evaluator-determinism-proof",
+  "models_equal_excluding_wall_time": true,
+  "repeat_metrics_sha256": "6c1c72dc75ba4510b398af7a4dd610b4e83dc17b2578f7c75ae44ff0e43fd264",
+  "repeat_path": "audit/determinism_repeat_auroc_metrics.json",
+  "schema_version": 1,
+  "scientific_outputs_exactly_equal": true,
+  "seed_ensemble": {
+    "auroc_mean": 0.8726555555555556,
+    "auroc_std": 0.011687150998288242,
+    "auroc_values": [
+      0.867275,
+      0.8646277777777778,
+      0.8860638888888889
+    ]
+  },
+  "source_split": "validation",
+  "status": "pass",
+  "test_events_used": 0,
+  "timing_fields_excluded_from_equality": true
+}

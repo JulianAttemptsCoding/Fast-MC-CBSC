@@ -153,6 +153,45 @@ That single command now:
     `audit/current_epoch_pipeline.{json,md}`. The exact expected epoch must be
     present; a different/latest epoch cannot silently satisfy the refresh.
 
+### Accepted-best external metrics
+
+If—and only if—the refreshed epoch establishes a new accepted validation-loss
+best, the refresh persists an external-metric transaction before allowing the
+public release. It uses the same fixed validation selection with zero test
+events and runs two downstream descriptions:
+
+- four-momentum reconstruction through the hash-pinned
+  `M1_xgb_focus_only` model from `ML ZDC all 1`, reported for Geant4 and Fast-MC
+  so the channel-summed adapter has an explicit domain control;
+- low-level C2ST AUROC through the hash-pinned `Fast-MC-tester` code, using
+  exact-pair grouped internal train/validation/monitor partitions and three
+  independent evaluator seeds.
+
+These values never select, tune, gate, or stop CBSC. The historical 40,000-test-
+event C2ST remains isolated and is not reused by this monitor. A new best's
+public release stays pending until the validation-bank manifest, evaluator
+manifest, artifact hashes, figures, and catalog all pass. A later refresh
+continues the persisted transaction even though `family_choice.json` already
+contains that best.
+
+Manual status/recovery uses the same controller contract:
+
+```bash
+PYTHONPATH=src python scripts/dicos_external_metrics_controller.py status \
+  --family <family> --run-tag <tag> --epoch <best-epoch> \
+  --validation-loss <exact-loss> --checkpoint-sha256 <sha256>
+```
+
+`start` advances one detached stage per call. When export is running, a second
+`start` installs an evaluator waiter so workstation shutdown cannot break the
+handoff. `pull` is legal only after `results/manifest.json` exists. The
+controller always forces `~/.dicos/config_3090.json`, validates every pinned
+dependency hash, archives failed attempts, and never starts generator training.
+The evaluator contract additionally requires deterministic PyTorch algorithms,
+deterministic cuDNN, disabled cuDNN benchmarking, and
+`CUBLAS_WORKSPACE_CONFIG=:4096:8`; seeded CUDA without that contract is not
+accepted as reproducible.
+
 For QA without DiCOS I/O or event generation, add `--offline`. This exercises
 the same ordered rebuild and audit path from already-local immutable evidence.
 

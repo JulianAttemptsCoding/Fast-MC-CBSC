@@ -11,8 +11,25 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_every_exhibition_graphic_decodes_or_parses() -> None:
     graphics = catalog.graphic_inventory()
-    assert len(graphics) == 87
+    assert len(graphics) >= 103
     assert all(row["bytes"] > 0 for row in graphics)
+    paths = {row["path"] for row in graphics}
+    assert len(paths) == len(graphics)
+    required = {
+        f"diagnostics_20260803/{stem}.{suffix}"
+        for stem in (
+            "feature_moments_vs_epoch",
+            "feature_moments_of_best_loss_so_far",
+            "feature_resolutions_vs_epoch",
+            "feature_resolutions_of_best_loss_so_far",
+            "energy_bin_moments_vs_epoch",
+            "energy_bin_moments_of_best_loss_so_far",
+            "profiles_and_qa_vs_epoch",
+            "profiles_and_qa_of_best_loss_so_far",
+        )
+        for suffix in ("png", "svg")
+    }
+    assert required <= paths
 
 
 def test_manifests_and_accepted_metric_summaries_agree() -> None:

@@ -144,3 +144,39 @@ def test_history_rewrite_is_validated_and_atomic(tmp_path: Path, monkeypatch) ->
     with pytest.raises(ValueError, match="duplicate history epoch"):
         refresh.rewrite_continuation(history, "calibrated_lr1e4", "dicos-p11")
     assert continuation.read_bytes() == before
+
+
+def test_new_best_persists_external_release_across_offline_refresh(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    diagnostics = tmp_path / "diagnostics"
+    metric_path = diagnostics / "dicos-p11" / "metrics_epoch_0041.json"
+    metric_path.parent.mkdir(parents=True)
+    metric = _metric(41)
+    metric["checkpoint_sha256"] = "a" * 64
+    metric_path.write_text(json.dumps(metric), encoding="utf-8")
+    state_path = tmp_path / "current_external_metrics.json"
+    current = {
+        "best_accepted_epoch": 41,
+        "best_accepted_run_tag": "dicos-p11",
+        "best_accepted_validation_loss": 4.1,
+    }
+    previous = {
+        "best_accepted_epoch": 40,
+        "best_accepted_run_tag": "dicos-p10",
+        "best_accepted_validation_loss": 4.2,
+    }
+    monkeypatch.setattr(refresh, "DIAG_LOCAL", diagnostics)
+    monkeypatch.setattr(refresh, "EXTERNAL_STATE", state_path)
+    monkeypatch.setattr(refresh, "_read_best", lambda family: current)
+
+    state = refresh.advance_external_metrics(
+        "calibrated_lr1e4", previous, offline=True,
+    )
+
+    assert state is not None
+    assert state["status"] == "pending_offline"
+    assert state["release_pending"] is True
+    assert state["source_split"] == "validation"
+    assert state["cbsc_test_events_used"] == 0
+    assert json.loads(state_path.read_text(encoding="utf-8")) == state

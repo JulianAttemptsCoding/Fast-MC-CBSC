@@ -81,6 +81,9 @@ def test_generate_paired_sample_and_hcal_summary_end_to_end(tmp_path: Path) -> N
     sample = generate_paired_sample(full, model, torch.device("cpu"), seed=5, batch_size=8)
     assert sample["truth_cell_energy_gev"].shape == (30, created["n_nodes"])
     assert sample["generated_cell_energy_gev"].shape == (30, created["n_nodes"])
+    assert sample["p4_total_gev"].shape == (30, 4)
+    expected_p4 = np.stack([full[i]["p4_total_gev"].numpy() for i in range(len(full))])
+    np.testing.assert_array_equal(sample["p4_total_gev"], expected_p4)
     assert len(set(sample["global_index"].tolist())) == 30
 
     n_ecal = int((geometry["subdetector"] == 0).sum())

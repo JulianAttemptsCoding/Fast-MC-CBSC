@@ -1,16 +1,18 @@
 {
   "comprehensive_gallery": {
-    "bytes": 27268,
+    "bytes": 36530,
     "path": "index.html",
-    "sha256": "faa5fbb2a575e2151bc093268864095f2225621bd323f63753cbe6308782c69c"
+    "sha256": "862841a18ac6d63cd8c3be606c990c8b63d79a079eb6358960a4e10fdfff936a"
   },
   "graphics": {
     "count_by_category": {
+      "accepted_best_external_metrics": 9,
       "common_window_gallery": 24,
       "continuation_and_standings": 6,
       "historical_c2st_test_study": 33,
       "historical_paired_test_exception": 6,
-      "large_validation_diagnostics": 18
+      "large_validation_diagnostics": 34,
+      "other": 5
     },
     "files": [
       {
@@ -359,6 +361,51 @@
         "sha256": "6ba0ac144551660e513a60589e92eb6fa32eba6d5af02efe201eb44f87967fed"
       },
       {
+        "bytes": 159771,
+        "category": "other",
+        "format": "png",
+        "height": 880,
+        "path": "data/external_metrics/dicos-p9/epoch_0038/auroc/figures/auroc_evaluator_training.png",
+        "sha256": "3f34705ef52c47afbb00a6f9660b4b16709984ed1576462f0034de8e7469d291",
+        "width": 1680
+      },
+      {
+        "bytes": 49839,
+        "category": "other",
+        "format": "png",
+        "height": 832,
+        "path": "data/external_metrics/dicos-p9/epoch_0038/auroc/figures/auroc_seed_spread.png",
+        "sha256": "bdf0a49697b46d91878fe61008c711b988b0af748c20469d7df08b131db71661",
+        "width": 1440
+      },
+      {
+        "bytes": 56123,
+        "category": "other",
+        "format": "png",
+        "height": 880,
+        "path": "data/external_metrics/dicos-p9/epoch_0038/auroc/figures/auroc_vs_energy.png",
+        "sha256": "298ee90306274ef4d30f6fd6b32728356e46c20e62249dc43f9a64bb51953473",
+        "width": 1680
+      },
+      {
+        "bytes": 93082,
+        "category": "other",
+        "format": "png",
+        "height": 1200,
+        "path": "data/external_metrics/dicos-p9/epoch_0038/four_momentum/figures/four_momentum_accuracy.png",
+        "sha256": "d1a667220fd7e2515a7edba95027e78b5c5474f2ab030cd41c05ceca9c09bb65",
+        "width": 1920
+      },
+      {
+        "bytes": 80223,
+        "category": "other",
+        "format": "png",
+        "height": 880,
+        "path": "data/external_metrics/dicos-p9/epoch_0038/four_momentum/figures/four_momentum_vs_energy.png",
+        "sha256": "4256ce5c11ae3a01fd42323946b5cfafe62b86a467d7914b09d70ad3ad32f6a5",
+        "width": 1680
+      },
+      {
         "bytes": 246511,
         "category": "large_validation_diagnostics",
         "format": "png",
@@ -407,6 +454,38 @@
         "sha256": "ad116aa7b019c89e52de6db46d32299951cb5a22cef102e34a3b57681f8ed1b0"
       },
       {
+        "bytes": 214922,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1808,
+        "path": "diagnostics_20260803/energy_bin_moments_of_best_loss_so_far.png",
+        "sha256": "6e4f3c07e946228d27b00ea757121e22c007031c0ae4f2c4f66575bf54a9ccbe",
+        "width": 2133
+      },
+      {
+        "bytes": 170386,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/energy_bin_moments_of_best_loss_so_far.svg",
+        "sha256": "006ff7190176c968abcff5d9cdc2552d64b600eccd678f2d69c66d428283c9f4"
+      },
+      {
+        "bytes": 379786,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1808,
+        "path": "diagnostics_20260803/energy_bin_moments_vs_epoch.png",
+        "sha256": "9205435b66a705de2164f1e1f34a096a08b7d42b59a3a0707884be282fe087b6",
+        "width": 2133
+      },
+      {
+        "bytes": 178620,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/energy_bin_moments_vs_epoch.svg",
+        "sha256": "1dbec351181f1c84f35cc5f2dcd389e8f3ad507caaf8babf8a139d5e22dc1c1a"
+      },
+      {
         "bytes": 192233,
         "category": "large_validation_diagnostics",
         "format": "png",
@@ -437,6 +516,70 @@
         "format": "svg",
         "path": "diagnostics_20260803/energy_bins_vs_epoch.svg",
         "sha256": "7d1dcef07d7639e7666cf5ba25efe54a8e48e5745c0f59d750ae376e915cc7c7"
+      },
+      {
+        "bytes": 204729,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1504,
+        "path": "diagnostics_20260803/feature_moments_of_best_loss_so_far.png",
+        "sha256": "0aa6c4e8fb3ce25a0125411df0222111662e37bb4d0ede8380a226a089165fa6",
+        "width": 2133
+      },
+      {
+        "bytes": 183254,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/feature_moments_of_best_loss_so_far.svg",
+        "sha256": "436c504cbac27d5364fe11399b3c3273d199452fde0c619312ead5a746657dad"
+      },
+      {
+        "bytes": 320573,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1504,
+        "path": "diagnostics_20260803/feature_moments_vs_epoch.png",
+        "sha256": "8b8ae5db3c097a8f5efb5cb28006e44c7c373d1c685b39274b68adc771a169be",
+        "width": 2133
+      },
+      {
+        "bytes": 187206,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/feature_moments_vs_epoch.svg",
+        "sha256": "b803e3080bd049ac5c55ad6ba42a3d9528cb55e3730bb5d3530b8564d4c86147"
+      },
+      {
+        "bytes": 197770,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1504,
+        "path": "diagnostics_20260803/feature_resolutions_of_best_loss_so_far.png",
+        "sha256": "d22c650f611d89ddb10df867c524baf9d032d552e4ad256095476abb8883c4be",
+        "width": 2133
+      },
+      {
+        "bytes": 180311,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/feature_resolutions_of_best_loss_so_far.svg",
+        "sha256": "a22526d9618ab00bdf1f37f2f3fd7f78340826752e68367e2770fd73f8092277"
+      },
+      {
+        "bytes": 317645,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1504,
+        "path": "diagnostics_20260803/feature_resolutions_vs_epoch.png",
+        "sha256": "6e6230b1b0cc72b10d3edbfe0c5189c858ce727c929200a0d55e474071c05fd5",
+        "width": 2133
+      },
+      {
+        "bytes": 189195,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/feature_resolutions_vs_epoch.svg",
+        "sha256": "9caa6fc246606e5a9296338006d503f43473dc053d220f1dee7abfddf004b87c"
       },
       {
         "bytes": 205101,
@@ -471,6 +614,38 @@
         "sha256": "6042a5447dfe85bb03f09101e10f2f20f5c1e77473fa0475197a49bdc321933c"
       },
       {
+        "bytes": 215654,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1296,
+        "path": "diagnostics_20260803/profiles_and_qa_of_best_loss_so_far.png",
+        "sha256": "0316bda86cab0b893a82d5a080ed8005d0100dc06e4f318183cc381e9ca5774e",
+        "width": 2133
+      },
+      {
+        "bytes": 164973,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/profiles_and_qa_of_best_loss_so_far.svg",
+        "sha256": "83b63284e505c86eda616b9530ef08643965c00cb1299cdc3e13a99eed00f4ac"
+      },
+      {
+        "bytes": 255102,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1296,
+        "path": "diagnostics_20260803/profiles_and_qa_vs_epoch.png",
+        "sha256": "f39f3299d970212483400f583e94230672e4491c2229ad58589988229d5f23ab",
+        "width": 2133
+      },
+      {
+        "bytes": 168292,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/profiles_and_qa_vs_epoch.svg",
+        "sha256": "abcaae10cd80cb3b1d67e19e0f77162d6f6fc5894fbf1631d2f7fb660352c5c1"
+      },
+      {
         "bytes": 277843,
         "category": "large_validation_diagnostics",
         "format": "png",
@@ -501,6 +676,83 @@
         "format": "svg",
         "path": "diagnostics_20260803/wasserstein_vs_epoch.svg",
         "sha256": "53c6ae3acdcfeda5a23c239747784d624a99dc847e086ba8a9ffa9098003bf6b"
+      },
+      {
+        "bytes": 92933,
+        "category": "accepted_best_external_metrics",
+        "format": "png",
+        "height": 768,
+        "path": "external_metrics_20260804/current_accepted_best_external_metrics.png",
+        "sha256": "d39ae5fd897aa08963e279ad217e241fe34a939bb268e0351f8e64e9e85f6a51",
+        "width": 2133
+      },
+      {
+        "bytes": 75046,
+        "category": "accepted_best_external_metrics",
+        "format": "svg",
+        "path": "external_metrics_20260804/current_accepted_best_external_metrics.svg",
+        "sha256": "6f14e2153576e3453ca74a5ddade747b25bea4ed1be4b7c6c3137066573557d9"
+      },
+      {
+        "bytes": 159771,
+        "category": "accepted_best_external_metrics",
+        "format": "png",
+        "height": 880,
+        "path": "external_metrics_20260804/current_auroc_evaluator_training.png",
+        "sha256": "3f34705ef52c47afbb00a6f9660b4b16709984ed1576462f0034de8e7469d291",
+        "width": 1680
+      },
+      {
+        "bytes": 49839,
+        "category": "accepted_best_external_metrics",
+        "format": "png",
+        "height": 832,
+        "path": "external_metrics_20260804/current_auroc_seed_spread.png",
+        "sha256": "bdf0a49697b46d91878fe61008c711b988b0af748c20469d7df08b131db71661",
+        "width": 1440
+      },
+      {
+        "bytes": 56123,
+        "category": "accepted_best_external_metrics",
+        "format": "png",
+        "height": 880,
+        "path": "external_metrics_20260804/current_auroc_vs_energy.png",
+        "sha256": "298ee90306274ef4d30f6fd6b32728356e46c20e62249dc43f9a64bb51953473",
+        "width": 1680
+      },
+      {
+        "bytes": 93082,
+        "category": "accepted_best_external_metrics",
+        "format": "png",
+        "height": 1200,
+        "path": "external_metrics_20260804/current_four_momentum_accuracy.png",
+        "sha256": "d1a667220fd7e2515a7edba95027e78b5c5474f2ab030cd41c05ceca9c09bb65",
+        "width": 1920
+      },
+      {
+        "bytes": 80223,
+        "category": "accepted_best_external_metrics",
+        "format": "png",
+        "height": 880,
+        "path": "external_metrics_20260804/current_four_momentum_vs_energy.png",
+        "sha256": "4256ce5c11ae3a01fd42323946b5cfafe62b86a467d7914b09d70ad3ad32f6a5",
+        "width": 1680
+      },
+      {
+        "bytes": 116249,
+        "category": "accepted_best_external_metrics",
+        "format": "png",
+        "height": 1200,
+        "path": "external_metrics_20260804/external_metrics_at_new_accepted_bests.png",
+        "sha256": "e48a637dffaf80fd6cf1bb9f94deb7f1458058492a98f640444bf5d1124f0953",
+        "width": 2133
+      },
+      {
+        "bytes": 106761,
+        "category": "accepted_best_external_metrics",
+        "format": "svg",
+        "path": "external_metrics_20260804/external_metrics_at_new_accepted_bests.svg",
+        "sha256": "5efad6f418508a6caff9dd744bf609ad86d25df7f1cdd6a0f717838eff754b02"
       },
       {
         "bytes": 263962,
@@ -751,9 +1003,54 @@
         "width": 1121
       }
     ],
-    "total": 87
+    "total": 117
   },
   "metrics": {
+    "accepted_best_external_metrics": {
+      "angular_median_mrad": 15.559848215446166,
+      "auroc_mean": 0.8726555555555556,
+      "auroc_std": 0.011687150998288242,
+      "checkpoint_sha256": "4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e",
+      "condition_only_auroc": 0.5,
+      "energy_relative_rmse": 0.24941970758526708,
+      "epoch": 38,
+      "four_momentum_macro_rms": 0.3466445061663238,
+      "geant4_reference_macro_rms": 0.20779912872768125,
+      "high_level_auroc": 0.9290972222222222,
+      "run_tag": "dicos-p9",
+      "validation_loss": 4.635219681489869
+    },
+    "all_numeric_diagnostic_metrics": {
+      "complete_every_epoch": true,
+      "epochs": [
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "leaf_count": 348
+    },
     "families": {
       "calibrated_lr1e4": {
         "best_accepted_epoch": 38,

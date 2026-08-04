@@ -1,0 +1,231 @@
+{
+  "adapter_note": "Both Geant4 and Fast-MC deposits use the same frozen 6,790-channel readout adapter; the Geant4 result is the domain/reference control for interpreting Fast-MC accuracy.",
+  "cbsc_test_events_used": 0,
+  "checkpoint_sha256": "4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e",
+  "epoch": 38,
+  "external_repo_commit": "34aeaa61622fba69341bebc3813ca20485b65ace",
+  "fast_mc": {
+    "angular_68_mrad": 20.687057116301474,
+    "angular_95_mrad": 44.49825675420817,
+    "angular_median_mrad": 15.559848215446166,
+    "angular_valid_fraction": 1.0,
+    "component_normalized_bias": {
+      "E": -0.05101037255090818,
+      "px": 0.006678964875123993,
+      "py": -0.015011395503226584,
+      "pz": -0.04964801702772814
+    },
+    "component_normalized_rmse": {
+      "E": 0.24941970758526708,
+      "px": 0.06152104893172473,
+      "py": 0.06449791001063927,
+      "pz": 0.24087050538034155
+    },
+    "energy_mae_gev": 25.697235299850064,
+    "energy_relative_bias_mean": -0.05101037255090818,
+    "energy_relative_rmse": 0.24941970758526708,
+    "energy_relative_width68": 0.184892342944035,
+    "energy_response_mean": 0.9489896274490918,
+    "energy_response_median": 0.9232351366405489,
+    "fraction_energy_within_gev": {
+      "1.0": 0.0295,
+      "10.0": 0.296,
+      "5.0": 0.145
+    },
+    "fraction_energy_within_relative": {
+      "0.01": 0.03875,
+      "0.05": 0.19575,
+      "0.1": 0.37325
+    },
+    "fraction_within_relative_fourvector_error": {
+      "0.01": 0.0075,
+      "0.05": 0.12425,
+      "0.1": 0.2635,
+      "0.2": 0.4985
+    },
+    "macro_rms_relative_fourvector_error": 0.3466445061663238,
+    "mass_shell_residual_abs_max_gev2": 2.549715993893642e-11,
+    "n_events": 4000,
+    "per_energy_bin": [
+      {
+        "energy_relative_rmse": 0.39940995203130847,
+        "high_gev": 75.0,
+        "low_gev": 50.0,
+        "n_events": 502,
+        "rms_relative_fourvector_error": 0.5729533383263932
+      },
+      {
+        "energy_relative_rmse": 0.25582709719239893,
+        "high_gev": 100.0,
+        "low_gev": 75.0,
+        "n_events": 487,
+        "rms_relative_fourvector_error": 0.37005383475060705
+      },
+      {
+        "energy_relative_rmse": 0.2235952775737185,
+        "high_gev": 125.0,
+        "low_gev": 100.0,
+        "n_events": 507,
+        "rms_relative_fourvector_error": 0.3221354077610899
+      },
+      {
+        "energy_relative_rmse": 0.22719637088389696,
+        "high_gev": 150.0,
+        "low_gev": 125.0,
+        "n_events": 511,
+        "rms_relative_fourvector_error": 0.32570427170150346
+      },
+      {
+        "energy_relative_rmse": 0.21612824405931547,
+        "high_gev": 175.0,
+        "low_gev": 150.0,
+        "n_events": 496,
+        "rms_relative_fourvector_error": 0.31133665787652676
+      },
+      {
+        "energy_relative_rmse": 0.21120881023727237,
+        "high_gev": 200.0,
+        "low_gev": 175.0,
+        "n_events": 506,
+        "rms_relative_fourvector_error": 0.3014457884757264
+      },
+      {
+        "energy_relative_rmse": 0.2038598560364578,
+        "high_gev": 225.0,
+        "low_gev": 200.0,
+        "n_events": 486,
+        "rms_relative_fourvector_error": 0.2914537951438639
+      },
+      {
+        "energy_relative_rmse": 0.19509650860278285,
+        "high_gev": 250.0001,
+        "low_gev": 225.0,
+        "n_events": 505,
+        "rms_relative_fourvector_error": 0.2780729552948797
+      }
+    ],
+    "relative_fourvector_error_mean": 0.2613384672803796,
+    "relative_fourvector_error_rms": 0.3580134225856644
+  },
+  "figures": [
+    "four_momentum_accuracy.png",
+    "four_momentum_vs_energy.png"
+  ],
+  "geant4_reference": {
+    "angular_68_mrad": 10.704431833707751,
+    "angular_95_mrad": 20.08338751329756,
+    "angular_median_mrad": 8.109840706779382,
+    "angular_valid_fraction": 1.0,
+    "component_normalized_bias": {
+      "E": -0.005948241869561336,
+      "px": 0.0015017047064321454,
+      "py": -0.0010404865307277879,
+      "pz": -0.005390023265392709
+    },
+    "component_normalized_rmse": {
+      "E": 0.15409690967321654,
+      "px": 0.045179319074525055,
+      "py": 0.04384089520116374,
+      "pz": 0.14575758660993623
+    },
+    "energy_mae_gev": 12.249068682421422,
+    "energy_relative_bias_mean": -0.005948241869561336,
+    "energy_relative_rmse": 0.15409690967321654,
+    "energy_relative_width68": 0.07333702379808354,
+    "energy_response_mean": 0.9940517581304387,
+    "energy_response_median": 0.9840491769952971,
+    "fraction_energy_within_gev": {
+      "1.0": 0.095,
+      "10.0": 0.64825,
+      "5.0": 0.41575
+    },
+    "fraction_energy_within_relative": {
+      "0.01": 0.12825,
+      "0.05": 0.54,
+      "0.1": 0.75825
+    },
+    "fraction_within_relative_fourvector_error": {
+      "0.01": 0.044,
+      "0.05": 0.405,
+      "0.1": 0.659,
+      "0.2": 0.83
+    },
+    "macro_rms_relative_fourvector_error": 0.20779912872768125,
+    "mass_shell_residual_abs_max_gev2": 2.549715993893642e-11,
+    "n_events": 4000,
+    "per_energy_bin": [
+      {
+        "energy_relative_rmse": 0.27960288203046946,
+        "high_gev": 75.0,
+        "low_gev": 50.0,
+        "n_events": 502,
+        "rms_relative_fourvector_error": 0.3983964966724196
+      },
+      {
+        "energy_relative_rmse": 0.16245499983683218,
+        "high_gev": 100.0,
+        "low_gev": 75.0,
+        "n_events": 487,
+        "rms_relative_fourvector_error": 0.23484793642466925
+      },
+      {
+        "energy_relative_rmse": 0.11132595568275613,
+        "high_gev": 125.0,
+        "low_gev": 100.0,
+        "n_events": 507,
+        "rms_relative_fourvector_error": 0.16416033759808982
+      },
+      {
+        "energy_relative_rmse": 0.10096193812481302,
+        "high_gev": 150.0,
+        "low_gev": 125.0,
+        "n_events": 511,
+        "rms_relative_fourvector_error": 0.1493175194748609
+      },
+      {
+        "energy_relative_rmse": 0.10939521457547612,
+        "high_gev": 175.0,
+        "low_gev": 150.0,
+        "n_events": 496,
+        "rms_relative_fourvector_error": 0.16017732415552516
+      },
+      {
+        "energy_relative_rmse": 0.11734259354212857,
+        "high_gev": 200.0,
+        "low_gev": 175.0,
+        "n_events": 506,
+        "rms_relative_fourvector_error": 0.16726238472063298
+      },
+      {
+        "energy_relative_rmse": 0.13652353812652693,
+        "high_gev": 225.0,
+        "low_gev": 200.0,
+        "n_events": 486,
+        "rms_relative_fourvector_error": 0.19405358516341184
+      },
+      {
+        "energy_relative_rmse": 0.1366628673602428,
+        "high_gev": 250.0001,
+        "low_gev": 225.0,
+        "n_events": 505,
+        "rms_relative_fourvector_error": 0.19417744561184033
+      }
+    ],
+    "relative_fourvector_error_mean": 0.12682223421276984,
+    "relative_fourvector_error_rms": 0.22125624644123765
+  },
+  "kind": "cbsc-zdc-accepted-best-four-momentum-monitor",
+  "model_artifact_hashes": {
+    "calibration.json": "d667c46e20673c5b58b4f7b13e97e1255778443e4bf74d9ab92acdc83778b454",
+    "log1p_kinetic.json": "ddf1e3d682aa6a2b063413a5dad6360b5940fabe2fd3a24ce25fca0a522a03c9",
+    "metadata.json": "c740b8eff046c0323929b14e99476036b9f3d1c7fd1325da616efdef49dd0620",
+    "ux.json": "fccb9f67a9d14418d9ab50866903604a3c63c3c35deab22c2007e99af6d3a204",
+    "uy.json": "e41a8ecc29354e12129eade1b9840349dbf5057dde0c8a0d55362061395d161c",
+    "uz.json": "ec9137dfbc58128e386c8518ef16bc8353a610d8def4f4fbcb18da0e4a557383"
+  },
+  "model_id": "M1_xgb_focus_only",
+  "run_tag": "dicos-p9",
+  "schema_version": 1,
+  "selection_role": "descriptive downstream evaluation only",
+  "source_split": "validation"
+}

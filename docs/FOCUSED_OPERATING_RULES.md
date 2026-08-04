@@ -104,6 +104,19 @@ the continuing-agent handoff.
    not prove liveness.
 9. `legacy/` is evidence only; never import or train from it.
 
+## 6. Self-contained continuity
+
+1. Organize and label active artifacts so their purpose, provenance, data split,
+   run tag, epoch, checkpoint hash, selection role, scientific interpretation,
+   and status are visible without reconstructing project history.
+2. Keep one current-state audit and one executable handoff synchronized with the
+   binding rules, logs, metrics catalogs, figures, and exact operator commands.
+3. Mark superseded and quarantined material explicitly; do not leave ambiguous
+   duplicates or require filenames alone to carry scientific meaning.
+4. Treat missing operational context as a fail-closed documentation defect.
+   Repair the label, catalog, README, audit twin, or handoff before relying on
+   the artifact or asking a future operator to continue from it.
+
 ## Current stop state
 
 - Organization/QA only: do not start or resume training yet.
