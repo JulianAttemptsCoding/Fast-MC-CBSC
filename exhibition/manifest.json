@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-08-01T22:07:17.408989+00:00",
+  "generated_at_utc": "2026-08-04T03:04:44.324004+00:00",
   "test_events_used": 0,
   "selected_validation_position": 21,
   "selection_sha256": "f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6",
@@ -17,8 +17,8 @@
     },
     {
       "path": "dashboard/public/data/manifest.json",
-      "bytes": 59806,
-      "sha256": "00b5fd7e102bd79b3ec596073668a1f61d664350419fae82400c8de9598e46b5"
+      "bytes": 54380,
+      "sha256": "70daac9c6e6e2445b6561269cced28bce44183b5191d3cf5feec9a43aafea5ef"
     },
     {
       "path": "dashboard/public/data/geometry.json",
@@ -55,7 +55,7 @@
     {
       "path": "figures/01_train_validation_loss_each_model.svg",
       "bytes": 72969,
-      "sha256": "da319adc17185a766b591a4163b71c10efcf9e7fac47ae48b65f836d3ee3fb6e"
+      "sha256": "1e62e13150b91a7debdf6a1ad3d85680def1b72f917afe18dc439a7dd8a9022f"
     },
     {
       "path": "figures/02_validation_loss_comparison.png",
@@ -65,7 +65,7 @@
     {
       "path": "figures/02_validation_loss_comparison.svg",
       "bytes": 46766,
-      "sha256": "b8b5be821a34d769e409c885539c2191d8e895d4d54b9bf3614533c15ff80e55"
+      "sha256": "95016d5602b33b498d43338dde865cba3dff520f0bb880dede71b2c02e721c41"
     },
     {
       "path": "figures/03_objective_component_evolution.png",
@@ -75,7 +75,7 @@
     {
       "path": "figures/03_objective_component_evolution.svg",
       "bytes": 134231,
-      "sha256": "e064f104bb843da17489df6cfd330bbedc4136f4198a28584065eacdbe930541"
+      "sha256": "51577daa6dc2556ed34b23aa528e9c89d951c73af87646613cebccfcc904166e"
     },
     {
       "path": "figures/04_fixed_sample_proxy_trajectories.png",
@@ -85,7 +85,7 @@
     {
       "path": "figures/04_fixed_sample_proxy_trajectories.svg",
       "bytes": 51813,
-      "sha256": "86f88a78c33e16bc7ca319008b075e5d582ac00eaa67a244ed41ba8874683490"
+      "sha256": "74b82ceb09590f444ff49b791d0117bdc01fbf5de16a30794938696a84a07b06"
     },
     {
       "path": "figures/05_loss_vs_visual_proxy_boundary.png",
@@ -95,7 +95,7 @@
     {
       "path": "figures/05_loss_vs_visual_proxy_boundary.svg",
       "bytes": 34023,
-      "sha256": "6716f1f8577d69d870a9c2ee9b7a0836e728b7a7fadfb072bfcac981261e74cb"
+      "sha256": "2848a2335787b4c25b8e5645ced3d3c67f39a895f8797566b1d1f7c39d1bc4bd"
     },
     {
       "path": "figures/06_vertex_compute_and_budget.png",
@@ -105,7 +105,7 @@
     {
       "path": "figures/06_vertex_compute_and_budget.svg",
       "bytes": 23948,
-      "sha256": "abb0159e63fad439eca68526354ca55650d727070b5df3ee9b821ff917836196"
+      "sha256": "f0b8e43f47f6eccfb1910f1bbc0d73836e4836e14926c04c9ec69295d5f87aff"
     },
     {
       "path": "figures/07_model_architecture_and_exact_decoder.png",
@@ -115,7 +115,7 @@
     {
       "path": "figures/07_model_architecture_and_exact_decoder.svg",
       "bytes": 26329,
-      "sha256": "c3e335f0d8fb81967babcbcf79f7e0a9bfa5d57e5ecbee5444b5f804ac9d7922"
+      "sha256": "d7011295ddb8794b1b03bcbf53ee194b729aa8cface0ccb7031eb671a474c672"
     },
     {
       "path": "figures/08_data_geometry_and_split_contract.png",
@@ -125,7 +125,7 @@
     {
       "path": "figures/08_data_geometry_and_split_contract.svg",
       "bytes": 17564,
-      "sha256": "e4e30682f9f356606abc47f3c5b7ac6fb198e4c96ee1fcf60123e1da68fb9eb9"
+      "sha256": "72f8086f437a3e8817ad66b6e67e8549dbc9fbe4c4a01a40b90f9b71fc5535fb"
     },
     {
       "path": "figures/09_evidence_and_claim_boundary.png",
@@ -135,7 +135,7 @@
     {
       "path": "figures/09_evidence_and_claim_boundary.svg",
       "bytes": 21218,
-      "sha256": "38ae43c694db6e79b9697647858360ae7613a131c20153794243af7a09d386a3"
+      "sha256": "88a44b49073cb1f4985708e36e07fb25a083f66ea17800371e660fdbfe8d583c"
     },
     {
       "path": "figures/10_same_condition_longitudinal_profiles.png",
@@ -145,7 +145,7 @@
     {
       "path": "figures/10_same_condition_longitudinal_profiles.svg",
       "bytes": 100161,
-      "sha256": "4406eba98a6219ca1b565f6fd0f0f2779f71045503af8474308417e3c21fd37f"
+      "sha256": "7f7b49986de3f994446fce39a4465c246c5bb6fcb07cc3256299ad8dc70b4015"
     },
     {
       "path": "figures/11_best_model_sample_distributions.png",
@@ -155,7 +155,7 @@
     {
       "path": "figures/11_best_model_sample_distributions.svg",
       "bytes": 68276,
-      "sha256": "ab01b31d7c51f47c84bbadd3836397815bc06a1b5ac4f7a0f0cefb1102bc5187"
+      "sha256": "9aeaca74abc8be111482d29b3998d0956c780baac1c07553cc270bd0b0c0e1da"
     },
     {
       "path": "figures/12_same_condition_3d_energy_deposits.png",

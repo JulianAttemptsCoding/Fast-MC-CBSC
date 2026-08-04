@@ -64,13 +64,18 @@ Before any experiment or edit:
 4. read `docs/QA_POLICY.md`, `docs/DATA_CONTRACT.md`,
    `docs/MODEL_WALKTHROUGH.md`, `docs/HARDWARE_PORTABILITY_QA.md`,
    `docs/VISUALIZATION_DASHBOARD.md`, **`docs/DICOS_BACKEND.md`** (the active
-   training backend, with a binding filesystem contract), and this file;
-5. inspect `git status --short`, `git log -5 --oneline`, and remotes in both
-   repositories;
-6. read the newest entries in `logs.md`;
-7. read `audit/compute_extension_20260727_r2_terminal_analysis.json` and
-   `audit/compute_extension_20260727_r2_terminal_analysis.md`;
-8. verify that no unknown job is active before submitting work.
+   training backend, with a binding filesystem contract),
+   `docs/GPU_BENCHMARKS.md` (throughput and cost; supersedes `logs.md`), and
+   this file;
+5. read `CLAUDE.md` if present — it carries the host-specific operating rules
+   (paths, `PYTHONPATH=src`, account identities) that this backend-neutral
+   document deliberately does not hard-code;
+6. inspect `git status --short`, `git log -5 --oneline`, remotes, and
+   `git rev-list --left-right --count origin/main...HEAD` in both repositories;
+7. read the newest entries in `logs.md` and the newest
+   `audit/*_terminal_analysis.{json,md}`;
+8. verify from the **process tree**, not from a log, that no unknown job is
+   active before submitting work.
 
 Never discard a dirty worktree. Existing changes belong to the user unless
 proved otherwise.
@@ -416,10 +421,15 @@ nonfinite gradients. That is historical evidence about that configuration, not
 a permanent hardware rule. Any mixed-precision retry must be a separately named
 bounded experiment with finite-gradient and checkpoint-reload QA.
 
-## 7. Current accepted epoch-4 checkpoints
+## 7. Checkpoint lineage
 
-All four calibrated families have verified epoch-4 artifacts. One checkpoint
-per family is published. Exact validation losses and checkpoint hashes:
+**For the current state, read §7b. This section is the origin of the lineage,
+not the present.** Everything the project now has descends from these epoch-4
+Vertex artifacts; the accepted checkpoints today are many epochs further on and
+were produced on DiCOS. The published set and the live run are in §7b.
+
+All four calibrated families have verified epoch-4 artifacts. Exact validation
+losses and checkpoint hashes at that point:
 
 | Family | LR / effective batch | Epoch | Validation loss | Best checkpoint SHA-256 | Last checkpoint SHA-256 |
 |---|---:|---:|---:|---|---|
@@ -462,7 +472,13 @@ epoch 4 recovered and improved. Over the full two-epoch extensions, all four
 families improved their validation objective. This supports optimization
 progress, not physics fidelity.
 
-### 7a. In flight: six-epoch continuation on DiCOS (started 2026-08-01)
+### 7a. HISTORICAL: the six-epoch continuation started 2026-08-01
+
+**Completed long ago; kept for the reasoning, not the state.** This describes
+`dicos-r3`. Its declared intent — "continue the winner alone with real early
+stopping restored (patience 3)" — was **overturned by evidence** and must not
+be carried forward: see the patience rule in §7b, which says the opposite and
+says why.
 
 All four families are being continued **six further epochs each** on the RTX
 4090 pod — absolute epochs 5..10, resuming from the `last.pt` in the table
@@ -484,147 +500,137 @@ Two things this phase does **not** establish, regardless of outcome: anything
 about Geant4 fidelity, and anything about untouched-test performance. The bank
 is the pilot bank; the 76,300-event test split remains sealed and untouched.
 
-### 7b. STATE AS OF 2026-08-02T15:00Z — read this before doing anything
+### 7b. STATE AS OF 2026-08-04T03:00Z — read this before doing anything
 
-**Nothing is training. All three pods are idle.** The next action is a
-decision, not a rescue.
-
-**Best model in the project: `calibrated_lr3e4`, validation 4.605498 at absolute
-epoch 15**, from run `dicos-p6`. That is 0.105331 below the next best and far
-outside the ~0.02 run-to-run resolution, so it is a real lead.
-
-    family                      best val    at epoch   run
-    calibrated_lr3e4            4.605498    15         dicos-p6      <- best
-    calibrated_lr1e4_halfbatch  4.710829    10         dicos-r3
-    calibrated_lr1e4            4.766131     8         dicos-r3
-    calibrated_lr3e5            4.843471     8         dicos-r3
-
-`calibrated_lr3e4` run `dicos-p6` (epochs 11..16, patience 6) finished
-`EXIT=0` at 14:52:06Z. QA PASS: six of six per-epoch invariants, postflight
-`pass: true`, nonfinite 0, negative 0, outside_valid_support 0, 6,660 updates.
-
-    epoch   11        12        13        14        15        16
-    val     4.685929  4.693405  4.741021  4.638183  4.605498  4.637055
-
-    best.pt  d73aa900a367c8cb1d1fdc53309822b07366e9cb66073513741e867514e3fcba
-    last.pt  763d45bbe3c075d9c0256df7e40b1946ab47816f28fa28767049f275116c964d
-    frozen   a7765a93c6f1a190b8c921e2fa8adbacc54e9e86e6e947f22f4e60c96e208ef3
-
-**Unfinished work, in priority order.**
-
-1. `calibrated_lr1e4` epochs 11..16 has **not** run to completion. Its frozen
-   config exists (`prep/configs/frozen_calibrated_lr1e4_dicos-p6.yaml`, sha
-   `ae5247650b3260495e5dcad117d329082ceb0f1f1d6885633dc95789dd84161e`,
-   resume `d79365693d10f16acdb2502fc3db5462f679b1c29fedbf1b6fbc8ff896321bce`)
-   and its checkpoints are staged. Launch it on the **3090** (venv
-   `.venv_3090`, runner `_setup/run_p6_3090.sh`). Two earlier attempts were
-   discarded, see the run table.
-2. The public site still publishes epoch-8/epoch-10 snapshots. It does **not**
-   yet carry `calibrated_lr3e4` epoch 15 at 4.605498, which is now the lowest
-   verified loss for that family and so is what the documented policy
-   ("lowest verified validation-loss checkpoint per calibrated family")
-   requires. Republishing needs that epoch's visualization payload transported
-   from `_runs/calibrated_lr3e4_dicos-p6/reports/visualization/epoch_0015.json`.
-3. The exhibition figures stop at epoch 16 for half-batch only; `lr3e4`'s
-   epochs 11..16 are not in `exhibition/build_continuation_loss_figures.py`'s
-   `CONTINUATION` dict yet.
-4. About 5.0 GB of packages sit in `~/.local/lib/python3.13/site-packages` on
-   the 80 GB datacentre-GPU pod, written there by mistake (see `logs.md`, entry
-   of 2026-08-02). The user was asked to remove them; an agent must not write
-   there.
-
-**Next task, concretely.** Item 1 is the one that unblocks the decision. Nothing
-needs building: the config is frozen, the checkpoints are staged, and the runner
-script is already on the host.
+**One run is training right now.** `calibrated_lr1e4` run `dicos-p10` on the
+RTX 4090, absolute epochs 39..62, started `2026-08-04T02:44:11Z`, detached job
+name `p10lr1e4`, lock pid 15753. Two helper daemons attend it (§7d). Do not
+launch anything into `_runs/calibrated_lr1e4_dicos-p10` and do not assume the
+run died because a log looked quiet — check the process tree.
 
 ```bash
-export DICOS_CONFIG=$HOME/.dicos/config_3090.json PYTHONPATH=src
-
-# 1. Prove nothing is already training. The process tree, not the log.
-python scripts/dicos.py exec 'nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader'
-python scripts/dicos.py exec '.venv_3090/bin/python _setup/kill_bench.py'   # lists before killing; 0 targets means clear
-
-# 2. Launch once. Read the output; do NOT re-issue if it looks empty.
-python scripts/dicos.py start 'bash _setup/run_p6_3090.sh' --name p6lr1e4_3090
-
-# 3. Confirm a single writer.
-python scripts/dicos.py exec 'cat _runs/calibrated_lr1e4_dicos-p6/run.lock'
+PYTHONPATH=src python scripts/dicos.py logs p10lr1e4          # trainer
+PYTHONPATH=src python scripts/dicos.py exec 'tail -3 "/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/_runs/calibrated_lr1e4_dicos-p10/logs/history.csv"'
 ```
 
-`run_p6_3090.sh` runs `calibrated_lr1e4` over absolute epochs 11..16 with
-patience 6 and `CBSC_ZDC_SHARD_CACHE=0`, writing to
-`_runs/calibrated_lr1e4_dicos-p6`. About 18.3 min/epoch on the 3090, so roughly
-2 h. It is a fixed-length run: six epochs against patience 6 means early
-stopping cannot fire, and the config records `early_stopping_can_fire: false`.
+**Standings — lowest verified validation loss per calibrated family.**
 
-When it exits: read `training_summary.json`, confirm six of six
-`invariant_epoch_*.json` pass and `training_postflight_invariants.json` has
-`pass: true`, then state plainly whether it beat **4.766131** (its own best) and
-how it compares with lr3e4's **4.605498**. Then items 2 and 3 — republish the
-site at whichever checkpoint is lowest per family, and add both families'
-epochs 11..16 to the `CONTINUATION` dict in
-`exhibition/build_continuation_loss_figures.py` before rebuilding the figures.
-Look at the rendered PNGs; three separate rendering faults this session were
-caught that way and none of them by a clean build.
+    family                      best val    at epoch   run          published
+    calibrated_lr3e4            4.597152    22         dicos-p7     yes  <- best
+    calibrated_lr1e4            4.635220    38         dicos-p9     yes  (p10 continuing)
+    calibrated_lr1e4_halfbatch  4.673036    21         dicos-p7     yes
+    calibrated_lr3e5            4.843471     8         dicos-r3     yes
+
+The lr3e4 lead over lr1e4 is **0.038068**. Run-to-run resolution is about
+**0.02** (§7e), so the lead is real but no longer commanding — it was 0.105331
+two phases ago. `calibrated_lr1e4` has closed most of the gap by being given
+many more epochs (39 against 23), which is the open question p10 tests.
+
+**Checkpoint identity for every currently accepted artifact.**
+
+| family | run | best epoch | best.pt SHA-256 | last.pt SHA-256 |
+|---|---|---:|---|---|
+| `calibrated_lr3e4` | `dicos-p7` | 22 | `31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb` | `eb533f18f08b1080ea367d75e77fb560d3957a2368a70d12e26e57191608460f` |
+| `calibrated_lr1e4` | `dicos-p9` | 38 | `89cae275c092cecca5025159d766b920a412f96e83b4438b68bc1e6c4bd46b2a` | `98540e3dca3997ddaba34f5a1f964dd57a0a67ae9c3616fddaf4add7f06eb853` |
+| `calibrated_lr1e4_halfbatch` | `dicos-p7` | 21 | `ffab832ac4798ca75bde5dd5e687ce3f634ab32b6c88f40169d3db59f0ead9b1` | `79bcdeac0d4550d230f2de5eb12e15be9ba73cf872802ac9f3862e2bf29aa2b9` |
+
+`dicos-p10` frozen config `4e246713113ac979edcd60f32990930bdb355645bf3d2d5b3c28aa215ffb7e2c`,
+template `657131348621642107544803dd19ed6a34ac688199e5c37bb74b666293857ef2`,
+resuming from the p9 epoch-38 best on both the `resume_from` and
+`resume_best_from` slots (one file, both slots, hash-verified).
+
+**The public site is current.** All four families publish their lowest verified
+checkpoint; the last published change was `calibrated_lr1e4` at epoch 38. When
+p10 produces a better epoch, republishing that family is required by the stated
+policy — see §14 for the exact procedure and the current snapshot IDs.
+
+**Two findings from p8/p9 that change how continuations must be built.**
+
+1. **Early-stopping patience must scale with the horizon; it cannot be a
+   constant.** Run `dicos-p8` asked for 24 epochs and stopped after 6. Patience
+   6 counted staleness against an *inherited* best that had been reached at the
+   end of an anneal, at learning rate 1e-6. Restarting the scheduler to peak
+   makes the model worse by construction for several epochs before it can be
+   better, so the counter is already half spent before the run has a chance.
+   Set patience to the full horizon of the run unless you are deliberately
+   testing early stopping. `dicos-p9` and `dicos-p10` both use patience 24 for
+   24 epochs.
+
+2. **Continuing a spent cosine beats restarting it.** `CosineAnnealingLR` is
+   periodic in `2*T_max`, so a scheduler resumed past its first anneal climbs
+   smoothly back toward peak and re-anneals — SGDR without the extra machinery.
+   `dicos-p9` set `restart_scheduler_on_resume: false` and resumed from the
+   *best* checkpoint rather than a later, worse `last.pt`. It improved
+   **0.067238** over 24 epochs, against p8's zero over the same nominal horizon.
+   `--no-restart-scheduler` on `scripts/build_final_continuation.py` is what
+   sets this.
+
+**Resuming from best re-runs an epoch number.** p10 resumes from epoch 38, so
+its first epoch is 39 — and p9 already wrote an epoch 39 on a different branch.
+This is expected and has a required consequence: when p10's history is merged
+into `exhibition/data/continuation_history.csv`, **p9's epoch 39 row must be
+dropped**, because it is no longer on the live lineage. The same thing happened
+between p6 and p9 at epoch 16 and was caught by the duplicate-epoch guard in
+`exhibition/build_continuation_loss_figures.py`. Do not silence that guard;
+resolve which branch is live and drop the other row.
 
 **Current direction — what this phase is trying to do.**
 
 The goal has not changed: take the strongest calibrated family and continue it
 until validation stops improving, on the 26,624/6,656 pilot bank, so that a
-single best generator exists to carry into the next stage. Everything since
-epoch 4 has been in service of that.
+single best generator exists to carry into the next stage.
 
-The route there has been revised once, by evidence, and the next agent needs to
-understand why rather than inherit the conclusion:
+The selection rule has been revised once, by evidence, and a new agent needs the
+reasoning rather than the conclusion:
 
-* The four families were compared over identical absolute epochs 5..10
-  (`dicos-r3`). The user's selection rule was **largest improvement from the
-  start of the continuation to its end**, which chose `calibrated_lr1e4_halfbatch`
+* The four families were first compared over identical absolute epochs 5..10
+  (`dicos-r3`). The user's rule was **largest improvement from the start of the
+  continuation to its end**, which chose `calibrated_lr1e4_halfbatch`
   (+0.134200).
-* That family then failed to beat its own epoch-10 checkpoint in **two** solo
-  continuations — once under patience 3 (stopped in three epochs) and once under
-  patience 6 over a full six-epoch anneal (ended 4.715659 against 4.710829).
-* `calibrated_lr3e4`, which came *third* on improvement but held the lowest
-  absolute loss, was then given the same six-epoch treatment and reached
-  **4.605498**, the best result in the project.
+* That family then failed to beat its own epoch-10 checkpoint in two solo
+  continuations, and its later `dicos-p7` extension reached only 4.673036.
+* `calibrated_lr3e4`, third on improvement but holding the lowest absolute
+  loss, went on to the best result in the project.
 
-So the improvement criterion selected the weaker model here. It measured how far
-a family had climbed out of its own restart, not how good it was. **Absolute
-validation loss has been the better predictor of what continues to improve**,
-and unless the user directs otherwise the next continuation should follow
-`calibrated_lr3e4`. Say this to the user rather than silently switching rules —
-the original criterion was theirs.
+The improvement criterion measured how far a family had climbed out of its own
+restart, not how good it was. **Absolute validation loss has been the better
+predictor.** Say this to the user rather than silently switching rules — the
+original criterion was theirs.
 
-The immediate open question is whether `calibrated_lr1e4` (item 1 below, never
-completed) changes that picture. It sat second on absolute loss at 4.766131. If
-its epochs 11..16 land near lr3e4's 4.605498 the comparison is live again; if
-they land where its trend suggested, lr3e4 is the clear continuation candidate
-and the project can move on to a longer run on that family alone.
+The live question p10 answers: `calibrated_lr1e4` improved 0.067238 across
+epochs 16..39 and is still improving at the end of that window. If another 24
+epochs carry it below **4.597152** it takes the lead outright, and the "best
+family" answer turns out to have been a statement about epochs rather than
+learning rate. If it flattens, lr3e4 is the continuation candidate and lr3e4
+itself has had only 23 epochs, so it is the one that deserves the long run next.
 
 Two boundaries that do not move whatever the outcome: this is optimization
 evidence on the pilot bank, and it establishes nothing about Geant4 fidelity or
 untouched-test performance. The 76,300-event test split stays sealed.
 
-**Measured GPU comparison — settled, do not re-derive.** Same architecture,
-batch 6, 4,437 batches per epoch, rates sampled the same way on each:
+**GPU comparison — measured; `docs/GPU_BENCHMARKS.md` is the single source of
+truth and this summary must not be re-derived from `logs.md`.** Identical work,
+batch 6, six full epochs per card:
 
-    RTX 4090                  7.31 batch/s   10.1 min/epoch   not in price list
-    RTX 3090                  4.04 batch/s   18.3 min/epoch   NT$395/board-day
-    80 GB datacentre GPU      2.30 batch/s   32.2 min/epoch   NT$865/board-day
+    RTX 4090                  649.83 s/epoch   10.83 min   5.540 epochs/h   no published rate
+    RTX 3090                 1168.88 s/epoch   19.48 min   3.080 epochs/h   NTD$158/board-day
+    80 GB datacentre GPU      990.17 s/epoch   16.50 min   3.636 epochs/h   NTD$346/board-day
 
-**Caveat that must travel with the third number:** it was sampled while two
-trainers shared that GPU, so it understates a solo run there. A clean solo
-re-measurement was attempted and failed (that process had had its run directory
-moved out from under it), so **the true solo rate for that card is unmeasured**
-and could be up to about 2x the figure above. The 4090 and 3090 numbers were
-each taken with a single verified trainer and are sound. Ranking 4090 > 3090 is
-solid; 3090 ahead of the datacentre card is likely but **not established**.
+Ratios: datacentre/4090 = **1.524**, 3090/4090 = **1.799**, 3090/datacentre =
+**1.180**. The 3090 is **1.855x more cost-efficient per epoch** — 2.19x cheaper
+per board-day against only 1.180x slower. A 24-epoch run costs roughly USD
+$1.60 on the 3090. **Cost is not a real constraint at this scale; wall-clock and
+GPU availability are.**
 
-Pricing is from ASGC's own table dated February 2022, and their docs disagree
-on the SRU price (NT$2, NT$3, and the table implies NT$5), so absolute NT$
-figures may be off by up to 2.5x. The 2.19x ratio between the two priced cards
-is unaffected. No RTX 4090 appears in either the price list or resource list,
-so the machine actually in use has no published rate.
+Two earlier figures in `logs.md` are withdrawn and must not be reused: "the 4090
+is 3.2x the datacentre card" (that card had been sampled while two trainers
+shared it; the true solo ratio is 1.524x), and the NT$395/NT$865 board-day
+prices (from a stale, self-contradictory 2022 mirror; too high by 2.5x).
+
+**As of 2026-08-04 the fleet is two cards: the RTX 4090 and the RTX 3090.** The
+user has retired the 80 GB datacentre pod and it will not be used. Its numbers
+above are kept because they were measured and because they are what withdrew the
+3.2x claim, not because that hardware is available. Do not plan around it.
 
 **Run history for this phase — read before interpreting any `_runs` directory.**
 
@@ -635,11 +641,102 @@ so the machine actually in use has no published rate.
 | `dicos-r3` | Complete, all four families, epochs 5..10, all QA PASS. The comparison the first winner was chosen from. |
 | `dicos-final` | half-batch epochs 11..13, patience 3. Stopped by early stopping with **no improvement** on 4.710829. Patience 3 cannot survive a high-LR scheduler restart; not a statement about the model. |
 | `dicos-final-r2` | half-batch epochs 11..16, patience 6. Completed, `EXIT=0`, QA PASS, ended 4.715659 — **did not beat** its own 4.710829. |
-| `dicos-p6` (lr3e4) | **Complete, QA PASS, the current best: 4.605498 at epoch 15.** |
-| `dicos-p6` (lr1e4) | **Never completed.** Two discarded attempts: one on the datacentre-GPU pod (crashed at epoch 12, archived `_runs/aborted_dcgpu_crash/`), one on the 3090 (wiped, its directory had been written by a stray process). |
+| `dicos-p6` (lr3e4) | Complete, QA PASS. 4.605498 at epoch 15. Superseded by `dicos-p7`. |
+| `dicos-p6` (lr1e4) | Complete, QA PASS, on the datacentre card. 4.702458 at epoch 15, a real +0.063673. Its epoch 16 row is **off the live lineage** — p9 branched from the epoch-15 best — and was dropped from `continuation_history.csv`. Two earlier discarded attempts exist: one crashed at epoch 12 (`_runs/aborted_dcgpu_crash/`), one wiped by a stray writer. |
+| `dicos-p7` (lr3e4) | Complete, QA PASS, 4090, epochs 17..22. **4.597152 at epoch 22 — the best result in the project.** Improvement +0.008346, which is *inside* the ~0.02 resolution, so this family has effectively plateaued. |
+| `dicos-p7` (halfbatch) | Complete, QA PASS, 3090, epochs 17..22. 4.673036 at epoch 21, +0.037793 — real. |
+| `dicos-p8` (lr1e4) | Complete but **stopped at 6 of 24 epochs**, no improvement. Scheduler restarted to peak, patience 6 against a best reached at LR 1e-6. The cause of the patience rule above. Not a statement about the model. |
+| `dicos-p9` (lr1e4) | Complete, QA PASS, 4090, epochs 16..39, 24/24 invariants, postflight `pass: true`, wall 18,238.8 s, 26,640 updates. **4.635220 at epoch 38, +0.067238 — the largest single-run improvement of the phase.** |
+| `dicos-p10` (lr1e4) | **In flight.** 4090, epochs 39..62, patience 24, resumed from the p9 epoch-38 best with the cosine continued. |
 | quarantined | `_runs/quarantine_duplicate_writer/` — an lr3e4 attempt with two concurrent writers. Never resume, compare or publish from it. |
 
 Do not compare a number from an aborted run against a completed one.
+
+### 7d. Per-epoch diagnostics — the producer/consumer pipeline
+
+This did not exist when the rest of this document was written. It is how every
+"metric vs epoch" figure and every distribution number after `dicos-p9` is
+produced, and it runs **on the second GPU while the first one trains**.
+
+Three pieces:
+
+| piece | where it runs | what it does |
+|---|---|---|
+| `_setup/diag_producer.py` | same pod as the trainer | every 60 s, copies `checkpoints/last.pt` into `_diag/<run-tag>/queue`, naming the copy by the epoch **embedded in the file it actually read**. Writes `STOP` once the wrapper log shows `EXIT=`. |
+| `scripts/dicos_diagnostics.py --watch-dir` | the other pod's GPU | drains the queue, generates 4,000 validation events per checkpoint, writes `_diag/<run-tag>/metrics_epoch_NNNN.json`. |
+| `scripts/refresh_continuation_outputs.py` | your workstation | pulls metrics and history down, rewrites `continuation_history.csv`, rebuilds both figure sets. Deliberately does **not** publish. |
+
+```bash
+# producer, on the training pod
+PYTHONPATH=src python scripts/dicos.py start \
+  'cd "<WORKDIR>" && PYTHONNOUSERSITE=1 .venv/bin/python _setup/diag_producer.py \
+     "_runs/<family>_<tag>" "_runs/<jobname>.log" "<tag>"' --name <tag>prod
+
+# consumer, on the other pod
+DICOS_CONFIG=$HOME/.dicos/config_3090.json PYTHONPATH=src python scripts/dicos.py start \
+  'cd "<WORKDIR>" && PYTHONNOUSERSITE=1 PYTHONPATH=repo/src .venv_3090/bin/python \
+     repo/scripts/dicos_diagnostics.py --n-events 4000 --selection-seed 20260803 \
+     --watch-dir _diag/<tag>/queue --output-dir _diag/<tag> --device cuda' --name <tag>diag
+```
+
+Five rules this pipeline earned the hard way. Each corresponds to a fault that
+actually occurred; none may be relaxed.
+
+1. **Namespace by run tag, on the host as well as in the repo.** `_diag/` was
+   flat, and p9 silently overwrote p8's `metrics_epoch_0017..0022.json`. p10
+   would have overwritten p9's epoch 39 the same way. Both `_diag/<tag>/` on
+   the host and `exhibition/data/diagnostics/<tag>/` in the repo are namespaced
+   now. Do not collapse either back.
+2. **Name the queued checkpoint by the epoch inside the file**, never by the
+   report that triggered the copy. `last.pt` is overwritten every epoch, so a
+   slow copy can otherwise label epoch N+1's weights as N.
+3. **Drain the queue before honouring `STOP`.** The consumer's watch loop
+   checks `STOP` *and* an empty pending list. An earlier version exited on
+   `STOP` alone and would have dropped the last three epochs.
+4. **Take the energy-bin edges from the checkpoint's own frozen config**, and
+   assert they cover the sampled kinetic range. A hard-coded top edge of 225
+   silently dropped every event in the 225–250 GeV bin. `dicos_diagnostics.py`
+   now raises rather than dropping, and reports `events_outside_energy_bins`
+   and `empty_energy_bins`.
+5. **Cap the pooled cell spectrum at 200,000 values** (`POOLED_SPECTRUM_CAP`).
+   `wasserstein_1d` on ~6.4M pooled values does not return in usable time — one
+   attempt burned 700 s of CPU and was killed. Per-event metrics are uncapped
+   and `src/cbsc_zdc/eval/metrics.py` is untouched; the cap is a deterministic
+   subsample in the diagnostic driver only.
+
+**The diagnostics never touch the test split.** The dataset is constructed with
+`split="validation"`, which filters on the split code at construction, and an
+independent assertion re-counts the drawn events and raises if any train or test
+event is present. Every metrics file records `split_counts` so the claim is
+checkable after the fact, not just asserted.
+
+**What the diagnostics say, as of `dicos-p9` epoch 38.** These are honest
+negative results and must travel with any favourable loss number:
+
+* **C2ST AUROC sits at 0.77–0.92 for every epoch measured** and never
+  approaches the 0.65 gate threshold. A classifier separates Fast-MC from
+  Geant4 easily at every checkpoint the project has produced. The validation
+  objective improving has not moved this.
+* **Fast-MC produces about twice as many zero-response events** as Geant4 —
+  0.015–0.023 against 0.0097.
+* **The loss and the distribution metrics disagree about which epoch is best**
+  (p8: 21 against 22; p9: 33 against 38). Checkpoint selection follows the
+  validation loss, as declared. Do not switch selection rules to whichever
+  metric flatters a run.
+* **Share flow is 42.2% of the weighted objective** and the largest single
+  source of improvement.
+* **The pilot bank is 4.3% of the available training data** — the largest
+  untested lever in the project, and untouched so far.
+
+### 7e. Numbers you should not re-derive
+
+**Run-to-run resolution is about 0.02** in validation loss, and hardware
+nondeterminism is **not** its source. A controlled replicate — the 3090
+benchmark run configured identically to the datacentre run, same seed, same
+parent checkpoint — diverged by 0.0136 at epoch 11 and reconverged to
+**5.8e-6** at the annealed endpoint. Two cards, same answer. Treat differences
+below ~0.02 between separate runs as noise, and do not attribute them to
+hardware.
 
 ### 7c. Driving several pods at once
 
@@ -647,16 +744,33 @@ All pods mount the **same** CephFS workdir. Credentials live one file per pod
 and are selected with `DICOS_CONFIG`; without it the client uses
 `~/.dicos/config.json`, which is the 4090.
 
-| pod | port | credentials file | venv |
-|---|---|---|---|
-| RTX 4090 (primary) | 32545 | `~/.dicos/config.json` | `.venv` |
-| RTX 3090 | 32705 | `~/.dicos/config_3090.json` | `.venv_3090` |
-| 80 GB datacentre GPU | 31785 | `~/.dicos/config_dcgpu.json` | `.venv_dcgpu` |
+| pod | port | credentials file | venv | role |
+|---|---|---|---|---|
+| RTX 4090 (primary) | 32545 | `~/.dicos/config.json` | `.venv` | training |
+| RTX 3090 | 32705 | `~/.dicos/config_3090.json` | `.venv_3090` | per-epoch diagnostics (§7d) |
+
+**As of 2026-08-04 these two are the whole fleet.** The 80 GB datacentre pod
+(port 31785, `~/.dicos/config_dcgpu.json`, `.venv_dcgpu`) has been retired by
+the user and will not be used; its credentials file may still exist locally and
+is dead. Do not plan work that needs a third card without asking.
 
 ```bash
 DICOS_CONFIG=$HOME/.dicos/config_3090.json PYTHONPATH=src \
   python scripts/dicos.py exec 'nvidia-smi'
 ```
+
+**Pod images differ.** The 3090 pod has no `ps`, no `pkill`, no `free`. Scan
+`/proc` from the pod's own venv interpreter instead — and build the search
+token at runtime, because a probe whose command line contains the string it is
+searching for **matches itself**:
+
+```python
+needle = "dicos_" + "train"          # never write the literal
+mine = {os.getpid(), os.getppid()}   # the heredoc's shell is a match too
+```
+
+That is not hypothetical: a self-matching probe once reported a phantom trainer,
+and the `kill -9` that followed killed the probe's own process group.
 
 **Access URLs.** Tokens are deliberately **not** written here: this file is
 committed and pushed, and a token in the repository is pod access for anyone
@@ -664,7 +778,6 @@ who can read it.
 
     RTX 4090   http://scale-k8s-master01.twgrid.org:32545/
     RTX 3090   http://scale-k8s-master01.twgrid.org:32705/
-    80 GB DC   http://scale-k8s-master01.twgrid.org:31785/
 
 > **Read `POD_ACCESS.local.md` in the repository root for the tokens.** It is
 > untracked and git-ignored on purpose, so it exists only on the user's machine
@@ -792,6 +905,38 @@ src/cbsc_zdc/cloud/vertex_stage.py
 
 If filenames differ on the checked-out commit, use `rg --files src/cbsc_zdc`
 and `rg` for class/function names; do not guess.
+
+**The scripts you will actually reach for on DiCOS**, none of which existed when
+the rest of this document was written:
+
+```text
+scripts/dicos.py                          client: auth, setup, exec, start, jobs,
+                                          logs, put, get, ls, verify, info.
+                                          Enforces the filesystem contract
+                                          client-side; do not weaken the guard.
+scripts/dicos_train.py                    the trainer runner; DiCOS twin of
+                                          vertex_stage. Takes a run-directory
+                                          lock, so a second writer is refused.
+scripts/dicos_diagnostics.py              per-epoch validation-only diagnostics,
+                                          one-shot (--checkpoint) or watch
+                                          (--watch-dir). See §7d.
+scripts/build_final_continuation.py       builds a continuation template from an
+                                          accepted parent; --parent-last-epoch,
+                                          --no-restart-scheduler, --patience,
+                                          --checkpoint-stem, --selected-by.
+scripts/sync_dicos_visualizations.py      DiCOS -> dashboard, with the Vertex
+                                          sync's validations.
+scripts/refresh_continuation_outputs.py   one command: pull metrics + history,
+                                          rewrite rows, rebuild figures.
+_setup/diag_producer.py                   on the host, not in the repo. Feeds the
+                                          diagnostic queue. See §7d.
+_setup/inspect_ckpt.py                    on the host. Prints a checkpoint's
+                                          embedded stage/epoch/metric and hash
+                                          without loading a model.
+```
+
+`docs/GPU_BENCHMARKS.md` is the single source of truth for throughput and cost
+and supersedes every such figure in `logs.md`.
 
 ## 9. Running on Vertex AI
 
@@ -1130,6 +1275,32 @@ For continuation training:
    scope and budget;
 8. report every run, including regressions.
 
+**`training.epochs` is an ABSOLUTE target, not a count of new epochs.** The
+trainer resumes at `checkpoint_epoch + 1` and runs `range(start_epoch, epochs)`.
+So `epochs = parent_last_epoch + 1 + additional`. Misreading this cost a whole
+wave (`dicos-r1`), which ran one epoch per family with the cosine annealed to
+`min_learning_rate` across it. `scripts/build_final_continuation.py` takes
+`--parent-last-epoch` and computes it for you; use the builder.
+
+**Two settings that are not free parameters any more**, both established by
+`dicos-p8` against `dicos-p9` and explained in §7b:
+
+* `early_stopping_patience` must equal the run's horizon, not a constant, when
+  resuming from a best checkpoint reached at the end of an anneal;
+* `restart_scheduler_on_resume: false` — continue the saved cosine. It is
+  periodic in `2*T_max` and climbs back to peak on its own. Restarting to peak
+  discards that and interacts badly with patience.
+
+**Build it, do not hand-edit it.** Never edit a frozen config. Edit the template
+or the builder, generate a new uniquely named config, freeze it through
+`python -m cbsc_zdc.cli freeze-config`, and record both hashes. `--geometry`
+wants the geometry **directory**, not the `.npz`. Then diff the new frozen
+config against its parent and confirm only the intended fields moved — project
+name, run dir, epochs, the resume pair, and provenance. Anything else appearing
+in that diff is a defect. `freeze-config` also overrides `response_cap_ratio`
+and `response_cap_absolute_gev` from the audit you pass, so passing the wrong
+audit silently changes the physics caps.
+
 More epochs are not guaranteed to improve monotonically. Do not cherry-pick a
 single favorable epoch without showing the complete trajectory.
 
@@ -1162,6 +1333,19 @@ At every completed or failed epoch, record:
 
 Do not log private chain-of-thought. Log the evidence and why the declared
 decision follows from it.
+
+Every meaningful event gets a `logs.md` entry with its commands, source commit,
+dirty-state disposition, input/output SHA-256, environment, GPU, job IDs,
+timings, costs, counterexamples, **failed attempts**, and the decision the
+evidence supports. Machine-readable twins go in `audit/NAME.{json,md}`.
+
+The failed-attempts clause is load-bearing. Most of the rules in this document
+exist because a specific mistake was written down: the absolute-`epochs`
+misread, the two-writer quarantine, the self-matching process probe, the
+manifest-filename clobbering, the flat `_diag/` overwrite, the 225–250 GeV bin
+that vanished, the patience that stopped a 24-epoch run at 6. An agent that
+logs only successes removes the mechanism that produced every one of those
+guards.
 
 ## 13. Local Event Observatory
 
@@ -1237,14 +1421,18 @@ Public-site contract:
   capped device-pixel ratio;
 - clear statement that visual QA is not Geant4 fidelity.
 
-Current public snapshot IDs are:
+Current public snapshot IDs, as recorded in
+`PUBLIC_REPO/config/public_snapshots.json`:
 
 ```text
-compute-extension-r2-calibrated-lr3e5:joint:0004
-compute-extension-r2-calibrated-lr1e4:joint:0004
-compute-extension-r1-calibrated-lr3e4:joint:0004
-compute-extension-r1-calibrated-lr1e4-halfbatch:joint:0004
+dicos-r3-calibrated-lr3e5:joint:0008
+dicos-p9-calibrated-lr1e4:joint:0038
+dicos-p7-calibrated-lr3e4:joint:0022
+dicos-p7-calibrated-lr1e4-halfbatch:joint:0021
 ```
+
+Read that file rather than trusting this list; it is the authority and it moves
+whenever a family produces a lower verified loss.
 
 Publication procedure:
 
@@ -1269,11 +1457,25 @@ npm run build
 6. verify the GitHub Pages workflow and live URL rather than assuming push means
    deployment.
 
-The last verified public state before this handoff was commit
-`784fe6bf572cb6285fb2e92a54858883da1c0e6e`, workflow `30285942671`,
-manifest SHA-256
-`3ab56be2af72b386fa2e553d48aea9e9dbb361e19621c35639e8e61b1f3c8bfe`,
-and 24,582,747 compressed bytes. Recheck because this can change.
+**Getting a DiCOS epoch into the dashboard.** The procedure above assumes a GCS
+source. From DiCOS the transport is `scripts/sync_dicos_visualizations.py`,
+which applies the same validations as the Vertex sync — epoch check, snapshot
+id, SHA-256, atomic write, row normalization — but records `dicos_object`
+rather than `gcs_object` for provenance. Pull the epoch payload from
+`_runs/<family>_<tag>/reports/visualization/epoch_NNNN.json` and feed it to
+that script; do not hand-assemble dashboard rows, which is how this was done
+before the script existed and is not reproducible.
+
+Note that `export_epoch_visualization` renders from **`last.pt` as of that
+epoch**, not from `best.pt`. For the published checkpoint those coincide only
+when the best epoch is also the final one. Check before claiming a figure shows
+the published weights.
+
+The last verified public state was commit `e53f8fc`, manifest SHA-256
+`a8b28719a149b43acef79a39742adb5493e4aac1453b99fc4e76e5917a4ca4fa`,
+24,837,777 bytes on disk across `public/data`, serving
+`dicos-p9-calibrated-lr1e4:joint:0038`. Recheck rather than trusting it; this
+moves with every publication.
 
 ## 15. Exhibition figures
 
@@ -1293,45 +1495,117 @@ new published epoch:
 - update the compact history/evidence inputs;
 - rebuild;
 - verify every output hash and manifest assertion;
-- visually inspect the PNG/SVG outputs;
+- **visually inspect the PNG/SVG outputs**;
 - keep the distinction between optimization progress and physics fidelity.
 
-## 16. Minimum verification before making changes
+That inspection step is not a formality. Three separate rendering faults were
+caught only by looking at the rendered image, and none by a clean build: a
+subtitle colliding with the title on short figures (fixed by positioning in
+inches, `y = 1 - 0.36/height`, because fractional positions do not scale), a
+best-epoch label sitting on top of the training curve (moved below the minimum
+into opened headroom), and a silently missing energy bin.
+
+**Two figure builders, two histories, and they must not be crossed.**
+
+| builder | reads | covers |
+|---|---|---|
+| `exhibition/build_exhibition.py` | `exhibition/data/training_history.csv` | the original epochs 0..10; `build_exhibition.py` **asserts** that file is exactly epochs 0..10 |
+| `exhibition/build_continuation_loss_figures.py` | `exhibition/data/continuation_history.csv` | every DiCOS continuation, per family and run tag |
+
+Putting continuation rows into `training_history.csv` trips that assertion. It
+is a guard, not an obstacle.
+
+**Metric-vs-epoch trends** come from a third builder:
+
+```bash
+python exhibition/build_diagnostic_trend_figure.py <run-tag>    # default dicos-p9
+```
+
+It reads `exhibition/data/diagnostics/<run-tag>/` and writes four figures —
+`bias_vs_epoch`, `wasserstein_vs_epoch`, `headline_vs_epoch`,
+`energy_bins_vs_epoch`. Missing bins are plotted as `NaN` so a gap breaks the
+line visibly instead of being interpolated over. One command refreshes the whole
+local picture from a live run:
+
+```bash
+python scripts/refresh_continuation_outputs.py --run-tag <tag>
+```
+
+It pulls diagnostics and history off the host, rewrites the continuation rows,
+and rebuilds both figure sets. It deliberately does **not** publish; publication
+is a separate, deliberate act (§14).
+
+## 16. Minimum verification before claiming work is done
+
+`pytest` needs `PYTHONPATH=src`. Without it collection fails with
+`ModuleNotFoundError: cbsc_zdc` and **runs zero tests, reporting success**.
 
 Run from the source repository:
 
 ```bash
+export PYTHONPATH=src                     # PowerShell: $env:PYTHONPATH='src'
 python -m compileall -q src vertex scripts tests
-python -m pytest -q
-python exhibition/build_exhibition.py
+python -m pytest -q                       # expect 203 passed as of 2026-08-04
+python exhibition/build_exhibition.py     # expect 23 visuals; verify the manifest hash
 ```
 
 Run from the public repository:
 
 ```bash
-python -m unittest discover -s tests -v
+python -m unittest discover -s tests -v   # expect 7 tests
 npm ci
 npm run build
 ```
 
+Five Transformer nested-tensor `UserWarning`s are known and nonfatal.
+
 Use the environment’s exact Python executable if `python` is ambiguous. If a
 test fails because a dependency is missing, record the environment and install
-only the declared project dependencies. Do not weaken the assertion.
+only the declared project dependencies. **Do not weaken the assertion.**
+
+`tests/test_qa_policy.py` will fail if you write the 80 GB card's model name
+into any active-guidance file. That is deliberate, not a bug: an earlier policy
+revision used access to that card as a permission screen, and the token check is
+what keeps it from coming back. Rename the card — "80 GB datacentre GPU" is the
+descriptor the repo uses — rather than exempting your file from the test.
+
+A push is not a deployment. Verify the GitHub Pages workflow and fetch the live
+URL before saying the site is updated.
 
 ## 17. First response and first actions
 
-Start your response to the user with:
+Before you answer, establish state — do not report from this document, which
+was written at a moment that has passed:
+
+```bash
+cd "$SOURCE_REPO" && git status --short && git log -5 --oneline \
+  && git rev-list --left-right --count origin/main...HEAD
+cd "$PUBLIC_REPO" && git status --short && git log -3 --oneline
+PYTHONPATH=src python scripts/dicos.py exec \
+  'nvidia-smi --query-gpu=name,memory.used,utilization.gpu --format=csv,noheader; \
+   ps -eo pid,etime,args | grep "[d]icos_train" || echo NONE'
+```
+
+Then start your response with:
 
 1. the source/public commit and dirty-state status;
-2. the latest accepted model state (four calibrated epoch-4 families);
-3. the scientific boundary (optimization evidence exists; Geant4 fidelity is
-   not established);
-4. whether any cloud/cluster job is currently active;
-5. the current backend/storage access you can actually verify;
+2. the current standings and which run, if any, is training (§7b);
+3. the scientific boundary — optimization evidence exists; Geant4 fidelity is
+   **not** established, and C2ST AUROC 0.77–0.92 says a classifier still
+   separates Fast-MC from Geant4 at every checkpoint;
+4. whether any cluster job is currently active, proved from the process tree;
+5. the current backend access you can actually verify;
 6. the exact proposed next experiment and conservative cost/time range, if the
    user asked to launch one.
 
-Then act within the user’s request. Do not resurrect hardware permission gates.
+Then act within the user's request. Do not resurrect hardware permission gates.
 Use QA findings to identify trusted artifacts and concrete follow-up checks.
-Preserve provenance, keep the test split sealed during development, update
-`logs.md` at every meaningful event, and report negative results honestly.
+Preserve provenance, keep the test split sealed during development, and report
+negative results honestly.
+
+**The standing operational duty, restated because it is the one most often
+dropped:** at every meaningful event — launch, epoch, failure, correction, doc
+change, repo change, verification run — append to `logs.md`, and keep the
+graphs, the dashboard, the public site, the metrics, and the audit twins moving
+with it. Not at the end of a session; as you go. A run whose evidence was never
+written down is a run that did not happen.

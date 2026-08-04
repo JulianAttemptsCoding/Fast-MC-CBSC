@@ -1,0 +1,285 @@
+{
+  "format_version": 1,
+  "date": "2026-08-04",
+  "phase": "dicos-p8, dicos-p9, dicos-p10",
+  "supersedes": "audit/continuation_20260803_terminal_analysis.json",
+  "source_commit_at_launch": "1fe95eb",
+  "host_repo_commit": "812d2ac",
+  "host_repo_commit_note": "scripts/dicos_train.py and scripts/dicos_diagnostics.py are byte-identical at 812d2ac and 1fe95eb; the two files that differ (build_final_continuation.py, refresh_continuation_outputs.py) are workstation-side tooling and are not executed on the host",
+  "backend": "DiCOS (ASGC)",
+  "fleet": {
+    "as_of": "2026-08-04",
+    "cards": ["NVIDIA GeForce RTX 4090", "NVIDIA GeForce RTX 3090"],
+    "retired": "80 GB datacentre GPU pod, retired by the user on 2026-08-04; its measured figures remain valid history but that hardware is not available"
+  },
+  "bank": {
+    "name": "training_pilot_splits.json",
+    "train": 26624,
+    "validation": 6656,
+    "test": 0,
+    "assignment_sha256": "084f0dfd86e488c63bb41ea50d6783ad22eb57a322288c075a94b1ec12dd3714",
+    "split_manifest_sha256": "8ea9fe7a91cae4e6cb20c9877b9cd1af038d589b3fd060afd043fe0d4a659c41",
+    "audit_sha256": "96ac0773c44efabac1ea81736444d9537523e56559cef00195645aabb4b34514",
+    "geometry_sha256": "e22d4cfb1e9293a33dd13151587910268ba64cd8efbcdb7a835a7442f2edcb4b",
+    "fraction_of_available_training_events": 0.0435
+  },
+  "runs": [
+    {
+      "family": "calibrated_lr1e4",
+      "run_tag": "dicos-p8",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "epochs_requested": "17..40",
+      "epochs_completed": "17..22",
+      "completed_of_requested": "6 of 24",
+      "terminated_by": "early stopping",
+      "restart_scheduler_on_resume": true,
+      "early_stopping_patience": 6,
+      "runtime_config_sha256": "337adfb150bf08791ec584c23c1fca9b1cb1e4cec3a91c7dbd1bc5f5176c1868",
+      "exit": 0,
+      "wrapper_start_utc": "2026-08-03T08:30:00Z",
+      "wrapper_exit_utc": "2026-08-03T09:49:22Z",
+      "wrapper_wall_seconds": 4762,
+      "epoch_seconds_sum": 3863.9,
+      "updates": 6660,
+      "best_validation_loss": 4.702457625555259,
+      "best_epoch": 15,
+      "best_epoch_note": "INHERITED from the dicos-p6 parent; no epoch of this run beat it",
+      "best_checkpoint_sha256": "d93b3ad061dde316864ff30b350bcc456aec7cf6821d18e27c6755ae98f244e7",
+      "last_checkpoint_sha256": "f668956adf92f56d714437464b34bd6f81c3f2ac9e6fa04984d89f1a632111be",
+      "epoch_invariants_pass": 6,
+      "epoch_invariants_total": 6,
+      "postflight_pass": true,
+      "validation_loss_by_epoch": {
+        "17": 4.818539495523992,
+        "18": 4.836365553505424,
+        "19": 4.76966500875716,
+        "20": 4.74247601475583,
+        "21": 4.740614640416024,
+        "22": 4.735947087079854
+      },
+      "learning_rate_by_epoch": {
+        "17": 9.957652063800333e-05,
+        "18": 9.831332840130844e-05,
+        "19": 9.623203685930842e-05,
+        "20": 9.336825748732961e-05,
+        "21": 8.977099034441593e-05,
+        "22": 8.550178566873399e-05
+      },
+      "improvement_over_parent_best": 0.0,
+      "improvement_distinguishable": false,
+      "finding": "PATIENCE CANNOT BE A CONSTANT. Patience 6 counted staleness against an inherited best reached at the end of an anneal, at learning rate 1e-6. Restarting the scheduler to peak makes the model worse by construction before it can be better, so the counter was already spent before the run had a chance. The trajectory was still descending monotonically from epoch 19 when it stopped. This is a statement about the stopping rule, not about the model.",
+      "remedy": "patience must equal the run horizon when resuming from an annealed best; dicos-p9 and dicos-p10 use patience 24 for 24 epochs"
+    },
+    {
+      "family": "calibrated_lr1e4",
+      "run_tag": "dicos-p9",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "epochs": "16..39",
+      "restart_scheduler_on_resume": false,
+      "early_stopping_patience": 24,
+      "early_stopping_can_fire": false,
+      "resumed_from": "the dicos-p6 epoch-15 BEST checkpoint, on both the resume_from and resume_best_from slots",
+      "resume_from_sha256": "d93b3ad061dde316864ff30b350bcc456aec7cf6821d18e27c6755ae98f244e7",
+      "resume_best_from_sha256": "d93b3ad061dde316864ff30b350bcc456aec7cf6821d18e27c6755ae98f244e7",
+      "frozen_config_sha256": "9ab50a47ed85ba5739de71888fde361a91e2ba2b1f8d738a151081b8c9920fe6",
+      "runtime_config_sha256": "cd636e2b702d1825df7474cced14c94f00d05c63a4d1c20862c37977893801c1",
+      "template_sha256": "d8f81f65c4f9861fa9075d1a47a5093f285071849974b1a365eeb46255ddcdef",
+      "exit": 0,
+      "wrapper_start_utc": "2026-08-03T13:56:51Z",
+      "wrapper_exit_utc": "2026-08-03T19:00:52Z",
+      "wrapper_wall_seconds": 18241,
+      "epoch_seconds_sum": 15550.6,
+      "epoch_seconds_mean": 647.94,
+      "wall_minus_epoch_seconds": 2690.4,
+      "wall_minus_epoch_note": "dataset construction plus 24 per-epoch visualization exports",
+      "updates": 26640,
+      "best_validation_loss": 4.635219681489869,
+      "best_epoch": 38,
+      "best_checkpoint_sha256": "89cae275c092cecca5025159d766b920a412f96e83b4438b68bc1e6c4bd46b2a",
+      "last_checkpoint_sha256": "98540e3dca3997ddaba34f5a1f964dd57a0a67ae9c3616fddaf4add7f06eb853",
+      "epoch_invariants_pass": 24,
+      "epoch_invariants_total": 24,
+      "postflight_pass": true,
+      "postflight_invariants": {
+        "count_mismatch_max": 0,
+        "dust_cells": 0,
+        "event_closure_max_gev": 4.76837158203125e-07,
+        "layer_closure_max_gev": 5.7220458984375e-06,
+        "negative": 0,
+        "nonfinite": 0,
+        "outside_valid_support": 0,
+        "requested_realized_mismatch_max": 0,
+        "support_mask_mismatch": 0
+      },
+      "validation_loss_by_epoch": {
+        "16": 4.737564601800452,
+        "17": 4.734641439220043,
+        "18": 4.73031875783493,
+        "19": 4.740284242183188,
+        "20": 4.716961396037223,
+        "21": 4.770860000375773,
+        "22": 4.790297813680825,
+        "23": 4.832528245920318,
+        "24": 4.688147352869304,
+        "25": 4.736778148271329,
+        "26": 4.68379883570692,
+        "27": 4.67064517029557,
+        "28": 4.6962532222183695,
+        "29": 4.64058522075022,
+        "30": 4.673669853810859,
+        "31": 4.721207942306385,
+        "32": 4.780644860484066,
+        "33": 4.693245286648305,
+        "34": 4.794566192529212,
+        "35": 4.692578143989708,
+        "36": 4.693340447427238,
+        "37": 4.720712283694378,
+        "38": 4.635219681489869,
+        "39": 4.664427464388823
+      },
+      "improvement_over_parent_best": 0.067238,
+      "improvement_distinguishable": true,
+      "finding": "CONTINUING A SPENT COSINE BEATS RESTARTING IT. CosineAnnealingLR is periodic in 2*T_max, so a scheduler resumed past its first anneal climbs smoothly back toward peak and re-anneals, SGDR-like, without extra machinery. p9 differed from p8 in exactly two declared settings -- restart_scheduler_on_resume false, and patience widened to the full horizon -- and improved 0.067238 where p8 improved nothing over the same nominal 24-epoch request."
+    },
+    {
+      "family": "calibrated_lr1e4",
+      "run_tag": "dicos-p10",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "status": "IN FLIGHT at the time of writing",
+      "epochs": "39..62",
+      "epochs_absolute_target": 63,
+      "parent_last_epoch": 38,
+      "restart_scheduler_on_resume": false,
+      "early_stopping_patience": 24,
+      "resumed_from": "the dicos-p9 epoch-38 BEST checkpoint, on both resume slots",
+      "resume_from_sha256": "89cae275c092cecca5025159d766b920a412f96e83b4438b68bc1e6c4bd46b2a",
+      "resume_best_from_sha256": "89cae275c092cecca5025159d766b920a412f96e83b4438b68bc1e6c4bd46b2a",
+      "template_sha256": "657131348621642107544803dd19ed6a34ac688199e5c37bb74b666293857ef2",
+      "frozen_config_sha256": "4e246713113ac979edcd60f32990930bdb355645bf3d2d5b3c28aa215ffb7e2c",
+      "manifest_sha256": "8cdfcc98cb381e99fb59a96a0a3a059802fb28f75090dd1d749e2e63b9f76337",
+      "wrapper_start_utc": "2026-08-04T02:44:11Z",
+      "detached_job_name": "p10lr1e4",
+      "run_lock_pid": 15753,
+      "frozen_config_diff_against_parent": [
+        "project.name",
+        "project.run_dir",
+        "training.epochs",
+        "training.resume_from_relative",
+        "training.resume_from_sha256",
+        "training.resume_best_from_relative",
+        "training.resume_best_from_sha256",
+        "provenance.parent_config",
+        "provenance.parent_config_sha256",
+        "provenance.parent_project_name",
+        "provenance.parent_last_epoch",
+        "provenance.selected_by",
+        "provenance.template_sha256"
+      ],
+      "frozen_config_diff_verdict": "only the intended fields moved; every backend-portability invariant (learning rate, batch, accumulation, workers, precision, seed, solver steps, response caps, geometry, splits, audit) is unchanged",
+      "expected_duration_seconds": 15600,
+      "question_under_test": "whether calibrated_lr1e4 crosses below calibrated_lr3e4's 4.597152 given 24 further epochs, i.e. whether the family ranking was a statement about epochs rather than learning rate"
+    }
+  ],
+  "standings_at_writing": {
+    "calibrated_lr3e4": {"best": 4.597151546143159, "epoch": 22, "run": "dicos-p7"},
+    "calibrated_lr1e4": {"best": 4.635219681489869, "epoch": 38, "run": "dicos-p9"},
+    "calibrated_lr1e4_halfbatch": {"best": 4.673036068110655, "epoch": 21, "run": "dicos-p7"},
+    "calibrated_lr3e5": {"best": 4.843471, "epoch": 8, "run": "dicos-r3"},
+    "lead_of_lr3e4_over_lr1e4": 0.038068,
+    "run_to_run_resolution": 0.02,
+    "note": "the lead is real but narrowing; it was 0.105331 two phases ago, closed by giving lr1e4 more epochs rather than by any change of setting"
+  },
+  "diagnostics": {
+    "producer": "_setup/diag_producer.py, on the training pod",
+    "consumer": "scripts/dicos_diagnostics.py --watch-dir, on the RTX 3090",
+    "n_events_per_epoch": 4000,
+    "selection_seed": 20260803,
+    "split": "validation",
+    "test_events_used": 0,
+    "test_split_guard": "the dataset is constructed with split=\"validation\", which filters on the split code at construction, and an independent assertion re-counts drawn events and raises if any train or test event is present; every metrics file records split_counts",
+    "namespacing": "_diag/<run-tag>/ on the host and exhibition/data/diagnostics/<run-tag>/ in the repo",
+    "faults_fixed_this_phase": [
+      {
+        "fault": "flat _diag/ silently overwrote metrics when two runs of one family shared an absolute epoch number",
+        "damage": "dicos-p8 epochs 17..22 were overwritten by dicos-p9",
+        "recovery": "p8's metrics were recovered from git history; p9's 24 files were moved to _diag/dicos-p9/ before p10 could overwrite epoch 39",
+        "fix": "namespace by run tag on both host and repo; diag_producer.py now takes the run tag as a required argument"
+      },
+      {
+        "fault": "the watch loop honoured STOP before draining the queue",
+        "damage": "would have dropped the last three epochs of diagnostics",
+        "fix": "exit only when STOP exists AND the pending list is empty"
+      },
+      {
+        "fault": "energy bin edges were hard-coded with a top edge of 225 GeV",
+        "damage": "every event in the 225-250 GeV bin was silently dropped from the figures",
+        "fix": "read the edges from the checkpoint's own frozen config and raise if they do not cover the sampled kinetic range; report events_outside_energy_bins and empty_energy_bins"
+      },
+      {
+        "fault": "wasserstein_1d on the ~6.4M-value pooled cell spectrum did not return",
+        "damage": "700 s of CPU burned, process killed",
+        "fix": "POOLED_SPECTRUM_CAP = 200000, a deterministic subsample in the diagnostic driver only; per-event metrics are uncapped and src/cbsc_zdc/eval/metrics.py is untouched"
+      },
+      {
+        "fault": "a process probe whose command line contained the string it searched for matched itself",
+        "damage": "a phantom trainer was reported and the kill -9 that followed killed the probe's own process group",
+        "fix": "build the search token at runtime and exclude both own pid and parent pid"
+      }
+    ]
+  },
+  "negative_results": {
+    "c2st_auroc_range": [0.77, 0.92],
+    "c2st_threshold": 0.65,
+    "c2st_verdict": "a classifier separates Fast-MC from Geant4 easily at every checkpoint measured; the improving validation objective has not moved this",
+    "zero_response_event_fraction_fastmc": [0.015, 0.023],
+    "zero_response_event_fraction_geant4": 0.0097,
+    "zero_response_verdict": "Fast-MC emits roughly twice as many zero-response events as Geant4",
+    "loss_versus_distribution_disagreement": {
+      "dicos-p8": {"loss_best_epoch": 22, "distribution_best_epoch": 21},
+      "dicos-p9": {"loss_best_epoch": 38, "distribution_best_epoch": 33},
+      "policy": "checkpoint selection follows the validation loss, as declared; the selection rule is not switched to whichever metric flatters a run"
+    },
+    "share_flow_fraction_of_weighted_objective": 0.422,
+    "largest_untested_lever": "the 26,624-event pilot bank is 4.3% of the 612,482 available training events"
+  },
+  "publication": {
+    "public_repo_commit": "e53f8fc",
+    "manifest_sha256": "a8b28719a149b43acef79a39742adb5493e4aac1453b99fc4e76e5917a4ca4fa",
+    "public_data_bytes_on_disk": 24837777,
+    "live_url": "https://julianattemptscoding.github.io/Fast-MC-Visual-Tests/",
+    "live_verified": true,
+    "selection_sha256": "f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6",
+    "test_events_used": 0,
+    "published": {
+      "calibrated_lr3e5": "dicos-r3-calibrated-lr3e5:joint:0008",
+      "calibrated_lr1e4": "dicos-p9-calibrated-lr1e4:joint:0038",
+      "calibrated_lr3e4": "dicos-p7-calibrated-lr3e4:joint:0022",
+      "calibrated_lr1e4_halfbatch": "dicos-p7-calibrated-lr1e4-halfbatch:joint:0021"
+    }
+  },
+  "data_integrity_faults": [
+    {
+      "fault": "duplicate epoch 16 in the continuation loss history",
+      "cause": "dicos-p6 ran epochs 11..16 while dicos-p9 resumed from the epoch-15 best, so both wrote an epoch 16 on different branches",
+      "resolution": "p6's epoch 16 is off the live lineage and was dropped",
+      "detector": "the duplicate-epoch guard in exhibition/build_continuation_loss_figures.py",
+      "recurrence": "p10 resumes from epoch 38 and reruns epoch 39, which dicos-p9 also wrote; p9's epoch 39 row must be dropped when p10's history is merged"
+    },
+    {
+      "fault": "the continuation builder wrote its manifest under a fixed filename",
+      "damage": "building a second family into one directory overwrote the first family's provenance; configs/templates/dicos_p6_20260802/ holds two templates but one manifest",
+      "fix": "manifest is now named per family and run tag; the damaged historical directory is left as-is, being an immutable record"
+    }
+  ],
+  "verification": {
+    "pytest": "203 passed",
+    "compileall": "clean",
+    "qa_policy_finding": {
+      "test": "tests/test_qa_policy.py::test_active_guidance_has_no_hardware_permission_screen",
+      "failed_on": "docs/GPU_BENCHMARKS.md",
+      "cause": "the file, added earlier in this phase, wrote the 80 GB card's model name into active guidance; the token is forbidden there because an earlier policy revision used access to that card as a permission screen",
+      "resolution": "the card is renamed to its capacity descriptor throughout the document, and the document now explains why the token check exists; the test was NOT exempted or weakened"
+    }
+  },
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED; optimisation evidence on a validation split only, zero test events. C2ST AUROC 0.77-0.92 at every checkpoint measured means Fast-MC and Geant4 remain trivially separable."
+}

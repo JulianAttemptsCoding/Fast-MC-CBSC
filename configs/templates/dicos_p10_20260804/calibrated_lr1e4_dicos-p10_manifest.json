@@ -1,0 +1,21 @@
+{
+  "early_stopping_patience": 24,
+  "epochs_absolute_target": 63,
+  "epochs_available": "39..62",
+  "family": "calibrated_lr1e4",
+  "format_version": 1,
+  "manifest_note": "epochs is an ABSOLUTE target; the trainer resumes at checkpoint_epoch + 1",
+  "parent_config": "calibrated_lr1e4_dicos-p9.yaml",
+  "parent_config_sha256": "d8f81f65c4f9861fa9075d1a47a5093f285071849974b1a365eeb46255ddcdef",
+  "parent_last_epoch": 38,
+  "patience_widened_from_default": true,
+  "restart_scheduler_on_resume": false,
+  "resume_best_from_relative": "checkpoints/calibrated_lr1e4_p9b_best.pt",
+  "resume_best_from_sha256": "89cae275c092cecca5025159d766b920a412f96e83b4438b68bc1e6c4bd46b2a",
+  "resume_from_relative": "checkpoints/calibrated_lr1e4_p9b_last.pt",
+  "resume_from_sha256": "89cae275c092cecca5025159d766b920a412f96e83b4438b68bc1e6c4bd46b2a",
+  "run_tag": "dicos-p10",
+  "selected_by": "resumes from the epoch-38 BEST checkpoint (4.635220) and continues the saved cosine; p9 established that continuing an exhausted cosine climbs back to peak and re-anneals, which is what produced the 0.067 improvement",
+  "template": "calibrated_lr1e4_dicos-p10.yaml",
+  "template_sha256": "657131348621642107544803dd19ed6a34ac688199e5c37bb74b666293857ef2"
+}

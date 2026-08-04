@@ -53,3 +53,25 @@ owner and are not negotiable by an agent.
     (6,400 vs 6,390 HCAL channels) and four fewer events. It is incompatible
     with the frozen geometry and must not be used for training, conversion, or
     evaluation. See `docs/DICOS_BACKEND.md`.
+
+## Evidence and guards
+
+22. **Keep the record in step with the work, as you go.** After every
+    meaningful event — launch, epoch, failure, correction, doc or repo change,
+    verification run — append to `logs.md`, write the `audit/NAME.{json,md}`
+    twin, refresh the diagnostics and figures, and republish the dashboard and
+    public site whenever a family's lowest verified validation loss changes.
+    Evidence written only at the end of a session is evidence that gets lost.
+23. **Never weaken an assertion, guard, threshold, or test to make something
+    pass.** That includes exempting a file from a policy test, silencing a
+    duplicate-epoch or empty-bin check, and relaxing the filesystem guard in
+    `scripts/dicos.py`. Fix the thing the guard caught. Every such guard in this
+    repository exists because a specific failure occurred, and the failure is
+    recorded next to it.
+24. **One writer per run directory, proved from the process tree.** A log's
+    contents and a pid file cannot distinguish one wrapper from two. A probe
+    whose command line contains the string it searches for matches itself;
+    build the token at runtime and exclude your own process and its parent.
+25. **Namespace per-run artifacts by run tag.** Runs of one family share
+    absolute epoch numbers whenever one resumes from another's best checkpoint,
+    so a flat metrics directory silently overwrites the older run.

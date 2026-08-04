@@ -271,7 +271,7 @@ stack. The `asgc` conda env does:
 ```
 
 Since `/opt` is not writable, the project uses a venv layered on that env, which
-inherits torch/numpy and adds what is missing:
+inherits numpy and adds what is missing:
 
 ```bash
 /opt/miniconda3/envs/asgc/bin/python -m venv --system-site-packages .venv
@@ -279,9 +279,33 @@ inherits torch/numpy and adds what is missing:
 ./.venv/bin/pip install -e repo
 ```
 
-Note `torch 2.8.0+cu128` here vs `2.6.0+cu124` on Vertex. That is a genuine
-environment difference to record in any run's evidence, not something to paper
-over.
+**Torch is pinned to `2.6.0+cu124`, not the `asgc` env's 2.8.0+cu128.**
+`scripts/dicos.py setup` installs it explicitly:
+
+```bash
+.venv/bin/pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+```
+
+Every accepted run has used `pytorch/pytorch:2.6.0-cuda12.4`, so the pin keeps
+the DiCOS environment matching Vertex rather than introducing a torch-version
+difference into the middle of a checkpoint lineage. The paragraph this replaces
+described the pre-pin state and said the 2.8.0 difference was a genuine one to
+record; it is no longer the state. **Do not "upgrade" this pin** — it is a
+backend-portability invariant, and changing it makes every downstream
+continuation a new declared experiment.
+
+**Per-pod venvs.** `.venv` belongs to the training pod. **Never run
+`dicos.py setup` on a second pod** — it rebuilds the shared `.venv` out from
+under whatever is training. Build a per-pod venv with the
+`_setup/build_venv_dcgpu.sh` pattern: a fresh directory name, `PIP_USER=0` and
+`PYTHONNOUSERSITE=1` exported, and assertions that `sys.prefix` is the venv and
+`site.ENABLE_USER_SITE` is false *before* any install. That pattern exists
+because without it a broken venv silently redirected 5 GB of torch into `$HOME`,
+which is outside the one writable directory.
+
+Pod images are not identical. Some have no `ps`, `pkill`, or `free`; some ship a
+Python older than 3.12. Always invoke the pod's own venv interpreter rather than
+`python`.
 
 ## 3. Verified invariants
 
@@ -394,7 +418,9 @@ reopening the file.
 
 ```
 sharedfs/work/IOP/julian/Fast MC CBSC/
-  .venv/                     asgc-derived venv (torch 2.8.0+cu128, uproot 5.7.5)
+  .venv/                     asgc-derived venv, torch PINNED to 2.6.0+cu124
+                             (uproot 5.7.5). The 4090 pod's venv; never rebuild
+                             it from another pod.
   repo/                      git clone, pip install -e
   prep/geometry_frozen/      canonical geometry, hash e22d4cfb… verified on-host
   _setup/                    scan logs and dataset hashes
@@ -530,26 +556,48 @@ python scripts/dicos.py put local_checkpoint.pt prep/checkpoints/<name>.pt
 `calibrated_lr3e4_best_epoch4.pt` was moved this way and verified on-host
 (hash `3f1022b8…`, `epoch=4`, `best_metric=4.7380412609301406`).
 
-### Two things that are NOT on the host, and matter
+### Two things that WERE not on the host — both since resolved
 
-**The fixed 50x5 visual bank is absent.** Epoch visualisation (handoff section
-12, `docs/VISUALIZATION_DASHBOARD.md`) expects a frozen selection of 50
-validation conditions, recorded under selection hash
-`f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6`. That
-selection was drawn from the **pilot** validation partition, which does not
-exist here — this host has the production split. A run configured with
-`evaluation.visualization.enabled` will therefore draw its own bank, with a
-different selection hash, and its epochs will not be visually comparable to the
-existing published epochs. Decide deliberately: either accept a new bank for a
-new declared experiment and record its hash, or reconstruct the pilot partition
-first. Do not silently publish a differently-banked epoch alongside the old ones.
+**Kept because the reasoning still binds, not because the state holds.**
 
-**Only the `best` checkpoint is staged.** `prep/checkpoints/` holds
-`calibrated_lr3e4_best_epoch4.pt` (`3f1022b8…`). Handoff section 11 asks for
-both `best` and `last` hashes to be verified before a continuation, and `last`
-(`42782827de374dedcbba50a784460833ad16129c474f98553622b39d6467720a`) is not
-here. Transfer it the same way if a continuation is intended; the other three
-families are absent entirely.
+**The fixed 50x5 visual bank.** Epoch visualisation expects a frozen selection
+of 50 validation conditions under selection hash
+`f70529198aa9575cd2ebc816fd0800ed5a1a3dcd918dab3845b5dc5d85dc59b6`, drawn from
+the **pilot** validation partition. That partition was absent when this was
+written; it was reconstructed on the host (`_setup/install_pilot_split.py`,
+`_setup/regen_pilot.py`) and every DiCOS run since has trained and visualised
+against the 26,624 / 6,656 / **0** pilot bank. The rule survives the fix: a run
+that draws its own bank produces a different selection hash and its epochs are
+**not** visually comparable to the published ones. Never publish a
+differently-banked epoch alongside the old ones; check the selection hash rather
+than assuming.
+
+**Checkpoint staging.** All four families' checkpoints have since been staged
+under `prep/checkpoints/`, and each continuation stages its own parent pair.
+The rule survives: verify **both** `best` and `last` hashes before a
+continuation, and note that when you resume from a best checkpoint the same file
+legitimately occupies both the `resume_from` and `resume_best_from` slots —
+that is what `dicos-p9` and `dicos-p10` do, deliberately, so the run starts from
+the better weights rather than a later, worse `last.pt`.
+
+### Where a run's files live on the host
+
+```text
+prep/configs/<family>_<tag>.yaml           uploaded template
+prep/configs/frozen_<family>_<tag>.yaml    frozen through the CLI; never hand-edited
+prep/checkpoints/<family>_<stem>_{best,last}.pt   staged resume pair
+_runs/<family>_<tag>/                      run directory: checkpoints, logs,
+                                           reports, run.lock, environment.json
+_runs/<jobname>.{log,pid}                  the detached wrapper's output
+_diag/<tag>/metrics_epoch_NNNN.json        per-epoch diagnostics, NAMESPACED
+_diag/<tag>/queue/                         the diagnostic queue and its done/
+_setup/                                    launcher scripts and host-only helpers
+```
+
+`_diag/` was flat until 2026-08-04 and silently overwrote metrics whenever two
+runs of one family shared an absolute epoch number — which happens by
+construction every time a run resumes from a best checkpoint rather than a last
+one. It cost p8's epochs 17–22. **Keep it namespaced by run tag.**
 
 ### Decide TF32 before the first real run
 
@@ -574,7 +622,11 @@ against the existing epoch-4 checkpoints without being declared and recorded.
   identically; only the manifest's own hash differs, because it records the
   source path. Provenance is end-to-end. Transport from GCS was never needed
   and is not available under the one-data-source rule.
-- **Torch version.** 2.8.0+cu128 here vs 2.6.0+cu124 on Vertex. Fine for new
-  runs, but it is an environment difference that belongs in the evidence of any
-  result produced here, and it makes bit-exact reproduction of existing
-  checkpoints unlikely.
+- **Torch version — resolved by pinning.** The `asgc` env ships 2.8.0+cu128;
+  `dicos.py setup` installs **2.6.0+cu124** into the venv to match every
+  accepted run. See "Python environment" above. Record the pinned version in
+  each run's evidence; do not change it.
+- **TF32 — settled and recorded.** Accepted DiCOS runs use
+  `cudnn.allow_tf32=True`, `cuda.matmul.allow_tf32=False`, `amp: false`. That
+  combination is part of the frozen environment of the current lineage; changing
+  either flag is a new declared experiment, not a tuning knob.

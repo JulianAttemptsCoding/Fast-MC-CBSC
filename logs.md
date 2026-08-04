@@ -6629,3 +6629,174 @@ needs nothing that is not already on the host.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`. None of this bears on Geant4 fidelity;
 all of it is optimisation behaviour on a validation split.
+
+---
+
+## 2026-08-04 — handoff files rewritten; `dicos-p10` launched on the 4090
+
+Source commit at start `1fe95eb`, worktree clean, both repos level with
+`origin/main`. Public repo `e53f8fc`, clean.
+
+### A QA finding against this repository's own documentation
+
+`python -m pytest -q` returned **1 failed, 202 passed**:
+
+    FAILED tests/test_qa_policy.py::test_active_guidance_has_no_hardware_permission_screen
+    AssertionError: assert ['docs\\GPU_BENCHMARKS.md: a100'] == []
+
+`docs/GPU_BENCHMARKS.md`, added by me earlier in this phase, wrote the 80 GB
+card's model name into an active-guidance file. That token is forbidden there
+because an earlier revision of the QA policy used access to that card as a
+permission screen; the token check is what stops the screen coming back.
+
+Resolution: the card is renamed to its capacity descriptor throughout the
+document, and the document now carries a short section recording why the check
+exists and that it must not be relaxed to let a file name the card. **The test
+was not exempted and not weakened** — `CLAUDE.md` forbids weakening an assertion
+to make a run pass, and the guard caught exactly what it was built to catch.
+
+    python -m compileall -q src vertex scripts tests     clean
+    PYTHONPATH=src python -m pytest -q                   203 passed, 7 warnings
+
+### Pods verified idle before anything was launched
+
+    RTX 4090   0 MiB used, 0% util, no dicos_train / dicos_diagnostics / diag_producer
+    RTX 3090   1 MiB used, 0% util, none
+
+No orphaned daemon or producer survived the p9 phase.
+
+The 3090 pod has no `ps`. Scanning `/proc` from its own venv interpreter, my
+first probe reported a running consumer — which was **its own parent shell**,
+because the heredoc contained the literal string being searched for. Exactly the
+self-match trap already recorded in this log. Rebuilt with the token assembled at
+runtime and both own pid and parent pid excluded; the honest answer is `NONE`.
+The bracket-glob trick does not help when the search string appears anywhere
+else in the command.
+
+### `dicos-p10` — built, frozen, diffed, launched
+
+`calibrated_lr1e4`, absolute epochs 39..62 on the RTX 4090, resuming from the
+p9 **epoch-38 best** (4.635220) with the saved cosine continued and patience at
+the full 24-epoch horizon. Both p8/p9 findings applied.
+
+    python scripts/build_final_continuation.py \
+      --family calibrated_lr1e4 \
+      --parent configs/templates/dicos_p9_20260803/calibrated_lr1e4_dicos-p9.yaml \
+      --last-sha256 89cae275... --best-sha256 89cae275... \
+      --output-dir configs/templates/dicos_p10_20260804 \
+      --run-tag dicos-p10 --patience 24 --epochs 63 \
+      --parent-last-epoch 38 --checkpoint-stem p9b --no-restart-scheduler
+
+    template   657131348621642107544803dd19ed6a34ac688199e5c37bb74b666293857ef2
+    manifest   8cdfcc98cb381e99fb59a96a0a3a059802fb28f75090dd1d749e2e63b9f76337
+    frozen     4e246713113ac979edcd60f32990930bdb355645bf3d2d5b3c28aa215ffb7e2c
+    resume     89cae275c092cecca5025159d766b920a412f96e83b4438b68bc1e6c4bd46b2a
+               (the p9 best, staged to BOTH resume slots as p9b_last / p9b_best)
+
+Frozen through `python -m cbsc_zdc.cli freeze-config` against the on-host
+artifacts, never hand-edited. `--geometry` takes the geometry **directory**; my
+first attempt passed `geometry.npz` and failed with
+`NotADirectoryError: '../prep/geometry_frozen/geometry.npz/geometry_manifest.json'`.
+The frozen config carries the calibrated caps `0.725470286351178` and
+`64.38813572617559` bit-exactly from `prep/train_data_audit_pilot.json`.
+
+Field-by-field diff of frozen p9 to frozen p10 shows **only** project name, run
+dir, `epochs`, the four resume fields, and six provenance fields. Learning rate,
+batch, accumulation, workers, precision, seed, solver steps, response caps,
+geometry, splits and audit are untouched, so every backend-portability invariant
+holds.
+
+Pre-launch: no trainer in the process tree, run directory did not exist. Launched
+once, checked the output rather than re-issuing.
+
+    started p10lr1e4 pid=15750, wrapper pid 15753
+    === calibrated_lr1e4 P10-4090 START 2026-08-04T02:44:11+00:00
+    run.lock  acquired 2026-08-04T02:44:13Z, host jupyterlabgpurtx4090-julianjuan
+
+Single writer confirmed from the lock and the process tree. GPU settled at
+11,995 MiB / 95%, matching the 11,742,865,920-byte peak recorded for this
+architecture at batch 6.
+
+**Epoch 39: validation 4.663274642140066**, LR `7.631742512825513e-06`,
+645.5 s. That learning rate is identical to the one p9 reached at its own epoch
+39, which is the check that the scheduler state was *restored* rather than
+reset. From here the cosine, periodic in `2*T_max`, should climb back toward
+peak.
+
+### A collision caught before it happened
+
+`_diag/` on the host was flat — `metrics_epoch_NNNN.json` with no run namespace.
+p10 begins at epoch 39, and p9 had already written `metrics_epoch_0039.json`.
+The producer would have skipped epoch 39 as "already handled", and any later
+overlap would have overwritten p9's files outright. This is the same fault class
+that already destroyed p8's epochs 17-22.
+
+Fixed before starting the daemons:
+
+- p9's 24 metrics files (epochs 16..39) and its queue moved to `_diag/dicos-p9/`;
+- `_setup/diag_producer.py` rewritten to take the **run tag as a required third
+  argument** and to derive `_diag/<tag>/` and `_diag/<tag>/queue` from it, with
+  the reason recorded in its docstring so it is not collapsed back;
+- consumer started with `--watch-dir _diag/dicos-p10/queue --output-dir
+  _diag/dicos-p10`.
+
+Both daemons are up: producer on the 4090 (`p10prod`, pid 16031), consumer on
+the 3090 (`p10diag`, pid 6207, 4,000 validation events per epoch, selection seed
+20260803). Consumer context built against a validation pool of 50,877 events in
+[50, 250] GeV and is generating epoch 39 now.
+
+### Handoff files rewritten
+
+The user is handing this project to a new conversation, so every document an
+incoming agent reads first was brought up to date.
+
+`docs/AGENT_PROMPT_CONTINUE_ANY_BACKEND_20260728.md`:
+
+- **Section 7b replaced entirely.** It still described 2026-08-02 — "nothing is
+  training", lr3e4 at 4.605498, four items of unfinished work all since done.
+  It now carries the live run, the four-family standings with checkpoint hashes,
+  the patience and scheduler findings, the epoch-number collision that resuming
+  from a best checkpoint creates, the corrected GPU table, and the retirement of
+  the datacentre pod.
+- **Section 7d added** — the per-epoch diagnostics producer/consumer pipeline,
+  which did not exist when this document was written, with the five rules it
+  earned and the test-split guard.
+- **Section 7e added** — the controlled replicate: two different cards, same
+  config, seed and parent, agreeing to 5.8e-6 at the annealed endpoint. Hardware
+  nondeterminism is not the source of the ~0.02 resolution.
+- Sections 7 and 7a relabelled as lineage origin and history; 7a's superseded
+  "restore patience 3" instruction is now marked as overturned, since an agent
+  following it would repeat p8.
+- Section 7c pod table cut to the two live cards, plus how to probe a pod that
+  has no `ps` without matching yourself.
+- Section 8 given the DiCOS script inventory; 11 the absolute-`epochs` rule and
+  the two settled settings; 14 the real snapshot IDs and the DiCOS publish path;
+  15 the three figure builders and why the two histories must not be crossed;
+  16 the real expected counts and the `PYTHONPATH=src` trap; 17 a
+  state-establishing preamble and the standing duty to keep the record moving.
+
+`docs/DICOS_BACKEND.md`: torch corrected from "2.8.0+cu128, a genuine
+environment difference" to the **pinned 2.6.0+cu124** that `dicos.py setup`
+actually installs, with the reason it is a portability invariant; per-pod venv
+rules; the "two things NOT on the host" section rewritten as resolved, keeping
+the rules that survive the fix; an on-host file-layout map; TF32 recorded as
+settled.
+
+`CLAUDE.md`: two-card fleet; the self-matching-probe rule; a new
+"continuation runs — settings that are no longer free" section; expected pytest
+count 191 to **203**; the QA-policy token check explained so the next agent
+renames rather than exempts; DiCOS costs pointing at `docs/GPU_BENCHMARKS.md`;
+the C2ST and zero-response negative results promoted into the standing boundary;
+and a "keep the record moving with the work" section.
+
+`AGENTS.md`: rules 22-25 added — keep the record in step as you go; never weaken
+an assertion, guard, threshold or test to make something pass; one writer per run
+directory proved from the process tree; namespace per-run artifacts by run tag.
+
+`audit/continuation_20260804_terminal_analysis.{json,md}` written as the
+machine-readable twin for p8/p9/p10, including the full negative results and
+every fault fixed this phase.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`. C2ST AUROC remains 0.77-0.92 at every
+checkpoint measured, against a 0.65 threshold: Fast-MC and Geant4 stay trivially
+separable, and 24 epochs of improving validation loss did not change that.
