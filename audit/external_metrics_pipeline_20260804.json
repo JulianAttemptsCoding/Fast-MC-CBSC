@@ -94,6 +94,8 @@
     "desktop_mirror_hash_mismatches": 0,
     "full_pytest": "255 passed, 8 known warnings",
     "rtx_3090_idle": true,
+    "rtx_4090_checkout": "189312f5e6b63efcb7ad52861fc52c1fbd3b452c",
+    "rtx_4090_checkout_clean": true,
     "rtx_4090_idle": true,
     "visual_qa": "passed at original resolution for all 15 new comprehensive/external figures"
   },

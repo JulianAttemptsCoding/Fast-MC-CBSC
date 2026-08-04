@@ -7561,3 +7561,9 @@ data split, threshold, or test event was touched.
   nested-tensor warnings. An initial plain-interpreter probe failed collection
   because it omitted this src-layout repository's required `PYTHONPATH=src`;
   the contract-correct invocation passed and no code defect was involved.
+- Pushed the complete accepted-best monitoring transaction to canonical commit
+  `189312f5e6b63efcb7ad52861fc52c1fbd3b452c`. The RTX 4090 checkout's only
+  tracked overlay matched that commit apart from line endings, so it was safely
+  stashed, fast-forwarded, verified, and the redundant stash dropped. Removed
+  the explicitly resolved untracked `src/cbsc_zdc_fastmc.egg-info/` packaging
+  directory; the remote checkout is now clean and no run evidence was removed.

@@ -1702,8 +1702,15 @@ excluding wall-time fields. The accepted low-level validation C2ST is
 `0.8726555555555556 ± 0.011687150998288242`; Fast-MC macro RMS relative
 four-vector error is `0.3466445061663238`. The complete result and seven derived
 figures are under `exhibition/external_metrics_20260804/`; the determinism proof
-is `audit/external_metrics_determinism_20260804.json`. Re-establish remote state
-with:
+is `audit/external_metrics_determinism_20260804.json`.
+
+At closeout, both GPUs were idle with no trainer process. The RTX 4090 source
+checkout was clean at canonical commit
+`189312f5e6b63efcb7ad52861fc52c1fbd3b452c`; the RTX 3090 job runtime is the
+hash-frozen controller namespace described above (its minimal image has no Git
+binary).
+
+Re-establish remote state with:
 
 ```bash
 PYTHONPATH=src python scripts/dicos_external_metrics_controller.py status \
