@@ -48,6 +48,8 @@
     "dicos_pipeline_tests": "21 passed, 2 known warnings",
     "dicos_artifact_verify": "18/18 passed",
     "rtx_3090_import_smoke": "pass in .venv_3090",
+    "public_repository": "clean and synchronized at e53f8fc; unchanged",
+    "public_live_site": "HTTP 200 with expected page marker",
     "rtx_4090": "0 MiB, 0%, PIPELINE_PROCESSES=NONE",
     "rtx_3090": "1 MiB, 0%, PIPELINE_PROCESSES=NONE"
   },

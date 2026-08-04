@@ -7061,3 +7061,7 @@ data split, threshold, or test event was touched.
   `1 MiB / 0%`, and `PIPELINE_PROCESSES=NONE` on both. No training, diagnostic
   generation, checkpoint, metric, figure, dashboard, or public-site artifact
   was created by these remote checks.
+- Final repository boundary check: source and public worktrees were clean and
+  each matched `origin/main`; public remained at its previously accepted
+  `e53f8fc` epoch-38 snapshot. A read-only live request returned HTTP 200 with
+  the Fast-MC page marker present. No public payload or deployment changed.

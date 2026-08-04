@@ -39,6 +39,8 @@ The exact commands and state machine are in `docs/TWO_GPU_PIPELINE.md`.
 | 4090 pipeline/visualization suite | 21 passed; 2 known warnings |
 | DiCOS immutable artifact verification | 18/18 passed |
 | 3090 environment import smoke | pass in `.venv_3090` |
+| public repository | clean/synchronized at `e53f8fc`; unchanged |
+| live public site | HTTP 200; expected page marker present |
 | RTX 4090 live state | 0 MiB, 0%; no pipeline processes |
 | RTX 3090 live state | 1 MiB, 0%; no pipeline processes |
 | new train/test events used | 0 / 0 |
