@@ -14,9 +14,14 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 HERE = ROOT / "exhibition"
+CURRENT = HERE / "current"
+ARCHIVE = HERE / "archive"
 OUTPUT_JSON = HERE / "metrics_catalog.json"
 OUTPUT_MD = HERE / "METRICS_AND_FIGURES.md"
 OUTPUT_HTML = HERE / "index.html"
+CURRENT_HTML = CURRENT / "index.html"
+ARCHIVE_HTML = ARCHIVE / "index.html"
+LAYOUT_CONTRACT = HERE / "visual_layout.json"
 
 
 def sha256(path: Path) -> str:
@@ -33,19 +38,25 @@ def read_json(path: Path) -> dict:
 
 def category(path: Path) -> str:
     relative = path.relative_to(HERE).as_posix()
-    if relative.startswith("figures/"):
-        return "common_window_gallery"
-    if relative.startswith("continuation_20260802/"):
-        return "continuation_and_standings"
-    if relative.startswith("diagnostics_20260803/"):
-        return "large_validation_diagnostics"
-    if relative.startswith("external_metrics_20260804/"):
-        return "accepted_best_external_metrics"
-    if relative.startswith("c2st_20260728/"):
+    if relative.startswith("current/model/"):
+        return "current_model_and_contract"
+    if relative.startswith("current/continuation/"):
+        return "current_continuation_and_standings"
+    if relative.startswith("current/diagnostics/"):
+        return "current_validation_diagnostics"
+    if relative.startswith("current/external_metrics/source_data/"):
+        return "current_external_metric_source_evidence"
+    if relative.startswith("current/external_metrics/"):
+        return "current_accepted_best_external_metrics"
+    if relative.startswith("archive/common_window_20260727/"):
+        return "historical_common_window_snapshot"
+    if relative.startswith("archive/c2st_20260728/"):
         return "historical_c2st_test_study"
-    if relative.startswith("paired_diagnostics_20260730/"):
+    if relative.startswith("archive/paired_diagnostics_20260730/"):
         return "historical_paired_test_exception"
-    return "other"
+    if relative.startswith("archive/misc/"):
+        return "historical_miscellaneous"
+    raise ValueError(f"graphic is not classified by current/archive role: {relative}")
 
 
 def verify_exhibition_manifest() -> dict:
@@ -67,7 +78,7 @@ def verify_exhibition_manifest() -> dict:
 
 
 def verify_c2st_manifests() -> int:
-    directory = HERE / "c2st_20260728"
+    directory = ARCHIVE / "c2st_20260728"
     count = 0
     for manifest_name in ("figures_manifest.json", "method_manifest.json"):
         manifest = read_json(directory / manifest_name)
@@ -85,10 +96,14 @@ def graphic_inventory() -> list[dict]:
     records = []
     for path in sorted([*HERE.rglob("*.png"), *HERE.rglob("*.svg")]):
         relative = path.relative_to(HERE).as_posix()
+        scope = relative.split("/", 1)[0]
+        if scope not in {"current", "archive"}:
+            raise ValueError(f"exhibition graphic escaped current/archive: {relative}")
         if path.stat().st_size <= 0:
             raise ValueError(f"empty graphic: {path}")
         record = {
             "path": relative,
+            "scope": scope,
             "category": category(path),
             "format": path.suffix[1:],
             "bytes": path.stat().st_size,
@@ -112,16 +127,16 @@ def graphic_inventory() -> list[dict]:
 
 
 def current_metrics() -> dict:
-    loss = read_json(HERE / "continuation_20260802" / "loss_summary.json")
-    choice = read_json(HERE / "continuation_20260802" / "family_choice.json")
+    loss = read_json(CURRENT / "continuation" / "loss_summary.json")
+    choice = read_json(CURRENT / "continuation" / "family_choice.json")
     diagnostic = read_json(
-        HERE / "diagnostics_20260803" / "diagnostic_summary.json"
+        CURRENT / "diagnostics" / "diagnostic_summary.json"
     )
     all_metrics = read_json(
-        HERE / "diagnostics_20260803" / "all_metric_trends.json"
+        CURRENT / "diagnostics" / "all_metric_trends.json"
     )
     external_path = (
-        HERE / "external_metrics_20260804" / "external_metric_summary.json"
+        CURRENT / "external_metrics" / "external_metric_summary.json"
     )
     external = read_json(external_path) if external_path.is_file() else None
     if loss.get("schema_version") != 2 or choice.get("schema_version") != 2:
@@ -217,26 +232,32 @@ def write_atomic(path: Path, text: str) -> None:
     temporary.replace(path)
 
 
-def comprehensive_gallery(graphics: list[dict]) -> Path:
-    """Build one index containing every scientific PNG/SVG.
-
-    PNG/SVG counterparts share one card with links to both formats. Historical
-    test studies remain visibly separated from validation-only current work.
-    """
+def scoped_gallery(graphics: list[dict], scope: str, output: Path) -> Path:
+    """Build the complete current or archive gallery."""
     grouped: dict[tuple[str, str], list[dict]] = {}
     for record in graphics:
+        if record["scope"] != scope:
+            continue
         stem = str(Path(record["path"]).with_suffix(""))
         grouped.setdefault((record["category"], stem), []).append(record)
     labels = {
-        "common_window_gallery": "Current comparison and model graphics",
-        "continuation_and_standings": "Loss vs epoch and accepted standings",
-        "large_validation_diagnostics": "3090 validation metrics vs epoch",
-        "accepted_best_external_metrics": (
-            "Accepted-best four-momentum and AUROC validation monitors"
+        "current_model_and_contract": "Current model and scientific contract",
+        "current_continuation_and_standings": (
+            "Current loss vs epoch and accepted standings"
         ),
+        "current_validation_diagnostics": (
+            "Current 3090 validation metrics through the latest epoch"
+        ),
+        "current_accepted_best_external_metrics": (
+            "Current accepted-best four-momentum and AUROC monitors"
+        ),
+        "current_external_metric_source_evidence": (
+            "Current accepted-best evaluator source figures"
+        ),
+        "historical_common_window_snapshot": "Historical common-window snapshot",
         "historical_c2st_test_study": "Historical isolated C2ST test study",
         "historical_paired_test_exception": "Historical paired test exception",
-        "other": "Other exhibition assets",
+        "historical_miscellaneous": "Historical miscellaneous visuals",
     }
     sections = []
     for category_name, label in labels.items():
@@ -252,15 +273,15 @@ def comprehensive_gallery(graphics: list[dict]) -> Path:
             by_format = {record["format"]: record for record in records}
             display = by_format.get("png") or by_format.get("svg")
             links = " · ".join(
-                f'<a href="{html.escape(record["path"])}">{fmt.upper()}</a>'
+                f'<a href="{html.escape(Path(record["path"]).relative_to(scope).as_posix())}">{fmt.upper()}</a>'
                 for fmt, record in sorted(by_format.items())
             )
             title = Path(stem).name.replace("_", " ").title()
             cards.append(
                 '<figure><a class="image" href="'
-                + html.escape(display["path"])
+                + html.escape(Path(display["path"]).relative_to(scope).as_posix())
                 + '"><img loading="lazy" src="'
-                + html.escape(display["path"])
+                + html.escape(Path(display["path"]).relative_to(scope).as_posix())
                 + '" alt="'
                 + html.escape(title)
                 + '"></a><figcaption><strong>'
@@ -269,12 +290,21 @@ def comprehensive_gallery(graphics: list[dict]) -> Path:
                 + links
                 + "</span></figcaption></figure>"
             )
-        boundary = (
-            '<p class="warning">Historical test-split evidence. It is isolated '
-            "from training, checkpoint selection, and current visual selection.</p>"
-            if category_name.startswith("historical_")
-            else ""
-        )
+        boundary = ""
+        if category_name.startswith("historical_"):
+            boundary = (
+                '<p class="warning">Archived evidence. It is not part of the '
+                "current visual set and cannot silently steer current selection.</p>"
+            )
+        if category_name in {
+            "historical_c2st_test_study",
+            "historical_paired_test_exception",
+        }:
+            boundary = (
+                '<p class="warning">Historical test-split evidence. It is '
+                "isolated from training, checkpoint selection, and current "
+                "visual selection.</p>"
+            )
         sections.append(
             f'<section id="{html.escape(category_name)}"><h2>'
             f'{html.escape(label)}</h2>{boundary}'
@@ -287,20 +317,32 @@ def comprehensive_gallery(graphics: list[dict]) -> Path:
     )
     document = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CBSC-ZDC complete exhibition</title><style>
+<title>CBSC-ZDC {scope} exhibition</title><style>
 :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#102a43;background:#f4f7fa}*{box-sizing:border-box}body{margin:0}main{max-width:1540px;margin:auto;padding:44px 28px 72px}h1{font-size:clamp(32px,4vw,54px);letter-spacing:-.04em;margin:0 0 10px}header p{color:#526b82;max-width:960px;line-height:1.55}nav{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 38px}nav a{background:#fff;border:1px solid #cbd6e2;padding:8px 11px;border-radius:6px}section{margin-top:52px}h2{font-size:25px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,470px),1fr));gap:22px}figure{margin:0;background:#fff;border:1px solid #d9e2ec;border-radius:7px;overflow:hidden}.image{display:block;background:#fff}img{display:block;width:100%;height:auto;max-height:520px;object-fit:contain}figcaption{display:flex;justify-content:space-between;gap:14px;padding:12px 14px;border-top:1px solid #d9e2ec;font-size:13px}figcaption span{white-space:nowrap}a{color:#145da0;text-decoration:none}a:hover{text-decoration:underline}.warning{padding:12px 14px;border-left:4px solid #b42318;background:#fff3f1;color:#7a271a}.boundary{padding:14px 16px;background:#eaf4ef;border-left:4px solid #16835b;margin-top:22px}
-</style></head><body><main><header><h1>CBSC-ZDC complete exhibition</h1><p>Every scientific PNG/SVG in the repository, organized by evidence role. Current plots use training or validation evidence only. Quarantined epochs remain visible but cannot become a best checkpoint.</p><p class="boundary">Optimization and descriptive validation evidence only; Geant4 fidelity is not established. Historical test studies are shown in separate, labeled sections and cannot steer model decisions.</p></header><nav>"""
+</style></head><body><main><header><h1>CBSC-ZDC {scope} exhibition</h1><p>Every {scope} scientific PNG/SVG, organized by evidence role.</p><p class="boundary">Optimization and descriptive validation evidence only; Geant4 fidelity is not established.</p><p><a href="../index.html">Exhibition home</a></p></header><nav>""".replace("{scope}", html.escape(scope))
     document += nav + "</nav>" + "".join(sections) + "</main></body></html>"
+    write_atomic(output, document)
+    return output
+
+
+def landing_page(current_count: int, archive_count: int) -> Path:
+    document = f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CBSC-ZDC exhibition</title><style>
+:root{{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#102a43;background:#f4f7fa}}body{{margin:0}}main{{max-width:920px;margin:auto;padding:64px 28px}}h1{{font-size:48px;margin-bottom:12px}}p{{color:#526b82;line-height:1.55}}.cards{{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:34px}}a{{display:block;padding:28px;background:white;border:1px solid #cbd6e2;border-radius:8px;color:#145da0;text-decoration:none}}strong{{display:block;font-size:24px;margin-bottom:8px}}span{{color:#526b82}}
+</style></head><body><main><h1>CBSC-ZDC exhibition</h1><p>All substantive exhibition visuals live in exactly one of two governed folders. Current means the complete latest valid set; archive means historical, superseded, or isolated evidence.</p><div class="cards"><a href="current/index.html"><strong>Current</strong><span>{current_count} PNG/SVG files, updated through the latest available epoch and accepted-best transaction.</span></a><a href="archive/index.html"><strong>Archive</strong><span>{archive_count} historical PNG/SVG files, explicitly excluded from current selection.</span></a></div><p>Optimization and descriptive validation evidence only. Physics validation is not established.</p></main></body></html>"""
     write_atomic(OUTPUT_HTML, document)
     return OUTPUT_HTML
 
 
 def markdown(payload: dict) -> str:
     counts = payload["graphics"]["count_by_category"]
+    scopes = payload["graphics"]["count_by_scope"]
     lines = [
         "# Metrics and figures catalog",
         "",
         "This is the deterministic QA index for every PNG/SVG under `exhibition/`.",
+        "Every graphic is contained by exactly `current/` or `archive/`.",
         "Current standings exclude quarantined checkpoints; quarantined observations",
         "remain visible as negative evidence.",
         "",
@@ -324,6 +366,7 @@ def markdown(payload: dict) -> str:
         "## Graphics inventory",
         "",
         f"Validated graphics: **{payload['graphics']['total']}**.",
+        f"Current: **{scopes['current']}**. Archive: **{scopes['archive']}**.",
         "",
         "| Category | PNG/SVG files |",
         "|---|---:|",
@@ -388,18 +431,72 @@ def markdown(payload: dict) -> str:
     return "\n".join(lines)
 
 
+def verify_visual_layout(graphics: list[dict]) -> dict:
+    contract = read_json(LAYOUT_CONTRACT)
+    extensions = set(contract["visual_extensions"])
+    ignored = set(contract["ignored_directory_names"])
+    actual_outside = set()
+    for path in ROOT.rglob("*"):
+        if not path.is_file() or path.suffix.lower() not in extensions:
+            continue
+        relative = path.relative_to(ROOT)
+        if any(part in ignored for part in relative.parts):
+            continue
+        if path == HERE or HERE in path.parents:
+            continue
+        actual_outside.add(relative.as_posix())
+    expected_outside = set(contract["needed_outside_exhibition_exceptions"])
+    if actual_outside != expected_outside:
+        raise ValueError(
+            "outside-exhibition visual exceptions changed; "
+            f"missing={sorted(expected_outside - actual_outside)}, "
+            f"unexpected={sorted(actual_outside - expected_outside)}"
+        )
+    html_paths = {
+        path.relative_to(HERE).as_posix() for path in HERE.rglob("*.html")
+    }
+    if "index.html" not in html_paths:
+        raise ValueError("required exhibition landing page is missing")
+    escaped_html = sorted(
+        path
+        for path in html_paths
+        if path != "index.html"
+        and not path.startswith(("current/", "archive/"))
+    )
+    if escaped_html:
+        raise ValueError(f"substantive HTML escaped current/archive: {escaped_html}")
+    return {
+        "all_graphics_under_current_or_archive": all(
+            row["scope"] in {"current", "archive"} for row in graphics
+        ),
+        "root_html_is_router_only": True,
+        "needed_outside_exhibition_exceptions": sorted(actual_outside),
+    }
+
+
 def build() -> dict:
     exhibition_manifest = verify_exhibition_manifest()
     c2st_manifest_count = verify_c2st_manifests()
     graphics = graphic_inventory()
-    gallery = comprehensive_gallery(graphics)
+    current_graphics = [row for row in graphics if row["scope"] == "current"]
+    archive_graphics = [row for row in graphics if row["scope"] == "archive"]
+    current_gallery = scoped_gallery(graphics, "current", CURRENT_HTML)
+    archive_gallery = scoped_gallery(graphics, "archive", ARCHIVE_HTML)
+    gallery = landing_page(len(current_graphics), len(archive_graphics))
+    layout_qa = verify_visual_layout(graphics)
     metrics = current_metrics()
     counts = Counter(record["category"] for record in graphics)
+    scope_counts = Counter(record["scope"] for record in graphics)
+    latest_epoch = metrics["large_validation_diagnostics"]["epochs"][-1]
+    family = metrics["families"]["calibrated_lr1e4"]
+    if latest_epoch != family["latest_observed_epoch"]:
+        raise ValueError("current diagnostics do not reach the latest observed epoch")
     payload = {
         "schema_version": 1,
         "graphics": {
             "total": len(graphics),
             "count_by_category": dict(sorted(counts.items())),
+            "count_by_scope": dict(sorted(scope_counts.items())),
             "files": graphics,
         },
         "metrics": metrics,
@@ -420,12 +517,26 @@ def build() -> dict:
             "all_svg_parsed": True,
             "all_manifest_hashes_match": True,
             "accepted_metric_summaries_agree": True,
-            "comprehensive_gallery_contains_every_graphic": True,
+            "current_and_archive_galleries_contain_every_graphic": True,
+            "current_reaches_latest_observed_epoch": latest_epoch,
+            **layout_qa,
         },
         "comprehensive_gallery": {
             "path": gallery.relative_to(HERE).as_posix(),
             "bytes": gallery.stat().st_size,
             "sha256": sha256(gallery),
+        },
+        "scoped_galleries": {
+            "current": {
+                "path": current_gallery.relative_to(HERE).as_posix(),
+                "bytes": current_gallery.stat().st_size,
+                "sha256": sha256(current_gallery),
+            },
+            "archive": {
+                "path": archive_gallery.relative_to(HERE).as_posix(),
+                "bytes": archive_gallery.stat().st_size,
+                "sha256": sha256(archive_gallery),
+            },
         },
     }
     write_atomic(OUTPUT_JSON, json.dumps(payload, indent=2, sort_keys=True) + "\n")

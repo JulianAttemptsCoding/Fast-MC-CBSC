@@ -32,7 +32,7 @@ def derive_selection() -> dict:
     from exhibition import build_exhibition
 
     standings = json.loads(
-        (ROOT / "exhibition/continuation_20260802/family_choice.json").read_text(
+        (ROOT / "exhibition/current/continuation/family_choice.json").read_text(
             encoding="utf-8"
         )
     )["families"]

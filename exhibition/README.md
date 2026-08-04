@@ -2,13 +2,24 @@
 
 Presentation-ready figures generated from verified CBSC-ZDC v2.2 evidence.
 
-Open [index.html](index.html) for the complete exhibition: every scientific
-PNG/SVG is grouped by evidence role, including historical studies under
-explicitly isolated headings. [current.html](current.html) is the compact
-current-model gallery. PNG files are slide-ready; SVG counterparts are included
-for editable vector use where practical.
+Open [index.html](index.html) for the landing page. Every substantive visual is
+in exactly one governed folder:
 
-## Figure catalog
+- [current/](current/README.md) contains every presently valid, up-to-date
+  visual and its complete `index.html` gallery;
+- [archive/](archive/README.md) contains historical, superseded, isolated-test,
+  or otherwise non-current visuals and its complete `index.html` gallery.
+
+PNG files are slide-ready; SVG counterparts are included for editable vector
+use where practical. `visual_layout.json` is the machine-enforced placement and
+outside-exhibition exception contract.
+
+## Model/contract figure catalog
+
+Figures 1–6 are an explicitly historical common-window snapshot in
+`archive/common_window_20260727/`. Figures 7–12 remain current in
+`current/model/`; epoch-dependent current plots live in `current/continuation/`
+and `current/diagnostics/`.
 
 1. `01_train_validation_loss_each_model` — train and validation loss over the
    common comparison window (epochs 0–10) for all four calibrated families.
@@ -36,12 +47,11 @@ for editable vector use where practical.
 
 ## Companion material built from test events
 
-[`c2st_20260728/`](c2st_20260728/README.md) holds the classifier two-sample test
+[`archive/c2st_20260728/`](archive/c2st_20260728/README.md) holds the classifier two-sample test
 comparison figures and the overview presentation deck. **Those artifacts use
 40,000 test-split events** and are therefore kept out of this gallery, which is
 built under `test_events_used = 0`. The builder passes an explicit file list to
-its gallery step and does not scan that subdirectory, so `manifest.json` and
-`index.html` are unaffected by it.
+its compact current-model gallery step and labels the study archive-only.
 
 ## Rebuild
 
@@ -50,6 +60,8 @@ python exhibition/build_exhibition.py
 python exhibition/build_continuation_loss_figures.py
 python exhibition/build_family_choice_figure.py
 python exhibition/build_diagnostic_trend_figure.py dicos-p9 dicos-p10
+python exhibition/build_all_metric_trends.py dicos-p9 dicos-p10
+python exhibition/build_external_metric_figures.py
 python exhibition/build_metrics_catalog.py
 ```
 
@@ -65,14 +77,14 @@ byte-for-byte reproducible.
 These figures establish structural execution and bounded optimization progress.
 They do not establish Geant4 fidelity, and the gallery build uses zero test
 events. The full-history loss and diagnostic companions are under
-`continuation_20260802/` and `diagnostics_20260803/`. Every epoch refresh updates
+`current/continuation/` and `current/diagnostics/`. Every epoch refresh updates
 ordinary loss/metric trajectories and their accepted validation-loss
 best-so-far counterparts. Quarantined checkpoints remain visible but are
 excluded from accepted standings and running-best traces.
 
 Test-split accounting, repository-wide: 40,000 of the 76,300 test events were
 consumed on 2026-07-28 by the isolated classifier two-sample test recorded in
-`logs.md` and published under `c2st_20260728/`. A separate 2,000-event paired
+`logs.md` and published under `archive/c2st_20260728/`. A separate 2,000-event paired
 diagnostic draw included 200 test events; its overlap with the C2ST sample is
 unresolved, so the untouched remainder is exactly bounded at 36,100–36,300.
 Those studies measured separability or descriptive agreement, not fidelity, and

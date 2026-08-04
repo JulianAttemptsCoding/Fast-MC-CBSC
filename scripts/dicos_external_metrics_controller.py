@@ -305,8 +305,9 @@ def pull(args) -> dict:
     destination = (
         ROOT
         / "exhibition"
-        / "data"
+        / "current"
         / "external_metrics"
+        / "source_data"
         / args.run_tag
         / f"epoch_{args.epoch:04d}"
     )

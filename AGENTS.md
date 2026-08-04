@@ -88,3 +88,13 @@ owner and are not negotiable by an agent.
     continue safely without reconstructing chat or repository history. Missing
     context is a fail-closed documentation defect: add it before relying on the
     artifact or procedure.
+27. **Keep the exhibition in exactly two visual scopes.** Every exhibition
+    image, graphic, video, PDF, slide deck, and substantive visual page belongs
+    under `exhibition/current/` or `exhibition/archive/`. `current/` must be the
+    complete presently valid set and must be regenerated through the latest
+    available epoch; accepted-best plots must identify the current accepted
+    validation-loss best. `archive/` is historical/superseded evidence and may
+    not select or tune a checkpoint. `exhibition/index.html` is only a router.
+    Any needed visual outside `exhibition/` must be explicitly labeled in
+    `exhibition/visual_layout.json`, finite, and rejected by QA if the exact
+    allowlist changes.

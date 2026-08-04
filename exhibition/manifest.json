@@ -32,7 +32,7 @@
       "sha256": "08b2bace66ba5c15dbd3d693c8998c0b3a60bb629019ea1130eac349488267aa"
     },
     {
-      "path": "exhibition/continuation_20260802/family_choice.json",
+      "path": "exhibition/current/continuation/family_choice.json",
       "bytes": 2129,
       "sha256": "63ac3e43b46e66e2dd4b3d3d6f18c4d43cd07aa3aee9a20009da90a4969d3ac8"
     },
@@ -59,125 +59,148 @@
   ],
   "visuals": [
     {
-      "path": "figures/01_train_validation_loss_each_model.png",
+      "path": "archive/common_window_20260727/01_train_validation_loss_each_model.png",
+      "scope": "archive",
       "bytes": 263962,
       "sha256": "49065976fbb64bfb524a4a7438f466e0fcc47ee70a838d0c77052c6d67caa042"
     },
     {
-      "path": "figures/01_train_validation_loss_each_model.svg",
+      "path": "archive/common_window_20260727/01_train_validation_loss_each_model.svg",
+      "scope": "archive",
       "bytes": 72959,
       "sha256": "163beec693cd74237fef42f38364235ff7ba3bb4824f711efb7b6dbf3936f371"
     },
     {
-      "path": "figures/02_validation_loss_comparison.png",
+      "path": "archive/common_window_20260727/02_validation_loss_comparison.png",
+      "scope": "archive",
       "bytes": 271021,
       "sha256": "485a876225cd1d618538529ac5b4e0f0137290cd03e144976a19ad4164a81b4b"
     },
     {
-      "path": "figures/02_validation_loss_comparison.svg",
+      "path": "archive/common_window_20260727/02_validation_loss_comparison.svg",
+      "scope": "archive",
       "bytes": 46735,
       "sha256": "1648311401d0db7034175992a1ae9741f0492b292dff3a7f67b9e0e4d7fb5a1b"
     },
     {
-      "path": "figures/03_objective_component_evolution.png",
+      "path": "archive/common_window_20260727/03_objective_component_evolution.png",
+      "scope": "archive",
       "bytes": 281082,
       "sha256": "189a4bed2202cbf36d8cc3d52d2b9493a0ac6450edd77274de0f9d8100eb89cf"
     },
     {
-      "path": "figures/03_objective_component_evolution.svg",
+      "path": "archive/common_window_20260727/03_objective_component_evolution.svg",
+      "scope": "archive",
       "bytes": 134205,
       "sha256": "078ab673441f1fec7913ec11ea1fc950f863b24334e8292abebeae59d62725db"
     },
     {
-      "path": "figures/04_fixed_sample_proxy_trajectories.png",
+      "path": "archive/common_window_20260727/04_fixed_sample_proxy_trajectories.png",
+      "scope": "archive",
       "bytes": 369446,
       "sha256": "efa1380182d66f058babe0f26ceed553da8efe04a9dda18fbbd9a81268d36805"
     },
     {
-      "path": "figures/04_fixed_sample_proxy_trajectories.svg",
+      "path": "archive/common_window_20260727/04_fixed_sample_proxy_trajectories.svg",
+      "scope": "archive",
       "bytes": 51762,
       "sha256": "d3779fc1036a57fae099d76d055000c45a7677192e4eb9d1f3e27e8634a34394"
     },
     {
-      "path": "figures/05_loss_vs_visual_proxy_boundary.png",
+      "path": "archive/common_window_20260727/05_loss_vs_visual_proxy_boundary.png",
+      "scope": "archive",
       "bytes": 153442,
       "sha256": "4a14ecde865f466b0cf521cc232bc9f82a9602f283ed6decc64acb1c00a5bd20"
     },
     {
-      "path": "figures/05_loss_vs_visual_proxy_boundary.svg",
+      "path": "archive/common_window_20260727/05_loss_vs_visual_proxy_boundary.svg",
+      "scope": "archive",
       "bytes": 33972,
       "sha256": "0d6fc3d56b50ff1e498c858179351b18f193861238d275b00ed7c369501c6360"
     },
     {
-      "path": "figures/06_vertex_compute_and_budget.png",
+      "path": "archive/common_window_20260727/06_vertex_compute_and_budget.png",
+      "scope": "archive",
       "bytes": 140693,
       "sha256": "625ee05f1b205f1b8c0c51a3bf18c39412a6d4d2b70b5e4ddbf70c7c0ccf446b"
     },
     {
-      "path": "figures/06_vertex_compute_and_budget.svg",
+      "path": "archive/common_window_20260727/06_vertex_compute_and_budget.svg",
+      "scope": "archive",
       "bytes": 23944,
       "sha256": "504623864a57eec28bf4f2437af14f5fd0a6b6f42286f6bbffd706463f178f8b"
     },
     {
-      "path": "figures/07_model_architecture_and_exact_decoder.png",
+      "path": "current/model/07_model_architecture_and_exact_decoder.png",
+      "scope": "current",
       "bytes": 214996,
       "sha256": "94cdfd608844ac0c2e18f610a00f7a55c296756d54076e5c857177ea1b6d33b1"
     },
     {
-      "path": "figures/07_model_architecture_and_exact_decoder.svg",
+      "path": "current/model/07_model_architecture_and_exact_decoder.svg",
+      "scope": "current",
       "bytes": 26278,
       "sha256": "8ecdf951156e7ca2b79b9ecf33cb31d977409a52bf74e1f2acd9422e1d690fc3"
     },
     {
-      "path": "figures/08_data_geometry_and_split_contract.png",
+      "path": "current/model/08_data_geometry_and_split_contract.png",
+      "scope": "current",
       "bytes": 220692,
       "sha256": "593d98f76a6c0cb1b10bb90778b905468a7272f50a5234e7ede07ddcbc3f7f74"
     },
     {
-      "path": "figures/08_data_geometry_and_split_contract.svg",
+      "path": "current/model/08_data_geometry_and_split_contract.svg",
+      "scope": "current",
       "bytes": 17569,
       "sha256": "739451fe0df8b730372777e85e548a4322a81f545afa5a200632317e3f4215ef"
     },
     {
-      "path": "figures/09_evidence_and_claim_boundary.png",
+      "path": "current/model/09_evidence_and_claim_boundary.png",
+      "scope": "current",
       "bytes": 220032,
       "sha256": "26841ba70f57c92503eb98745132d987cd49911aeeae5136d2cc08babfc7f9a5"
     },
     {
-      "path": "figures/09_evidence_and_claim_boundary.svg",
+      "path": "current/model/09_evidence_and_claim_boundary.svg",
+      "scope": "current",
       "bytes": 21198,
       "sha256": "a292f4f5159eb4a0f04cf2de5abe44c458e334a9509ca445ae021df0dc3ce918"
     },
     {
-      "path": "figures/10_same_condition_longitudinal_profiles.png",
+      "path": "current/model/10_same_condition_longitudinal_profiles.png",
+      "scope": "current",
       "bytes": 455482,
       "sha256": "3f0163808500ad9c19f9811daba36da7df42be51f63c55ca5bd93aa3add30dfb"
     },
     {
-      "path": "figures/10_same_condition_longitudinal_profiles.svg",
+      "path": "current/model/10_same_condition_longitudinal_profiles.svg",
+      "scope": "current",
       "bytes": 100503,
       "sha256": "c191c782a7f6bf4928526f1e09f1d2644ece0b791a82db47fd51537b50cd6566"
     },
     {
-      "path": "figures/11_best_model_sample_distributions.png",
+      "path": "current/model/11_best_model_sample_distributions.png",
+      "scope": "current",
       "bytes": 178983,
       "sha256": "f65a60e4c0dffa586abbab0625d729f731067ee3a02864680effdca7954e37d4"
     },
     {
-      "path": "figures/11_best_model_sample_distributions.svg",
+      "path": "current/model/11_best_model_sample_distributions.svg",
+      "scope": "current",
       "bytes": 67934,
       "sha256": "121bc8f999891a0e0c757b8cb7d20ed2f6ca31ebcd49ef19e50e4d69d8274245"
     },
     {
-      "path": "figures/12_same_condition_3d_energy_deposits.png",
+      "path": "current/model/12_same_condition_3d_energy_deposits.png",
+      "scope": "current",
       "bytes": 942379,
       "sha256": "a0b40cbcd2feff369587e023418e346b568db8d43fdb25ca224fcd9135e1ebd5"
     }
   ],
   "gallery": {
-    "path": "current.html",
-    "bytes": 4079,
-    "sha256": "65d247f3235a5d33d5ac3f06cbe3c3b74a6dfe43b3f00f2369e2d415d52babee"
+    "path": "current/model/index.html",
+    "bytes": 2602,
+    "sha256": "b18ecf3cc8c9b298713bacac9baabbfe5c2bfed70d8ec4f1135c46368f900078"
   },
   "qa": {
     "four_loss_series_complete": true,

@@ -28,7 +28,7 @@ from build_continuation_loss_figures import (  # noqa: E402
 )
 
 HERE = Path(__file__).resolve().parent
-OUT = HERE / "continuation_20260802"
+OUT = HERE / "current" / "continuation"
 
 SHORT = {
     "calibrated_lr3e5": r"LR $3\times10^{-5}$",

@@ -116,6 +116,12 @@ the continuing-agent handoff.
 4. Treat missing operational context as a fail-closed documentation defect.
    Repair the label, catalog, README, audit twin, or handoff before relying on
    the artifact or asking a future operator to continue from it.
+5. Keep every exhibition visual in exactly one of `exhibition/current/` or
+   `exhibition/archive/`. Current is the complete presently valid set through
+   the latest available epoch; archive is historical/superseded evidence and
+   must not affect checkpoint selection. The root exhibition page is a router,
+   and every needed repository visual outside exhibition must match the exact,
+   documented allowlist in `exhibition/visual_layout.json`.
 
 ## Current stop state
 

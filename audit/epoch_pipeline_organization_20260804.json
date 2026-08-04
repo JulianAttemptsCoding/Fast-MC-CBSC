@@ -40,8 +40,10 @@
     "large_validation_diagnostic_graphics": 18,
     "historical_c2st_graphics": 33,
     "historical_paired_graphics": 6,
-    "complete_index": "exhibition/index.html",
-    "compact_current_gallery": "exhibition/current.html",
+    "landing_router": "exhibition/index.html",
+    "complete_current_index": "exhibition/current/index.html",
+    "complete_archive_index": "exhibition/archive/index.html",
+    "compact_current_gallery": "exhibition/current/model/index.html",
     "all_graphic_http_links": "87/87 HTTP 200",
     "all_png_svg_decode_parse": true,
     "byte_reproducibility": "60/60 generated outputs identical on consecutive offline epoch transactions"

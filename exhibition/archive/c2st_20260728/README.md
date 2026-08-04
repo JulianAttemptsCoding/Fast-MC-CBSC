@@ -5,7 +5,7 @@ Presentation-ready material from the classifier two-sample test (C2ST) study.
 > **These artifacts use 40,000 events from the test split.** They are kept in
 > this subdirectory, separate from the parent `exhibition/` gallery, because that
 > gallery is built under `test_events_used = 0` and states so on its own panels.
-> Nothing here is included in `exhibition/manifest.json` or `exhibition/index.html`;
+> Nothing here is included in the current gallery or current checkpoint selection;
 > `exhibition/build_exhibition.py` passes an explicit file list to its gallery
 > builder and does not scan this directory.
 

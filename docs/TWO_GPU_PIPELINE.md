@@ -145,9 +145,10 @@ That single command now:
 7. rebuilds every 3090 metric vs epoch and the same metrics for the accepted
    validation-loss best-so-far checkpoint;
 8. resolves all current-best graphics mechanically from standings plus the
-   dashboard manifest, rebuilds `exhibition/current.html`, and rejects missing
+   dashboard manifest, rebuilds `exhibition/current/model/index.html`, and rejects missing
    or ambiguous payloads;
-9. rebuilds `exhibition/index.html` and `metrics_catalog.json`, cataloging every
+9. rebuilds `exhibition/current/index.html`, `exhibition/archive/index.html`,
+   the root router, and `metrics_catalog.json`, cataloging every
    scientific PNG/SVG while keeping historical test evidence visibly isolated;
 10. writes immutable per-epoch audit twins plus
     `audit/current_epoch_pipeline.{json,md}`. The exact expected epoch must be

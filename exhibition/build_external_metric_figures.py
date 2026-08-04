@@ -14,9 +14,9 @@ import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[1]
 HERE = ROOT / "exhibition"
-DATA = HERE / "data" / "external_metrics"
-OUT = HERE / "external_metrics_20260804"
-CHOICE = HERE / "continuation_20260802" / "family_choice.json"
+DATA = HERE / "current" / "external_metrics" / "source_data"
+OUT = HERE / "current" / "external_metrics"
+CHOICE = HERE / "current" / "continuation" / "family_choice.json"
 HISTORY = HERE / "data" / "continuation_history.csv"
 NAVY = "#0f2a43"
 ACCENT = "#8f4aa8"

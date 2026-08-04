@@ -27,7 +27,8 @@ from matplotlib.lines import Line2D
 ROOT = Path(__file__).resolve().parents[1]
 HERE = ROOT / "exhibition"
 DATA = HERE / "data"
-FIG = HERE / "figures"
+CURRENT_MODEL = HERE / "current" / "model"
+ARCHIVE_COMMON_WINDOW = HERE / "archive" / "common_window_20260727"
 AUDIT = ROOT / "audit"
 DASH = ROOT / "dashboard" / "public" / "data"
 
@@ -115,7 +116,7 @@ def resolve_best_files() -> dict[str, str]:
     manifest must contain exactly one QA-passing payload from the matching run,
     family, and epoch; ambiguity fails instead of silently choosing a graphic.
     """
-    standings = load_json(HERE / "continuation_20260802" / "family_choice.json")
+    standings = load_json(HERE / "current" / "continuation" / "family_choice.json")
     manifest = load_json(DASH / "manifest.json")
     resolved: dict[str, str] = {}
     for family in VARIANTS:
@@ -198,12 +199,15 @@ def footer(fig: mpl.figure.Figure, text: str) -> None:
 
 
 def save(fig: mpl.figure.Figure, stem: str, *, svg: bool = True) -> list[Path]:
-    paths = [FIG / f"{stem}.png"]
+    number = int(stem.split("_", 1)[0])
+    output = CURRENT_MODEL if number >= 7 else ARCHIVE_COMMON_WINDOW
+    output.mkdir(parents=True, exist_ok=True)
+    paths = [output / f"{stem}.png"]
     png_temporary = paths[0].with_name(f".{paths[0].name}.tmp.png")
     fig.savefig(png_temporary, dpi=180)
     png_temporary.replace(paths[0])
     if svg:
-        paths.append(FIG / f"{stem}.svg")
+        paths.append(output / f"{stem}.svg")
         svg_temporary = paths[-1].with_name(f".{paths[-1].name}.tmp.svg")
         fig.savefig(svg_temporary, metadata={"Date": None})
         normalized_svg = "\n".join(
@@ -769,15 +773,17 @@ def fig12_shower_3d(best: dict[str, dict], geometry: dict, position: int) -> lis
 
 def make_gallery(files: list[Path]) -> Path:
     cards = []
-    for path in sorted(p for p in files if p.suffix == ".png"):
+    for path in sorted(
+        p for p in files if p.suffix == ".png" and p.parent == CURRENT_MODEL
+    ):
         stem = path.stem
         human = stem.split("_", 1)[1].replace("_", " ").title()
         cards.append(
-            f'<figure><a href="figures/{html.escape(path.name)}"><img loading="lazy" src="figures/{html.escape(path.name)}" alt="{html.escape(human)}"></a><figcaption>{html.escape(human)}</figcaption></figure>'
+            f'<figure><a href="{html.escape(path.name)}"><img loading="lazy" src="{html.escape(path.name)}" alt="{html.escape(human)}"></a><figcaption>{html.escape(human)}</figcaption></figure>'
         )
     document = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CBSC-ZDC exhibition figures</title>
+<title>CBSC-ZDC current model visuals</title>
 <style>
 :root{color-scheme:light;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#102a43;background:#f4f7fa}
 *{box-sizing:border-box}body{margin:0}main{max-width:1480px;margin:auto;padding:48px 28px 64px}
@@ -786,16 +792,17 @@ h1{font-size:clamp(30px,4vw,52px);letter-spacing:-.035em;margin:0 0 10px}p{color
 figure{margin:0;background:#fff;border:1px solid #d9e2ec}img{width:100%;height:auto;display:block}
 figcaption{padding:13px 16px;font-size:14px;font-weight:600;border-top:1px solid #d9e2ec}
 a{color:inherit;text-decoration:none}a:focus-visible{outline:3px solid #2f80ed;outline-offset:3px}
-</style></head><body><main><h1>CBSC-ZDC model exhibition</h1>
-<p>Presentation-ready figures generated from verified training and fixed validation evidence. Physics validation is not established.</p>
+</style></head><body><main><h1>CBSC-ZDC current model visuals</h1>
+<p>Current static contract and accepted-best model visuals. Epoch-dependent figures are in the parent current gallery. Physics validation is not established.</p>
 <div class="grid">""" + "".join(cards) + "</div></main></body></html>"
-    path = HERE / "current.html"
+    path = CURRENT_MODEL / "index.html"
     write_text_atomic(path, document)
     return path
 
 
 def main() -> None:
-    FIG.mkdir(parents=True, exist_ok=True)
+    CURRENT_MODEL.mkdir(parents=True, exist_ok=True)
+    ARCHIVE_COMMON_WINDOW.mkdir(parents=True, exist_ok=True)
     style()
     history = read_history()
     terminal = load_json(AUDIT / "compute_extension_20260727_r2_terminal_analysis.json")
@@ -832,7 +839,7 @@ def main() -> None:
         AUDIT / "compute_extension_20260727_r2_terminal_analysis.json",
         DASH / "manifest.json",
         DASH / "geometry.json",
-        HERE / "continuation_20260802" / "family_choice.json",
+        HERE / "current" / "continuation" / "family_choice.json",
         *[DASH / name for name in best_files.values()],
     ]
     manifest = {
@@ -847,10 +854,19 @@ def main() -> None:
             for path in source_files
         ],
         "visuals": [
-            {"path": str(path.relative_to(HERE)).replace("\\", "/"), "bytes": path.stat().st_size, "sha256": sha256(path)}
+            {
+                "path": str(path.relative_to(HERE)).replace("\\", "/"),
+                "scope": "current" if CURRENT_MODEL in path.parents else "archive",
+                "bytes": path.stat().st_size,
+                "sha256": sha256(path),
+            }
             for path in generated
         ],
-        "gallery": {"path": gallery.name, "bytes": gallery.stat().st_size, "sha256": sha256(gallery)},
+        "gallery": {
+            "path": gallery.relative_to(HERE).as_posix(),
+            "bytes": gallery.stat().st_size,
+            "sha256": sha256(gallery),
+        },
         "qa": {
             "four_loss_series_complete": True,
             "epochs_by_variant": {v: [r["epoch"] for r in history[v]] for v in VARIANTS},

@@ -434,7 +434,8 @@ def advance_external_metrics(
             outcome = _external_controller("pull", identity)
         state["controller"] = outcome
         manifest = (
-            ROOT / "exhibition" / "data" / "external_metrics" / run_tag
+            ROOT / "exhibition" / "current" / "external_metrics"
+            / "source_data" / run_tag
             / f"epoch_{epoch:04d}" / "manifest.json"
         )
         state["status"] = "complete" if manifest.is_file() else "running_remote"
@@ -455,7 +456,7 @@ def mark_external_release_prepared(state: dict | None) -> None:
 
 
 def _read_best(family: str) -> dict | None:
-    path = ROOT / "exhibition/continuation_20260802/family_choice.json"
+    path = ROOT / "exhibition/current/continuation/family_choice.json"
     if not path.is_file():
         return None
     return json.loads(path.read_text(encoding="utf-8")).get("families", {}).get(family)
@@ -467,7 +468,7 @@ def write_epoch_record(
     public_release_prepared: bool = False,
     external_state: dict | None = None,
 ) -> dict:
-    diagnostics_path = ROOT / "exhibition/diagnostics_20260803/diagnostic_summary.json"
+    diagnostics_path = ROOT / "exhibition/current/diagnostics/diagnostic_summary.json"
     diagnostics = json.loads(diagnostics_path.read_text(encoding="utf-8"))
     per_epoch = {int(row["epoch"]): row for row in diagnostics["per_epoch"]}
     if expected_epoch not in per_epoch:
@@ -484,12 +485,12 @@ def write_epoch_record(
         != current_best.get("best_accepted_validation_loss")
     )
     tracked = [
-        ROOT / "exhibition/continuation_20260802/loss_summary.json",
-        ROOT / "exhibition/continuation_20260802/family_choice.json",
+        ROOT / "exhibition/current/continuation/loss_summary.json",
+        ROOT / "exhibition/current/continuation/family_choice.json",
         diagnostics_path,
         ROOT / "exhibition/manifest.json",
         ROOT / "exhibition/metrics_catalog.json",
-        ROOT / "exhibition/index.html",
+        ROOT / "exhibition/current/index.html",
     ]
     record = {
         "schema_version": 1,
@@ -647,13 +648,13 @@ def main(argv=None) -> int:
             f"{external_state.get('run_tag')} e{external_state.get('epoch')} "
             f"status={external_state.get('status')}"
         )
-    external_data = ROOT / "exhibition/data/external_metrics"
+    external_data = ROOT / "exhibition/current/external_metrics/source_data"
     if any(external_data.glob("*/epoch_*/manifest.json")):
         print(rebuild("exhibition/build_external_metric_figures.py"))
     print(rebuild("exhibition/build_exhibition.py"))
     print(rebuild("exhibition/build_metrics_catalog.py"))
 
-    summary = ROOT / "exhibition/diagnostics_20260803/diagnostic_summary.json"  # noqa: E501
+    summary = ROOT / "exhibition/current/diagnostics/diagnostic_summary.json"  # noqa: E501
     if summary.is_file():
         payload = json.loads(summary.read_text(encoding="utf-8"))
         print(f"diagnostic epochs: {payload['epochs']}")

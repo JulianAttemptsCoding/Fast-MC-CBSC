@@ -15,7 +15,7 @@
   "family": "calibrated_lr1e4",
   "kind": "cbsc-zdc-current-external-metrics-state",
   "determinism_audit": "audit/external_metrics_determinism_20260804.json",
-  "local_manifest": "exhibition/data/external_metrics/dicos-p9/epoch_0038/manifest.json",
+  "local_manifest": "exhibition/current/external_metrics/source_data/dicos-p9/epoch_0038/manifest.json",
   "release_pending": false,
   "run_tag": "dicos-p9",
   "schema_version": 1,

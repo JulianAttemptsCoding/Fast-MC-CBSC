@@ -2,33 +2,33 @@
   "artifacts": [
     {
       "bytes": 7455,
-      "path": "exhibition/continuation_20260802/loss_summary.json",
+      "path": "exhibition/current/continuation/loss_summary.json",
       "sha256": "877b4a40e45367924093de6fdee4d8323b35a069ad5dea3c732d4b37bdab4928"
     },
     {
       "bytes": 2129,
-      "path": "exhibition/continuation_20260802/family_choice.json",
+      "path": "exhibition/current/continuation/family_choice.json",
       "sha256": "63ac3e43b46e66e2dd4b3d3d6f18c4d43cd07aa3aee9a20009da90a4969d3ac8"
     },
     {
       "bytes": 28578,
-      "path": "exhibition/diagnostics_20260803/diagnostic_summary.json",
+      "path": "exhibition/current/diagnostics/diagnostic_summary.json",
       "sha256": "2c78baa2f5da5520a551ee7179751fabd375b8d94eecb8a8b20d960b122012df"
     },
     {
-      "bytes": 8049,
+      "bytes": 9023,
       "path": "exhibition/manifest.json",
-      "sha256": "80233e63503fcd9b50578e8bbaa9d5d2e7e7027a104926a69e3360439b2e7193"
+      "sha256": "d07bc714e5069079ba85f575909cf08cfd25dc70c80bc148fbb81eb01060a180"
     },
     {
-      "bytes": 31243,
+      "bytes": 48056,
       "path": "exhibition/metrics_catalog.json",
-      "sha256": "1f153621925af936e240e1fc35c16e967e9250fe8575f79915a90ed23455f420"
+      "sha256": "c62e580e8c0cce323a9437d98ed8db5be12f673bd205d8273b6427ebd67d1170"
     },
     {
-      "bytes": 27268,
-      "path": "exhibition/index.html",
-      "sha256": "faa5fbb2a575e2151bc093268864095f2225621bd323f63753cbe6308782c69c"
+      "bytes": 18484,
+      "path": "exhibition/current/index.html",
+      "sha256": "19358e491f47b2515bf021b58066d459b55beaf598cf795377f7eb60caed746a"
     }
   ],
   "best_after_refresh": {
@@ -63,6 +63,32 @@
   "epoch": 40,
   "epoch_status": "quarantined",
   "event_generation_started_by_refresh": false,
+  "external_metrics": {
+    "cbsc_test_events_used": 0,
+    "checkpoint_sha256": "4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e",
+    "controller": {
+      "bank_ready": true,
+      "evaluate": {
+        "state": "complete"
+      },
+      "export": {
+        "state": "complete"
+      },
+      "results_ready": true
+    },
+    "determinism_audit": "audit/external_metrics_determinism_20260804.json",
+    "epoch": 38,
+    "family": "calibrated_lr1e4",
+    "kind": "cbsc-zdc-current-external-metrics-state",
+    "local_manifest": "exhibition/current/external_metrics/source_data/dicos-p9/epoch_0038/manifest.json",
+    "release_pending": false,
+    "run_tag": "dicos-p9",
+    "schema_version": 1,
+    "selection_role": "descriptive only; may not select or tune CBSC",
+    "source_split": "validation",
+    "status": "complete",
+    "validation_loss": 4.635219681489869
+  },
   "family": "calibrated_lr1e4",
   "kind": "cbsc-zdc-epoch-evidence-refresh",
   "lineage": [
@@ -70,6 +96,7 @@
     "dicos-p10"
   ],
   "mode": "offline-rebuild",
+  "public_release_pending_external_metrics": false,
   "public_release_prepared_and_qa_passed": false,
   "public_release_required": false,
   "run_tag": "dicos-p10",

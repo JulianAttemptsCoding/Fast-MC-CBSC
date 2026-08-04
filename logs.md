@@ -7567,3 +7567,64 @@ data split, threshold, or test event was touched.
   stashed, fast-forwarded, verified, and the redundant stash dropped. Removed
   the explicitly resolved untracked `src/cbsc_zdc_fastmc.egg-info/` packaging
   directory; the remote checkout is now clean and no run evidence was removed.
+- Began the owner-requested exhibition current/archive migration from a clean
+  canonical worktree. Pre-migration inventory: 117 PNG/SVG graphics and two
+  HTML gallery pages. Frozen interpretation: `current/` must contain every
+  presently valid and up-to-date visual (latest observed epoch 40, latest
+  accepted epoch 39, accepted-best external epoch 38); `archive/` contains
+  historical/superseded/isolated-test visuals. No training, GPU generation, or
+  new test-event use is authorized. The audit twin is
+  `audit/exhibition_current_archive_reorganization_20260804.{json,md}`.
+- The first rebuilt layout catalog failed closed on four duplicated dashboard
+  icons under ignored `dashboard/dist/client/`. Read-only verification proved
+  `dashboard/dist/` contains 99 untracked production-build files and resolves
+  exactly inside this workspace. A guarded recursive cleanup command was
+  blocked by the execution policy before deleting anything. The four SVGs are
+  therefore explicitly labeled as needed deployment-package QA copies, beside
+  the canonical `dashboard/public/` UI-icon exceptions; the allowlist remains
+  exact and rejects any additional outside-exhibition visual.
+- Completed the exhibition two-scope migration. All 117 cataloged graphics are
+  now classified exactly once: 65 presently valid graphics under
+  `exhibition/current/` and 52 historical graphics under
+  `exhibition/archive/`. The current diagnostic set reaches observed epoch 40,
+  explicitly preserves epoch 40 as quarantined, and identifies epoch 38
+  (`dicos-p9`, validation loss `4.635219681489869`) as the accepted best.
+- Ran the complete offline epoch refresh for `dicos-p10` epoch 40 with lineage
+  `dicos-p9 dicos-p10`. It regenerated loss-vs-epoch, accepted-running-best
+  loss, all 348-leaf diagnostic families vs epoch and for best-so-far, external
+  accepted-best figures, galleries, catalog, and audits. It started no training
+  or event generation, used zero new test events, and correctly required no
+  public release because the accepted best did not change.
+- Catalog and layout QA passed: 117/117 graphics, 65 current/52 archive, all PNG
+  decodes, SVG parses, manifest hashes, accepted summaries, scoped-gallery
+  membership, latest-epoch coverage, exact outside-exhibition exception list,
+  and router-only root HTML. Deterministic HTML href/src resolution also passed.
+- The in-app browser Node transport closed twice before opening the local
+  gallery. The hidden local HTTP server was stopped; no browser rendering claim
+  is made. Original-resolution inspection passed for the current loss,
+  diagnostic, accepted-best external-metric, and archived common-window sample
+  figures with legible labels and scientifically correct epoch/status text.
+- Final source QA passed 257 tests with eight known Transformer nested-tensor
+  warnings, changed-file Ruff, compileall, all audit/config/exhibition JSON
+  parsing, and `git diff --check`. Stale active-path searches found no remaining
+  pre-layout references outside historical logs/audits/archive documentation.
+- Resolved and verified the exact Desktop mirror target before mirroring. The
+  mirror operation removed 134 stale pre-layout duplicate files only from
+  `C:\Users\Julia\Desktop\coding\ASIoP\Fast MC CBSC\exhibition`; every removed
+  item remains recoverable in canonical `current/` or `archive/` and Git
+  history. Final source/destination inventory is 195 files each, with zero
+  missing, zero extras, and 195/195 identical SHA-256 hashes.
+- Two guarded attempts to delete generated exhibition `__pycache__` directories
+  were blocked by command policy before deleting anything. The cache is
+  ignored, contains no visuals or tracked evidence, and is excluded by the
+  exact visual-layout contract; repository and mirror evidence were unchanged.
+- Re-ran final integration QA after documentation and mirror completion: all
+  257 Python tests passed with the same eight known Transformer warnings; the
+  internal dashboard production build and two rendered-HTML tests passed; and
+  the public Fast-MC-Visual-Tests repository passed all eight tests plus its
+  TypeScript/Vite production build. The accepted best was unchanged, so no
+  website publication was triggered.
+- A staged-file size check built from `git diff --numstat` misread Git's compact
+  rename notation as literal Windows paths and emitted nonfatal `Test-Path`
+  errors. Staging and files were unchanged; the corrected check uses
+  `git diff --name-only --diff-filter=AM` and passed.

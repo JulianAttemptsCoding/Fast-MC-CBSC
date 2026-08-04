@@ -163,7 +163,7 @@ wholly untouched.
    *inside this repository*. A 2,000-event random draw from the full corpus, at
    the project owner's explicit instruction after being warned twice, included
    **200 sealed-test events (10.0%)**; they appear in the six published figures
-   under `exhibition/paired_diagnostics_20260730/`. It fed no preprocessing,
+   under `exhibition/archive/paired_diagnostics_20260730/`. It fed no preprocessing,
    threshold, architecture, loss-weight, learning-rate, stopping, or
    checkpoint-selection decision. `PHYSICS VALIDATION NOT ESTABLISHED`. See
    `logs.md` and that directory's `README.md`.
@@ -1626,9 +1626,11 @@ python exhibition/build_metrics_catalog.py
 It verifies every PNG/SVG, exhibition and historical C2ST manifest hash,
 accepted/latest/quarantined metric agreement, active lineage, and conservative
 test accounting before replacing `exhibition/metrics_catalog.json` and
-`exhibition/METRICS_AND_FIGURES.md`, and builds `exhibition/index.html` as the
-complete logically grouped exhibition. As of 2026-08-04 it covers 117 graphics;
-the compact current-model gallery is `exhibition/current.html`.
+`exhibition/METRICS_AND_FIGURES.md`, builds `exhibition/current/index.html` and
+`exhibition/archive/index.html` as the complete scoped galleries, and keeps
+`exhibition/index.html` as a landing router. As of 2026-08-04 it covers 117
+graphics; the compact current-model gallery is
+`exhibition/current/model/index.html`.
 
 Historical pre-sync exhibition states are in
 `https://github.com/JulianAttemptsCoding/Fast-MC-CBSCs-archive`. The current
@@ -1701,7 +1703,7 @@ repeat all completed `EXIT=0`. The candidate and repeat match exactly after
 excluding wall-time fields. The accepted low-level validation C2ST is
 `0.8726555555555556 ± 0.011687150998288242`; Fast-MC macro RMS relative
 four-vector error is `0.3466445061663238`. The complete result and seven derived
-figures are under `exhibition/external_metrics_20260804/`; the determinism proof
+figures are under `exhibition/current/external_metrics/`; the determinism proof
 is `audit/external_metrics_determinism_20260804.json`.
 
 At closeout, both GPUs were idle with no trainer process. The RTX 4090 source

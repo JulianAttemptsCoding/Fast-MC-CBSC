@@ -53,7 +53,7 @@ def test_current_best_visualizations_are_resolved_not_hardcoded() -> None:
     resolved = build_exhibition.resolve_best_files()
     assert set(resolved) == set(build_exhibition.VARIANTS)
     standings = json.loads(
-        (ROOT / "exhibition/continuation_20260802/family_choice.json").read_text(
+        (ROOT / "exhibition/current/continuation/family_choice.json").read_text(
             encoding="utf-8"
         )
     )["families"]
@@ -78,9 +78,18 @@ def test_public_selection_is_derived_from_current_accepted_bests() -> None:
 
 def test_complete_gallery_references_every_graphic() -> None:
     payload = build_metrics_catalog.build()
-    page = (ROOT / "exhibition/index.html").read_text(encoding="utf-8")
+    pages = {
+        scope: (ROOT / "exhibition" / scope / "index.html").read_text(
+            encoding="utf-8"
+        )
+        for scope in ("current", "archive")
+    }
     for record in payload["graphics"]["files"]:
-        assert record["path"] in page
+        relative = Path(record["path"]).relative_to(record["scope"]).as_posix()
+        assert relative in pages[record["scope"]]
+    landing = (ROOT / "exhibition/index.html").read_text(encoding="utf-8")
+    assert 'href="current/index.html"' in landing
+    assert 'href="archive/index.html"' in landing
 
 
 def test_workspace_inventory_is_non_destructive_and_path_bounded(

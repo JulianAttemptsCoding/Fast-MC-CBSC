@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-exhibition-visual-layout-contract",
+  "visual_roots": [
+    "exhibition/current",
+    "exhibition/archive"
+  ],
+  "visual_extensions": [
+    ".gif",
+    ".avi",
+    ".jpeg",
+    ".jpg",
+    ".mkv",
+    ".mov",
+    ".mp4",
+    ".pdf",
+    ".png",
+    ".ppt",
+    ".pptx",
+    ".svg",
+    ".webm",
+    ".webp"
+  ],
+  "current_contract": {
+    "latest_observed_epoch": 40,
+    "latest_accepted_epoch": 39,
+    "accepted_best_external_metric_epoch": 38,
+    "meaning": "complete presently valid visual set regenerated from the latest available evidence"
+  },
+  "archive_contract": {
+    "meaning": "historical, superseded, isolated-test, or otherwise non-current visual evidence",
+    "may_select_current_checkpoint": false
+  },
+  "needed_outside_exhibition_exceptions": [
+    "dashboard/dist/client/favicon.svg",
+    "dashboard/dist/client/file.svg",
+    "dashboard/dist/client/globe.svg",
+    "dashboard/dist/client/window.svg",
+    "dashboard/public/favicon.svg",
+    "dashboard/public/file.svg",
+    "dashboard/public/globe.svg",
+    "dashboard/public/window.svg",
+    "legacy/cbsc_zdc_fastmc_v2_1_working_materials/paper/CBSC_ZDC_Auditor_Specification_v2_1.pdf",
+    "legacy/cbsc_zdc_fastmc_v2_original/paper/CBSC_ZDC_Auditor_Specification.pdf",
+    "paper/CBSC_ZDC_Auditor_Specification_v2_2.pdf"
+  ],
+  "outside_exception_rationale": {
+    "dashboard/dist/client/*.svg": "generated production-build copies needed for local deployment-package QA",
+    "dashboard/public/*.svg": "required application-shell source icons",
+    "legacy/**/paper/*.pdf": "immutable historical specification evidence",
+    "paper/CBSC_ZDC_Auditor_Specification_v2_2.pdf": "active project specification document"
+  },
+  "ignored_directory_names": [
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    ".vinext",
+    "__pycache__",
+    "node_modules"
+  ],
+  "root_html_exception": {
+    "path": "exhibition/index.html",
+    "reason": "required non-substantive landing/router page for current and archive"
+  }
+}

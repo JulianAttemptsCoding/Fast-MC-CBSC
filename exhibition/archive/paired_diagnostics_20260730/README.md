@@ -45,5 +45,5 @@ python -m cbsc_zdc.cloud.paired_diagnostics \
   --n-events 2000 --selection-seed 20260730
 
 python exhibition/build_paired_diagnostics_figures.py \
-  --results path/to/downloaded/results.npz --out-dir exhibition/paired_diagnostics_20260730
+  --results path/to/downloaded/results.npz --out-dir exhibition/archive/paired_diagnostics_20260730
 ```

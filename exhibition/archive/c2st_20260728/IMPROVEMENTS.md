@@ -28,7 +28,7 @@ separable. The per-observable breakdown says *where*:
 It puts the right total energy into the right number of cells spread over the
 right layers, and then arranges that energy too diffusely inside each layer.
 
-The radial energy density (`exhibition/figures/13_radial_energy_density.png`)
+The radial energy density (`figures/13_radial_energy_density.png`)
 shows this directly. At every energy the Fast-MC core is roughly **2.5-3x too
 low** while the tail beyond about 50 mm is **1.5-2x too high**, with a crossover
 near one HCAL channel width. Energy is being moved out of the core into the

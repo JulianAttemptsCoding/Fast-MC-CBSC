@@ -27,8 +27,10 @@ trace or become a visualization/public selection. Current accepted best for
 
 ## Exhibition
 
-- Complete index: `exhibition/index.html`.
-- Compact current-model gallery: `exhibition/current.html`.
+- Landing router: `exhibition/index.html`.
+- Complete current index: `exhibition/current/index.html`.
+- Complete archive index: `exhibition/archive/index.html`.
+- Compact current-model gallery: `exhibition/current/model/index.html`.
 - Validated scientific graphics: 87.
 - Loss/standings graphics: 6, including ordinary loss vs epoch and accepted
   running-best validation loss.

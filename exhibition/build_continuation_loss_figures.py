@@ -6,7 +6,7 @@ builds the complementary view: one panel per family showing its whole observed
 training history. Quarantined observations remain visible but are excluded
 from accepted-best and latest-accepted metrics.
 
-Output goes to ``exhibition/continuation_20260802/``. It includes the ordinary
+Output goes to ``exhibition/current/continuation/``. It includes the ordinary
 train/validation loss-vs-epoch view and an accepted running-best validation-loss
 view. The compact current gallery manifest remains separate; the comprehensive
 exhibition index catalogs both on every refresh.
@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-OUT = HERE / "continuation_20260802"
+OUT = HERE / "current" / "continuation"
 
 NAVY = "#0f2a43"
 COLORS = {

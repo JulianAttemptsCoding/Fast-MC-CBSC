@@ -6,8 +6,10 @@
   point. It pulls hash-verified 3090 metrics and matching 4090 visualization
   evidence, refreshes loss-vs-epoch and best-so-far plots, rebuilds the current
   gallery and complete exhibition, and writes epoch audit twins.
-- `exhibition/index.html` is the comprehensive catalog of every scientific
-  PNG/SVG. `exhibition/current.html` is the compact current-model gallery.
+- `exhibition/index.html` is the required landing/router. Every substantive
+  visual is below `exhibition/current/` or `exhibition/archive/`; their complete
+  galleries are `current/index.html` and `archive/index.html`. The compact
+  current model/contract gallery is `current/model/index.html`.
 - `exhibition/data/` contains compact immutable inputs, namespaced by run tag.
   Generated figures remain in provenance-preserving subdirectories and are
   organized logically by the comprehensive index rather than moved.

@@ -4,6 +4,8 @@
 - Checkpoint status: `quarantined`
 - Best accepted: e38 / 4.63521968149
 - Best changed: `false`
+- External accepted-best metrics: `complete`
+- Public release waiting on external metrics: `false`
 - Public release required: `false`
 - Public candidate prepared and QA-passed: `false`
 - Test events used: `0`

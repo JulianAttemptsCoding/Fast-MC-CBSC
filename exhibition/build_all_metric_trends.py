@@ -23,7 +23,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 DATA_ROOT = HERE / "data" / "diagnostics"
-OUT = HERE / "diagnostics_20260803"
+OUT = HERE / "current" / "diagnostics"
 STATUS = HERE / "data" / "continuation_status.json"
 RUN_TAGS = sys.argv[1:] or ["dicos-p9", "dicos-p10"]
 NAVY = "#0f2a43"

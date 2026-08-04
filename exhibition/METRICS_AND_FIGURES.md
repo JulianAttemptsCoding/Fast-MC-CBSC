@@ -1,6 +1,7 @@
 # Metrics and figures catalog
 
 This is the deterministic QA index for every PNG/SVG under `exhibition/`.
+Every graphic is contained by exactly `current/` or `archive/`.
 Current standings exclude quarantined checkpoints; quarantined observations
 remain visible as negative evidence.
 
@@ -16,16 +17,19 @@ remain visible as negative evidence.
 ## Graphics inventory
 
 Validated graphics: **117**.
+Current: **65**. Archive: **52**.
 
 | Category | PNG/SVG files |
 |---|---:|
-| `accepted_best_external_metrics` | 9 |
-| `common_window_gallery` | 24 |
-| `continuation_and_standings` | 6 |
+| `current_accepted_best_external_metrics` | 9 |
+| `current_continuation_and_standings` | 6 |
+| `current_external_metric_source_evidence` | 5 |
+| `current_model_and_contract` | 11 |
+| `current_validation_diagnostics` | 34 |
 | `historical_c2st_test_study` | 33 |
+| `historical_common_window_snapshot` | 12 |
+| `historical_miscellaneous` | 1 |
 | `historical_paired_test_exception` | 6 |
-| `large_validation_diagnostics` | 34 |
-| `other` | 5 |
 
 ## Scientific boundary
 

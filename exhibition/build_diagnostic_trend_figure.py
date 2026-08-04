@@ -24,7 +24,7 @@ the checkpoint.
 
 Input is `exhibition/data/diagnostics/<run-tag>/metrics_epoch_*.json`. Figures
 are built to be partial while a run is in flight. Output goes to
-``exhibition/diagnostics_20260803/``. The compact current gallery manifest
+``exhibition/current/diagnostics/``. The compact current gallery manifest
 remains separate, while the comprehensive exhibition index catalogs these
 files on every refresh.
 """
@@ -42,7 +42,7 @@ import matplotlib.pyplot as plt
 
 HERE = Path(__file__).resolve().parent
 DATA_ROOT = HERE / "data" / "diagnostics"
-OUT = HERE / "diagnostics_20260803"
+OUT = HERE / "current" / "diagnostics"
 STATUS_PATH = HERE / "data" / "continuation_status.json"
 
 #: Diagnostics are namespaced per run tag: two runs of one family overlap in

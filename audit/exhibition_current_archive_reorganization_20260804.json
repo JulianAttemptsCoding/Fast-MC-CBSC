@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-exhibition-current-archive-reorganization",
+  "status": "complete",
+  "requested_layout": {
+    "visual_roots": [
+      "exhibition/current",
+      "exhibition/archive"
+    ],
+    "current_meaning": "complete presently valid visual set, regenerated from the latest available epoch/current accepted best",
+    "archive_meaning": "historical, superseded, quarantined-only, or otherwise non-current visuals"
+  },
+  "pre_migration_inventory": {
+    "png_svg_graphics": 117,
+    "html_visual_pages": 2,
+    "latest_observed_epoch": 40,
+    "latest_accepted_epoch": 39,
+    "accepted_best_epoch_for_external_metrics": 38
+  },
+  "scientific_boundary": {
+    "training_started": false,
+    "event_generation_started": false,
+    "new_test_events_used": 0,
+    "physics_validation_established": false
+  },
+  "final_inventory": {
+    "cataloged_graphics": 117,
+    "current_graphics": 65,
+    "archive_graphics": 52,
+    "latest_observed_epoch": 40,
+    "latest_observed_status": "quarantined",
+    "latest_accepted_epoch": 39,
+    "accepted_best_epoch": 38,
+    "accepted_best_run_tag": "dicos-p9",
+    "accepted_best_validation_loss": 4.635219681489869,
+    "numeric_metric_leaves_per_epoch": 348,
+    "diagnostic_epoch_range": [16, 40]
+  },
+  "layout_qa": {
+    "catalog_status": "PASS",
+    "all_graphics_under_current_or_archive": true,
+    "current_and_archive_galleries_contain_every_graphic": true,
+    "current_reaches_latest_observed_epoch": 40,
+    "root_html_is_router_only": true,
+    "all_png_decoded": true,
+    "all_svg_parsed": true,
+    "all_manifest_hashes_match": true,
+    "accepted_metric_summaries_agree": true,
+    "local_html_links_and_images_resolve": true,
+    "original_resolution_visual_spot_checks": [
+      "exhibition/current/continuation/loss_all_families_every_epoch.png",
+      "exhibition/current/diagnostics/feature_moments_vs_epoch.png",
+      "exhibition/current/external_metrics/current_accepted_best_external_metrics.png",
+      "exhibition/archive/common_window_20260727/01_train_validation_loss_each_model.png"
+    ]
+  },
+  "source_qa": {
+    "pytest": "257 passed, 8 known Transformer nested-tensor warnings",
+    "ruff": "PASS",
+    "compileall": "PASS",
+    "git_diff_check": "PASS",
+    "audit_config_and_exhibition_json_parse": "PASS",
+    "internal_dashboard": "production build PASS; 2 rendered-HTML tests PASS",
+    "public_site": "8 tests PASS; TypeScript and Vite production build PASS",
+    "publication_triggered": false,
+    "publication_reason": "accepted best unchanged"
+  },
+  "browser_qa": {
+    "status": "static_fallback_passed",
+    "detail": "The in-app browser Node transport closed twice before opening the local gallery; the hidden HTTP server was stopped and deterministic HTML href/src resolution plus original-resolution image inspection passed instead."
+  },
+  "mirror": {
+    "status": "exact_sha256_match",
+    "destination": "C:/Users/Julia/Desktop/coding/ASIoP/Fast MC CBSC/exhibition",
+    "source_files": 195,
+    "destination_files": 195,
+    "missing_files": 0,
+    "extra_files": 0,
+    "sha256_mismatches": 0,
+    "removed_stale_pre_layout_files": 134,
+    "recoverability": "All removed mirror duplicates remain in canonical exhibition/current or exhibition/archive and in Git history."
+  }
+}
