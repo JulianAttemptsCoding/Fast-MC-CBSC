@@ -6425,6 +6425,82 @@ six-epoch continuation that did not beat its parent. `calibrated_lr1e4` remains
 at 4.702458, epoch 15, and the published site is unaffected because the
 selected checkpoint did not change.
 
+### 2026-08-04 — p9: continuing the cosine instead of restarting it works
+
+`QA PASS`. `calibrated_lr1e4_dicos-p9` ran 24 epochs, absolute 16..39,
+13:56:52Z to 19:00Z, `EXIT=0`, wall 18,238.8 s, 26,640 updates. **24 of 24
+per-epoch invariants pass**; postflight `pass: true` with `best.pt`
+independently reloaded and re-sampled; headroom 0.535.
+
+Two things were changed against p8, at the project owner's direction:
+
+  * it resumes from the epoch-15 **best** checkpoint (4.702458) rather than a
+    later, worse `last.pt`;
+  * `restart_scheduler_on_resume` is **false**, so the saved cosine continues
+    instead of being reset to peak learning rate.
+
+    best.pt  89cae275c092cecca5025159d766b920a412f96e83b4438b68bc1e6c4bd46b2a  (epoch 38)
+    last.pt  98540e3dca3997ddaba34f5a1f964dd57a0a67ae9c3616fddaf4add7f06eb853  (epoch 39)
+    frozen   9ab50a47ed85ba5739de71888fde361a91e2ba2b1f8d738a151081b8c9920fe6
+
+**4.635219681489869 at epoch 38, against a parent best of 4.702458: an
+improvement of 0.067238**, more than three times the ~0.02 resolution. This is
+a real improvement and is reported as one.
+
+**The scheduler decision is what distinguishes this from p8.** Resuming a spent
+`CosineAnnealingLR` without restarting does not hold the rate at its floor:
+the schedule is periodic in `2*T_max`, so it climbs smoothly back toward the
+peak and anneals again. Over 24 epochs that gave two full 12-epoch cycles —
+1e-6 at epoch 16, peak 1e-4 at epoch 22, 7.6e-6 at 27, 1e-6 at 28, peak again
+at 34, and the run's best at 38 on the way down the second anneal. p8, which
+jumped straight to 1e-4, was stopped by early stopping before its first anneal
+and improved nothing. Same family, same parent, same horizon; the difference
+is entirely in how the learning rate got from 7.6e-6 back to useful values.
+
+**This also settles the potential question, in the direction the analysis
+predicted.** On 2026-08-03 `calibrated_lr1e4` was assessed as having the most
+remaining potential, on the grounds that it was the only family whose per-cycle
+gain had not decayed and it was six epochs less trained than the leaders. It
+then gained 0.067238 in one continuation, against `calibrated_lr3e4`'s 0.008346
+in its most recent. The standings:
+
+    calibrated_lr3e4            4.597152   epoch 22
+    calibrated_lr1e4            4.635220   epoch 38   <- was 4.702458, third
+    calibrated_lr1e4_halfbatch  4.673036   epoch 21
+    calibrated_lr3e5            4.843471   epoch 8
+
+`calibrated_lr1e4` moves from third to second and now trails the leader by
+0.038068. That is one confirmed prediction, not a validated method.
+
+**Large-sample diagnostics, 24 of 24 epochs, 4,000 validation events each, zero
+test events, all QA pass.** The classifier two-sample AUROC improved over the
+run, from 0.87-0.92 in the first cycle to 0.79-0.83 in the second, with the
+minimum 0.7748 at epoch 26. It remains far above the 0.65 threshold and far
+from the 0.5 of indistinguishability, so the model is still easily separated
+from Geant4 on high-level features.
+
+The disagreement recorded for p8 persists and is sharper here. Epoch 38 has the
+lowest validation loss; **epoch 33 is markedly better on the distributions** —
+response bias 0.0391 against 0.1461, response Wasserstein/sigma 0.0399 against
+0.1401, profile relative L1 0.1728 against 0.2447. The published policy selects
+on validation loss and therefore publishes epoch 38. Recorded, not overridden.
+
+**Two data-integrity faults were caught by guards rather than by review**, both
+worth keeping:
+
+  * the per-epoch metrics filenames carry only the epoch, so p9 **silently
+    overwrote p8's on the host** — the two runs are the same family and overlap
+    at epochs 17..22. Diagnostics are now namespaced per run tag and p8's six
+    epochs are preserved in the repository.
+  * the loss history briefly held **epoch 16 twice**. p9 resumed from the
+    epoch-15 best, so it re-ran epoch 16 on a different branch; p6's epoch 16
+    is an abandoned sibling and is off the live lineage, which is p6 11..15
+    then p9 16..39. The builder's duplicate-epoch check refused the figure
+    rather than drawing it.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`. Zero test events; the sealed
+76,300-event split is untouched.
+
 ### 2026-08-03 — an accidental controlled replicate: same config, two GPUs
 
 `QA FINDING`, and an unusually clean one. The RTX 3090 batch-6 throughput

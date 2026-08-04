@@ -1,7 +1,7 @@
 {
   "calibrated_lr1e4": {
-    "best_epoch": 27,
-    "best_validation_loss": 4.67064517029557,
+    "best_epoch": 38,
+    "best_validation_loss": 4.635219681489869,
     "continuation_epochs": [
       11,
       12,
@@ -19,7 +19,19 @@
       24,
       25,
       26,
-      27
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39
     ],
     "continuation_run_tags": [
       "dicos-p6",
@@ -53,9 +65,21 @@
       24,
       25,
       26,
-      27
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39
     ],
-    "final_validation_loss": 4.67064517029557
+    "final_validation_loss": 4.664427464388823
   },
   "calibrated_lr1e4_halfbatch": {
     "best_epoch": 21,
