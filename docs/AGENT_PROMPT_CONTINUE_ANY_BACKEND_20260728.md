@@ -1536,6 +1536,11 @@ snapshots and `dicos-p7-calibrated-lr3e4:joint:0022` as the explicit default.
 Recheck workflow and live state rather than trusting this; it moves with every
 publication.
 
+The source-side figure/metric organization described below was committed and
+pushed as `ad0e5b7`. It introduced no training or event generation and used no
+new test events. Establish current repository state before relying on that
+identity.
+
 ## 15. Exhibition figures
 
 `SOURCE_REPO/exhibition` contains the presentation-ready gallery. The builder
@@ -1671,8 +1676,9 @@ Then start your response with:
 
 Then act within the user's request. Do not resurrect hardware permission gates.
 Use QA findings to identify trusted artifacts and concrete follow-up checks.
-Preserve provenance, keep the test split sealed during development, and report
-negative results honestly.
+Preserve provenance, keep the test split excluded from all development and
+selection, retain the exact historical-use accounting instead of claiming it
+was wholly untouched, and report negative results honestly.
 
 **The standing operational duty, restated because it is the one most often
 dropped:** at every meaningful event — launch, epoch, failure, correction, doc

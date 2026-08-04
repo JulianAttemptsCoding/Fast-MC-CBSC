@@ -7175,3 +7175,6 @@ data split, threshold, or test event was touched.
 - The temporary local public-site preview was resolved to the exact Vite
   listener PID and its npm/cmd parent chain, stopped explicitly, and port 4173
   was confirmed closed. No unrelated Node process was stopped.
+- Committed the complete source-side figure/metric organization and QA record
+  as `ad0e5b7` (`fix(exhibition): align figures with evidence`) and pushed
+  `827a0a3..ad0e5b7` to `origin/main`.
