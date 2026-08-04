@@ -7,6 +7,7 @@ import platform
 import random
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -75,9 +76,24 @@ def load_json(path: str | Path) -> Any:
 def dump_json(payload: Any, path: str | Path) -> None:
     destination = Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    with destination.open("w", encoding="utf-8") as handle:
-        json.dump(payload, handle, indent=2, sort_keys=True)
-        handle.write("\n")
+    # Reports and progress markers are read by other processes on the shared
+    # DiCOS filesystem.  A direct write exposes a valid filename containing a
+    # partial JSON document; write beside the destination and publish it with
+    # one atomic rename instead.
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            json.dump(payload, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        temporary.replace(destination)
+    except Exception:
+        temporary.unlink(missing_ok=True)
+        raise
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

@@ -148,7 +148,13 @@ class Dicos:
         else:
             data = payload["content"].encode("utf-8")
         local.parent.mkdir(parents=True, exist_ok=True)
-        local.write_bytes(data)
+        temporary = local.with_name(f".{local.name}.{os.getpid()}.part")
+        try:
+            temporary.write_bytes(data)
+            temporary.replace(local)
+        except Exception:
+            temporary.unlink(missing_ok=True)
+            raise
         return len(data)
 
     #: The contents API takes the whole body as base64 JSON, and the server
@@ -356,10 +362,20 @@ class Dicos:
         # `&` binds to the whole `&&` chain, so the setup must complete in
         # separate statements first; otherwise mkdir itself is backgrounded and
         # the pid write races it.
+        # The terminal sentinel is part of the producer/consumer contract.  It
+        # must be emitted by the launcher itself so callers cannot forget it.
+        # A subshell keeps `exit` inside the requested command from bypassing
+        # the sentinel (an explicit `exec` remains forbidden by command QA).
+        if re.search(r"(^|[;&|])\s*exec(?:\s|$)", command):
+            raise SystemExit("detached commands must not use exec; it bypasses EXIT logging")
+        logged_command = (
+            f"( {command} ); status=$?; "
+            "printf '\\nEXIT=%s\\n' \"$status\"; exit \"$status\""
+        )
         wrapper = (
             f"cd {shlex_quote(workdir)}; "
             f"mkdir -p {self.JOBS_DIR}; "
-            f"nohup sh -c {shlex_quote(command)} "
+            f"nohup sh -c {shlex_quote(logged_command)} "
             f"> {self.JOBS_DIR}/{name}.log 2>&1 & "
             f"echo $! > {self.JOBS_DIR}/{name}.pid; "
             f"sleep 1; echo \"started {name} pid=$(cat {self.JOBS_DIR}/{name}.pid)\""
@@ -841,10 +857,12 @@ def main() -> int:
     p.add_argument("path", nargs="?", default=".")
 
     p = sub.add_parser("put", help="upload a file")
-    p.add_argument("local"); p.add_argument("remote")
+    p.add_argument("local")
+    p.add_argument("remote")
 
     p = sub.add_parser("get", help="download a file")
-    p.add_argument("remote"); p.add_argument("local")
+    p.add_argument("remote")
+    p.add_argument("local")
 
     p = sub.add_parser("mkdir", help="create a remote directory")
     p.add_argument("remote")

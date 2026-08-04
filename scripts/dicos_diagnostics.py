@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -79,6 +80,7 @@ def _log(message: str) -> None:
 #: comparison, and the cap is recorded in the output. This changes nothing for
 #: the per-event metrics, which are never near it.
 POOLED_SPECTRUM_CAP = 200_000
+QUEUED_CHECKPOINT_PATTERN = re.compile(r"^ckpt_epoch_(\d{4,})\.pt$")
 
 
 def _subsample(values: np.ndarray, cap: int, seed: int) -> np.ndarray:
@@ -482,6 +484,7 @@ def watch(context: DiagnosticContext, queue_dir: Path, output_dir: Path) -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
     done_dir = queue_dir / "done"
     done_dir.mkdir(exist_ok=True)
+    failures = 0
     _log(f"watching {queue_dir}")
 
     while True:
@@ -491,20 +494,51 @@ def watch(context: DiagnosticContext, queue_dir: Path, output_dir: Path) -> int:
         # soon as training exits, which is exactly when the last few epochs
         # are still waiting.
         if (queue_dir / "STOP").exists() and not pending:
-            _log("STOP seen and queue drained, exiting")
-            return 0
+            _log(f"STOP seen and queue drained, exiting failures={failures}")
+            return 1 if failures else 0
         if not pending:
             time.sleep(20)
             continue
         for checkpoint in pending:
             try:
+                match = QUEUED_CHECKPOINT_PATTERN.fullmatch(checkpoint.name)
+                if match is None:
+                    raise ValueError("queued checkpoint name does not encode its epoch")
+                filename_epoch = int(match.group(1))
+                expected_output = output_dir / f"metrics_epoch_{filename_epoch:04d}.json"
+                if expected_output.exists():
+                    existing = json.loads(expected_output.read_text(encoding="utf-8"))
+                    if (
+                        int(existing.get("epoch", -1)) != filename_epoch
+                        or existing.get("checkpoint_sha256") != sha256_file(checkpoint)
+                    ):
+                        raise RuntimeError(
+                            "existing metric conflicts with queued checkpoint; refusing overwrite"
+                        )
+                    _log(f"deduplicated {checkpoint.name} against immutable metric")
+                    checkpoint.rename(done_dir / checkpoint.name)
+                    continue
                 result = run_one(context, checkpoint)
+                if int(result.get("epoch", -1)) != filename_epoch:
+                    raise ValueError(
+                        f"checkpoint filename epoch {filename_epoch} does not match "
+                        f"generated result epoch {result.get('epoch')!r}"
+                    )
             except Exception as exc:  # noqa: BLE001 -- recorded, loop continues
+                failures += 1
                 _log(f"FAILED {checkpoint.name}: {type(exc).__name__}: {exc}")
                 checkpoint.rename(done_dir / (checkpoint.name + ".failed"))
                 continue
             out = output_dir / f"metrics_epoch_{result['epoch']:04d}.json"
-            dump_json(result, out)
+            qa_passed = result.get("qa", {}).get("pass") is True
+            if not qa_passed:
+                failures += 1
+                failed_out = output_dir / f"metrics_epoch_{result['epoch']:04d}.failed.json"
+                dump_json(result, failed_out)
+                _log(f"QUARANTINED {checkpoint.name}: diagnostic QA did not pass")
+                checkpoint.rename(done_dir / (checkpoint.name + ".failed"))
+                continue
+            dump_json(result, out)  # dump_json publishes atomically
             _log(
                 f"wrote {out.name} epoch={result['epoch']} n={result['n_events']} "
                 f"response_bias={result['trend']['response_bias_fraction']:+.6f} "

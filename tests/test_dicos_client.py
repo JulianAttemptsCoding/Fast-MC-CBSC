@@ -345,3 +345,21 @@ def test_job_command_is_guarded_before_being_detached(client: Dicos) -> None:
         client.start("rm -rf /dicos_ui_home/julianjuan/.jupyter", "evil")
     with pytest.raises(SystemExit, match="out of scope"):
         client.start(f"cp {TRANSFORMED} .", "evil")
+
+
+def test_detached_job_always_logs_exit_and_forbids_exec(
+    client: Dicos, monkeypatch,
+) -> None:
+    captured = {}
+
+    def fake_run(command: str, workdir: str, timeout: int = 300) -> int:
+        captured["command"] = command
+        return 0
+
+    monkeypatch.setattr(client, "_run", fake_run)
+    assert client.start("python -V", "probe") == 0
+    assert "EXIT=%s" in captured["command"]
+    with pytest.raises(SystemExit, match="must not use exec"):
+        client.start("cd repo && exec python train.py", "probe2")
+    with pytest.raises(SystemExit, match="must not use exec"):
+        client.start("  exec python train.py", "probe3")

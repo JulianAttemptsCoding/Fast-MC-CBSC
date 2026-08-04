@@ -6977,3 +6977,67 @@ data split, threshold, or test event was touched.
 - First on-pod test attempt stopped before collection because `.venv` had no pytest; base Python also had no pytest. The first scoped install command was rejected locally because PowerShell expanded `$PWD` into a spaced Windows path. Retried with `TMPDIR=_tmp/qa-pip` and `--no-cache-dir`, installing only the declared `pytest>=8` dev tool plus its small dependencies inside the permitted workdir/4090-owned venv.
 - The first full on-pod suite then stopped during collection on intentionally absent cloud/controller extras (`google` in three modules, `requests` in the local DiCOS client module). Did not pollute the training venv with cloud SDKs. The 4090-relevant producer/consumer, visualization, run-lock, fixture, hydration, and policy suite passed `30 passed, 2 known warnings in 23.38s`.
 - Final read-only `python scripts/dicos.py verify` passed all 18/18 geometry, 187-shard, aggregate-hash, event/hit, split-assignment, audit, checkpoint, job-hygiene, and upload-part checks. No job was running; no training or event generation was launched.
+
+## 2026-08-04 — Exact two-GPU pipeline hardening and dry QA
+
+- Scope remained organization and QA only. No trainer, producer, diagnostic
+  consumer, checkpoint generation, event generation, or publication job was
+  launched. Source began clean at `1026019`.
+- Traced the actual epoch ordering in `trainer.py`: validation/invariant gate →
+  history/checkpoints → required 50×5 visualization → `epoch_callback` progress
+  marker. Found that the producer polled `last.pt` existence alone, so it could
+  queue a checkpoint before the required visualization gate completed. This is
+  the mechanism that let the later-quarantined p10 epoch-40 checkpoint reach
+  diagnostics.
+- Corrected queue admission: the producer now copies `last.pt`, reads its
+  embedded epoch, hashes the copied bytes, and requires the corresponding
+  post-visualization `progress_epoch_NNNN.json` epoch/hash before atomic queue
+  publication. Normal and failed metric states both deduplicate. Wrapper or
+  unaccepted-final-checkpoint failure is bounded, recorded in namespaced
+  `producer_failure.json`, followed by drain-preserving `STOP`, and returns
+  nonzero.
+- Made the detached DiCOS launcher itself emit exactly one terminal
+  `EXIT=<code>` sentinel and reject explicit `exec`, which could bypass the
+  sentinel. Downloads and shared JSON reports now publish atomically.
+- Hardened the 3090 consumer: queue filename epoch must match the generated
+  result epoch; an existing metric is immutable and must match checkpoint hash;
+  normal metrics require `qa.pass=true`; QA failures are written as
+  `metrics_epoch_NNNN.failed.json`; all failed checkpoints remain preserved.
+- Hardened workstation refresh: only `config_3090.json` is accepted for
+  diagnostics; tag/family/run paths fail closed; remote/local SHA-256 must
+  match; downloads and continuation CSV replacement are atomic; every normal
+  metric must prove exactly 4,000 validation events, zero train/test events,
+  complete energy bins, and finite/nonnegative QA. Matching 50×5 visualization
+  payloads are imported into the internal dashboard only when their checkpoint
+  hash matches an accepted 3090 metric. Public publication remains a separate
+  lowest-verified-validation-loss decision.
+- Added `docs/TWO_GPU_PIPELINE.md` with the exact ownership, per-epoch state
+  machine, pre-launch gate, start order (3090 consumer → 4090 producer → 4090
+  trainer), refresh, selection/publication boundary, and recovery behavior.
+  Updated the focused rules, DiCOS runbook, and continuing-agent handoff.
+- Focused regression suite initially passed `76 passed`. Ruff, compileall, and
+  `git diff --check` passed. The first broad `python -m pytest -q` attempt
+  stopped at collection on five `ModuleNotFoundError: cbsc_zdc` errors because
+  the source-layout `PYTHONPATH=src` contract was omitted. Repeated correctly:
+  `PYTHONPATH=src python -m pytest -q` passed `226 passed, 8 known Transformer
+  warnings in 30.18 s`.
+- Live read-only probes at approximately `2026-08-04T15:41+08:00` verified RTX
+  4090 `0 MiB / 0%` and RTX 3090 `1 MiB / 0%`; a runtime-built `/proc` scan found
+  `PIPELINE_PROCESSES=NONE` on both. A combined probe's optional `git` query
+  failed on the 3090 because that image has no `git`; GPU/process evidence had
+  already completed and was repeated successfully without that unavailable
+  tool. No credential value was read or printed.
+- Final recovery review made a drained consumer exit nonzero when any queued
+  item was quarantined, so negative evidence cannot masquerade as a clean job.
+  Producer locks now include host/PID/nonce ownership and reclaim only a
+  same-host lock whose PID is provably dead; unreadable and other-host locks
+  remain fail-closed. Added success/failure end-state integration tests.
+- Final focused pipeline suite passed `79 passed`. Final full source suite
+  passed `229 passed, 8 known Transformer warnings in 27.41 s`; Ruff,
+  compileall, and diff-whitespace checks passed.
+- An explicit 4090/3090 config-inheritance test then caught the last token-role
+  ambiguity: a caller-level `DICOS_CONFIG` could leak into an implicit 4090
+  history/visualization command. Refresh now removes inherited selection for
+  primary commands and sets the 3090 config only for diagnostic commands.
+  Final counts after that guard: focused `80 passed`; full `230 passed, 8 known
+  warnings in 29.35 s`.

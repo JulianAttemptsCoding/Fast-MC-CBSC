@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-two-gpu-pipeline-readiness",
+  "created_at": "2026-08-04T15:42:37+08:00",
+  "source_commit_at_start": "1026019",
+  "scope": "organization, pipeline hardening, and QA only; no training or event-generation launch",
+  "status": "ready_for_a_separately_declared_frozen_run",
+  "training_started": false,
+  "new_test_events_used": 0,
+  "public_snapshot_changed": false,
+  "topology": {
+    "rtx_4090": "sole trainer/checkpoint writer plus required inline 50x5 validation visualization gate",
+    "rtx_3090": "4000-event validation-only diagnostic generator/consumer",
+    "workstation": "hash-verified evidence refresh, figures, internal dashboard, conditional public release"
+  },
+  "epoch_acceptance": {
+    "proof": "progress_epoch_NNNN.json epoch and last_checkpoint_sha256 match the atomically copied checkpoint",
+    "marker_written_after_required_visualization": true,
+    "checkpoint_existence_alone_is_sufficient": false
+  },
+  "failure_preservation": {
+    "producer_failure_json": true,
+    "diagnostic_failed_checkpoint": true,
+    "diagnostic_failed_metric_json": true,
+    "stop_drains_queue": true,
+    "consumer_nonzero_after_any_quarantine": true,
+    "same_host_dead_producer_lock_reclaim": true
+  },
+  "academic_contract": {
+    "diagnostic_events": 4000,
+    "diagnostic_split": "validation",
+    "train_events_allowed": 0,
+    "test_events_allowed": 0,
+    "visual_conditions": 50,
+    "draws_per_condition": 5,
+    "diagnostics_select_checkpoints": false,
+    "physics_validation_established": false
+  },
+  "qa": {
+    "focused_tests": "80 passed",
+    "full_tests": "230 passed, 8 known warnings",
+    "ruff": "pass",
+    "compileall": "pass",
+    "diff_check": "pass",
+    "rtx_4090": "0 MiB, 0%, PIPELINE_PROCESSES=NONE",
+    "rtx_3090": "1 MiB, 0%, PIPELINE_PROCESSES=NONE"
+  },
+  "current_quarantine": {
+    "run_tag": "dicos-p10",
+    "epoch": 40,
+    "accepted_as_parent": false,
+    "reason": "required visualization layer-closure residual exceeded the frozen tolerance"
+  },
+  "launch_requires": [
+    "a declared scientific question and seed",
+    "a unique builder-generated frozen config and run tag",
+    "an accepted hash-verified parent",
+    "same-session clean repository and idle process-tree proof",
+    "one-writer lock proof"
+  ]
+}

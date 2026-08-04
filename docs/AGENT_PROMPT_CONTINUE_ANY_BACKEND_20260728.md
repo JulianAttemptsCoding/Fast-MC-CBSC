@@ -15,6 +15,11 @@ The project owner's active-scope rule index is
 DiCOS, credential/token, live-update, split-rigor, and accident-prevention rules
 without replacing `AGENTS.md`.
 
+The exact future 4090-trainer/3090-diagnostic state machine, startup order,
+per-epoch refresh, internal-dashboard import, public-release boundary, and
+failure recovery procedure is `docs/TWO_GPU_PIPELINE.md`. No future run should
+be assembled from older command fragments without checking that file.
+
 **Where the work happens now.** Training has moved from Vertex AI to **DiCOS**
 at Academia Sinica. Read **section 10a** and `docs/DICOS_BACKEND.md` before
 touching that host: they carry the access method, the environment, and a
@@ -818,9 +823,9 @@ Three pieces:
 
 | piece | where it runs | what it does |
 |---|---|---|
-| `scripts/dicos_diag_producer.py` | same pod as the trainer | every 60 s, atomically copies `checkpoints/last.pt` into `_diag/<run-tag>/queue`, naming the copy by the epoch **embedded in the file it actually read**. Enforces one producer per run tag and writes `STOP` only after inspecting the latest checkpoint once the wrapper log shows `EXIT=`. |
-| `scripts/dicos_diagnostics.py --watch-dir` | the other pod's GPU | drains the queue, generates 4,000 validation events per checkpoint, writes `_diag/<run-tag>/metrics_epoch_NNNN.json`. |
-| `scripts/refresh_continuation_outputs.py` | your workstation | pulls metrics and history down, rewrites `continuation_history.csv`, rebuilds both figure sets. Deliberately does **not** publish. |
+| `scripts/dicos_diag_producer.py` | same pod as the trainer | admits `checkpoints/last.pt` only after its copied epoch/hash match the post-visualization progress marker, then atomically queues it under `_diag/<run-tag>/queue`. Enforces one producer per tag and writes STOP/failure evidence from the launcher-owned `EXIT=` state. |
+| `scripts/dicos_diagnostics.py --watch-dir` | the other pod's GPU | drains the queue, generates 4,000 validation events per checkpoint, atomically writes only QA-passing `_diag/<run-tag>/metrics_epoch_NNNN.json`, and quarantines conflicts/failures. |
+| `scripts/refresh_continuation_outputs.py` | your workstation | hash-verifies metrics/history/visualizations, enforces validation-only contracts, rewrites continuation history, rebuilds figures, and immutably updates the internal dashboard. Deliberately does **not** publish the public site. |
 
 ```bash
 # producer, on the training pod
@@ -837,7 +842,7 @@ DICOS_CONFIG=$HOME/.dicos/config_3090.json PYTHONPATH=src python scripts/dicos.p
      --watch-dir _diag/<tag>/queue --output-dir _diag/<tag> --device cuda' --name <tag>diag
 ```
 
-Five rules this pipeline earned the hard way. Each corresponds to a fault that
+Six rules this pipeline earned the hard way. Each corresponds to a fault that
 actually occurred; none may be relaxed.
 
 1. **Namespace by run tag, on the host as well as in the repo.** `_diag/` was
@@ -861,6 +866,11 @@ actually occurred; none may be relaxed.
    attempt burned 700 s of CPU and was killed. Per-event metrics are uncapped
    and `src/cbsc_zdc/eval/metrics.py` is untouched; the cap is a deterministic
    subsample in the diagnostic driver only.
+6. **A checkpoint is accepted only by the post-visualization marker.** The
+   trainer writes `last.pt` before required visualization QA, so checkpoint
+   existence alone can expose a failed epoch. The producer now requires the
+   matching `progress_epoch_NNNN.json` epoch and checkpoint SHA-256 before it
+   queues anything. Never weaken this to file-exists polling.
 
 **The diagnostics never touch the test split.** The dataset is constructed with
 `split="validation"`, which filters on the split code at construction, and an
@@ -1590,7 +1600,7 @@ Run from the source repository:
 ```bash
 export PYTHONPATH=src                     # PowerShell: $env:PYTHONPATH='src'
 python -m compileall -q src vertex scripts tests
-python -m pytest -q                       # expect 218 passed as of 2026-08-04
+PYTHONPATH=src python -m pytest -q         # expect 230 passed as of 2026-08-04
 python exhibition/build_exhibition.py     # expect 23 visuals; verify the manifest hash
 ```
 

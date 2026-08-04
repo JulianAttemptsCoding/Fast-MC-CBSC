@@ -6,7 +6,9 @@ One command per epoch, so the refresh is repeatable rather than hand-assembled:
   2. pull the training run's `history.csv` (4090 pod);
   3. rewrite the continuation rows for this family in
      `exhibition/data/continuation_history.csv`;
-  4. rebuild the loss figure and the diagnostic trend figure.
+  4. hash-match accepted visualization payloads to 3090 metrics and immutably
+     merge them into the internal dashboard;
+  5. rebuild the loss figure and the diagnostic trend figure.
 
 It does not publish. Publishing changes the selected checkpoint per family and
 is a deliberate step, not something a refresh loop should do on its own.
@@ -21,22 +23,113 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
+import math
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DIAG_LOCAL = ROOT / "exhibition" / "data" / "diagnostics"
+VISUAL_LOCAL = ROOT / "exhibition" / "data" / "visualizations"
 CONTINUATION_CSV = ROOT / "exhibition" / "data" / "continuation_history.csv"
+DASHBOARD_DATA = ROOT / "dashboard" / "public" / "data"
 FIELDS = ["variant", "epoch", "train_loss", "validation_loss", "run_tag"]
+RUN_TAG_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+FAMILY_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_]*$")
+METRIC_PATTERN = re.compile(
+    r"^([0-9a-f]{64})\s+_diag/([a-z0-9][a-z0-9-]*)/"
+    r"(metrics_epoch_(\d{4,})\.json)$"
+)
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        while chunk := handle.read(1 << 20):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def validate_inputs(family: str, run_tag: str, run_dir: str, diag_config: str) -> None:
+    if not FAMILY_PATTERN.fullmatch(family):
+        raise ValueError("family must contain lowercase letters, digits, and underscores")
+    if not RUN_TAG_PATTERN.fullmatch(run_tag):
+        raise ValueError("run tag must contain lowercase letters, digits, and hyphens")
+    path = Path(run_dir)
+    if path.is_absolute() or ".." in path.parts or len(path.parts) < 2:
+        raise ValueError("run directory must be a safe _runs-relative path")
+    if path.parts[0] != "_runs":
+        raise ValueError("run directory must live under _runs/")
+    if diag_config != "config_3090.json":
+        raise ValueError("diagnostic refresh must use the RTX 3090 config_3090.json")
+
+
+def validate_metric(path: Path, epoch: int) -> dict:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    expected = {
+        "schema_version": 1,
+        "kind": "cbsc-zdc-large-validation-diagnostic",
+        "split": "validation",
+        "epoch": epoch,
+        "n_events": 4000,
+    }
+    for key, value in expected.items():
+        if payload.get(key) != value:
+            raise ValueError(f"{path.name}: expected {key}={value!r}")
+    counts = payload.get("split_counts", {})
+    qa = payload.get("qa", {})
+    if counts != {"train": 0, "validation": 4000, "test": 0}:
+        raise ValueError(f"{path.name}: validation-only split counts failed")
+    required_qa = {
+        "test_events_used": 0,
+        "train_events_used": 0,
+        "generated_nonfinite": 0,
+        "generated_negative": 0,
+        "truth_nonfinite": 0,
+        "truth_negative": 0,
+        "events_outside_energy_bins": 0,
+        "empty_energy_bins": 0,
+        "pass": True,
+    }
+    for key, value in required_qa.items():
+        if qa.get(key) != value:
+            raise ValueError(f"{path.name}: diagnostic QA {key} failed")
+    return payload
+
+
+def validate_visualization(path: Path, epoch: int, checkpoint_sha256: str) -> dict:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    expected = {
+        "kind": "cbsc-zdc-epoch-visual-comparison",
+        "split": "validation",
+        "epoch": epoch,
+        "sample_count": 50,
+        "draws_per_condition": 5,
+        "checkpoint_sha256": checkpoint_sha256,
+    }
+    for key, value in expected.items():
+        if payload.get(key) != value:
+            raise ValueError(f"{path.name}: expected {key}={value!r}")
+    qa = payload.get("qa", {})
+    if qa.get("pass") is not True or qa.get("test_events_used") != 0:
+        raise ValueError(f"{path.name}: visualization QA/split contract failed")
+    if qa.get("groups_with_exact_draw_count") != 50:
+        raise ValueError(f"{path.name}: visualization draw-count contract failed")
+    return payload
 
 
 def dicos(args: list[str], config: str | None = None) -> str:
     env = dict(os.environ, PYTHONPATH="src")
     if config:
         env["DICOS_CONFIG"] = str(Path.home() / ".dicos" / config)
+    else:
+        # History/visualizations are 4090 products. Do not inherit a caller's
+        # prior 3090 selection into an implicit-primary command.
+        env.pop("DICOS_CONFIG", None)
     result = subprocess.run(
         [sys.executable, "scripts/dicos.py", *args],
         cwd=ROOT, env=env, capture_output=True, text=True,
@@ -56,16 +149,27 @@ def pull_diagnostics(config: str, run_tag: str) -> list[int]:
     destination.mkdir(parents=True, exist_ok=True)
     remote_dir = f"_diag/{run_tag}"
     listing = dicos(
-        ["exec", f"ls -1 '{remote_dir}/' 2>/dev/null | grep -o 'metrics_epoch_[0-9]*'"],
+        ["exec", f"sha256sum {remote_dir}/metrics_epoch_*.json 2>/dev/null || true"],
         config,
     )
-    remote = sorted({line.strip() for line in listing.splitlines() if line.strip()})
+    remote: dict[int, tuple[str, str]] = {}
+    for line in listing.splitlines():
+        match = METRIC_PATTERN.fullmatch(line.strip())
+        if not match:
+            continue
+        checksum, listed_tag, filename, epoch_text = match.groups()
+        if listed_tag != run_tag:
+            raise RuntimeError("remote diagnostic listing escaped requested namespace")
+        epoch = int(epoch_text)
+        if epoch in remote:
+            raise RuntimeError(f"duplicate remote diagnostic epoch {epoch}")
+        remote[epoch] = (checksum, filename)
     if not remote:
         # A flat _diag/ means a producer predating the namespacing, or a typo in
         # the run tag. Either way, silently pulling nothing would look like "no
         # new epochs" and the figures would quietly stop advancing.
         flat = dicos(
-            ["exec", "ls -1 _diag/ 2>/dev/null | grep -o 'metrics_epoch_[0-9]*'"],
+            ["exec", "sha256sum _diag/metrics_epoch_*.json 2>/dev/null || true"],
             config,
         )
         if flat.strip():
@@ -75,17 +179,95 @@ def pull_diagnostics(config: str, run_tag: str) -> list[int]:
                 "or the runs will be mixed"
             )
     pulled = []
-    for stem in remote:
-        target = destination / f"{stem}.json"
+    for epoch, (remote_checksum, filename) in sorted(remote.items()):
+        target = destination / filename
         if target.exists():
+            if sha256_file(target) != remote_checksum:
+                raise RuntimeError(f"local/remote diagnostic hash conflict: {target}")
+            validate_metric(target, epoch)
             continue
-        dicos(["get", f"{remote_dir}/{stem}.json", str(target)], config)
-        pulled.append(int(stem.rsplit("_", 1)[1]))
+        partial = target.with_suffix(target.suffix + ".part")
+        partial.unlink(missing_ok=True)
+        try:
+            dicos(["get", f"{remote_dir}/{filename}", str(partial)], config)
+            if sha256_file(partial) != remote_checksum:
+                raise RuntimeError(f"downloaded diagnostic hash mismatch: {filename}")
+            validate_metric(partial, epoch)
+            partial.replace(target)
+        except Exception:
+            partial.unlink(missing_ok=True)
+            raise
+        pulled.append(epoch)
     return sorted(pulled)
 
 
 def pull_history(run_dir: str, destination: Path) -> None:
     dicos(["get", f"{run_dir}/logs/history.csv", str(destination)])
+
+
+def pull_and_sync_visualizations(run_dir: str, run_tag: str, family: str) -> list[int]:
+    """Import dashboard payloads only after matching 3090 metrics pass QA."""
+    metric_dir = DIAG_LOCAL / run_tag
+    accepted: dict[int, dict] = {}
+    for path in sorted(metric_dir.glob("metrics_epoch_*.json")):
+        match = re.fullmatch(r"metrics_epoch_(\d{4,})\.json", path.name)
+        if match:
+            epoch = int(match.group(1))
+            accepted[epoch] = validate_metric(path, epoch)
+    if not accepted:
+        return []
+
+    remote_dir = f"{run_dir}/reports/visualization"
+    listing = dicos(
+        ["exec", f"sha256sum {remote_dir}/epoch_*.json 2>/dev/null || true"]
+    )
+    pattern = re.compile(
+        rf"^([0-9a-f]{{64}})\s+{re.escape(remote_dir)}/(epoch_(\d{{4,}})\.json)$"
+    )
+    remote: dict[int, tuple[str, str]] = {}
+    for line in listing.splitlines():
+        match = pattern.fullmatch(line.strip())
+        if match:
+            checksum, filename, epoch_text = match.groups()
+            remote[int(epoch_text)] = (checksum, filename)
+    missing = sorted(set(accepted) - set(remote))
+    if missing:
+        raise RuntimeError(
+            f"accepted diagnostic epochs lack required visualization payloads: {missing}"
+        )
+
+    destination = VISUAL_LOCAL / run_tag
+    destination.mkdir(parents=True, exist_ok=True)
+    payloads: list[tuple[Path, str]] = []
+    downloaded: list[int] = []
+    for epoch in sorted(accepted):
+        remote_checksum, filename = remote[epoch]
+        target = destination / filename
+        if target.exists():
+            if sha256_file(target) != remote_checksum:
+                raise RuntimeError(f"local/remote visualization hash conflict: {target}")
+        else:
+            partial = target.with_suffix(".json.part")
+            partial.unlink(missing_ok=True)
+            try:
+                dicos(["get", f"{remote_dir}/{filename}", str(partial)])
+                if sha256_file(partial) != remote_checksum:
+                    raise RuntimeError(f"downloaded visualization hash mismatch: {filename}")
+                partial.replace(target)
+            except Exception:
+                partial.unlink(missing_ok=True)
+                raise
+            downloaded.append(epoch)
+        validate_visualization(
+            target, epoch, str(accepted[epoch]["checkpoint_sha256"])
+        )
+        payloads.append((target, f"{remote_dir}/{filename}"))
+
+    from scripts.sync_dicos_visualizations import sync
+
+    run_label = f"{run_tag}-{family.replace('_', '-')}"
+    sync(DASHBOARD_DATA, run_label, payloads)
+    return downloaded
 
 
 def rewrite_continuation(history: Path, family: str, run_tag: str) -> int:
@@ -95,19 +277,32 @@ def rewrite_continuation(history: Path, family: str, run_tag: str) -> int:
             rows = [r for r in csv.DictReader(fh)
                     if not (r["variant"] == family and r["run_tag"] == run_tag)]
     with history.open(newline="", encoding="utf-8") as fh:
+        seen_epochs: set[int] = set()
         for raw in csv.DictReader(fh):
+            epoch = int(float(raw["epoch"]))
+            train_loss = float(raw["train_loss"])
+            validation_loss = float(raw["validation_loss"])
+            if epoch in seen_epochs:
+                raise ValueError(f"duplicate history epoch {epoch}")
+            if not math.isfinite(train_loss) or not math.isfinite(validation_loss):
+                raise ValueError(f"nonfinite history loss at epoch {epoch}")
+            seen_epochs.add(epoch)
             rows.append({
                 "variant": family,
-                "epoch": int(float(raw["epoch"])),
-                "train_loss": raw["train_loss"],
-                "validation_loss": raw["validation_loss"],
+                "epoch": epoch,
+                "train_loss": train_loss,
+                "validation_loss": validation_loss,
                 "run_tag": run_tag,
             })
+    if not seen_epochs:
+        raise ValueError("remote history contains no epochs")
     rows.sort(key=lambda r: (r["variant"], int(r["epoch"])))
-    with CONTINUATION_CSV.open("w", newline="", encoding="utf-8") as fh:
+    temporary = CONTINUATION_CSV.with_suffix(".csv.tmp")
+    with temporary.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=FIELDS)
         writer.writeheader()
         writer.writerows(rows)
+    temporary.replace(CONTINUATION_CSV)
     return sum(1 for r in rows if r["variant"] == family and r["run_tag"] == run_tag)
 
 
@@ -141,8 +336,12 @@ def main(argv=None) -> int:
         ),
     )
     args = parser.parse_args(argv)
+    validate_inputs(args.family, args.run_tag, args.run_dir, args.diag_config)
 
     lineage = list(args.lineage) if args.lineage else [args.run_tag]
+    for tag in lineage:
+        if not RUN_TAG_PATTERN.fullmatch(tag):
+            parser.error(f"unsafe lineage run tag: {tag!r}")
     if lineage[-1] != args.run_tag:
         lineage.append(args.run_tag)
 
@@ -156,6 +355,9 @@ def main(argv=None) -> int:
         print(f"continuation rows for {args.family}/{args.run_tag}: {written}")
     finally:
         history.unlink(missing_ok=True)
+
+    visuals = pull_and_sync_visualizations(args.run_dir, args.run_tag, args.family)
+    print(f"visualizations imported: {visuals or 'none new'}")
 
     print(rebuild("exhibition/build_continuation_loss_figures.py"))
     print(rebuild("exhibition/build_diagnostic_trend_figure.py", *lineage))

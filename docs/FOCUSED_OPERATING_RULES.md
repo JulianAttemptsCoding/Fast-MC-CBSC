@@ -91,10 +91,11 @@ the continuing-agent handoff.
    absolute epochs repeat across resumed run tags.
 6. `training.epochs` is absolute:
    `parent_last_epoch + 1 + additional_epochs`. Use a builder.
-7. The 4090 producer atomically copies a stable checkpoint, names it from its
-   embedded epoch, deduplicates all handled states, and emits STOP only after
-   wrapper exit plus last-checkpoint inspection. The 3090 drains pending work
-   even if STOP exists and preserves failures/evidence.
+7. The 4090 producer admits a checkpoint only when its embedded epoch and SHA-256
+   match the post-visualization `progress_epoch_NNNN.json` marker. It copies
+   atomically, deduplicates all handled states, and emits STOP only after wrapper
+   exit plus final acceptance inspection. The 3090 drains pending work even if
+   STOP exists and preserves failures/evidence.
 8. Before launch, verify both GPU/process trees, repository state, frozen
    hashes, run tag/path, and absence of another writer. Logs/PID files alone do
    not prove liveness.
@@ -110,3 +111,5 @@ the continuing-agent handoff.
 - Future topology: 4090 training plus 3090 per-epoch generation/metrics/figures,
   with evidence refreshed every epoch. Launch requires a separately declared,
   frozen experiment.
+- The exact state machine, start order, refresh, dashboard, publication, and
+  recovery procedure is `docs/TWO_GPU_PIPELINE.md`.
