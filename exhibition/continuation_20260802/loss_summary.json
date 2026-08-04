@@ -35,7 +35,8 @@
     ],
     "continuation_run_tags": [
       "dicos-p6",
-      "dicos-p9"
+      "dicos-p9",
+      "dicos-p10"
     ],
     "epochs": [
       0,
@@ -79,7 +80,7 @@
       38,
       39
     ],
-    "final_validation_loss": 4.664427464388823
+    "final_validation_loss": 4.663274642140066
   },
   "calibrated_lr1e4_halfbatch": {
     "best_epoch": 21,

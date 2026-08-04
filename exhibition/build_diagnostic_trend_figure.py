@@ -39,8 +39,15 @@ OUT = HERE / "diagnostics_20260803"
 
 #: Diagnostics are namespaced per run tag: two runs of one family overlap in
 #: epoch number, and the metrics filenames carry only the epoch.
-RUN_TAG = sys.argv[1] if len(sys.argv) > 1 else "dicos-p9"
-DATA = DATA_ROOT / RUN_TAG
+#:
+#: Several tags may be given, oldest first. They are read as one LINEAGE --
+#: p9 covering epochs 16..38 and p10 continuing from 39 are the same model,
+#: and plotting them as one trend is the whole point of a metric-vs-epoch
+#: figure. Where two tags carry the same epoch, the LATER tag wins: it is on
+#: the live branch, and the earlier one was superseded when the new run
+#: resumed from a best checkpoint rather than a last one.
+RUN_TAGS = sys.argv[1:] or ["dicos-p9"]
+RUN_TAG = "+".join(RUN_TAGS)
 
 NAVY = "#0f2a43"
 ACCENT = "#d2691e"
@@ -62,12 +69,17 @@ FEATURES = [
 
 
 def load() -> list[dict]:
-    if not DATA.is_dir():
-        return []
-    rows = [json.loads(p.read_text(encoding="utf-8"))
-            for p in sorted(DATA.glob("metrics_epoch_*.json"))]
-    rows.sort(key=lambda r: int(r["epoch"]))
-    return rows
+    by_epoch: dict[int, dict] = {}
+    for tag in RUN_TAGS:
+        directory = DATA_ROOT / tag
+        if not directory.is_dir():
+            continue
+        for path in sorted(directory.glob("metrics_epoch_*.json")):
+            row = json.loads(path.read_text(encoding="utf-8"))
+            row["run_tag"] = tag
+            # Later tag wins: it is the live branch for that epoch.
+            by_epoch[int(row["epoch"])] = row
+    return [by_epoch[e] for e in sorted(by_epoch)]
 
 
 def style() -> None:
@@ -319,6 +331,11 @@ def build() -> list[Path]:
 
     summary = {
         "run_tag": RUN_TAG,
+        "run_tags": RUN_TAGS,
+        "epochs_by_run_tag": {
+            tag: [int(r["epoch"]) for r in rows if r.get("run_tag") == tag]
+            for tag in RUN_TAGS
+        },
         "epochs": epochs,
         "n_events_per_epoch": latest["n_events"],
         "validation_pool": latest["validation_pool"],

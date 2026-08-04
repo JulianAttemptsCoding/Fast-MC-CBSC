@@ -47,19 +47,39 @@ def dicos(args: list[str], config: str | None = None) -> str:
 
 
 def pull_diagnostics(config: str, run_tag: str) -> list[int]:
-    # Namespaced by run tag. Two runs of the same family overlap in epoch
-    # number -- p8 and p9 both covered 17..22 -- and the metrics filenames
-    # carry only the epoch, so a flat directory silently mixes them.
+    # Namespaced by run tag on BOTH sides. Two runs of the same family overlap
+    # in epoch number -- p8 and p9 both covered 17..22, and p10 reruns p9's
+    # epoch 39 because it resumes from the epoch-38 best -- and the metrics
+    # filenames carry only the epoch, so a flat directory silently mixes them.
+    # The host side was flat until 2026-08-04 and cost p8 its epochs 17..22.
     destination = DIAG_LOCAL / run_tag
     destination.mkdir(parents=True, exist_ok=True)
-    listing = dicos(["exec", "ls -1 _diag/ 2>/dev/null | grep -o 'metrics_epoch_[0-9]*'"], config)
+    remote_dir = f"_diag/{run_tag}"
+    listing = dicos(
+        ["exec", f"ls -1 '{remote_dir}/' 2>/dev/null | grep -o 'metrics_epoch_[0-9]*'"],
+        config,
+    )
     remote = sorted({line.strip() for line in listing.splitlines() if line.strip()})
+    if not remote:
+        # A flat _diag/ means a producer predating the namespacing, or a typo in
+        # the run tag. Either way, silently pulling nothing would look like "no
+        # new epochs" and the figures would quietly stop advancing.
+        flat = dicos(
+            ["exec", "ls -1 _diag/ 2>/dev/null | grep -o 'metrics_epoch_[0-9]*'"],
+            config,
+        )
+        if flat.strip():
+            raise RuntimeError(
+                f"no metrics under {remote_dir}/ but _diag/ holds un-namespaced "
+                "metrics files; move them under their run tag before refreshing, "
+                "or the runs will be mixed"
+            )
     pulled = []
     for stem in remote:
         target = destination / f"{stem}.json"
         if target.exists():
             continue
-        dicos(["get", f"_diag/{stem}.json", str(target)], config)
+        dicos(["get", f"{remote_dir}/{stem}.json", str(target)], config)
         pulled.append(int(stem.rsplit("_", 1)[1]))
     return sorted(pulled)
 
@@ -106,7 +126,25 @@ def main(argv=None) -> int:
     parser.add_argument("--run-tag", required=True)
     parser.add_argument("--run-dir", required=True)
     parser.add_argument("--diag-config", default="config_3090.json")
+    parser.add_argument(
+        "--lineage",
+        nargs="*",
+        default=None,
+        metavar="RUN_TAG",
+        help=(
+            "run tags to plot as one continuous trend, oldest first, ending "
+            "with --run-tag. A continuation is the same model carrying on, so "
+            "its diagnostics belong on one axis; without this the trend figure "
+            "shows only the newest run and the earlier epochs vanish from the "
+            "plot. Where tags share an epoch the later one wins. "
+            "Defaults to --run-tag alone."
+        ),
+    )
     args = parser.parse_args(argv)
+
+    lineage = list(args.lineage) if args.lineage else [args.run_tag]
+    if lineage[-1] != args.run_tag:
+        lineage.append(args.run_tag)
 
     pulled = pull_diagnostics(args.diag_config, args.run_tag)
     print(f"diagnostics pulled: {pulled or 'none new'}")
@@ -120,7 +158,7 @@ def main(argv=None) -> int:
         history.unlink(missing_ok=True)
 
     print(rebuild("exhibition/build_continuation_loss_figures.py"))
-    print(rebuild("exhibition/build_diagnostic_trend_figure.py", args.run_tag))
+    print(rebuild("exhibition/build_diagnostic_trend_figure.py", *lineage))
 
     summary = ROOT / "exhibition/diagnostics_20260803/diagnostic_summary.json"  # noqa: E501
     if summary.is_file():

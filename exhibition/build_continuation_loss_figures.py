@@ -116,6 +116,42 @@ def read_history() -> tuple[
     return rows, continuation
 
 
+def _thinned_ticks(epochs: list[int]) -> list[int]:
+    """Label every epoch while they fit, then every 2nd, 5th, 10th.
+
+    A tick per epoch is readable to about 25 epochs in this panel width. Past
+    that the labels run together into an unreadable band -- lr1e4 reached 40
+    epochs and is heading for 62 -- so thin the labels rather than let the axis
+    become decoration. The markers still show every epoch; only the labels thin.
+    """
+    span = max(epochs) - min(epochs) + 1
+    step = 1 if span <= 25 else 2 if span <= 45 else 5 if span <= 90 else 10
+    ticks = [e for e in epochs if e % step == 0]
+    # Always label the last epoch: it is the one a reader looks for. Drop the
+    # tick before it when they would sit closer than a full step, or the two
+    # labels overlap -- e38 and e39 rendered as "3889" before this guard.
+    if epochs[-1] not in ticks:
+        while ticks and epochs[-1] - ticks[-1] < step:
+            ticks.pop()
+        ticks.append(epochs[-1])
+    return ticks
+
+
+def _tail_tags(tail: list[dict]) -> list[str]:
+    """Run tags in the order they were RUN, not alphabetical order.
+
+    Sorting alphabetically puts dicos-p10 before dicos-p6, which reads as a
+    chronology and is wrong. Order by the first epoch each tag contributed.
+    """
+    first_epoch: dict[str, int] = {}
+    for row in tail:
+        tag = row["run_tag"]
+        epoch = int(row["epoch"])
+        if tag not in first_epoch or epoch < first_epoch[tag]:
+            first_epoch[tag] = epoch
+    return sorted(first_epoch, key=lambda t: (first_epoch[t], t))
+
+
 def build() -> Path:
     style()
     history, continuation = read_history()
@@ -175,15 +211,14 @@ def build() -> Path:
 
         ax.set_title(LABELS[variant], loc="left", fontsize=12, fontweight="bold")
         if tail:
-            tags = sorted({r["run_tag"] for r in tail})
             ax.set_xlabel(
-                f"Completed epoch    ·    tail: {', '.join(tags)} "
+                f"Completed epoch    ·    tail: {', '.join(_tail_tags(tail))} "
                 f"e{min(tail_epochs)}-{max(tail_epochs)}"
             )
         else:
             ax.set_xlabel("Completed epoch    ·    no continuation past e10")
         ax.set_ylabel("Weighted joint loss")
-        ax.set_xticks(epochs)
+        ax.set_xticks(_thinned_ticks(epochs))
         ax.set_xlim(min(epochs) - 0.6, max(epochs) + 0.6)
         ax.grid(axis="y", color="#dde5ec", lw=0.9)
         ax.set_axisbelow(True)
@@ -211,9 +246,7 @@ def build() -> Path:
             "final_validation_loss": series[-1]["validation_loss"],
             "best_validation_loss": min(r["validation_loss"] for r in series),
             "best_epoch": min(series, key=lambda r: r["validation_loss"])["epoch"],
-            "continuation_run_tags": sorted(
-                {r["run_tag"] for r in continuation.get(variant, [])}
-            ),
+            "continuation_run_tags": _tail_tags(continuation.get(variant, [])),
             "continuation_epochs": [
                 r["epoch"] for r in continuation.get(variant, [])
             ],
