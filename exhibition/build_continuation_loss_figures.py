@@ -50,6 +50,7 @@ ORDER = ["calibrated_lr3e5", "calibrated_lr1e4", "calibrated_lr3e4",
 #: numbers as `dicos-final-r2`, and two series at one epoch would read as
 #: contradictory data rather than as one abandoned run.
 CONTINUATION_CSV = ROOT / "exhibition" / "data" / "continuation_history.csv"
+CONTINUATION_STATUS = ROOT / "exhibition" / "data" / "continuation_status.json"
 
 #: Where each phase's epochs came from, for the shaded bands. Epochs past 10
 #: are shaded per family from the data, since families now diverge in both
@@ -70,7 +71,14 @@ def style() -> None:
         "ytick.color": NAVY,
         "axes.spines.top": False,
         "axes.spines.right": False,
+        "svg.hashsalt": "cbsc-zdc-continuation",
     })
+
+
+def save_svg_clean(fig, path: Path) -> None:
+    fig.savefig(path, metadata={"Date": None})
+    lines = path.read_text(encoding="utf-8").splitlines()
+    path.write_text("\n".join(line.rstrip() for line in lines) + "\n", encoding="utf-8")
 
 
 def read_continuation() -> dict[str, list[dict[str, float]]]:
@@ -78,13 +86,26 @@ def read_continuation() -> dict[str, list[dict[str, float]]]:
     rows: dict[str, list[dict[str, float]]] = {}
     if not CONTINUATION_CSV.is_file():
         return rows
+    statuses = {}
+    if CONTINUATION_STATUS.is_file():
+        payload = json.loads(CONTINUATION_STATUS.read_text(encoding="utf-8"))
+        statuses = {
+            (row["variant"], int(row["epoch"]), row["run_tag"]): row
+            for row in payload.get("overrides", [])
+        }
     with CONTINUATION_CSV.open(newline="", encoding="utf-8") as stream:
         for raw in csv.DictReader(stream):
+            status = statuses.get(
+                (raw["variant"], int(raw["epoch"]), raw["run_tag"]),
+                {"status": "accepted", "reason": None},
+            )
             rows.setdefault(raw["variant"], []).append({
                 "epoch": int(raw["epoch"]),
                 "train_loss": float(raw["train_loss"]),
                 "validation_loss": float(raw["validation_loss"]),
                 "run_tag": raw["run_tag"],
+                "status": status["status"],
+                "status_reason": status.get("reason"),
             })
     return rows
 
@@ -188,7 +209,8 @@ def build() -> Path:
         ax.plot(epochs, validation, color=NAVY, marker="s", lw=2.2, ms=4.5,
                 ls="--", label="Validation")
 
-        best = min(series, key=lambda r: r["validation_loss"])
+        accepted = [r for r in series if r.get("status", "accepted") == "accepted"]
+        best = min(accepted, key=lambda r: r["validation_loss"])
         ax.scatter([best["epoch"]], [best["validation_loss"]], s=150,
                    facecolors="none", edgecolors="#c02f1d", lw=2, zorder=5)
         # Placed BELOW the marker, into headroom opened for it just below.
@@ -208,6 +230,14 @@ def build() -> Path:
             ha="center", va="top", fontsize=9, color="#c02f1d",
             bbox=dict(boxstyle="round,pad=0.25", fc="white", ec="none", alpha=0.85),
         )
+        quarantined = [r for r in series if r.get("status") == "quarantined"]
+        if quarantined:
+            ax.scatter(
+                [r["epoch"] for r in quarantined],
+                [r["validation_loss"] for r in quarantined],
+                marker="x", s=85, linewidths=2.2, color="#7b2cbf", zorder=6,
+                label="Quarantined QA failure",
+            )
 
         ax.set_title(LABELS[variant], loc="left", fontsize=12, fontweight="bold")
         if tail:
@@ -223,21 +253,23 @@ def build() -> Path:
         ax.grid(axis="y", color="#dde5ec", lw=0.9)
         ax.set_axisbelow(True)
 
-    axes.ravel()[0].legend(loc="upper right", frameon=False, fontsize=10)
+    handles, labels = axes.ravel()[1].get_legend_handles_labels()
+    axes.ravel()[0].legend(handles, labels, loc="upper right", frameon=False, fontsize=9)
     fig.subplots_adjust(left=0.07, right=0.97, top=0.835, bottom=0.09,
                         hspace=0.42, wspace=0.20)
     fig.text(
         0.02, 0.015,
-        "Lower is better for this frozen weighted objective. Pilot bank only "
-        "(26,624 train / 6,656 validation); the test split is unopened. "
-        "Optimization evidence, not Geant4 fidelity.",
+        "Lower is better for this frozen weighted objective. Purple × = "
+        "quarantined QA failure. Pilot bank only (26,624 train / 6,656 "
+        "validation); zero test events in training/selection. Optimization "
+        "evidence, not Geant4 fidelity.",
         ha="left", fontsize=9.5, color="#6b7f92",
     )
 
     OUT.mkdir(parents=True, exist_ok=True)
     png = OUT / "loss_all_families_every_epoch.png"
     fig.savefig(png)
-    fig.savefig(OUT / "loss_all_families_every_epoch.svg")
+    save_svg_clean(fig, OUT / "loss_all_families_every_epoch.svg")
     plt.close(fig)
 
     summary = {
@@ -249,6 +281,10 @@ def build() -> Path:
             "continuation_run_tags": _tail_tags(continuation.get(variant, [])),
             "continuation_epochs": [
                 r["epoch"] for r in continuation.get(variant, [])
+            ],
+            "quarantined_epochs": [
+                r["epoch"] for r in continuation.get(variant, [])
+                if r.get("status") == "quarantined"
             ],
         }
         for variant, series in history.items()

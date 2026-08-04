@@ -36,6 +36,7 @@ import matplotlib.pyplot as plt
 HERE = Path(__file__).resolve().parent
 DATA_ROOT = HERE / "data" / "diagnostics"
 OUT = HERE / "diagnostics_20260803"
+STATUS_PATH = HERE / "data" / "continuation_status.json"
 
 #: Diagnostics are namespaced per run tag: two runs of one family overlap in
 #: epoch number, and the metrics filenames carry only the epoch.
@@ -54,6 +55,7 @@ ACCENT = "#d2691e"
 FLOOR = "#00a06d"
 MUTED = "#6b7f92"
 GATE = "#c02f1d"
+QUARANTINE = "#7b2cbf"
 
 FEATURES = [
     ("total_response_gev", "Total response"),
@@ -82,13 +84,31 @@ def load() -> list[dict]:
     return [by_epoch[e] for e in sorted(by_epoch)]
 
 
+def quarantined_epochs() -> list[int]:
+    if not STATUS_PATH.is_file():
+        return []
+    payload = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    return sorted({
+        int(row["epoch"])
+        for row in payload.get("overrides", [])
+        if row.get("run_tag") in RUN_TAGS and row.get("status") == "quarantined"
+    })
+
+
 def style() -> None:
     plt.rcParams.update({
         "figure.dpi": 160, "savefig.dpi": 160, "font.size": 10,
         "axes.edgecolor": NAVY, "axes.labelcolor": NAVY, "text.color": NAVY,
         "xtick.color": NAVY, "ytick.color": NAVY,
         "axes.spines.top": False, "axes.spines.right": False,
+        "svg.hashsalt": "cbsc-zdc-diagnostics",
     })
+
+
+def save_svg_clean(fig, path: Path) -> None:
+    fig.savefig(path, metadata={"Date": None})
+    lines = path.read_text(encoding="utf-8").splitlines()
+    path.write_text("\n".join(line.rstrip() for line in lines) + "\n", encoding="utf-8")
 
 
 def _finish(fig, epochs, title, subtitle, name) -> Path:
@@ -102,13 +122,18 @@ def _finish(fig, epochs, title, subtitle, name) -> Path:
     fig.text(0.02, 1 - 0.66 / height, subtitle, ha="left", va="top",
              fontsize=9.5, color=MUTED, wrap=True)
     fig.text(0.02, 0.16 / height,
-             "Validation split only, zero test events. Descriptive "
-             "diagnostics, not a fidelity gate and not Geant4 validation.",
+             "Validation split only, zero test events in these diagnostics. "
+             "Purple dashed = quarantined checkpoint. Descriptive diagnostics, "
+             "not a fidelity gate and not Geant4 validation.",
              ha="left", fontsize=9, color=MUTED)
+    for ax in fig.axes:
+        for epoch in quarantined_epochs():
+            if epoch in epochs:
+                ax.axvline(epoch, color=QUARANTINE, lw=1.2, ls="--", zorder=0)
     OUT.mkdir(parents=True, exist_ok=True)
     png = OUT / f"{name}.png"
     fig.savefig(png)
-    fig.savefig(OUT / f"{name}.svg")
+    save_svg_clean(fig, OUT / f"{name}.svg")
     plt.close(fig)
     return png
 
@@ -118,7 +143,7 @@ def _layout(fig, **kwargs) -> None:
     the bottom row's tick labels and axis label."""
     height = fig.get_size_inches()[1]
     fig.subplots_adjust(
-        top=1 - 1.10 / height, bottom=0.90 / height, **kwargs
+        top=1 - 1.35 / height, bottom=0.90 / height, **kwargs
     )
 
 
@@ -317,7 +342,8 @@ def build() -> list[Path]:
     subtitle = (
         f"calibrated_lr1e4 continuation ({RUN_TAG}). "
         f"{latest['n_events']:,} fixed validation events per epoch, drawn from a "
-        f"{latest['validation_pool']:,}-event pool, against the site's 250."
+        f"{latest['validation_pool']:,}-event pool, against the site's 250. "
+        "Quarantined checkpoints remain visible as negative evidence."
     )
 
     produced = [
@@ -342,6 +368,7 @@ def build() -> list[Path]:
         "kinetic_range_gev": latest["kinetic_range_gev"],
         "selection_seed": latest["selection_seed"],
         "test_events_used": 0,
+        "quarantined_epochs": quarantined_epochs(),
         "high_level_c2st_auc": [
             r.get("evaluation", {}).get("high_level_c2st_auc") for r in rows
         ],

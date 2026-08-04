@@ -53,6 +53,28 @@ _WINDOWS_NO_SUCH_PROCESS = 87
 def _pid_alive(pid: int) -> bool:
     if pid <= 0:
         return False
+    if os.name == "nt":
+        # `os.kill(pid, 0)` is the POSIX liveness idiom, but Python's Windows
+        # implementation can route signals through TerminateProcess.  A guard
+        # must never risk killing the process it is merely checking.
+        import ctypes
+
+        process_query_limited_information = 0x1000
+        access_denied = 5
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.OpenProcess.argtypes = [ctypes.c_uint32, ctypes.c_int, ctypes.c_uint32]
+        kernel32.OpenProcess.restype = ctypes.c_void_p
+        kernel32.CloseHandle.argtypes = [ctypes.c_void_p]
+        kernel32.CloseHandle.restype = ctypes.c_int
+        handle = kernel32.OpenProcess(
+            process_query_limited_information, False, int(pid)
+        )
+        if handle:
+            kernel32.CloseHandle(handle)
+            return True
+        # Access denied proves that a protected process exists. Other failures
+        # include ERROR_INVALID_PARAMETER for a PID that does not exist.
+        return ctypes.get_last_error() == access_denied
     try:
         os.kill(pid, 0)
     except ProcessLookupError:

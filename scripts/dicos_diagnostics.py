@@ -20,13 +20,14 @@ Two modes. One-shot:
 
     .venv_3090/bin/python repo/scripts/dicos_diagnostics.py \
         --checkpoint prep/checkpoints/x.pt --n-events 2000 \
-        --output _diag/metrics.json
+        --output _diag/<run-tag>/metrics.json
 
 Watch, which is how it is used alongside a training run -- build the dataset
 once, then process each epoch's checkpoint as it is dropped into the queue:
 
     .venv_3090/bin/python repo/scripts/dicos_diagnostics.py \
-        --n-events 4000 --watch-dir _diag/queue --output-dir _diag
+        --n-events 4000 --watch-dir _diag/<run-tag>/queue \
+        --output-dir _diag/<run-tag>
 
 Building the dataset verifies all 187 shards and reads every one to apply the
 kinetic filter, which takes minutes; watch mode pays that once rather than per

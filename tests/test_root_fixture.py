@@ -16,9 +16,21 @@ from cbsc_zdc.data.root_io import (  # noqa: E402
     select_primary_neutron,
 )
 from cbsc_zdc.data.geometry import _merge_physical_positions  # noqa: E402
+from cbsc_zdc.utils import sha256_file  # noqa: E402
+from scripts.build_root_schema_fixture import build_fixture  # noqa: E402
 
 
 REPOSITORY = Path(__file__).parents[1]
+
+
+def test_synthetic_fixture_generator_is_byte_reproducible(tmp_path: Path):
+    # ROOT embeds the file name in its header, so byte reproduction requires
+    # the same basename even though the parent directory may differ.
+    generated = tmp_path / "outfile_neutron1_schema_fixture.root"
+    build_fixture(generated)
+    assert sha256_file(generated) == sha256_file(
+        REPOSITORY / "fixtures/outfile_neutron1_schema_fixture.root"
+    )
 
 
 def test_sample_schema_matches_the_bundled_root_fixture():

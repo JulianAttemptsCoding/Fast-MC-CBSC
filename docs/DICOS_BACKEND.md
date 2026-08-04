@@ -412,7 +412,10 @@ reopening the file.
 5. ~~Produce the prepared shards and verify them~~ — **done**, all 187
    byte-identical to canonical
 6. ~~Produce the split~~ — **done**, reproduces the canonical assignment
-7. Train inside a GPU DiCOSApp — the only step remaining; see section 6
+7. ~~Verify training inside GPU DiCOSApps~~ — **done**, including checkpoint,
+   mid-epoch recovery, fixed-bank visualization, and the tracked 4090-producer /
+   3090-consumer diagnostic path in section 6. New training remains a separately
+   declared experiment; no job is active as of the latest handoff.
 
 ### Current remote layout
 
@@ -598,6 +601,13 @@ _setup/                                    launcher scripts and host-only helper
 runs of one family shared an absolute epoch number — which happens by
 construction every time a run resumes from a best checkpoint rather than a last
 one. It cost p8's epochs 17–22. **Keep it namespaced by run tag.**
+
+The producer is now tracked as `repo/scripts/dicos_diag_producer.py`; do not
+recreate it as a host-only `_setup` helper. It atomically copies `last.pt`, names
+the queue object from the epoch embedded in the copy, refuses a second producer
+for the same tag, and writes `STOP` only after the wrapper has exited and the
+latest checkpoint has been successfully inspected. The 3090 consumer must use
+matching `_diag/<run-tag>/queue` and `_diag/<run-tag>` paths.
 
 ### Decide TF32 before the first real run
 

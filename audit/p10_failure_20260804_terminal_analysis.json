@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-terminal-analysis",
+  "name": "p10_failure_20260804",
+  "created_at": "2026-08-04T14:18:00+08:00",
+  "run": {
+    "family": "calibrated_lr1e4",
+    "tag": "dicos-p10",
+    "backend": "DiCOS",
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "started_at": "2026-08-04T02:44:11Z",
+    "exited_at": "2026-08-04T03:13:56Z",
+    "wall_seconds": 1742.222,
+    "exit_code": 1,
+    "status": "artifact_quarantined",
+    "template_sha256": "657131348621642107544803dd19ed6a34ac688199e5c37bb74b666293857ef2",
+    "frozen_config_sha256": "4e246713113ac979edcd60f32990930bdb355645bf3d2d5b3c28aa215ffb7e2c",
+    "parent_best_sha256": "89cae275c092cecca5025159d766b920a412f96e83b4438b68bc1e6c4bd46b2a",
+    "remote_repo_checkout": "812d2ac",
+    "environment_git_commit": null,
+    "scientific_code_difference_812d2ac_to_ca69349": false
+  },
+  "completed_epochs": [
+    {
+      "epoch": 39,
+      "train_loss": 4.731411352817449,
+      "validation_loss": 4.663274642140066,
+      "learning_rate": 7.631742512825513e-06,
+      "seconds": 645.5124268941581
+    },
+    {
+      "epoch": 40,
+      "train_loss": 4.7115276055425195,
+      "validation_loss": 4.70276516527592,
+      "learning_rate": 1e-06,
+      "seconds": 639.4036353640258
+    }
+  ],
+  "checkpoint": {
+    "path": "_runs/calibrated_lr1e4_dicos-p10/checkpoints/last.pt",
+    "epoch": 40,
+    "sha256": "4a7583cce169a1cdac206aa1d03a50e41a05444a5172218dbbb89b3227ed1011",
+    "inherited_best_metric": 4.635219681489869,
+    "mechanically_resumable": true,
+    "accepted_for_reuse": false,
+    "reason": "required epoch visualization reported an invariant failure; corrected diagnostic contract and re-audit are required before reuse"
+  },
+  "failure": {
+    "type": "RuntimeError",
+    "message": "epoch 40 visualization generation failed structural invariants",
+    "configured_closure_tolerance_gev": 2e-05,
+    "failing_conditions": 1,
+    "visualization_conditions": 50,
+    "draws_per_condition": 5,
+    "selection_position": 36,
+    "dataset_index": 894,
+    "kinetic_energy_gev": 192.0687255859375,
+    "total_response_max_gev": 33.164573669433594,
+    "layer_closure_max_gev": 2.6702880859375e-05,
+    "event_closure_max_gev": 3.814697265625e-06,
+    "nonfinite": 0,
+    "negative": 0,
+    "outside_valid_support": 0,
+    "support_mask_mismatch": 0,
+    "count_mismatch_max": 0,
+    "requested_realized_mismatch_max": 0,
+    "dust_cells": 0
+  },
+  "diagnosis": {
+    "finding": "the frozen absolute closure tolerance does not scale with float32 summation magnitude",
+    "model_defect_established": false,
+    "diagnostic_contract_defect_established": true,
+    "threshold_changed": false,
+    "visualization_made_nonfatal": false,
+    "evidence_fix": "persist the reduced invariant report and every selected validation row before preserving the fatal exception"
+  },
+  "epoch_40_validation_diagnostic": {
+    "checkpoint_sha256": "4a7583cce169a1cdac206aa1d03a50e41a05444a5172218dbbb89b3227ed1011",
+    "n_events": 4000,
+    "split_counts": {
+      "train": 0,
+      "validation": 4000,
+      "test": 0
+    },
+    "qa_pass": true,
+    "high_level_c2st_auc": 0.7692010416666666,
+    "truth_zero_fraction": 0.00975,
+    "generated_zero_fraction": 0.013,
+    "response_bias_fraction": 0.13064812617194038,
+    "hit_count_bias_fraction": -0.005861783289965877,
+    "mean_longitudinal_profile_relative_l1": 0.1958909338178803,
+    "interpretation": "validation-only negative scientific evidence; not an accepted checkpoint and not Geant4 validation"
+  },
+  "imported_evidence": [
+    {
+      "path": "audit/p10_failure_20260804_result.json",
+      "sha256": "cb09cfc5a919389ea26371bc91e83b7d762fac815fd956aa7dd4cdf39ba8098e"
+    },
+    {
+      "path": "audit/p10_failure_20260804_viz_invariants.json",
+      "sha256": "e20a7fcde9c9c859db962ee1655b21df1fe8fc1b9a0dea07e2f33ebe23f01551"
+    },
+    {
+      "path": "exhibition/data/diagnostics/dicos-p10/metrics_epoch_0040.json",
+      "sha256": "0d6391f8b4e267b9ba9fe24cf1252cdb4580231847be61859ba7b5ab3430d6e1"
+    }
+  ],
+  "live_state_verified_2026_08_04T06_09Z": {
+    "rtx_4090_idle": true,
+    "rtx_3090_idle": true,
+    "trainer_processes": 0,
+    "training_launched_during_organization": false
+  },
+  "open_decision": {
+    "owner_decision_required": true,
+    "recommended": "freeze a scale-aware max(abs_tol, rel_tol * declared_energy_scale) diagnostic in a new experiment and re-audit the epoch-40 checkpoint",
+    "alternatives": [
+      "raise the absolute tolerance in a new frozen diagnostic contract",
+      "keep the threshold and accept automatic recovery/retry cost"
+    ],
+    "rejected": "make required visualization nonfatal"
+  },
+  "academic_boundary": {
+    "test_events_used_in_p10_training": 0,
+    "test_events_used_in_epoch_40_diagnostic": 0,
+    "accepted_standing_changed": false,
+    "public_snapshot_changed": false,
+    "physics_validation_established": false
+  }
+}

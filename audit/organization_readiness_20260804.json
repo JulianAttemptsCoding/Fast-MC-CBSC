@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-organization-readiness",
+  "created_at": "2026-08-04T15:12:09+08:00",
+  "source_commit_at_start": "ca69349bdb6e10f24a050eda874536eb135642f5",
+  "scope": "organization and offline QA only; no training or diagnostic job launch",
+  "status": "ready_with_declared_scientific_decision_open",
+  "gpu_topology": {
+    "rtx_4090_role": "sole training writer and checkpoint producer",
+    "rtx_3090_role": "per-epoch event generation and diagnostic consumer",
+    "shared_filesystem": true,
+    "training_started": false,
+    "live_state_verified_at": "2026-08-04T07:17:27Z",
+    "rtx_4090": "0 MiB, 0%, no trainer",
+    "rtx_3090": "1 MiB, 0%, no trainer; runtime-built self-match-safe process scan"
+  },
+  "p10": {
+    "status": "quarantined",
+    "checkpoint_sha256": "4a7583cce169a1cdac206aa1d03a50e41a05444a5172218dbbb89b3227ed1011",
+    "epoch": 40,
+    "failure": "one visualization layer-closure residual 2.6702880859375e-05 GeV exceeded frozen 2e-05 GeV tolerance",
+    "accepted_for_reuse": false,
+    "public_standing_changed": false,
+    "open_decision": "freeze a corrected diagnostic contract and re-audit, or retain the existing tolerance/recovery cost"
+  },
+  "organization_changes": {
+    "focused_rules_index": "docs/FOCUSED_OPERATING_RULES.md",
+    "tracked_epoch_producer": "scripts/dicos_diag_producer.py",
+    "namespaced_diagnostic_transport": true,
+    "fatal_visualization_evidence_persisted": true,
+    "dashboard_evidence_hydrator": "scripts/hydrate_dashboard_evidence.py",
+    "synthetic_root_fixture_generator": "scripts/build_root_schema_fixture.py",
+    "windows_run_lock_probe_safe": true,
+    "quarantined_metrics_visible_but_excluded_from_best": true
+  },
+  "academic_boundary": {
+    "new_test_events_used": 0,
+    "test_events_used_for_model_decisions": 0,
+    "physics_validation_established": false,
+    "public_snapshot_changed": false,
+    "p10_metrics_are_negative_validation_evidence": true
+  },
+  "verification": {
+    "source_pytest": "218 passed, 8 known warnings",
+    "ruff": "pass",
+    "compileall": "pass",
+    "diff_check": "pass",
+    "dashboard_evidence_payloads": "65/65 hash and QA verified",
+    "exhibition_build": "23 artifacts",
+    "changed_svg_reproducibility": "7/7 byte-stable across two builds",
+    "figure_visual_qa": "pass after one title-band iteration",
+    "internal_dashboard": "clean install, production build, lint, 2/2 rendered-HTML tests",
+    "internal_dashboard_production_audit": "0 vulnerabilities",
+    "internal_dashboard_dev_audit": "12 remaining: 8 high, 4 moderate; breaking/out-of-range fixes not forced",
+    "public_site_tests": "7/7",
+    "public_site_build": "pass",
+    "public_site_live": "HTTP 200"
+  },
+  "fixture": {
+    "path": "fixtures/outfile_neutron1_schema_fixture.root",
+    "production_events": 0,
+    "synthetic_entries": 1000,
+    "bytes": 64794,
+    "sha256": "1bd9949b2cbbe09afc5ab3ff8af7ec6e5585086cef4a8ac2d23020023f4c1edf",
+    "two_pass_byte_reproducible": true,
+    "permitted_uses": ["branch spelling/type QA", "synthetic primary-neutron selection QA"]
+  },
+  "launch_gate": {
+    "training_authorized_by_this_audit": false,
+    "required_before_future_launch": [
+      "owner declares the next scientific question",
+      "new unique config is built and frozen, never hand-edited",
+      "both GPU process trees and one-writer lock are verified",
+      "parent checkpoint is accepted and hash-verified",
+      "p10 is not used unless corrected re-audit accepts it"
+    ]
+  }
+}

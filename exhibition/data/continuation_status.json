@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "default_status": "accepted",
+  "overrides": [
+    {
+      "variant": "calibrated_lr1e4",
+      "epoch": 40,
+      "run_tag": "dicos-p10",
+      "status": "quarantined",
+      "reason": "required epoch visualization failed the frozen absolute layer-closure tolerance; checkpoint is not accepted for comparison, publication, or reuse pending a corrected diagnostic contract and re-audit"
+    }
+  ]
+}

@@ -6800,3 +6800,175 @@ every fault fixed this phase.
 `PHYSICS VALIDATION NOT ESTABLISHED`. C2ST AUROC remains 0.77-0.92 at every
 checkpoint measured, against a 0.65 threshold: Fast-MC and Geant4 stay trivially
 separable, and 24 epochs of improving validation loss did not change that.
+
+---
+
+## 2026-08-04 14:09 Asia/Taipei — organization-only takeover; both GPUs proved idle
+
+Scope from the project owner: organize and verify the DiCOS operating loop;
+**do not start training**. The intended steady-state loop remains one trainer on
+the RTX 4090 and one validation-only diagnostic consumer on the RTX 3090, with
+metrics, figures, dashboard/public-site evidence, handoff files, and this log
+updated as work happens.
+
+State was established from repositories and live process trees rather than the
+previous handoff timestamp:
+
+- source repository `ca69349`, clean, `origin/main...HEAD = 0 0`;
+- public repository `e53f8fc`, clean, `origin/main...HEAD = 0 0`;
+- RTX 4090: `0 MiB`, `0%`, `ps ... | grep [d]icos_train` returned `NONE`;
+- RTX 3090: `1 MiB`, `0%`, a `/proc` scan whose search token was assembled at
+  runtime returned `NONE`;
+- no training or diagnostic generation was launched.
+
+Live p10 evidence reproduces the newer external handoff and is newer than the
+committed source handoff:
+
+- `dicos-p10` exited `1` after epoch 40 because required epoch visualization
+  reported a structural-invariant failure;
+- epoch-40 `last.pt` SHA-256 is
+  `4a7583cce169a1cdac206aa1d03a50e41a05444a5172218dbbb89b3227ed1011`;
+- `_diag/dicos-p10/` contains validation metrics for epochs 39 and 40 plus the
+  epoch-39 control and epoch-40 visualization-invariant replay;
+- the 4090-side `repo/` checkout is still `812d2ac` with only an untracked
+  `src/cbsc_zdc_fastmc.egg-info/`; it is not being changed while organization
+  work is assembled and tested locally.
+
+Commands used were read-only DiCOS probes through `scripts/dicos.py exec`,
+plus local `git status`, `git log`, and divergence checks. Credentials remained
+in the two ignored `~/.dicos/config*.json` files and no token was printed or
+copied into evidence.
+
+Next organization action: restore the missing p10 failure-evidence code/test
+and audit locally, pull the namespaced epoch-40 diagnostic evidence, then run
+the complete source/figure/public QA before synchronizing the idle host checkout.
+The open closure-tolerance policy is not being changed in this organization
+phase.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`. No test events and no new generated events
+were used in this state-establishment step.
+
+### 2026-08-04 14:12 Asia/Taipei — failed visualization now preserves evidence
+
+Restored the organization-only fix described by the newer handoff but absent
+from `origin/main`: before retaining the existing fatal `RuntimeError`,
+`export_epoch_visualization` now atomically writes
+`reports/visualization/invariant_failure_epoch_NNNN.json`. The record contains
+the checkpoint SHA-256, unchanged configured tolerance, reduced invariants, and
+every validation selection row with selection/dataset/global/event identity,
+generation seed, kinetic energy, and maximum generated response.
+
+This changes no diagnostic threshold, pass condition, random selection,
+generation, checkpoint selection, or training control flow. The failure remains
+fatal and the affected artifact remains quarantined.
+
+Regression verification:
+
+```text
+PYTHONPATH=src python -m pytest -q tests/test_epoch_visualization.py
+3 passed, 2 known Transformer warnings
+```
+
+The new test forces the existing invariant decision to fail on a synthetic
+validation fixture and proves that the evidence exists while the normal epoch
+artifact does not. Zero test events. `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+### 2026-08-04 14:15 Asia/Taipei — local token index and two-config contract QA
+
+Created ignored `POD_ACCESS.local.md` as the local role/config/venv/status map
+expected by the tracked handoff. It contains no token: the only credential
+copies remain `~/.dicos/config.json` (4090) and
+`~/.dicos/config_3090.json` (3090). The file records safe status checks,
+re-authentication procedure, the prohibition on running shared `setup` from the
+3090, and the intended one-trainer/one-consumer roles.
+
+Failed attempt preserved: the first contract comparison used PowerShell's
+newer `ConvertFrom-Json -AsHashtable`, which is unavailable in this Windows
+PowerShell and emitted nonterminating errors before a misleading final print.
+It is not accepted evidence. The corrected check set
+`$ErrorActionPreference='Stop'`, used object properties, printed no secret, and
+returned:
+
+```text
+CONFIG_CONTRACT_PASS keys=3 forbidden_paths=9 tokens_present=true tokens_printed=false
+```
+
+The two configs match exactly on `jupyter_root`, `workdir`, `data_file`, and all
+nine forbidden paths; only endpoint/token identity is allowed to differ. No
+credential or host filesystem contract was changed.
+
+### 2026-08-04 14:23 Asia/Taipei — 4090 producer moved from host-only helper into source
+
+The declared 4090→3090 epoch pipeline was not reproducible from a clone:
+the consumer `scripts/dicos_diagnostics.py` was tracked, but its producer lived
+only at remote `_setup/diag_producer.py`. Added tracked
+`scripts/dicos_diag_producer.py` and updated the DiCOS runbook/handoff to use it.
+
+The tracked producer now:
+
+- requires a safe lowercase run tag and workdir-relative run/log paths;
+- writes only `_diag/<run-tag>/queue`;
+- uses an atomic shared-filesystem lock to refuse a second producer for a tag;
+- copies `last.pt` to staging, loads the copy, and names it from its embedded
+  epoch rather than a report or filename;
+- treats queued, completed, failed, or already-metricized epochs as handled;
+- removes invalid staging files and retries a final concurrent write;
+- writes `STOP` atomically only after the wrapper has `EXIT=` and the latest
+  existing checkpoint was successfully inspected.
+
+The 3090 consumer documentation now uses matching namespaced paths. Added watch
+tests proving that a pre-existing `STOP` cannot skip queued checkpoints and
+that a failed checkpoint is preserved as `.failed` without blocking queue
+drain.
+
+Focused verification:
+
+```text
+PYTHONPATH=src python -m pytest -q \
+  tests/test_dicos_diag_producer.py \
+  tests/test_dicos_diagnostics_watch.py \
+  tests/test_epoch_visualization.py
+10 passed, 2 known Transformer warnings
+```
+
+No producer or consumer was started on DiCOS. No checkpoint, generated event,
+data split, threshold, or test event was touched.
+## 2026-08-04 — Clean-checkout exhibition restoration gap identified
+
+- `python exhibition/build_exhibition.py` failed before figure construction because the tracked dashboard manifest references 65 intentionally ignored epoch JSON payloads, none of which exists in a clean checkout.
+- The manifest remains the authority: 37 rows pin a GCS object plus generation and 28 rows pin a DiCOS object; every row pins its payload SHA-256 and checkpoint SHA-256.
+- This is an organization/reproducibility defect, not a physics failure. No assertion, validation threshold, split rule, or acceptance criterion was weakened.
+- Added `scripts/hydrate_dashboard_evidence.py` to restore missing payloads read-only and accept them only after the frozen hash and visualization QA contract pass. Downloads are staged and atomically renamed; unsafe paths and ambiguous transports fail closed.
+- First focused hydration test collection failed because the new script used a direct-execution-only import path. Corrected it with an explicit package/direct-execution import fallback before any remote hydration was attempted.
+- Focused hydration guard tests then passed: `6 passed`.
+- Hydrated all 65 manifest rows without changing the manifest: 37 generation-pinned GCS objects and 28 DiCOS objects. A second pass performed zero downloads and independently verified all 65 local SHA-256/QA/checkpoint contracts.
+- `python exhibition/build_exhibition.py` then completed successfully and regenerated the 23-artifact exhibition manifest. No training or diagnostic job was launched.
+- The full build exposed environment-dependent Matplotlib SVG IDs/trailing spaces in otherwise unchanged generic exhibition figures. Restored only those QA-generated generic outputs, retained the intentionally changed continuation/diagnostic products, and made those two builders use fixed SVG hash salts plus whitespace normalization for deterministic future diffs.
+- The first two-pass determinism test still failed because Matplotlib embedded the wall-clock generation date. Disabled SVG `Date` metadata and repeated the test; no scientific content or plot values changed.
+- Two consecutive rebuilds now produced identical SHA-256 hashes for all seven changed SVGs; `git diff --check` passed (line-ending notices only).
+- Visual QA of the headline, energy-bin, and continuation-loss PNGs found the wrapped diagnostic subtitle touching panel titles. The quarantine markers and exclusion-from-best annotation were otherwise correct. Increased the diagnostic title band and regenerated instead of accepting the overlap.
+- Visual recheck passed after the layout correction.
+- The first full `python -m pytest -q` attempt failed during collection because this clean checkout is not installed into the system Python and `src/` was not on `PYTHONPATH`. This was an invocation defect, not a test failure; repeated with the repository's documented `PYTHONPATH=src` source-layout contract.
+- The corrected monolithic run and two narrowed science groups ended when the pytest process itself disappeared. Isolation found `tests/test_run_lock.py`: its POSIX `os.kill(pid, 0)` liveness idiom can terminate the probed process on this Windows runtime, so testing an already-held lock killed pytest. Replaced only the Windows branch with read-only `OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION)`/`CloseHandle`; access denied is conservatively treated as alive and all other open failures as absent. POSIX behavior is unchanged.
+- After that fix, all 212 non-fixture tests passed in bounded groups. The five ROOT-fixture tests produced four passes and one missing-file failure. The old SHA-listed fixture was ignored, absent from Git/GitHub releases, and absent from the permitted DiCOS checkout, so a clean clone could never satisfy its own test contract.
+- Replaced that undocumented external dependency with a tracked, generator-backed synthetic ROOT schema fixture (1,000 synthetic primary neutrons, empty hit collections, no production events). It is explicitly prohibited from training/validation/metrics/claims and is the sole tracked `*.root` exception.
+- The first two-pass generator check failed byte reproducibility despite a fixed ROOT UUID because Uproot embeds wall-clock timestamps in file/tree keys. Froze those metadata timestamps inside the fixture generator and repeated the delayed two-pass hash test.
+- The delayed two-pass fixture build is now byte-identical: SHA-256 `1bd9949b2cbbe09afc5ab3ff8af7ec6e5585086cef4a8ac2d23020023f4c1edf`, 64,794 bytes. Updated the repository checksum inventory; historical QA documents retain the old supplied-fixture hash as historical evidence rather than being silently rewritten.
+- Final ordinary full-suite command now completes reliably: `PYTHONPATH=src python -m pytest -q` -> `217 passed, 8 known Transformer warnings in 17.69s`.
+- First focused Ruff pass found one unused `sys` import in the new tracked diagnostic producer. Removed it; compileall and diff-whitespace checks had already passed.
+- Focused Ruff, compileall, and diff-whitespace checks then passed.
+- Public `Fast-MC-Visual-Tests`: 7/7 contract tests passed. The first production build attempt lacked local dependencies (`tsc` absent); after lockfile-pinned `npm ci`, the Vite production build passed with zero audit vulnerabilities and the public repo remained clean. Live GitHub Pages returned HTTP 200 and the expected Fast-MC title.
+- Internal dashboard clean install failed closed because `package.json` and `package-lock.json` were out of sync (`@emnapi` optional-runtime entries). This is a reproducibility/organization defect; refreshing the lockfile before retrying `npm ci` and tests.
+- After the narrow lock refresh, clean install, vinext production build, and 2/2 rendered-HTML tests passed. Production-only audit still failed on three high-severity advisory groups in Next 16.2.6/PostCSS/sharp; the reported fixed release is Next 16.3.0 and vinext 0.0.50 has no Next peer constraint. Updating only Next to 16.3.0, then repeating the full dashboard QA.
+- Next 16.3.0 clean install/build and 2/2 rendered-HTML tests passed; production-only audit now reports zero vulnerabilities.
+- Applied the 22 nonbreaking transitive audit updates and repeated clean install/build/tests successfully. Full development-tool audit is reduced from 16 to 12 advisories (8 high, 4 moderate); remaining remediations require out-of-range/breaking upgrades to the Cloudflare/Vite/React-server/Drizzle toolchain, so no `--force` mutation was made. Production audit remains zero.
+- Added `docs/FOCUSED_OPERATING_RULES.md` as the owner-requested active index for DiCOS, tokens, continuous updates, split/academic rigor, and accident prevention. It contains no credential values and does not replace numbered `AGENTS.md`. Linked it from `AGENTS.md` and the handoff; refreshed the verified source-test expectation to 217 tests / 8 warnings.
+- Added the organization-readiness audit twins `audit/organization_readiness_20260804.{json,md}` with the no-training disposition, complete QA matrix, p10 quarantine/open decision, academic boundary, and future launch prerequisites.
+- Added a regression test that rebuilds the synthetic ROOT fixture and requires byte identity with the tracked fixture; expected full-suite count is now 218.
+- The first fixture-regression run used a different output basename and failed byte identity because ROOT embeds its filename in the header (`217 passed, 1 failed`). Corrected the test to use the documented basename; the generator contract itself was unchanged.
+- Final source suite passed `218 passed, 8 known warnings`; Ruff passed. A broad UTF-8 JSON sweep then encountered a pre-existing UTF-16 audit JSON and raised `UnicodeDecodeError`, while PowerShell continued to compileall/diff checks. Narrowed the JSON verification to every new/modified JSON owned by this organization pass rather than silently treating the mixed-encoding historical archive as UTF-8.
+- Exact parse of all eight new/modified JSON evidence files passed; compileall and `git diff --check` passed (Windows line-ending notices only).
+- Final 4090 probe passed (`0 MiB`, `0%`, no trainer). The first 3090 self-match-safe Python probe was rejected locally by CLI argument parsing because nested PowerShell/Python quotes split the remote command. No remote command ran on the 3090 in that attempt; replaced the transport quoting with base64-encoded probe source while preserving the runtime-built search token and PID/parent exclusions.
+- The first base64 transport attempt also failed before the probe ran: PowerShell does not use backslash to escape double quotes, so it split the `-c` expression and the remote shell reported an unmatched quote. Corrected by constructing one PowerShell string with backtick-escaped Python quotes.
+- The corrected one-string attempt reached the 3090 (`1 MiB`, `0%`) but the intervening remote shell stripped the nested base64 string quotes, producing Python `SyntaxError` before the process scan. Replaced nested `python -c` quoting entirely with `echo BASE64 | base64 -d | python -`.
+- Final live-state verification at `2026-08-04T07:17:27Z`: RTX 4090 `0 MiB / 0%`, no trainer; RTX 3090 `1 MiB / 0%`, no trainer under the runtime-built, PID/parent-excluding `/proc` scan. Updated the handoff and readiness audit. No job was started.

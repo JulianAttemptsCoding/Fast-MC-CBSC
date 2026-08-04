@@ -301,7 +301,10 @@ These prose dimensions explain the intended detector, but they do not override t
 
 ## 5. Inspect the supplied schema fixture
 
-The included ROOT file is a structure fixture, not production data. Its detected branch family includes:
+The included ROOT file is a generator-backed synthetic structure fixture, not
+production data. It contains 1,000 synthetic primary-neutron records and empty
+hit collections; rebuild it with `python scripts/build_root_schema_fixture.py`.
+Its detected branch family includes:
 
 ```text
 MCParticles.PDG

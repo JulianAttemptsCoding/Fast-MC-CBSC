@@ -10,6 +10,11 @@ Treat this message as the controlling technical handoff. Do not assume access to
 the previous chat. Work from repository and artifact evidence, and keep the user
 informed with concise, evidence-backed updates.
 
+The project owner's active-scope rule index is
+`docs/FOCUSED_OPERATING_RULES.md`. Read it first; it collects the binding
+DiCOS, credential/token, live-update, split-rigor, and accident-prevention rules
+without replacing `AGENTS.md`.
+
 **Where the work happens now.** Training has moved from Vertex AI to **DiCOS**
 at Academia Sinica. Read **section 10a** and `docs/DICOS_BACKEND.md` before
 touching that host: they carry the access method, the environment, and a
@@ -500,17 +505,52 @@ Two things this phase does **not** establish, regardless of outcome: anything
 about Geant4 fidelity, and anything about untouched-test performance. The bank
 is the pilot bank; the 76,300-event test split remains sealed and untouched.
 
-### 7b. STATE AS OF 2026-08-04T03:00Z — read this before doing anything
+### 7b. STATE VERIFIED 2026-08-04T07:17Z — read this before doing anything
 
-**One run is training right now.** `calibrated_lr1e4` run `dicos-p10` on the
-RTX 4090, absolute epochs 39..62, started `2026-08-04T02:44:11Z`, detached job
-name `p10lr1e4`, lock pid 15753. Two helper daemons attend it (§7d). Do not
-launch anything into `_runs/calibrated_lr1e4_dicos-p10` and do not assume the
-run died because a log looked quiet — check the process tree.
+**Nothing is training or generating. Both GPUs are idle, proved from their
+process trees.** The RTX 4090 reported `0 MiB / 0%` and no `dicos_train`; the
+RTX 3090 reported `1 MiB / 0%` and a self-match-safe `/proc` scan found no
+trainer. The project owner has explicitly requested organization and QA only:
+do not start or resume training in this phase.
+
+`dicos-p10` died at `2026-08-04T03:13:56Z` after completing epochs 39 and 40:
+
+```text
+epoch 39  validation 4.663274642140066  LR 7.631742512825513e-06
+epoch 40  validation 4.702765165275920  LR 1e-06
+EXIT=1    wall 1742.222 s
+RuntimeError: epoch 40 visualization generation failed structural invariants
+```
+
+Neither epoch beat the inherited `4.635219681489869`, so no accepted standing
+or public snapshot changed. `last.pt` was written before visualization and is
+complete at epoch 40, SHA-256
+`4a7583cce169a1cdac206aa1d03a50e41a05444a5172218dbbb89b3227ed1011`.
+Mechanical resumability is not acceptance: the artifact remains quarantined
+until the diagnostic contract is decided and the checkpoint is re-audited.
+
+The replay found one failing validation condition of fifty: selection position
+36, dataset index 894, `K=192.0687255859375 GeV`, generated response
+`33.164573669433594 GeV`, layer closure
+`2.6702880859375e-05 GeV` against the frozen absolute `2e-05 GeV`. Event
+closure was `3.814697265625e-06 GeV`; every finite, nonnegative, support, and
+count check was exact. The evidence is preserved in
+`audit/p10_failure_20260804_viz_invariants.json`.
+
+This exposes a diagnostic-design issue: an absolute closure tolerance does not
+scale with float32 summation magnitude. **The threshold has not been changed.**
+Changing it requires the owner's explicit decision and a new frozen diagnostic
+contract. Making required visualization nonfatal is prohibited by `AGENTS.md`
+23 and `docs/VISUALIZATION_DASHBOARD.md`.
 
 ```bash
-PYTHONPATH=src python scripts/dicos.py logs p10lr1e4          # trainer
-PYTHONPATH=src python scripts/dicos.py exec 'tail -3 "/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/_runs/calibrated_lr1e4_dicos-p10/logs/history.csv"'
+PYTHONPATH=src python scripts/dicos.py exec \
+  'nvidia-smi --query-gpu=name,memory.used,utilization.gpu --format=csv,noheader; \
+   ps -eo pid,etime,args | grep "[d]icos_train" || echo NONE'
+DICOS_CONFIG=$HOME/.dicos/config_3090.json PYTHONPATH=src \
+  python scripts/dicos.py exec \
+  'nvidia-smi --query-gpu=name,memory.used,utilization.gpu --format=csv,noheader; \
+   grep -a -l dicos_$(echo train) /proc/[0-9]*/cmdline 2>/dev/null || echo NONE'
 ```
 
 **Standings — lowest verified validation loss per calibrated family.**
@@ -597,16 +637,16 @@ restart, not how good it was. **Absolute validation loss has been the better
 predictor.** Say this to the user rather than silently switching rules — the
 original criterion was theirs.
 
-The live question p10 answers: `calibrated_lr1e4` improved 0.067238 across
-epochs 16..39 and is still improving at the end of that window. If another 24
-epochs carry it below **4.597152** it takes the lead outright, and the "best
-family" answer turns out to have been a statement about epochs rather than
-learning rate. If it flattens, lr3e4 is the continuation candidate and lr3e4
-itself has had only 23 epochs, so it is the one that deserves the long run next.
+The unresolved question behind p10 remains: can `calibrated_lr1e4`, which
+improved 0.067238 across p9, eventually beat **4.597152**? P10 did not answer it:
+the run died in the cosine trough before the learning rate climbed again. Do
+not launch a successor until the closure-tolerance decision, re-audit, new
+unique run tag, frozen config, and remaining-horizon patience are explicit.
 
 Two boundaries that do not move whatever the outcome: this is optimization
 evidence on the pilot bank, and it establishes nothing about Geant4 fidelity or
-untouched-test performance. The 76,300-event test split stays sealed.
+test performance. No new test events may be used; preserve the two previously
+disclosed read-only exceptions and their unresolved overlap.
 
 **GPU comparison — measured; `docs/GPU_BENCHMARKS.md` is the single source of
 truth and this summary must not be re-derived from `logs.md`.** Identical work,
@@ -647,7 +687,7 @@ above are kept because they were measured and because they are what withdrew the
 | `dicos-p7` (halfbatch) | Complete, QA PASS, 3090, epochs 17..22. 4.673036 at epoch 21, +0.037793 — real. |
 | `dicos-p8` (lr1e4) | Complete but **stopped at 6 of 24 epochs**, no improvement. Scheduler restarted to peak, patience 6 against a best reached at LR 1e-6. The cause of the patience rule above. Not a statement about the model. |
 | `dicos-p9` (lr1e4) | Complete, QA PASS, 4090, epochs 16..39, 24/24 invariants, postflight `pass: true`, wall 18,238.8 s, 26,640 updates. **4.635220 at epoch 38, +0.067238 — the largest single-run improvement of the phase.** |
-| `dicos-p10` (lr1e4) | **In flight.** 4090, epochs 39..62, patience 24, resumed from the p9 epoch-38 best with the cosine continued. |
+| `dicos-p10` (lr1e4) | **Failed and quarantined after epoch 40.** Epochs 39 and 40 completed and neither improved on the p9 parent. Required epoch-40 visualization found one layer-closure residual `2.6702880859375e-05 GeV` against the frozen absolute `2e-05 GeV`; `last.pt` survived but may not be reused until the diagnostic decision and corrected re-audit. |
 | quarantined | `_runs/quarantine_duplicate_writer/` — an lr3e4 attempt with two concurrent writers. Never resume, compare or publish from it. |
 
 Do not compare a number from an aborted run against a completed one.
@@ -778,15 +818,17 @@ Three pieces:
 
 | piece | where it runs | what it does |
 |---|---|---|
-| `_setup/diag_producer.py` | same pod as the trainer | every 60 s, copies `checkpoints/last.pt` into `_diag/<run-tag>/queue`, naming the copy by the epoch **embedded in the file it actually read**. Writes `STOP` once the wrapper log shows `EXIT=`. |
+| `scripts/dicos_diag_producer.py` | same pod as the trainer | every 60 s, atomically copies `checkpoints/last.pt` into `_diag/<run-tag>/queue`, naming the copy by the epoch **embedded in the file it actually read**. Enforces one producer per run tag and writes `STOP` only after inspecting the latest checkpoint once the wrapper log shows `EXIT=`. |
 | `scripts/dicos_diagnostics.py --watch-dir` | the other pod's GPU | drains the queue, generates 4,000 validation events per checkpoint, writes `_diag/<run-tag>/metrics_epoch_NNNN.json`. |
 | `scripts/refresh_continuation_outputs.py` | your workstation | pulls metrics and history down, rewrites `continuation_history.csv`, rebuilds both figure sets. Deliberately does **not** publish. |
 
 ```bash
 # producer, on the training pod
 PYTHONPATH=src python scripts/dicos.py start \
-  'cd "<WORKDIR>" && PYTHONNOUSERSITE=1 .venv/bin/python _setup/diag_producer.py \
-     "_runs/<family>_<tag>" "_runs/<jobname>.log" "<tag>"' --name <tag>prod
+  'cd "<WORKDIR>" && PYTHONNOUSERSITE=1 .venv/bin/python \
+     repo/scripts/dicos_diag_producer.py \
+     --run-dir "_runs/<family>_<tag>" --wrapper-log "_runs/<jobname>.log" \
+     --run-tag "<tag>"' --name <tag>prod
 
 # consumer, on the other pod
 DICOS_CONFIG=$HOME/.dicos/config_3090.json PYTHONPATH=src python scripts/dicos.py start \
@@ -928,8 +970,11 @@ scripts/sync_dicos_visualizations.py      DiCOS -> dashboard, with the Vertex
                                           sync's validations.
 scripts/refresh_continuation_outputs.py   one command: pull metrics + history,
                                           rewrite rows, rebuild figures.
-_setup/diag_producer.py                   on the host, not in the repo. Feeds the
-                                          diagnostic queue. See §7d.
+scripts/dicos_diag_producer.py            tracked 4090-side producer. Atomically
+                                          feeds the namespaced diagnostic queue,
+                                          names by embedded epoch, refuses a
+                                          second producer, and writes STOP only
+                                          after final-checkpoint inspection.
 _setup/inspect_ckpt.py                    on the host. Prints a checkpoint's
                                           embedded stage/epoch/metric and hash
                                           without loading a model.
@@ -1545,7 +1590,7 @@ Run from the source repository:
 ```bash
 export PYTHONPATH=src                     # PowerShell: $env:PYTHONPATH='src'
 python -m compileall -q src vertex scripts tests
-python -m pytest -q                       # expect 203 passed as of 2026-08-04
+python -m pytest -q                       # expect 218 passed as of 2026-08-04
 python exhibition/build_exhibition.py     # expect 23 visuals; verify the manifest hash
 ```
 
@@ -1557,7 +1602,7 @@ npm ci
 npm run build
 ```
 
-Five Transformer nested-tensor `UserWarning`s are known and nonfatal.
+Eight Transformer nested-tensor `UserWarning`s are known and nonfatal.
 
 Use the environment’s exact Python executable if `python` is ambiguous. If a
 test fails because a dependency is missing, record the environment and install

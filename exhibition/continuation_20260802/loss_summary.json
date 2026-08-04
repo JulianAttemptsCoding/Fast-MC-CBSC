@@ -31,7 +31,8 @@
       36,
       37,
       38,
-      39
+      39,
+      40
     ],
     "continuation_run_tags": [
       "dicos-p6",
@@ -78,9 +79,13 @@
       36,
       37,
       38,
-      39
+      39,
+      40
     ],
-    "final_validation_loss": 4.663274642140066
+    "final_validation_loss": 4.70276516527592,
+    "quarantined_epochs": [
+      40
+    ]
   },
   "calibrated_lr1e4_halfbatch": {
     "best_epoch": 21,
@@ -128,7 +133,8 @@
       21,
       22
     ],
-    "final_validation_loss": 4.678375580300349
+    "final_validation_loss": 4.678375580300349,
+    "quarantined_epochs": []
   },
   "calibrated_lr3e4": {
     "best_epoch": 22,
@@ -176,7 +182,8 @@
       21,
       22
     ],
-    "final_validation_loss": 4.597151546143159
+    "final_validation_loss": 4.597151546143159,
+    "quarantined_epochs": []
   },
   "calibrated_lr3e5": {
     "best_epoch": 8,
@@ -196,6 +203,7 @@
       9,
       10
     ],
-    "final_validation_loss": 4.874425800792644
+    "final_validation_loss": 4.874425800792644,
+    "quarantined_epochs": []
   }
 }

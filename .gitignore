@@ -27,6 +27,9 @@ venv/
 *.parquet
 *.arrow
 
+# Sole exception: a tiny, generator-backed synthetic schema test fixture.
+!/fixtures/outfile_neutron1_schema_fixture.root
+
 # Downloaded Vertex output trees; retain the compact top-level audit summaries
 /audit/*/
 

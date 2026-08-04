@@ -135,6 +135,7 @@ def export_epoch_visualization(
     output_path = output_dir / f"epoch_{epoch:04d}.json"
     if output_path.exists():
         raise FileExistsError(f"visualization epoch artifact already exists: {output_path}")
+    checkpoint_hash = sha256_file(checkpoint_path)
 
     data = config["data"]
     dataset = ShardedSparseDataset(
@@ -188,21 +189,53 @@ def export_epoch_visualization(
                 seed=seed,
                 stochastic=True,
             )
-            invariant_rows.append(
-                invariant_report(
-                    output,
-                    model.layer_index,
-                    model.valid_mask,
-                    model.threshold_gev,
-                    tolerance,
-                )
+            invariant_row = invariant_report(
+                output,
+                model.layer_index,
+                model.valid_mask,
+                model.threshold_gev,
+                tolerance,
             )
+            invariant_row.update(
+                {
+                    "selection_position": int(event_position),
+                    "dataset_index": int(selected[event_position]),
+                    "global_index": int(item["global_index"]),
+                    "event_id": int(item["event_id"]),
+                    "generation_seed": int(seed),
+                    "kinetic_energy_gev": float(item["kinetic_energy_gev"]),
+                    "total_response_max_gev": float(output.total_response.max()),
+                }
+            )
+            invariant_rows.append(invariant_row)
             generated[event_position] = output.cell_energy.cpu().numpy()
 
     if not np.isfinite(generated).all() or (generated < 0).any():
         raise RuntimeError("visualization generation contains nonfinite or negative energy")
     invariants = _reduce_invariants(invariant_rows)
     if not invariants["pass"]:
+        _write_json_atomic(
+            {
+                "schema_version": SCHEMA_VERSION,
+                "kind": "cbsc-zdc-epoch-visualization-invariant-failure",
+                "scientific_status": (
+                    "artifact quarantined; required validation visualization "
+                    "failed structural invariants"
+                ),
+                "epoch": int(epoch),
+                "split": "validation",
+                "test_events_used": 0,
+                "checkpoint_sha256": checkpoint_hash,
+                "tolerance_gev": tolerance,
+                "sample_count": sample_count,
+                "draws_per_condition": draws,
+                "profile_steps": profile_steps,
+                "share_steps": share_steps,
+                "invariants": invariants,
+                "rows": invariant_rows,
+            },
+            output_dir / f"invariant_failure_epoch_{epoch:04d}.json",
+        )
         raise RuntimeError(
             f"epoch {epoch} visualization generation failed structural invariants"
         )
@@ -280,7 +313,6 @@ def export_epoch_visualization(
         ),
     }
     mass_shell = mass_shell_diagnostics(p4)
-    checkpoint_hash = sha256_file(checkpoint_path)
     selection_contract = {
         "split": "validation",
         "evaluation_kinetic_gev": [

@@ -1,0 +1,6 @@
+{
+  "error": "RuntimeError('epoch 40 visualization generation failed structural invariants')",
+  "status": "failed",
+  "traceback": "Traceback (most recent call last):\n  File \"/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/repo/scripts/dicos_train.py\", line 112, in main\n    result = train_from_config(\n        config, epoch_callback=on_epoch, progress_callback=on_progress\n    )\n  File \"/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/repo/src/cbsc_zdc/training/trainer.py\", line 674, in train_from_config\n    export_epoch_visualization(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model,\n        ^^^^^^\n    ...<3 lines>...\n        run.checkpoints / \"last.pt\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/repo/src/cbsc_zdc/eval/visualization.py\", line 206, in export_epoch_visualization\n    raise RuntimeError(\n        f\"epoch {epoch} visualization generation failed structural invariants\"\n    )\nRuntimeError: epoch 40 visualization generation failed structural invariants\n",
+  "wall_seconds": 1742.222
+}
