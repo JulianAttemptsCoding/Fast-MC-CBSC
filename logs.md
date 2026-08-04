@@ -7260,3 +7260,9 @@ data split, threshold, or test event was touched.
   and `PIPELINE_PROCESSES=NONE`; 4090 remained `0 MiB / 0%` with none. No
   trainer, producer, consumer, checkpoint, metric, figure, or event job was
   launched by remote QA.
+- Fast-forwarded the shared checkout through evidence commit `f664013` and
+  regenerated `_workspace`. That revealed its JSON embedded the checkout commit,
+  making a layout index change after every documentation-only synchronization.
+  Removed the self-invalidating commit field; Git probes remain the authority
+  for identity, while the generated index now deterministically records layout,
+  roles, dirty-state lines, and origin synchronization only.

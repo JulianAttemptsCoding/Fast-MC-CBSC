@@ -56,7 +56,6 @@ def _git(root: Path) -> dict:
 
     return {
         "present": True,
-        "commit": run("rev-parse", "HEAD"),
         "status": run("status", "--short").splitlines(),
         "origin_main_vs_head": run(
             "rev-list", "--left-right", "--count", "origin/main...HEAD"
@@ -166,7 +165,7 @@ def main(argv: list[str] | None = None) -> int:
                 "entries": len(payload["entries"]),
                 "run_directories": len(payload["runs"]["namespaced_directories"]),
                 "diagnostic_namespaces": payload["diagnostic_namespaces"],
-                "repo_commit": payload["repo"].get("commit"),
+                "repo_sync": payload["repo"].get("origin_main_vs_head"),
             }
         )
     )

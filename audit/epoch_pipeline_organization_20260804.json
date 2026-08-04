@@ -66,15 +66,13 @@
       "entries": 12,
       "namespaced_run_directories": 17,
       "diagnostic_namespaces": ["dicos-p9", "dicos-p10"],
-      "inventory_sha256": "b21e89d46cb4bbe7fe77ae6b282e6f63fc1b1d11458c1b11d6b4b1a91b74a8b7",
-      "readme_sha256": "20dc891693140879f1a52b6d5d6d5cccad914d66b91a336e9f9329b9a1662764"
+      "index_contract": "layout/role/status classification is deterministic and does not embed a self-invalidating checkout commit"
     },
     "remote_runtime_qa": {
       "rtx_4090_tests": "20 passed",
       "rtx_4090_trainer_and_producer_entrypoints": "pass without launch",
       "rtx_3090_diagnostic_entrypoint": "pass without generation",
-      "shared_repo_commit": "a3f40bf6d339a9cc750b2fa46dd6b31dee9f6cca",
-      "shared_repo_sync": "0 behind / 0 ahead; known untracked editable-install metadata only"
+      "shared_repo_sync": "verified 0 behind / 0 ahead after evidence commits; known untracked editable-install metadata only"
     }
   },
   "final_live_state": {
