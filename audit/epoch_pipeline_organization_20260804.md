@@ -2,10 +2,9 @@
 
 ## Disposition
 
-The local per-epoch evidence transaction is organized and QA-passing. No
-training or event generation was started and no new test event was used.
-Remote checkout synchronization and its no-training smoke checks remain before
-the final disposition.
+The per-epoch evidence transaction is organized and QA-passing locally and on
+the role-appropriate DiCOS runtime surfaces. No training or event generation
+was started and no new test event was used.
 
 Every epoch refresh now performs one ordered, fail-closed transaction:
 
@@ -52,10 +51,23 @@ trace or become a visualization/public selection. Current accepted best for
 | public selection | four current accepted family bests; unchanged |
 | direct figure inspection | pass after two layout corrections |
 | interactive browser | unavailable; connection closed during setup/retry |
+| DiCOS 4090 runtime suite | 20 passed; trainer/producer help entry points pass |
+| DiCOS 3090 entry point | diagnostic help/import pass; no generation |
+| DiCOS workspace | 12 classified entries; 17 run directories; 2 diagnostic namespaces |
+| final live state | 4090 0 MiB/0%; 3090 1 MiB/0%; no pipeline process |
 
 The browser limitation is not hidden: no interactive pass is claimed. Direct
 raster inspection, complete link HTTP checks, static gallery contracts,
 production builds, and data/hash contracts passed.
+
+The shared checkout was fast-forwarded to implementation commit `a3f40bf`, and
+the generated `_workspace` index classifies active, historical-preserve,
+transient-review, and unclassified paths without moving or deleting evidence.
+The first remote suite mistakenly included workstation-only plotting and HTTP
+client modules; their optional dependencies are intentionally absent on the
+training pod. The corrected pod-runtime suite passed without altering either
+GPU environment. The 3090 image also lacks `ps`, so final process proof used a
+direct `/proc` scan.
 
 Scientific boundary: optimization and descriptive validation evidence only;
 Geant4 fidelity is not established.

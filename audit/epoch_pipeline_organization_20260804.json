@@ -2,7 +2,8 @@
   "schema_version": 1,
   "kind": "cbsc-zdc-epoch-pipeline-organization-qa",
   "source_commit_at_start": "3d4d299606d888d0c2fca2b569a6fbb0b72dbf71",
-  "status": "local_pass_remote_sync_pending",
+  "status": "pass",
+  "source_implementation_commit": "a3f40bf6d339a9cc750b2fa46dd6b31dee9f6cca",
   "training_started": false,
   "event_generation_started": false,
   "new_test_events_used": 0,
@@ -60,7 +61,26 @@
     "local_layout_documented": true,
     "dicos_inventory_script": "scripts/dicos_workspace_inventory.py",
     "method": "non-destructive classification; historical evidence is not moved or deleted",
-    "remote_inventory": "pending post-commit synchronization"
+    "remote_inventory": {
+      "status": "pass",
+      "entries": 12,
+      "namespaced_run_directories": 17,
+      "diagnostic_namespaces": ["dicos-p9", "dicos-p10"],
+      "inventory_sha256": "b21e89d46cb4bbe7fe77ae6b282e6f63fc1b1d11458c1b11d6b4b1a91b74a8b7",
+      "readme_sha256": "20dc891693140879f1a52b6d5d6d5cccad914d66b91a336e9f9329b9a1662764"
+    },
+    "remote_runtime_qa": {
+      "rtx_4090_tests": "20 passed",
+      "rtx_4090_trainer_and_producer_entrypoints": "pass without launch",
+      "rtx_3090_diagnostic_entrypoint": "pass without generation",
+      "shared_repo_commit": "a3f40bf6d339a9cc750b2fa46dd6b31dee9f6cca",
+      "shared_repo_sync": "0 behind / 0 ahead; known untracked editable-install metadata only"
+    }
+  },
+  "final_live_state": {
+    "rtx_4090": "0 MiB, 0%, PIPELINE_PROCESSES=NONE",
+    "rtx_3090": "1 MiB, 0%, PIPELINE_PROCESSES=NONE",
+    "process_scanner": "runtime-assembled tokens; own PID/parent excluded; 3090 used direct /proc because ps is unavailable"
   },
   "failed_attempts_and_corrections": [
     "focused lint caught a missing math import in the running-best helper; import added",
@@ -70,7 +90,9 @@
     "direct visual QA found a colliding best-so-far subtitle and quarantine lines on disabled axes; both were corrected and re-inspected",
     "browser control closed during setup and retry; HTTP, static-contract, build, and direct-image evidence used without claiming an interactive pass",
     "the first reproducibility baseline predated a new audit field and changed only four audit files; the consecutive updated-baseline comparison passed 60/60",
-    "obsolete ignored epoch-audit files were removed after moving the generated twins to tracked audit-root paths; OneDrive retained empty ignored placeholder directories"
+    "obsolete ignored epoch-audit files were removed after moving the generated twins to tracked audit-root paths; OneDrive retained empty ignored placeholder directories",
+    "the first remote test selection included workstation-only plotting tests and then the workstation HTTP-client test; missing optional pod dependencies stopped collection, so the corrected pod-specific runtime suite was used without modifying either GPU environment",
+    "the first 3090 process probe used unavailable ps; repeated with direct /proc scanning and proved no pipeline process"
   ],
   "scientific_status": "optimization and descriptive validation evidence only; Geant4 fidelity is not established"
 }

@@ -7229,3 +7229,34 @@ data split, threshold, or test event was touched.
   (`audit/epoch_<tag>_<epoch>.{json,md}`) and removed the obsolete duplicate
   files. OneDrive refused removal of the now-empty ignored placeholder
   directories; no evidence or tracked artifact remains inside them.
+- Pushed source implementation `a3f40bf`, then fast-forwarded the clean shared
+  DiCOS `repo/` from `827a0a3` to the same commit, preserving only its known
+  untracked editable-install metadata. Generated the non-destructive
+  `_workspace` index: 12 classified top-level entries, 17 namespaced run
+  directories, and diagnostic namespaces `dicos-p9`/`dicos-p10`.
+- The first remote focused-test selection incorrectly included workstation-only
+  exhibition tests. The 4090 training environment deliberately lacks
+  Matplotlib/Pillow, so two modules failed during collection and no test ran.
+  Presentation dependencies were not installed into either GPU environment;
+  the correction is to run the DiCOS producer/consumer/refresh/guard contract
+  remotely and retain the already-passing exhibition suite on the workstation.
+- The corrected remote selection still included `test_dicos_client.py`, whose
+  subject is the workstation HTTP client and whose dependency `requests` is
+  intentionally absent from the 4090 training environment. Collection stopped
+  before running tests. Removed that workstation-client module from the pod
+  suite; its guards already passed in the 241-test workstation run. No GPU
+  environment was modified.
+- Final 4090 probe reported RTX 4090 `0 MiB / 0%`, no pipeline process, shared
+  repo `a3f40bf` synchronized 0/0, and only the known untracked editable-install
+  metadata. The parallel 3090 GPU query succeeded (`1 MiB / 0%`) but that image
+  has no `ps`, so its process scanner raised `FileNotFoundError`. GPU state was
+  still obtained; process proof is repeated below using direct `/proc` reads.
+- Corrected DiCOS runtime QA passed 20/20 producer, consumer/watch, refresh, and
+  policy tests on `.venv`; 4090 trainer/producer `--help` entry points loaded
+  without launch. The explicit 3090 `.venv_3090` diagnostic entry point loaded,
+  reported the RTX 3090, and generated no event. Workspace index hashes are
+  `b21e89d...a8b7` (JSON) and `20dc8916...2764` (README).
+- Final direct `/proc` process proof on the 3090 reported RTX 3090 `1 MiB / 0%`
+  and `PIPELINE_PROCESSES=NONE`; 4090 remained `0 MiB / 0%` with none. No
+  trainer, producer, consumer, checkpoint, metric, figure, or event job was
+  launched by remote QA.
