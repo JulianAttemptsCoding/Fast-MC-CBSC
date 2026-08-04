@@ -652,92 +652,6 @@ above are kept because they were measured and because they are what withdrew the
 
 Do not compare a number from an aborted run against a completed one.
 
-### 7d. Per-epoch diagnostics — the producer/consumer pipeline
-
-This did not exist when the rest of this document was written. It is how every
-"metric vs epoch" figure and every distribution number after `dicos-p9` is
-produced, and it runs **on the second GPU while the first one trains**.
-
-Three pieces:
-
-| piece | where it runs | what it does |
-|---|---|---|
-| `_setup/diag_producer.py` | same pod as the trainer | every 60 s, copies `checkpoints/last.pt` into `_diag/<run-tag>/queue`, naming the copy by the epoch **embedded in the file it actually read**. Writes `STOP` once the wrapper log shows `EXIT=`. |
-| `scripts/dicos_diagnostics.py --watch-dir` | the other pod's GPU | drains the queue, generates 4,000 validation events per checkpoint, writes `_diag/<run-tag>/metrics_epoch_NNNN.json`. |
-| `scripts/refresh_continuation_outputs.py` | your workstation | pulls metrics and history down, rewrites `continuation_history.csv`, rebuilds both figure sets. Deliberately does **not** publish. |
-
-```bash
-# producer, on the training pod
-PYTHONPATH=src python scripts/dicos.py start \
-  'cd "<WORKDIR>" && PYTHONNOUSERSITE=1 .venv/bin/python _setup/diag_producer.py \
-     "_runs/<family>_<tag>" "_runs/<jobname>.log" "<tag>"' --name <tag>prod
-
-# consumer, on the other pod
-DICOS_CONFIG=$HOME/.dicos/config_3090.json PYTHONPATH=src python scripts/dicos.py start \
-  'cd "<WORKDIR>" && PYTHONNOUSERSITE=1 PYTHONPATH=repo/src .venv_3090/bin/python \
-     repo/scripts/dicos_diagnostics.py --n-events 4000 --selection-seed 20260803 \
-     --watch-dir _diag/<tag>/queue --output-dir _diag/<tag> --device cuda' --name <tag>diag
-```
-
-Five rules this pipeline earned the hard way. Each corresponds to a fault that
-actually occurred; none may be relaxed.
-
-1. **Namespace by run tag, on the host as well as in the repo.** `_diag/` was
-   flat, and p9 silently overwrote p8's `metrics_epoch_0017..0022.json`. p10
-   would have overwritten p9's epoch 39 the same way. Both `_diag/<tag>/` on
-   the host and `exhibition/data/diagnostics/<tag>/` in the repo are namespaced
-   now. Do not collapse either back.
-2. **Name the queued checkpoint by the epoch inside the file**, never by the
-   report that triggered the copy. `last.pt` is overwritten every epoch, so a
-   slow copy can otherwise label epoch N+1's weights as N.
-3. **Drain the queue before honouring `STOP`.** The consumer's watch loop
-   checks `STOP` *and* an empty pending list. An earlier version exited on
-   `STOP` alone and would have dropped the last three epochs.
-4. **Take the energy-bin edges from the checkpoint's own frozen config**, and
-   assert they cover the sampled kinetic range. A hard-coded top edge of 225
-   silently dropped every event in the 225–250 GeV bin. `dicos_diagnostics.py`
-   now raises rather than dropping, and reports `events_outside_energy_bins`
-   and `empty_energy_bins`.
-5. **Cap the pooled cell spectrum at 200,000 values** (`POOLED_SPECTRUM_CAP`).
-   `wasserstein_1d` on ~6.4M pooled values does not return in usable time — one
-   attempt burned 700 s of CPU and was killed. Per-event metrics are uncapped
-   and `src/cbsc_zdc/eval/metrics.py` is untouched; the cap is a deterministic
-   subsample in the diagnostic driver only.
-
-**The diagnostics never touch the test split.** The dataset is constructed with
-`split="validation"`, which filters on the split code at construction, and an
-independent assertion re-counts the drawn events and raises if any train or test
-event is present. Every metrics file records `split_counts` so the claim is
-checkable after the fact, not just asserted.
-
-**What the diagnostics say, as of `dicos-p9` epoch 38.** These are honest
-negative results and must travel with any favourable loss number:
-
-* **C2ST AUROC sits at 0.77–0.92 for every epoch measured** and never
-  approaches the 0.65 gate threshold. A classifier separates Fast-MC from
-  Geant4 easily at every checkpoint the project has produced. The validation
-  objective improving has not moved this.
-* **Fast-MC produces about twice as many zero-response events** as Geant4 —
-  0.015–0.023 against 0.0097.
-* **The loss and the distribution metrics disagree about which epoch is best**
-  (p8: 21 against 22; p9: 33 against 38). Checkpoint selection follows the
-  validation loss, as declared. Do not switch selection rules to whichever
-  metric flatters a run.
-* **Share flow is 42.2% of the weighted objective** and the largest single
-  source of improvement.
-* **The pilot bank is 4.3% of the available training data** — the largest
-  untested lever in the project, and untouched so far.
-
-### 7e. Numbers you should not re-derive
-
-**Run-to-run resolution is about 0.02** in validation loss, and hardware
-nondeterminism is **not** its source. A controlled replicate — the 3090
-benchmark run configured identically to the datacentre run, same seed, same
-parent checkpoint — diverged by 0.0136 at epoch 11 and reconverged to
-**5.8e-6** at the annealed endpoint. Two cards, same answer. Treat differences
-below ~0.02 between separate runs as noise, and do not attribute them to
-hardware.
-
 ### 7c. Driving several pods at once
 
 All pods mount the **same** CephFS workdir. Credentials live one file per pod
@@ -853,6 +767,92 @@ Shard verification still happens on every load, so each shard is verified once
 per worker rather than thousands of times — never zero times. The value is
 recorded in each run's `environment.json`. `num_workers` was deliberately left
 at 4, since the portability contract lists it as invariant.
+
+### 7d. Per-epoch diagnostics — the producer/consumer pipeline
+
+This did not exist when the rest of this document was written. It is how every
+"metric vs epoch" figure and every distribution number after `dicos-p9` is
+produced, and it runs **on the second GPU while the first one trains**.
+
+Three pieces:
+
+| piece | where it runs | what it does |
+|---|---|---|
+| `_setup/diag_producer.py` | same pod as the trainer | every 60 s, copies `checkpoints/last.pt` into `_diag/<run-tag>/queue`, naming the copy by the epoch **embedded in the file it actually read**. Writes `STOP` once the wrapper log shows `EXIT=`. |
+| `scripts/dicos_diagnostics.py --watch-dir` | the other pod's GPU | drains the queue, generates 4,000 validation events per checkpoint, writes `_diag/<run-tag>/metrics_epoch_NNNN.json`. |
+| `scripts/refresh_continuation_outputs.py` | your workstation | pulls metrics and history down, rewrites `continuation_history.csv`, rebuilds both figure sets. Deliberately does **not** publish. |
+
+```bash
+# producer, on the training pod
+PYTHONPATH=src python scripts/dicos.py start \
+  'cd "<WORKDIR>" && PYTHONNOUSERSITE=1 .venv/bin/python _setup/diag_producer.py \
+     "_runs/<family>_<tag>" "_runs/<jobname>.log" "<tag>"' --name <tag>prod
+
+# consumer, on the other pod
+DICOS_CONFIG=$HOME/.dicos/config_3090.json PYTHONPATH=src python scripts/dicos.py start \
+  'cd "<WORKDIR>" && PYTHONNOUSERSITE=1 PYTHONPATH=repo/src .venv_3090/bin/python \
+     repo/scripts/dicos_diagnostics.py --n-events 4000 --selection-seed 20260803 \
+     --watch-dir _diag/<tag>/queue --output-dir _diag/<tag> --device cuda' --name <tag>diag
+```
+
+Five rules this pipeline earned the hard way. Each corresponds to a fault that
+actually occurred; none may be relaxed.
+
+1. **Namespace by run tag, on the host as well as in the repo.** `_diag/` was
+   flat, and p9 silently overwrote p8's `metrics_epoch_0017..0022.json`. p10
+   would have overwritten p9's epoch 39 the same way. Both `_diag/<tag>/` on
+   the host and `exhibition/data/diagnostics/<tag>/` in the repo are namespaced
+   now. Do not collapse either back.
+2. **Name the queued checkpoint by the epoch inside the file**, never by the
+   report that triggered the copy. `last.pt` is overwritten every epoch, so a
+   slow copy can otherwise label epoch N+1's weights as N.
+3. **Drain the queue before honouring `STOP`.** The consumer's watch loop
+   checks `STOP` *and* an empty pending list. An earlier version exited on
+   `STOP` alone and would have dropped the last three epochs.
+4. **Take the energy-bin edges from the checkpoint's own frozen config**, and
+   assert they cover the sampled kinetic range. A hard-coded top edge of 225
+   silently dropped every event in the 225–250 GeV bin. `dicos_diagnostics.py`
+   now raises rather than dropping, and reports `events_outside_energy_bins`
+   and `empty_energy_bins`.
+5. **Cap the pooled cell spectrum at 200,000 values** (`POOLED_SPECTRUM_CAP`).
+   `wasserstein_1d` on ~6.4M pooled values does not return in usable time — one
+   attempt burned 700 s of CPU and was killed. Per-event metrics are uncapped
+   and `src/cbsc_zdc/eval/metrics.py` is untouched; the cap is a deterministic
+   subsample in the diagnostic driver only.
+
+**The diagnostics never touch the test split.** The dataset is constructed with
+`split="validation"`, which filters on the split code at construction, and an
+independent assertion re-counts the drawn events and raises if any train or test
+event is present. Every metrics file records `split_counts` so the claim is
+checkable after the fact, not just asserted.
+
+**What the diagnostics say, as of `dicos-p9` epoch 38.** These are honest
+negative results and must travel with any favourable loss number:
+
+* **C2ST AUROC sits at 0.77–0.92 for every epoch measured** and never
+  approaches the 0.65 gate threshold. A classifier separates Fast-MC from
+  Geant4 easily at every checkpoint the project has produced. The validation
+  objective improving has not moved this.
+* **Fast-MC produces about twice as many zero-response events** as Geant4 —
+  0.015–0.023 against 0.0097.
+* **The loss and the distribution metrics disagree about which epoch is best**
+  (p8: 21 against 22; p9: 33 against 38). Checkpoint selection follows the
+  validation loss, as declared. Do not switch selection rules to whichever
+  metric flatters a run.
+* **Share flow is 42.2% of the weighted objective** and the largest single
+  source of improvement.
+* **The pilot bank is 4.3% of the available training data** — the largest
+  untested lever in the project, and untouched so far.
+
+### 7e. Numbers you should not re-derive
+
+**Run-to-run resolution is about 0.02** in validation loss, and hardware
+nondeterminism is **not** its source. A controlled replicate — the 3090
+benchmark run configured identically to the datacentre run, same seed, same
+parent checkpoint — diverged by 0.0136 at epoch 11 and reconverged to
+**5.8e-6** at the annealed endpoint. Two cards, same answer. Treat differences
+below ~0.02 between separate runs as noise, and do not attribute them to
+hardware.
 
 ## 8. Repository map and where to look
 
