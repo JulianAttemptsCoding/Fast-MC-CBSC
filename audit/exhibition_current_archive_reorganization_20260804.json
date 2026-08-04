@@ -85,6 +85,7 @@
     "origin_main_pushed": true,
     "dicos_4090_checkout_fast_forwarded": true,
     "dicos_4090_checkout_clean": true,
+    "final_sync_first_attempt": "local argument-parser rejection; no remote command or state change",
     "rtx_4090": "0 MiB, 0%, no dicos trainer process",
     "rtx_3090": "1 MiB, 0%, no dicos trainer process",
     "training_started": false

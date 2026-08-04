@@ -7635,3 +7635,8 @@ data split, threshold, or test event was touched.
 - Post-sync self-match-safe probes found no trainer process on either backend.
   RTX 4090 reported 0 MiB/0% and RTX 3090 reported 1 MiB/0%. This entire
   organization pass started no training or event generation.
+- The first evidence-only final 4090 sync verification was rejected by local
+  `dicos.py` argument parsing because a nested shell command substitution was
+  split into extra arguments. No remote command ran and no state changed. The
+  retry uses separate plain `git pull`, `git status --porcelain`, and
+  `git rev-parse` clauses without nested quoting.
