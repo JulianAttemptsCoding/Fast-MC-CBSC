@@ -2,8 +2,11 @@
 
 Presentation-ready figures generated from verified CBSC-ZDC v2.2 evidence.
 
-Open [index.html](index.html) for the gallery. PNG files are slide-ready; SVG
-counterparts are included for editable vector use where practical.
+Open [index.html](index.html) for the complete exhibition: every scientific
+PNG/SVG is grouped by evidence role, including historical studies under
+explicitly isolated headings. [current.html](current.html) is the compact
+current-model gallery. PNG files are slide-ready; SVG counterparts are included
+for editable vector use where practical.
 
 ## Figure catalog
 
@@ -44,21 +47,28 @@ its gallery step and does not scan that subdirectory, so `manifest.json` and
 
 ```powershell
 python exhibition/build_exhibition.py
+python exhibition/build_continuation_loss_figures.py
+python exhibition/build_family_choice_figure.py
+python exhibition/build_diagnostic_trend_figure.py dicos-p9 dicos-p10
+python exhibition/build_metrics_catalog.py
 ```
 
-The builder reads compact audit evidence plus existing validation visualization
+The builders read compact audit evidence plus existing validation visualization
 payloads. It does not read `legacy/`, the original ROOT tree, or test events.
-`manifest.json` records source/output hashes and QA assertions. SVG identifiers
-and metadata are normalized so two builds from identical inputs are byte-for-byte
-reproducible.
+`manifest.json` records compact current-gallery hashes and QA assertions;
+`metrics_catalog.json` validates and hashes the complete exhibition. SVG
+identifiers and metadata are normalized so two builds from identical inputs are
+byte-for-byte reproducible.
 
 ## Scientific boundary
 
 These figures establish structural execution and bounded optimization progress.
 They do not establish Geant4 fidelity, and the gallery build uses zero test
 events. The full-history loss and diagnostic companions are under
-`continuation_20260802/` and `diagnostics_20260803/`; quarantined checkpoints
-remain visible but are excluded from accepted standings.
+`continuation_20260802/` and `diagnostics_20260803/`. Every epoch refresh updates
+ordinary loss/metric trajectories and their accepted validation-loss
+best-so-far counterparts. Quarantined checkpoints remain visible but are
+excluded from accepted standings and running-best traces.
 
 Test-split accounting, repository-wide: 40,000 of the 76,300 test events were
 consumed on 2026-07-28 by the isolated classifier two-sample test recorded in

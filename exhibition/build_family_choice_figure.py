@@ -231,6 +231,7 @@ def build() -> Path:
         latest_observed = series[-1]
         table["families"][variant] = {
             "best_accepted_epoch": best["epoch"],
+            "best_accepted_run_tag": best.get("run_tag"),
             "best_accepted_validation_loss": best["validation_loss"],
             "latest_accepted_epoch": latest_accepted["epoch"],
             "latest_accepted_validation_loss": latest_accepted["validation_loss"],

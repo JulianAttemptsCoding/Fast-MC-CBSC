@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import hashlib
+import html
 import json
+import re
 import xml.etree.ElementTree as ET
 from collections import Counter
 from pathlib import Path
@@ -14,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 HERE = ROOT / "exhibition"
 OUTPUT_JSON = HERE / "metrics_catalog.json"
 OUTPUT_MD = HERE / "METRICS_AND_FIGURES.md"
+OUTPUT_HTML = HERE / "index.html"
 
 
 def sha256(path: Path) -> str:
@@ -116,10 +119,16 @@ def current_metrics() -> dict:
         raise ValueError("accepted-family metric summaries must use schema 2")
     if diagnostic.get("schema_version") != 2:
         raise ValueError("diagnostic summary must use schema 2")
-    if diagnostic.get("run_tags") != ["dicos-p9", "dicos-p10"]:
-        raise ValueError("current diagnostic lineage must be dicos-p9 + dicos-p10")
-    if diagnostic.get("quarantined_epochs") != [40]:
-        raise ValueError("current diagnostic summary must expose quarantined epoch 40")
+    run_tags = diagnostic.get("run_tags")
+    if not isinstance(run_tags, list) or not run_tags:
+        raise ValueError("current diagnostic lineage must be nonempty")
+    if any(not re.fullmatch(r"[a-z0-9][a-z0-9-]*", str(tag)) for tag in run_tags):
+        raise ValueError("current diagnostic lineage contains an unsafe run tag")
+    epochs = diagnostic.get("epochs")
+    if not isinstance(epochs, list) or epochs != sorted(set(epochs)):
+        raise ValueError("diagnostic epochs must be unique and increasing")
+    if [row.get("epoch") for row in diagnostic.get("per_epoch", [])] != epochs:
+        raise ValueError("diagnostic per-epoch provenance is incomplete")
     if diagnostic.get("test_events_used") != 0:
         raise ValueError("current diagnostic summary used test events")
 
@@ -127,6 +136,7 @@ def current_metrics() -> dict:
         other = choice["families"][family]
         for key in (
             "best_accepted_epoch",
+            "best_accepted_run_tag",
             "best_accepted_validation_loss",
             "latest_accepted_epoch",
             "latest_accepted_validation_loss",
@@ -156,6 +166,81 @@ def write_atomic(path: Path, text: str) -> None:
     temporary = path.with_name(f".{path.name}.tmp")
     temporary.write_text(text, encoding="utf-8")
     temporary.replace(path)
+
+
+def comprehensive_gallery(graphics: list[dict]) -> Path:
+    """Build one index containing every scientific PNG/SVG.
+
+    PNG/SVG counterparts share one card with links to both formats. Historical
+    test studies remain visibly separated from validation-only current work.
+    """
+    grouped: dict[tuple[str, str], list[dict]] = {}
+    for record in graphics:
+        stem = str(Path(record["path"]).with_suffix(""))
+        grouped.setdefault((record["category"], stem), []).append(record)
+    labels = {
+        "common_window_gallery": "Current comparison and model graphics",
+        "continuation_and_standings": "Loss vs epoch and accepted standings",
+        "large_validation_diagnostics": "3090 validation metrics vs epoch",
+        "historical_c2st_test_study": "Historical isolated C2ST test study",
+        "historical_paired_test_exception": "Historical paired test exception",
+        "other": "Other exhibition assets",
+    }
+    sections = []
+    for category_name, label in labels.items():
+        entries = sorted(
+            (stem, records)
+            for (category, stem), records in grouped.items()
+            if category == category_name
+        )
+        if not entries:
+            continue
+        cards = []
+        for stem, records in entries:
+            by_format = {record["format"]: record for record in records}
+            display = by_format.get("png") or by_format.get("svg")
+            links = " · ".join(
+                f'<a href="{html.escape(record["path"])}">{fmt.upper()}</a>'
+                for fmt, record in sorted(by_format.items())
+            )
+            title = Path(stem).name.replace("_", " ").title()
+            cards.append(
+                '<figure><a class="image" href="'
+                + html.escape(display["path"])
+                + '"><img loading="lazy" src="'
+                + html.escape(display["path"])
+                + '" alt="'
+                + html.escape(title)
+                + '"></a><figcaption><strong>'
+                + html.escape(title)
+                + "</strong><span>"
+                + links
+                + "</span></figcaption></figure>"
+            )
+        boundary = (
+            '<p class="warning">Historical test-split evidence. It is isolated '
+            "from training, checkpoint selection, and current visual selection.</p>"
+            if category_name.startswith("historical_")
+            else ""
+        )
+        sections.append(
+            f'<section id="{html.escape(category_name)}"><h2>'
+            f'{html.escape(label)}</h2>{boundary}'
+            f'<div class="grid">{"".join(cards)}</div></section>'
+        )
+    nav = "".join(
+        f'<a href="#{html.escape(name)}">{html.escape(label)}</a>'
+        for name, label in labels.items()
+        if any(category == name for category, _stem in grouped)
+    )
+    document = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CBSC-ZDC complete exhibition</title><style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#102a43;background:#f4f7fa}*{box-sizing:border-box}body{margin:0}main{max-width:1540px;margin:auto;padding:44px 28px 72px}h1{font-size:clamp(32px,4vw,54px);letter-spacing:-.04em;margin:0 0 10px}header p{color:#526b82;max-width:960px;line-height:1.55}nav{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 38px}nav a{background:#fff;border:1px solid #cbd6e2;padding:8px 11px;border-radius:6px}section{margin-top:52px}h2{font-size:25px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,470px),1fr));gap:22px}figure{margin:0;background:#fff;border:1px solid #d9e2ec;border-radius:7px;overflow:hidden}.image{display:block;background:#fff}img{display:block;width:100%;height:auto;max-height:520px;object-fit:contain}figcaption{display:flex;justify-content:space-between;gap:14px;padding:12px 14px;border-top:1px solid #d9e2ec;font-size:13px}figcaption span{white-space:nowrap}a{color:#145da0;text-decoration:none}a:hover{text-decoration:underline}.warning{padding:12px 14px;border-left:4px solid #b42318;background:#fff3f1;color:#7a271a}.boundary{padding:14px 16px;background:#eaf4ef;border-left:4px solid #16835b;margin-top:22px}
+</style></head><body><main><header><h1>CBSC-ZDC complete exhibition</h1><p>Every scientific PNG/SVG in the repository, organized by evidence role. Current plots use training or validation evidence only. Quarantined epochs remain visible but cannot become a best checkpoint.</p><p class="boundary">Optimization and descriptive validation evidence only; Geant4 fidelity is not established. Historical test studies are shown in separate, labeled sections and cannot steer model decisions.</p></header><nav>"""
+    document += nav + "</nav>" + "".join(sections) + "</main></body></html>"
+    write_atomic(OUTPUT_HTML, document)
+    return OUTPUT_HTML
 
 
 def markdown(payload: dict) -> str:
@@ -200,7 +285,8 @@ def markdown(payload: dict) -> str:
         "",
         f"Current large-sample diagnostics cover epochs {diagnostics['epochs'][0]}–"
         f"{diagnostics['epochs'][-1]} on {diagnostics['events_per_epoch']:,} fixed "
-        "validation events per epoch. Epoch 40 is quarantined. These are descriptive,",
+        "validation events per epoch. Quarantined epochs: "
+        f"{diagnostics['quarantined_epochs'] or 'none'}. These are descriptive,",
         "not a fidelity gate or Geant4 validation.",
         "",
         "The current gallery, training decisions, and validation diagnostics use zero",
@@ -222,6 +308,7 @@ def build() -> dict:
     exhibition_manifest = verify_exhibition_manifest()
     c2st_manifest_count = verify_c2st_manifests()
     graphics = graphic_inventory()
+    gallery = comprehensive_gallery(graphics)
     metrics = current_metrics()
     counts = Counter(record["category"] for record in graphics)
     payload = {
@@ -249,6 +336,12 @@ def build() -> dict:
             "all_svg_parsed": True,
             "all_manifest_hashes_match": True,
             "accepted_metric_summaries_agree": True,
+            "comprehensive_gallery_contains_every_graphic": True,
+        },
+        "comprehensive_gallery": {
+            "path": gallery.relative_to(HERE).as_posix(),
+            "bytes": gallery.stat().st_size,
+            "sha256": sha256(gallery),
         },
     }
     write_atomic(OUTPUT_JSON, json.dumps(payload, indent=2, sort_keys=True) + "\n")

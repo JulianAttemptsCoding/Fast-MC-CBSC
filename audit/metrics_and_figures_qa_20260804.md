@@ -50,12 +50,12 @@ evidence without becoming a parent, selection, or public snapshot.
 
 | Check | Result |
 |---|---|
-| graphic inventory | 77/77 PNG/SVG files decode or parse |
+| graphic inventory | 87/87 PNG/SVG files decode or parse |
 | exhibition hashes | all source, visual, gallery hashes match |
 | historical C2ST hashes | 33/33 manifest figures match |
-| complete build reproducibility | 45/45 outputs byte-identical |
+| complete build reproducibility | 60/60 outputs byte-identical |
 | public data reproducibility | 6/6 files byte-identical |
-| source suite | 233 passed; 8 known Transformer warnings |
+| source suite | 241 passed; 8 known Transformer warnings |
 | focused Ruff | all six changed/new Python files passed |
 | internal dashboard | production build; 2/2 rendered tests |
 | public site | 8/8 tests; production build |

@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_every_exhibition_graphic_decodes_or_parses() -> None:
     graphics = catalog.graphic_inventory()
-    assert len(graphics) == 77
+    assert len(graphics) == 87
     assert all(row["bytes"] > 0 for row in graphics)
 
 

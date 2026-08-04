@@ -4626,20 +4626,8 @@ z
     </g>
    </g>
   </g>
-  <g id="axes_11">
-   <g id="line2d_178">
-    <path d="M 503.9874 799.2
-L 503.9874 667.985047
-" clip-path="url(#p9b461edbf1)" style="fill: none; stroke-dasharray: 4.44,1.92; stroke-dashoffset: 0; stroke: #7b2cbf; stroke-width: 1.2"/>
-   </g>
-  </g>
-  <g id="axes_12">
-   <g id="line2d_179">
-    <path d="M 816.688673 799.2
-L 816.688673 667.985047
-" clip-path="url(#p737efd36e2)" style="fill: none; stroke-dasharray: 4.44,1.92; stroke-dashoffset: 0; stroke: #7b2cbf; stroke-width: 1.2"/>
-   </g>
-  </g>
+  <g id="axes_11"/>
+  <g id="axes_12"/>
   <g id="text_127">
    <!-- Wasserstein distance vs epoch, against the truth-half floor -->
    <g style="fill: #0f2a43" transform="translate(19.19952 38.0775) scale(0.16 -0.16)">
@@ -5611,12 +5599,6 @@ z
   </clipPath>
   <clipPath id="pfd1241e2b3">
    <rect x="67.19832" y="667.985047" width="248.175614" height="131.214953"/>
-  </clipPath>
-  <clipPath id="p9b461edbf1">
-   <rect x="379.899593" y="667.985047" width="248.175614" height="131.214953"/>
-  </clipPath>
-  <clipPath id="p737efd36e2">
-   <rect x="692.600866" y="667.985047" width="248.175614" height="131.214953"/>
   </clipPath>
  </defs>
 </svg>

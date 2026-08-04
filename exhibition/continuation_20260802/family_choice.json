@@ -2,6 +2,7 @@
   "families": {
     "calibrated_lr1e4": {
       "best_accepted_epoch": 38,
+      "best_accepted_run_tag": "dicos-p9",
       "best_accepted_validation_loss": 4.635219681489869,
       "latest_accepted_epoch": 39,
       "latest_accepted_validation_loss": 4.663274642140066,
@@ -15,6 +16,7 @@
     },
     "calibrated_lr1e4_halfbatch": {
       "best_accepted_epoch": 21,
+      "best_accepted_run_tag": "dicos-p7",
       "best_accepted_validation_loss": 4.673036068110655,
       "latest_accepted_epoch": 22,
       "latest_accepted_validation_loss": 4.678375580300349,
@@ -26,6 +28,7 @@
     },
     "calibrated_lr3e4": {
       "best_accepted_epoch": 22,
+      "best_accepted_run_tag": "dicos-p7",
       "best_accepted_validation_loss": 4.597151546143159,
       "latest_accepted_epoch": 22,
       "latest_accepted_validation_loss": 4.597151546143159,
@@ -37,6 +40,7 @@
     },
     "calibrated_lr3e5": {
       "best_accepted_epoch": 8,
+      "best_accepted_run_tag": null,
       "best_accepted_validation_loss": 4.843470557018744,
       "latest_accepted_epoch": 10,
       "latest_accepted_validation_loss": 4.874425800792644,

@@ -128,7 +128,8 @@ After the 3090 writes a normal metric, run:
 python scripts/refresh_continuation_outputs.py \
   --family <family> --run-tag <tag> \
   --run-dir _runs/<family>_<tag> \
-  --lineage <oldest-tag> ... <tag>
+  --lineage <oldest-tag> ... <tag> \
+  --expected-epoch <absolute-epoch>
 ```
 
 That single command now:
@@ -139,12 +140,35 @@ That single command now:
 4. atomically pulls/replaces the 4090 history rows;
 5. downloads only visualization payloads whose checkpoint hashes match accepted
    3090 metrics, then merges them immutably into the internal dashboard;
-6. rebuilds continuation-loss and diagnostic-trend figures.
+6. rebuilds train/validation loss vs epoch and accepted running-best loss vs
+   epoch;
+7. rebuilds every 3090 metric vs epoch and the same metrics for the accepted
+   validation-loss best-so-far checkpoint;
+8. resolves all current-best graphics mechanically from standings plus the
+   dashboard manifest, rebuilds `exhibition/current.html`, and rejects missing
+   or ambiguous payloads;
+9. rebuilds `exhibition/index.html` and `metrics_catalog.json`, cataloging every
+   scientific PNG/SVG while keeping historical test evidence visibly isolated;
+10. writes immutable per-epoch audit twins plus
+    `audit/current_epoch_pipeline.{json,md}`. The exact expected epoch must be
+    present; a different/latest epoch cannot silently satisfy the refresh.
+
+For QA without DiCOS I/O or event generation, add `--offline`. This exercises
+the same ordered rebuild and audit path from already-local immutable evidence.
 
 Visually inspect changed figures and the internal dashboard. Then append the
 epoch, losses, hashes, QA, timing, GPU/process state, failures, and decision to
 `logs.md`; update current metrics/status and audit twins. Preserve every failed
 epoch in its namespace.
+
+The epoch audit reports `public_release_required=true` only when the new epoch
+is accepted and lowers that family's validation-loss best. That flag is a
+mandatory release handoff: update the one-snapshot-per-family public allowlist,
+export, test, build, commit/push, verify the Pages workflow and live URL, then
+record deployment. The refresh command automatically derives the allowlist and
+prepares/tests/builds the sibling public repository when that flag is true;
+commit/push and live deployment verification remain explicit. Override its
+location with `--public-repo`. Diagnostic metrics never decide this flag.
 
 ## Selection and website boundary
 

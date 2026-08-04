@@ -7178,3 +7178,54 @@ data split, threshold, or test event was touched.
 - Committed the complete source-side figure/metric organization and QA record
   as `ad0e5b7` (`fix(exhibition): align figures with evidence`) and pushed
   `827a0a3..ad0e5b7` to `origin/main`.
+- 2026-08-04 per-epoch exhibition pipeline reorganization began from clean,
+  synchronized source `3d4d299` and public `03627a6`. `dicos.py verify` passed
+  18/18. Read-only DiCOS inspection found both GPUs free of trainer/diagnostic/
+  refresh processes, the shared repo clean except its known untracked editable-
+  install metadata, and shared repo source still at `827a0a3`. No training or
+  event generation was started and no test event was read.
+- The first focused QA invocation caught a missing `math` import in the new
+  running-best loss helper. In the same deliberately pre-generation test pass,
+  the old exhibition manifest still named `index.html`; the new comprehensive
+  catalog test rewrote that file before the manifest had been regenerated to
+  point at `current.html`, so the old gallery hash correctly failed. No guard
+  was changed. Added the missing import; the manifest/path condition will be
+  corrected by the ordered offline epoch rebuild before tests are repeated.
+- The first policy-inclusive focused suite then caught the retired 80 GB
+  datacentre environment's literal product token in the new active workspace
+  guide. This repository deliberately forbids that token in active guidance
+  because an older revision used it as a hardware permission screen. Replaced
+  the guide text with the approved generic descriptor and constructed the
+  inventory's exact legacy directory key without embedding the forbidden token.
+  No policy test or allowlist was weakened.
+- Direct visual QA of the first best-so-far diagnostic render found an overlong
+  subtitle colliding with its title block and quarantine guide lines appearing
+  inside disabled Wasserstein subplot slots. Shortened/wrapped the best-model
+  provenance text, skipped disabled axes, regenerated, and directly reinspected
+  headline, bias, Wasserstein, energy-bin, and running-best-loss figures.
+- Browser-control setup and one retry again closed before tab creation, so no
+  interactive-browser pass is claimed. The complete exhibition index and all
+  87 linked graphics returned HTTP 200 from a temporary local server; all 87
+  also decode/parse through the catalog, and the exact preview process was
+  stopped afterward.
+- The first byte-reproducibility comparison started from audit twins generated
+  before the new `public_release_prepared_and_qa_passed` field existed. The
+  rebuild correctly changed only those four audit/current files to add that
+  field; all figure, summary, gallery, and catalog hashes were already stable.
+  This was a stale-baseline invocation, not accepted reproducibility evidence;
+  a consecutive comparison from the updated baseline follows.
+- The consecutive updated-baseline offline epoch transaction passed 60/60
+  byte-identical generated files. The exact current e40 audit records
+  `status=quarantined`, accepted best e38 / `4.635219681489869`, zero test use,
+  and `public_release_required=false`.
+- Full local QA then passed: focused Ruff, JSON parsing, compileall, and diff
+  whitespace; source `241 passed, 8 known Transformer warnings in 46.73 s`;
+  internal dashboard production build plus 2/2 rendered-HTML tests; public
+  repository 8/8 tests plus production build. Mechanically derived public
+  selection exactly matches its four existing accepted snapshots and lr3e4
+  e22 default, so no public payload/deployment change is required.
+- Per-epoch immutable audit files were initially written under ignored nested
+  `audit/epoch_updates/`. Moved the generator to tracked audit-root filenames
+  (`audit/epoch_<tag>_<epoch>.{json,md}`) and removed the obsolete duplicate
+  files. OneDrive refused removal of the now-empty ignored placeholder
+  directories; no evidence or tracked artifact remains inside them.

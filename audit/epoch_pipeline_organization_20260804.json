@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-epoch-pipeline-organization-qa",
+  "source_commit_at_start": "3d4d299606d888d0c2fca2b569a6fbb0b72dbf71",
+  "status": "local_pass_remote_sync_pending",
+  "training_started": false,
+  "event_generation_started": false,
+  "new_test_events_used": 0,
+  "pipeline_contract": {
+    "rtx_4090_role": "sole training writer and fatal 50-condition x 5-draw validation visualization gate",
+    "rtx_3090_role": "per-epoch 4000-event validation diagnostic consumer",
+    "loss_vs_epoch_every_refresh": true,
+    "accepted_running_best_loss_every_refresh": true,
+    "all_3090_metrics_vs_epoch_every_refresh": true,
+    "best_validation_loss_checkpoint_metrics_every_refresh": true,
+    "quarantine_visible_but_not_selectable": true,
+    "current_best_graphics_resolved_mechanically": true,
+    "complete_exhibition_rebuilt_every_refresh": true,
+    "exact_expected_epoch_required": true,
+    "epoch_audit_twins_written": true,
+    "public_candidate_prepared_only_for_new_accepted_best": true,
+    "public_commit_deploy_and_live_verification_explicit": true
+  },
+  "current_evidence": {
+    "lineage": ["dicos-p9", "dicos-p10"],
+    "latest_observed_epoch": 40,
+    "latest_observed_status": "quarantined",
+    "best_accepted_epoch": 38,
+    "best_accepted_validation_loss": 4.635219681489869,
+    "public_release_required": false,
+    "diagnostic_split": "validation",
+    "diagnostic_events_per_epoch": 4000,
+    "diagnostic_test_events": 0
+  },
+  "exhibition": {
+    "validated_graphics": 87,
+    "common_window_graphics": 24,
+    "loss_and_standings_graphics": 6,
+    "large_validation_diagnostic_graphics": 18,
+    "historical_c2st_graphics": 33,
+    "historical_paired_graphics": 6,
+    "complete_index": "exhibition/index.html",
+    "compact_current_gallery": "exhibition/current.html",
+    "all_graphic_http_links": "87/87 HTTP 200",
+    "all_png_svg_decode_parse": true,
+    "byte_reproducibility": "60/60 generated outputs identical on consecutive offline epoch transactions"
+  },
+  "local_verification": {
+    "focused_ruff": "pass",
+    "json_compile_diff_checks": "pass",
+    "source_pytest": "241 passed, 8 known Transformer warnings",
+    "internal_dashboard": "production build and 2/2 rendered-HTML tests passed",
+    "public_site": "8/8 tests and production build passed",
+    "public_selection_matches_current_accepted_bests": true,
+    "public_snapshot_count": 4,
+    "browser_control": "unavailable: connection closed during setup and retry; no interactive pass claimed",
+    "direct_visual_inspection": "pass after subtitle and disabled-axes iterations"
+  },
+  "workspace_organization": {
+    "local_layout_documented": true,
+    "dicos_inventory_script": "scripts/dicos_workspace_inventory.py",
+    "method": "non-destructive classification; historical evidence is not moved or deleted",
+    "remote_inventory": "pending post-commit synchronization"
+  },
+  "failed_attempts_and_corrections": [
+    "focused lint caught a missing math import in the running-best helper; import added",
+    "the pre-generation catalog test changed the old index before the old manifest migrated to current.html; ordered rebuild corrected the manifest boundary",
+    "the first inventory-count assertion still expected 77; updated to the exact new 87 after all decode/hash checks passed",
+    "policy QA rejected a retired accelerator product token in active guidance; replaced with the approved generic descriptor without changing policy",
+    "direct visual QA found a colliding best-so-far subtitle and quarantine lines on disabled axes; both were corrected and re-inspected",
+    "browser control closed during setup and retry; HTTP, static-contract, build, and direct-image evidence used without claiming an interactive pass",
+    "the first reproducibility baseline predated a new audit field and changed only four audit files; the consecutive updated-baseline comparison passed 60/60",
+    "obsolete ignored epoch-audit files were removed after moving the generated twins to tracked audit-root paths; OneDrive retained empty ignored placeholder directories"
+  ],
+  "scientific_status": "optimization and descriptive validation evidence only; Geant4 fidelity is not established"
+}

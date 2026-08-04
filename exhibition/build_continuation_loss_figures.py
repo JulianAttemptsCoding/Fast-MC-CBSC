@@ -6,14 +6,17 @@ builds the complementary view: one panel per family showing its whole observed
 training history. Quarantined observations remain visible but are excluded
 from accepted-best and latest-accepted metrics.
 
-Output goes to exhibition/continuation_20260802/, deliberately outside
-exhibition/manifest.json, so the 23-visual exhibition contract is untouched.
+Output goes to ``exhibition/continuation_20260802/``. It includes the ordinary
+train/validation loss-vs-epoch view and an accepted running-best validation-loss
+view. The compact current gallery manifest remains separate; the comprehensive
+exhibition index catalogs both on every refresh.
 """
 
 from __future__ import annotations
 
 import csv
 import json
+import math
 from pathlib import Path
 
 import matplotlib
@@ -192,6 +195,67 @@ def _tail_tags(tail: list[dict]) -> list[str]:
     return sorted(first_epoch, key=lambda t: (first_epoch[t], t))
 
 
+def _running_best(series: list[dict]) -> list[float]:
+    """Accepted running minimum at every observed epoch.
+
+    Quarantined observations stay on the ordinary loss plot but cannot advance
+    this trace.  The prior accepted minimum is carried forward instead.
+    """
+    values: list[float] = []
+    current = float("inf")
+    for row in series:
+        if row.get("status", "accepted") == "accepted":
+            current = min(current, float(row["validation_loss"]))
+        if not math.isfinite(current):
+            raise ValueError("running-best trace has no accepted starting epoch")
+        values.append(current)
+    return values
+
+
+def build_running_best(history: dict[str, list[dict]]) -> Path:
+    fig, ax = plt.subplots(figsize=(13.333, 6.2))
+    fig.suptitle(
+        "Accepted running-best validation loss vs epoch",
+        x=0.02, ha="left", fontsize=17, fontweight="bold", color=NAVY, y=0.975,
+    )
+    fig.text(
+        0.02, 0.925,
+        "Each step is the lowest accepted validation loss available by that epoch. "
+        "Quarantined observations remain in the full loss figure but never advance "
+        "this best-so-far trace.",
+        ha="left", va="top", fontsize=10.5, color="#4a6178",
+    )
+    all_epochs = sorted({int(row["epoch"]) for rows in history.values() for row in rows})
+    for variant in ORDER:
+        series = history[variant]
+        epochs = [int(row["epoch"]) for row in series]
+        best = _running_best(series)
+        ax.step(
+            epochs, best, where="post", color=COLORS[variant], lw=2.3,
+            label=LABELS[variant],
+        )
+        ax.scatter(epochs, best, color=COLORS[variant], s=22, zorder=3)
+    ax.set_xlabel("Completed epoch")
+    ax.set_ylabel("Best accepted validation loss so far")
+    ax.set_xticks(_thinned_ticks(all_epochs))
+    ax.set_xlim(min(all_epochs) - 0.6, max(all_epochs) + 0.6)
+    ax.grid(axis="y", color="#dde5ec", lw=0.9)
+    ax.set_axisbelow(True)
+    ax.legend(frameon=False, fontsize=9, ncol=2)
+    fig.subplots_adjust(left=0.08, right=0.97, top=0.82, bottom=0.16)
+    fig.text(
+        0.02, 0.02,
+        "Selection quantity only: validation loss on the frozen pilot validation "
+        "split. Zero test events. Lower is better; this is not Geant4 fidelity.",
+        ha="left", fontsize=8.8, color="#6b7f92",
+    )
+    png = OUT / "best_validation_loss_so_far_vs_epoch.png"
+    save_png_atomic(fig, png)
+    save_svg_clean(fig, OUT / "best_validation_loss_so_far_vs_epoch.svg")
+    plt.close(fig)
+    return png
+
+
 def build() -> Path:
     style()
     history, continuation = read_history()
@@ -290,6 +354,7 @@ def build() -> Path:
     save_png_atomic(fig, png)
     save_svg_clean(fig, OUT / "loss_all_families_every_epoch.svg")
     plt.close(fig)
+    best_trace_png = build_running_best(history)
 
     summary = {"schema_version": 2, "families": {}}
     for variant, series in history.items():
@@ -305,6 +370,7 @@ def build() -> Path:
             "observed_epochs": [r["epoch"] for r in series],
             "best_accepted_validation_loss": best["validation_loss"],
             "best_accepted_epoch": best["epoch"],
+            "best_accepted_run_tag": best.get("run_tag"),
             "latest_accepted_epoch": latest_accepted["epoch"],
             "latest_accepted_validation_loss": latest_accepted["validation_loss"],
             "latest_observed_epoch": latest_observed["epoch"],
@@ -318,7 +384,12 @@ def build() -> Path:
                 r["epoch"] for r in continuation.get(variant, [])
                 if r.get("status") == "quarantined"
             ],
+            "running_best_validation_loss": _running_best(series),
         }
+    summary["figures"] = [
+        png.name,
+        best_trace_png.name,
+    ]
     write_json_atomic(OUT / "loss_summary.json", summary)
     return png
 

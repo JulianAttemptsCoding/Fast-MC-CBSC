@@ -63,13 +63,6 @@ PASS = "#16835B"
 WARN = "#C47F00"
 BLOCK = "#B42318"
 
-BEST_FILES = {
-    "calibrated_lr3e5": "dicos-r3-calibrated-lr3e5_joint_epoch_0008.json",
-    "calibrated_lr1e4": "dicos-p9-calibrated-lr1e4_joint_epoch_0038.json",
-    "calibrated_lr3e4": "dicos-p7-calibrated-lr3e4_joint_epoch_0022.json",
-    "calibrated_lr1e4_halfbatch": "dicos-p7-calibrated-lr1e4-halfbatch_joint_epoch_0021.json",
-}
-
 COMPONENTS = [
     ("train_visible", "Visible BCE"),
     ("train_response", "Response NLL"),
@@ -113,6 +106,50 @@ def read_history() -> dict[str, list[dict[str, float]]]:
 
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def resolve_best_files() -> dict[str, str]:
+    """Resolve each family's current accepted best visualization mechanically.
+
+    The validation-loss summary is the selection authority.  The dashboard
+    manifest must contain exactly one QA-passing payload from the matching run,
+    family, and epoch; ambiguity fails instead of silently choosing a graphic.
+    """
+    standings = load_json(HERE / "continuation_20260802" / "family_choice.json")
+    manifest = load_json(DASH / "manifest.json")
+    resolved: dict[str, str] = {}
+    for family in VARIANTS:
+        row = standings["families"][family]
+        epoch = int(row["best_accepted_epoch"])
+        run_tag = row.get("best_accepted_run_tag")
+        family_slug = family.replace("_", "-")
+        expected_label = f"{run_tag}-{family_slug}" if run_tag else None
+        matches = []
+        for entry in manifest["epochs"]:
+            if int(entry.get("epoch", -1)) != epoch:
+                continue
+            if entry.get("stage") != "joint" or entry.get("qa_pass") is not True:
+                continue
+            label = str(entry.get("run_label", ""))
+            if expected_label is not None:
+                if label != expected_label:
+                    continue
+            elif not label.endswith(family_slug):
+                continue
+            path = DASH / entry["path"]
+            if sha256(path) != entry["sha256"]:
+                raise ValueError(f"dashboard payload hash mismatch: {path}")
+            payload = load_json(path)
+            if payload.get("checkpoint_sha256") != entry["checkpoint_sha256"]:
+                raise ValueError(f"checkpoint hash mismatch: {path}")
+            matches.append(entry["path"])
+        if len(matches) != 1:
+            raise ValueError(
+                f"{family}: expected one accepted-best payload at e{epoch} "
+                f"from {run_tag}, found {matches}"
+            )
+        resolved[family] = matches[0]
+    return resolved
 
 
 def write_text_atomic(path: Path, text: str) -> None:
@@ -752,7 +789,7 @@ a{color:inherit;text-decoration:none}a:focus-visible{outline:3px solid #2f80ed;o
 </style></head><body><main><h1>CBSC-ZDC model exhibition</h1>
 <p>Presentation-ready figures generated from verified training and fixed validation evidence. Physics validation is not established.</p>
 <div class="grid">""" + "".join(cards) + "</div></main></body></html>"
-    path = HERE / "index.html"
+    path = HERE / "current.html"
     write_text_atomic(path, document)
     return path
 
@@ -764,7 +801,8 @@ def main() -> None:
     terminal = load_json(AUDIT / "compute_extension_20260727_r2_terminal_analysis.json")
     assert terminal["test_events_used"] == 0
     payloads = visualization_payloads()
-    best = {variant: load_json(DASH / filename) for variant, filename in BEST_FILES.items()}
+    best_files = resolve_best_files()
+    best = {variant: load_json(DASH / filename) for variant, filename in best_files.items()}
     hashes = {p["selection_sha256"] for p in best.values()}
     assert len(hashes) == 1, hashes
     assert all(p["split"] == "validation" and p["sample_count"] == 50 and p["draws_per_condition"] == 5 for p in best.values())
@@ -794,7 +832,8 @@ def main() -> None:
         AUDIT / "compute_extension_20260727_r2_terminal_analysis.json",
         DASH / "manifest.json",
         DASH / "geometry.json",
-        *[DASH / name for name in BEST_FILES.values()],
+        HERE / "continuation_20260802" / "family_choice.json",
+        *[DASH / name for name in best_files.values()],
     ]
     manifest = {
         "schema_version": 2,
@@ -802,6 +841,7 @@ def main() -> None:
         "test_events_used": 0,
         "selected_validation_position": position,
         "selection_sha256": next(iter(hashes)),
+        "best_payloads": best_files,
         "source_files": [
             {"path": str(path.relative_to(ROOT)).replace("\\", "/"), "bytes": path.stat().st_size, "sha256": sha256(path)}
             for path in source_files

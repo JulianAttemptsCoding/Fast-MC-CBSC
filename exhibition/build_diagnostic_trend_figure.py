@@ -5,7 +5,7 @@ The published per-epoch payload carries a handful of these from 250 events
 sample generated alongside training, so the same quantities arrive with error
 bars small enough to read a trend from.
 
-Four figures:
+Eight figures in four paired metric families:
 
   bias_vs_epoch          the nine high-level observables' mean bias, with
                          standard errors and a zero reference
@@ -17,10 +17,16 @@ Four figures:
                          hit-count Wasserstein, profile L1, zero fractions
   energy_bins_vs_epoch   mean bias and resolution difference per energy bin
 
+Each family has an ``*_of_best_loss_so_far`` counterpart. At every completed
+epoch that counterpart shows the 3090 metrics of the accepted checkpoint with
+the lowest validation loss available so far. Diagnostic metrics never select
+the checkpoint.
+
 Input is `exhibition/data/diagnostics/<run-tag>/metrics_epoch_*.json`. Figures
 are built to be partial while a run is in flight. Output goes to
-exhibition/diagnostics_20260803/, outside exhibition/manifest.json, so the
-23-visual exhibition contract is untouched.
+``exhibition/diagnostics_20260803/``. The compact current gallery manifest
+remains separate, while the comprehensive exhibition index catalogs these
+files on every refresh.
 """
 
 from __future__ import annotations
@@ -69,6 +75,56 @@ FEATURES = [
     ("ecal_fraction", "ECAL fraction"),
     ("late_fraction", "Late fraction"),
 ]
+
+
+def best_loss_so_far_rows(
+    rows: list[dict], family: str,
+) -> tuple[list[dict], list[int], list[dict], list[int]]:
+    """Return 3090 metrics for the accepted validation-loss best at each epoch.
+
+    A historical best without a 4,000-event 3090 diagnostic is reported as
+    unavailable rather than backfilled from the smaller 250-draw visual bank.
+    Once a diagnosed epoch becomes the best, its metrics are carried forward
+    until a later accepted epoch improves validation loss.
+    """
+    try:
+        from exhibition.build_continuation_loss_figures import read_history
+    except ModuleNotFoundError:  # direct ``python exhibition/script.py`` entry
+        from build_continuation_loss_figures import read_history
+
+    history, _ = read_history()
+    family_rows = history[family]
+    diagnostic = {
+        (str(row["run_tag"]), int(row["epoch"])): row for row in rows
+    }
+    selected_rows: list[dict] = []
+    selected_epochs: list[int] = []
+    selection: list[dict] = []
+    unavailable: list[int] = []
+    for observed in rows:
+        completed_epoch = int(observed["epoch"])
+        eligible = [
+            row for row in family_rows
+            if int(row["epoch"]) <= completed_epoch
+            and row.get("status", "accepted") == "accepted"
+        ]
+        best = min(eligible, key=lambda row: float(row["validation_loss"]))
+        key = (str(best.get("run_tag")), int(best["epoch"]))
+        metric_row = diagnostic.get(key)
+        record = {
+            "completed_epoch": completed_epoch,
+            "best_checkpoint_epoch": int(best["epoch"]),
+            "best_checkpoint_run_tag": best.get("run_tag"),
+            "best_validation_loss": float(best["validation_loss"]),
+            "metric_available_from_3090": metric_row is not None,
+        }
+        selection.append(record)
+        if metric_row is None:
+            unavailable.append(completed_epoch)
+            continue
+        selected_rows.append(metric_row)
+        selected_epochs.append(completed_epoch)
+    return selected_rows, selected_epochs, selection, unavailable
 
 
 def _validate_metric(path: Path, row: dict, expected_epoch: int) -> None:
@@ -196,6 +252,8 @@ def _finish(fig, epochs, title, subtitle, name) -> Path:
              "not a fidelity gate and not Geant4 validation.",
              ha="left", fontsize=9, color=MUTED)
     for ax in fig.axes:
+        if not ax.axison:
+            continue
         for epoch in quarantined_epochs():
             if epoch in epochs:
                 ax.axvline(epoch, color=QUARANTINE, lw=1.2, ls="--", zorder=0)
@@ -223,7 +281,7 @@ def _ticks(ax, epochs) -> None:
     ax.set_axisbelow(True)
 
 
-def bias_figure(rows, epochs, subtitle) -> Path:
+def bias_figure(rows, epochs, subtitle, *, best_so_far: bool = False) -> Path:
     fig, axes = plt.subplots(3, 3, figsize=(13.333, 9.5))
     for ax, (key, label) in zip(axes.ravel(), FEATURES):
         values, errors = [], []
@@ -243,11 +301,15 @@ def bias_figure(rows, epochs, subtitle) -> Path:
     for ax in axes[-1]:
         ax.set_xlabel("Completed epoch")
     _layout(fig, left=0.07, right=0.98, hspace=0.42, wspace=0.26)
-    return _finish(fig, epochs, "Mean bias vs epoch, nine high-level observables",
-                   subtitle, "bias_vs_epoch")
+    heading = (
+        "Best-so-far checkpoint bias vs epoch"
+        if best_so_far else "Mean bias vs epoch, nine high-level observables"
+    )
+    name = "bias_of_best_loss_so_far" if best_so_far else "bias_vs_epoch"
+    return _finish(fig, epochs, heading, subtitle, name)
 
 
-def wasserstein_figure(rows, epochs, subtitle) -> Path:
+def wasserstein_figure(rows, epochs, subtitle, *, best_so_far: bool = False) -> Path:
     panels = FEATURES + [("positive_cell_energy_gev", "Positive cell energy")]
     fig, axes = plt.subplots(4, 3, figsize=(13.333, 12))
     for ax, (key, label) in zip(axes.ravel(), panels):
@@ -277,15 +339,23 @@ def wasserstein_figure(rows, epochs, subtitle) -> Path:
     for ax in axes[-1]:
         ax.set_xlabel("Completed epoch")
     _layout(fig, left=0.07, right=0.98, hspace=0.45, wspace=0.26)
+    heading = (
+        "Best-so-far checkpoint Wasserstein vs epoch"
+        if best_so_far else "Wasserstein distance vs epoch, against the truth-half floor"
+    )
+    name = (
+        "wasserstein_of_best_loss_so_far"
+        if best_so_far else "wasserstein_vs_epoch"
+    )
     return _finish(
-        fig, epochs, "Wasserstein distance vs epoch, against the truth-half floor",
+        fig, epochs, heading,
         subtitle + "  Dashed green = truth vs itself; at or below it is "
         "indistinguishable from sampling noise.",
-        "wasserstein_vs_epoch",
+        name,
     )
 
 
-def headline_figure(rows, epochs, subtitle) -> Path:
+def headline_figure(rows, epochs, subtitle, *, best_so_far: bool = False) -> Path:
     fig, axes = plt.subplots(2, 3, figsize=(13.333, 7))
     ax = axes[0][0]
     values = [r.get("evaluation", {}).get("high_level_c2st_auc") for r in rows]
@@ -356,12 +426,20 @@ def headline_figure(rows, epochs, subtitle) -> Path:
     for ax in axes[-1]:
         ax.set_xlabel("Completed epoch")
     _layout(fig, left=0.07, right=0.98, hspace=0.45, wspace=0.26)
-    return _finish(fig, epochs, "Headline distribution metrics vs epoch",
-                   subtitle + "  Dotted red = predeclared threshold.",
-                   "headline_vs_epoch")
+    heading = (
+        "Best-so-far checkpoint headline metrics vs epoch"
+        if best_so_far else "Headline distribution metrics vs epoch"
+    )
+    name = "headline_of_best_loss_so_far" if best_so_far else "headline_vs_epoch"
+    return _finish(
+        fig, epochs, heading,
+        subtitle + "  Dotted red = predeclared threshold.", name,
+    )
 
 
-def energy_bin_figure(rows, epochs, subtitle) -> Path | None:
+def energy_bin_figure(
+    rows, epochs, subtitle, *, best_so_far: bool = False,
+) -> Path | None:
     bins = rows[-1].get("evaluation", {}).get("response_bins")
     if not bins:
         return None
@@ -395,9 +473,18 @@ def energy_bin_figure(rows, epochs, subtitle) -> Path | None:
         _ticks(ax, epochs)
     axes[0].legend(frameon=False, fontsize=7.5, ncol=2)
     _layout(fig, left=0.06, right=0.98, wspace=0.20)
-    return _finish(fig, epochs, "Energy-resolved response vs epoch",
-                   subtitle + "  Dotted red = predeclared thresholds.",
-                   "energy_bins_vs_epoch")
+    heading = (
+        "Best-so-far checkpoint energy-bin response vs epoch"
+        if best_so_far else "Energy-resolved response vs epoch"
+    )
+    name = (
+        "energy_bins_of_best_loss_so_far"
+        if best_so_far else "energy_bins_vs_epoch"
+    )
+    return _finish(
+        fig, epochs, heading,
+        subtitle + "  Dotted red = predeclared thresholds.", name,
+    )
 
 
 def build() -> list[Path]:
@@ -423,6 +510,34 @@ def build() -> list[Path]:
     energy = energy_bin_figure(rows, epochs, subtitle)
     if energy:
         produced.append(energy)
+
+    best_rows, best_epochs, best_selection, unavailable = best_loss_so_far_rows(
+        rows, "calibrated_lr1e4"
+    )
+    best_produced: list[Path] = []
+    if best_rows:
+        best_subtitle = (
+            f"calibrated_lr1e4 continuation ({RUN_TAG}); 4,000 fixed validation "
+            "events. At each completed epoch, show 3090 metrics from the accepted "
+            "validation-loss best so far.\nMetrics never select the checkpoint; "
+            "the inherited e15 best has no matching 3090 diagnostic, so this "
+            f"historical trace begins at e{best_epochs[0]}."
+        )
+        best_produced = [
+            bias_figure(best_rows, best_epochs, best_subtitle, best_so_far=True),
+            wasserstein_figure(
+                best_rows, best_epochs, best_subtitle, best_so_far=True
+            ),
+            headline_figure(
+                best_rows, best_epochs, best_subtitle, best_so_far=True
+            ),
+        ]
+        best_energy = energy_bin_figure(
+            best_rows, best_epochs, best_subtitle, best_so_far=True
+        )
+        if best_energy:
+            best_produced.append(best_energy)
+        produced.extend(best_produced)
 
     per_epoch = []
     for row in rows:
@@ -470,6 +585,12 @@ def build() -> list[Path]:
                 for r in rows
             ]
             for key, _ in FEATURES
+        },
+        "best_loss_so_far": {
+            "selection_quantity": "accepted validation loss only",
+            "selection_trace": best_selection,
+            "completed_epochs_without_matching_3090_metric": unavailable,
+            "figures": [p.name for p in best_produced],
         },
         "figures": [p.name for p in produced],
     }

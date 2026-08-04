@@ -36,6 +36,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DIAG_LOCAL = ROOT / "exhibition" / "data" / "diagnostics"
 VISUAL_LOCAL = ROOT / "exhibition" / "data" / "visualizations"
 CONTINUATION_CSV = ROOT / "exhibition" / "data" / "continuation_history.csv"
+CONTINUATION_STATUS = ROOT / "exhibition" / "data" / "continuation_status.json"
 DASHBOARD_DATA = ROOT / "dashboard" / "public" / "data"
 FIELDS = ["variant", "epoch", "train_loss", "validation_loss", "run_tag"]
 RUN_TAG_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
@@ -120,6 +121,20 @@ def validate_visualization(path: Path, epoch: int, checkpoint_sha256: str) -> di
     if qa.get("groups_with_exact_draw_count") != 50:
         raise ValueError(f"{path.name}: visualization draw-count contract failed")
     return payload
+
+
+def checkpoint_status(family: str, run_tag: str, epoch: int) -> str:
+    if not CONTINUATION_STATUS.is_file():
+        return "accepted"
+    payload = json.loads(CONTINUATION_STATUS.read_text(encoding="utf-8"))
+    for row in payload.get("overrides", []):
+        if (
+            row.get("variant") == family
+            and row.get("run_tag") == run_tag
+            and int(row.get("epoch", -1)) == epoch
+        ):
+            return str(row["status"])
+    return str(payload.get("default_status", "accepted"))
 
 
 def dicos(args: list[str], config: str | None = None) -> str:
@@ -213,7 +228,9 @@ def pull_and_sync_visualizations(run_dir: str, run_tag: str, family: str) -> lis
         match = re.fullmatch(r"metrics_epoch_(\d{4,})\.json", path.name)
         if match:
             epoch = int(match.group(1))
-            accepted[epoch] = validate_metric(path, epoch)
+            metric = validate_metric(path, epoch)
+            if checkpoint_status(family, run_tag, epoch) == "accepted":
+                accepted[epoch] = metric
     if not accepted:
         return []
 
@@ -315,12 +332,132 @@ def rebuild(script: str, *args: str) -> str:
     return result.stdout.strip()
 
 
+def _read_best(family: str) -> dict | None:
+    path = ROOT / "exhibition/continuation_20260802/family_choice.json"
+    if not path.is_file():
+        return None
+    return json.loads(path.read_text(encoding="utf-8")).get("families", {}).get(family)
+
+
+def write_epoch_record(
+    *, family: str, run_tag: str, lineage: list[str], expected_epoch: int,
+    offline: bool, previous_best: dict | None,
+    public_release_prepared: bool = False,
+) -> dict:
+    diagnostics_path = ROOT / "exhibition/diagnostics_20260803/diagnostic_summary.json"
+    diagnostics = json.loads(diagnostics_path.read_text(encoding="utf-8"))
+    per_epoch = {int(row["epoch"]): row for row in diagnostics["per_epoch"]}
+    if expected_epoch not in per_epoch:
+        raise RuntimeError(
+            f"expected epoch {expected_epoch} missing from rebuilt diagnostics"
+        )
+    current_best = _read_best(family)
+    if current_best is None:
+        raise RuntimeError(f"rebuilt standings omit family {family}")
+    best_changed = previous_best is not None and (
+        previous_best.get("best_accepted_epoch")
+        != current_best.get("best_accepted_epoch")
+        or previous_best.get("best_accepted_validation_loss")
+        != current_best.get("best_accepted_validation_loss")
+    )
+    tracked = [
+        ROOT / "exhibition/continuation_20260802/loss_summary.json",
+        ROOT / "exhibition/continuation_20260802/family_choice.json",
+        diagnostics_path,
+        ROOT / "exhibition/manifest.json",
+        ROOT / "exhibition/metrics_catalog.json",
+        ROOT / "exhibition/index.html",
+    ]
+    record = {
+        "schema_version": 1,
+        "kind": "cbsc-zdc-epoch-evidence-refresh",
+        "family": family,
+        "run_tag": run_tag,
+        "lineage": lineage,
+        "epoch": expected_epoch,
+        "mode": "offline-rebuild" if offline else "remote-refresh",
+        "training_started": False,
+        "event_generation_started_by_refresh": False,
+        "test_events_used": 0,
+        "epoch_status": per_epoch[expected_epoch]["status"],
+        "best_before_refresh": previous_best,
+        "best_after_refresh": current_best,
+        "best_changed": best_changed,
+        "public_release_required": (
+            not offline
+            and best_changed
+            and current_best["best_accepted_epoch"] == expected_epoch
+            and per_epoch[expected_epoch]["status"] == "accepted"
+        ),
+        "public_release_prepared_and_qa_passed": public_release_prepared,
+        "artifacts": [
+            {
+                "path": path.relative_to(ROOT).as_posix(),
+                "bytes": path.stat().st_size,
+                "sha256": sha256_file(path),
+            }
+            for path in tracked
+        ],
+        "scientific_status": (
+            "optimization and descriptive validation evidence only; "
+            "Geant4 fidelity is not established"
+        ),
+    }
+    audit_dir = ROOT / "audit"
+    json_path = audit_dir / f"epoch_{run_tag}_{expected_epoch:04d}.json"
+    md_path = audit_dir / f"epoch_{run_tag}_{expected_epoch:04d}.md"
+    current_json = ROOT / "audit/current_epoch_pipeline.json"
+    current_md = ROOT / "audit/current_epoch_pipeline.md"
+    json_text = json.dumps(record, indent=2, sort_keys=True) + "\n"
+    markdown = (
+        f"# Epoch evidence refresh: {run_tag} e{expected_epoch}\n\n"
+        f"- Mode: `{record['mode']}`\n"
+        f"- Checkpoint status: `{record['epoch_status']}`\n"
+        f"- Best accepted: e{current_best['best_accepted_epoch']} / "
+        f"{current_best['best_accepted_validation_loss']:.12g}\n"
+        f"- Best changed: `{str(best_changed).lower()}`\n"
+        f"- Public release required: "
+        f"`{str(record['public_release_required']).lower()}`\n"
+        f"- Public candidate prepared and QA-passed: "
+        f"`{str(public_release_prepared).lower()}`\n"
+        "- Test events used: `0`\n\n"
+        "All figures, metric summaries, the complete exhibition index, and "
+        "their hashes are recorded in the JSON twin. These are descriptive "
+        "validation/optimization artifacts, not Geant4 fidelity.\n"
+    )
+    for path, content in (
+        (json_path, json_text), (current_json, json_text),
+        (md_path, markdown), (current_md, markdown),
+    ):
+        temporary = path.with_name(f".{path.name}.tmp")
+        temporary.write_text(content, encoding="utf-8")
+        temporary.replace(path)
+    return record
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--family", required=True)
     parser.add_argument("--run-tag", required=True)
     parser.add_argument("--run-dir", required=True)
     parser.add_argument("--diag-config", default="config_3090.json")
+    parser.add_argument(
+        "--expected-epoch", required=True, type=int,
+        help="exact epoch whose 3090 evidence must be present after refresh",
+    )
+    parser.add_argument(
+        "--offline", action="store_true",
+        help="rebuild and verify from local immutable evidence without DiCOS I/O",
+    )
+    parser.add_argument(
+        "--public-repo",
+        type=Path,
+        default=ROOT.parent / "Fast-MC-Visual-Tests",
+        help=(
+            "public repository prepared and QA-tested automatically if this "
+            "epoch establishes a new accepted validation-loss best"
+        ),
+    )
     parser.add_argument(
         "--lineage",
         nargs="*",
@@ -345,27 +482,65 @@ def main(argv=None) -> int:
     if lineage[-1] != args.run_tag:
         lineage.append(args.run_tag)
 
-    pulled = pull_diagnostics(args.diag_config, args.run_tag)
-    print(f"diagnostics pulled: {pulled or 'none new'}")
+    previous_best = _read_best(args.family)
+    if not args.offline:
+        pulled = pull_diagnostics(args.diag_config, args.run_tag)
+        print(f"diagnostics pulled: {pulled or 'none new'}")
 
-    history = ROOT / ".refresh_history.csv"
-    try:
-        pull_history(args.run_dir, history)
-        written = rewrite_continuation(history, args.family, args.run_tag)
-        print(f"continuation rows for {args.family}/{args.run_tag}: {written}")
-    finally:
-        history.unlink(missing_ok=True)
+        history = ROOT / ".refresh_history.csv"
+        try:
+            pull_history(args.run_dir, history)
+            written = rewrite_continuation(history, args.family, args.run_tag)
+            print(f"continuation rows for {args.family}/{args.run_tag}: {written}")
+        finally:
+            history.unlink(missing_ok=True)
 
-    visuals = pull_and_sync_visualizations(args.run_dir, args.run_tag, args.family)
-    print(f"visualizations imported: {visuals or 'none new'}")
+        visuals = pull_and_sync_visualizations(
+            args.run_dir, args.run_tag, args.family
+        )
+        print(f"visualizations imported: {visuals or 'none new'}")
 
     print(rebuild("exhibition/build_continuation_loss_figures.py"))
+    print(rebuild("exhibition/build_family_choice_figure.py"))
     print(rebuild("exhibition/build_diagnostic_trend_figure.py", *lineage))
+    print(rebuild("exhibition/build_exhibition.py"))
+    print(rebuild("exhibition/build_metrics_catalog.py"))
 
     summary = ROOT / "exhibition/diagnostics_20260803/diagnostic_summary.json"  # noqa: E501
     if summary.is_file():
         payload = json.loads(summary.read_text(encoding="utf-8"))
         print(f"diagnostic epochs: {payload['epochs']}")
+    record = write_epoch_record(
+        family=args.family,
+        run_tag=args.run_tag,
+        lineage=lineage,
+        expected_epoch=args.expected_epoch,
+        offline=args.offline,
+        previous_best=previous_best,
+    )
+    if record["public_release_required"]:
+        print(
+            rebuild(
+                "scripts/prepare_public_best_release.py",
+                "--public-repo",
+                str(args.public_repo),
+            )
+        )
+        record = write_epoch_record(
+            family=args.family,
+            run_tag=args.run_tag,
+            lineage=lineage,
+            expected_epoch=args.expected_epoch,
+            offline=args.offline,
+            previous_best=previous_best,
+            public_release_prepared=True,
+        )
+    print(
+        "epoch evidence: "
+        f"e{record['epoch']} status={record['epoch_status']} "
+        f"best_changed={record['best_changed']} "
+        f"public_release_required={record['public_release_required']}"
+    )
     return 0
 
 

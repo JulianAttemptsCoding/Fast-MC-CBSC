@@ -15,19 +15,19 @@ remain visible as negative evidence.
 
 ## Graphics inventory
 
-Validated graphics: **77**.
+Validated graphics: **87**.
 
 | Category | PNG/SVG files |
 |---|---:|
 | `common_window_gallery` | 24 |
-| `continuation_and_standings` | 4 |
+| `continuation_and_standings` | 6 |
 | `historical_c2st_test_study` | 33 |
 | `historical_paired_test_exception` | 6 |
-| `large_validation_diagnostics` | 10 |
+| `large_validation_diagnostics` | 18 |
 
 ## Scientific boundary
 
-Current large-sample diagnostics cover epochs 16–40 on 4,000 fixed validation events per epoch. Epoch 40 is quarantined. These are descriptive,
+Current large-sample diagnostics cover epochs 16–40 on 4,000 fixed validation events per epoch. Quarantined epochs: [40]. These are descriptive,
 not a fidelity gate or Geant4 validation.
 
 The current gallery, training decisions, and validation diagnostics use zero

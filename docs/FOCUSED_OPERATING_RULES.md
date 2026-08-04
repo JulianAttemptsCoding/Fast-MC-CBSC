@@ -49,6 +49,9 @@ the continuing-agent handoff.
    `audit/NAME.json` + `audit/NAME.md` twins.
 3. Keep current metrics, continuation history/status, diagnostics, and figures
    synchronized. Visually inspect figures; rendering success is not layout QA.
+   Every epoch must refresh loss vs epoch, accepted running-best loss, every
+   3090 diagnostic metric vs epoch, the same metrics for the validation-loss
+   best-so-far checkpoint, and the complete exhibition catalog.
 4. Republish the dashboard/public site only when a family's lowest independently
    verified validation-loss checkpoint changes. Verify tests, build, workflow,
    and live URL; a push is not deployment.

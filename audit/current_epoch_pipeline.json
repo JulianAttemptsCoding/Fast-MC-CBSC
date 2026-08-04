@@ -1,0 +1,80 @@
+{
+  "artifacts": [
+    {
+      "bytes": 7455,
+      "path": "exhibition/continuation_20260802/loss_summary.json",
+      "sha256": "877b4a40e45367924093de6fdee4d8323b35a069ad5dea3c732d4b37bdab4928"
+    },
+    {
+      "bytes": 2129,
+      "path": "exhibition/continuation_20260802/family_choice.json",
+      "sha256": "63ac3e43b46e66e2dd4b3d3d6f18c4d43cd07aa3aee9a20009da90a4969d3ac8"
+    },
+    {
+      "bytes": 28578,
+      "path": "exhibition/diagnostics_20260803/diagnostic_summary.json",
+      "sha256": "2c78baa2f5da5520a551ee7179751fabd375b8d94eecb8a8b20d960b122012df"
+    },
+    {
+      "bytes": 8049,
+      "path": "exhibition/manifest.json",
+      "sha256": "80233e63503fcd9b50578e8bbaa9d5d2e7e7027a104926a69e3360439b2e7193"
+    },
+    {
+      "bytes": 31243,
+      "path": "exhibition/metrics_catalog.json",
+      "sha256": "1f153621925af936e240e1fc35c16e967e9250fe8575f79915a90ed23455f420"
+    },
+    {
+      "bytes": 27268,
+      "path": "exhibition/index.html",
+      "sha256": "faa5fbb2a575e2151bc093268864095f2225621bd323f63753cbe6308782c69c"
+    }
+  ],
+  "best_after_refresh": {
+    "best_accepted_epoch": 38,
+    "best_accepted_run_tag": "dicos-p9",
+    "best_accepted_validation_loss": 4.635219681489869,
+    "latest_accepted_epoch": 39,
+    "latest_accepted_validation_loss": 4.663274642140066,
+    "latest_observed_epoch": 40,
+    "latest_observed_status": "quarantined",
+    "latest_observed_validation_loss": 4.70276516527592,
+    "quarantined_epochs": [
+      40
+    ],
+    "slope_final_3_accepted_epochs": -0.028718820777155648
+  },
+  "best_before_refresh": {
+    "best_accepted_epoch": 38,
+    "best_accepted_run_tag": "dicos-p9",
+    "best_accepted_validation_loss": 4.635219681489869,
+    "latest_accepted_epoch": 39,
+    "latest_accepted_validation_loss": 4.663274642140066,
+    "latest_observed_epoch": 40,
+    "latest_observed_status": "quarantined",
+    "latest_observed_validation_loss": 4.70276516527592,
+    "quarantined_epochs": [
+      40
+    ],
+    "slope_final_3_accepted_epochs": -0.028718820777155648
+  },
+  "best_changed": false,
+  "epoch": 40,
+  "epoch_status": "quarantined",
+  "event_generation_started_by_refresh": false,
+  "family": "calibrated_lr1e4",
+  "kind": "cbsc-zdc-epoch-evidence-refresh",
+  "lineage": [
+    "dicos-p9",
+    "dicos-p10"
+  ],
+  "mode": "offline-rebuild",
+  "public_release_prepared_and_qa_passed": false,
+  "public_release_required": false,
+  "run_tag": "dicos-p10",
+  "schema_version": 1,
+  "scientific_status": "optimization and descriptive validation evidence only; Geant4 fidelity is not established",
+  "test_events_used": 0,
+  "training_started": false
+}

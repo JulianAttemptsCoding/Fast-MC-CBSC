@@ -1,11 +1,16 @@
 {
+  "comprehensive_gallery": {
+    "bytes": 27268,
+    "path": "index.html",
+    "sha256": "faa5fbb2a575e2151bc093268864095f2225621bd323f63753cbe6308782c69c"
+  },
   "graphics": {
     "count_by_category": {
       "common_window_gallery": 24,
-      "continuation_and_standings": 4,
+      "continuation_and_standings": 6,
       "historical_c2st_test_study": 33,
       "historical_paired_test_exception": 6,
-      "large_validation_diagnostics": 10
+      "large_validation_diagnostics": 18
     },
     "files": [
       {
@@ -306,6 +311,22 @@
         "width": 2108
       },
       {
+        "bytes": 119539,
+        "category": "continuation_and_standings",
+        "format": "png",
+        "height": 992,
+        "path": "continuation_20260802/best_validation_loss_so_far_vs_epoch.png",
+        "sha256": "dc467e46b1738334369e334ecd9eef6eb5d3fd2437234b7ed97dbed72afc8718",
+        "width": 2133
+      },
+      {
+        "bytes": 109305,
+        "category": "continuation_and_standings",
+        "format": "svg",
+        "path": "continuation_20260802/best_validation_loss_so_far_vs_epoch.svg",
+        "sha256": "4864532273384c44c2cdc9144a45927f5662aaf76afa64ac373653fddd71a61e"
+      },
+      {
         "bytes": 292635,
         "category": "continuation_and_standings",
         "format": "png",
@@ -336,6 +357,22 @@
         "format": "svg",
         "path": "continuation_20260802/loss_all_families_every_epoch.svg",
         "sha256": "6ba0ac144551660e513a60589e92eb6fa32eba6d5af02efe201eb44f87967fed"
+      },
+      {
+        "bytes": 246511,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1520,
+        "path": "diagnostics_20260803/bias_of_best_loss_so_far.png",
+        "sha256": "57f9f095e5d91c07a9a67658467e14e24a269452202c289fc4d3f701bef1e1b1",
+        "width": 2133
+      },
+      {
+        "bytes": 263321,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/bias_of_best_loss_so_far.svg",
+        "sha256": "5ac1bc9c961c284231cb63119888f8c379934d1ff8b6d069744f0d3dee975be1"
       },
       {
         "bytes": 366737,
@@ -370,6 +407,22 @@
         "sha256": "ad116aa7b019c89e52de6db46d32299951cb5a22cef102e34a3b57681f8ed1b0"
       },
       {
+        "bytes": 192233,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 768,
+        "path": "diagnostics_20260803/energy_bins_of_best_loss_so_far.png",
+        "sha256": "58d0c15e93e467e4f30249a3746dd3f76f04658884869594d0195684971aa627",
+        "width": 2133
+      },
+      {
+        "bytes": 159652,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/energy_bins_of_best_loss_so_far.svg",
+        "sha256": "17a526334700a9709f6fec1fb7b2a3469c761342dd4fc2840282de4d77c7c7d6"
+      },
+      {
         "bytes": 367919,
         "category": "large_validation_diagnostics",
         "format": "png",
@@ -384,6 +437,22 @@
         "format": "svg",
         "path": "diagnostics_20260803/energy_bins_vs_epoch.svg",
         "sha256": "7d1dcef07d7639e7666cf5ba25efe54a8e48e5745c0f59d750ae376e915cc7c7"
+      },
+      {
+        "bytes": 205101,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1120,
+        "path": "diagnostics_20260803/headline_of_best_loss_so_far.png",
+        "sha256": "b72264c1c4d526764010b5ddea25642156df0a3641e38776962c8729354abb17",
+        "width": 2133
+      },
+      {
+        "bytes": 182525,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/headline_of_best_loss_so_far.svg",
+        "sha256": "6bed1ddf225362ef76aaca87b1f3493e451ccbbade097ab824c59677ddaaf5d7"
       },
       {
         "bytes": 272151,
@@ -402,20 +471,36 @@
         "sha256": "6042a5447dfe85bb03f09101e10f2f20f5c1e77473fa0475197a49bdc321933c"
       },
       {
-        "bytes": 406703,
+        "bytes": 277843,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1920,
+        "path": "diagnostics_20260803/wasserstein_of_best_loss_so_far.png",
+        "sha256": "a35f5caf324993c49ab34aec949e97cc0aed0077ef240d6c4a7945d6541a6c27",
+        "width": 2133
+      },
+      {
+        "bytes": 233331,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/wasserstein_of_best_loss_so_far.svg",
+        "sha256": "5343e4289c29046b55306c7fdfcf8dc0101b74dfdd8518d0a7f1e43620447ad2"
+      },
+      {
+        "bytes": 405710,
         "category": "large_validation_diagnostics",
         "format": "png",
         "height": 1920,
         "path": "diagnostics_20260803/wasserstein_vs_epoch.png",
-        "sha256": "a62947d2990cf16fe9d75b0f7a54efe3872992a79dcd6eb8e44cf6dfa6dc6c48",
+        "sha256": "d903ac4c95bcc21931b36ebc61a6e7489d113782a93acb86dba982c3952d1d1f",
         "width": 2133
       },
       {
-        "bytes": 222056,
+        "bytes": 221328,
         "category": "large_validation_diagnostics",
         "format": "svg",
         "path": "diagnostics_20260803/wasserstein_vs_epoch.svg",
-        "sha256": "d7075d47aa0b41d10eec8fba6c788142cd480fba23fffb0796b2c3cddcee344e"
+        "sha256": "53c6ae3acdcfeda5a23c239747784d624a99dc847e086ba8a9ffa9098003bf6b"
       },
       {
         "bytes": 263962,
@@ -666,12 +751,13 @@
         "width": 1121
       }
     ],
-    "total": 77
+    "total": 87
   },
   "metrics": {
     "families": {
       "calibrated_lr1e4": {
         "best_accepted_epoch": 38,
+        "best_accepted_run_tag": "dicos-p9",
         "best_accepted_validation_loss": 4.635219681489869,
         "latest_accepted_epoch": 39,
         "latest_accepted_validation_loss": 4.663274642140066,
@@ -685,6 +771,7 @@
       },
       "calibrated_lr1e4_halfbatch": {
         "best_accepted_epoch": 21,
+        "best_accepted_run_tag": "dicos-p7",
         "best_accepted_validation_loss": 4.673036068110655,
         "latest_accepted_epoch": 22,
         "latest_accepted_validation_loss": 4.678375580300349,
@@ -696,6 +783,7 @@
       },
       "calibrated_lr3e4": {
         "best_accepted_epoch": 22,
+        "best_accepted_run_tag": "dicos-p7",
         "best_accepted_validation_loss": 4.597151546143159,
         "latest_accepted_epoch": 22,
         "latest_accepted_validation_loss": 4.597151546143159,
@@ -707,6 +795,7 @@
       },
       "calibrated_lr3e5": {
         "best_accepted_epoch": 8,
+        "best_accepted_run_tag": null,
         "best_accepted_validation_loss": 4.843470557018744,
         "latest_accepted_epoch": 10,
         "latest_accepted_validation_loss": 4.874425800792644,
@@ -765,6 +854,7 @@
     "all_png_decoded": true,
     "all_svg_parsed": true,
     "c2st_manifest_figures": 33,
+    "comprehensive_gallery_contains_every_graphic": true,
     "exhibition_manifest_visuals": 23,
     "status": "PASS"
   },

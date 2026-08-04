@@ -34,14 +34,14 @@
     "calibrated_lr1e4_halfbatch": {"epoch": 21, "validation_loss": 4.673036068110655}
   },
   "graphics_qa": {
-    "graphics_validated": 77,
+    "graphics_validated": 87,
     "exhibition_manifest_visuals": 23,
     "historical_c2st_manifest_figures": 33,
     "all_png_decoded": true,
     "all_svg_parsed": true,
     "all_manifest_hashes_match": true,
     "visual_inspection": "pass after footer and 3D colorbar iterations",
-    "byte_reproducibility": "45/45 generated gallery, metric, and catalog files identical across consecutive complete builds",
+    "byte_reproducibility": "60/60 generated epoch-pipeline files identical across consecutive complete builds",
     "public_export_reproducibility": "6/6 public data files identical across consecutive exports"
   },
   "public_site": {
@@ -54,14 +54,14 @@
     "deployment_verification": "GitHub Actions run 30892096628 completed successfully for 03627a6; live page HTTP 200 with expected title/build asset and live manifest default/snapshot/test-use contract verified"
   },
   "verification": {
-    "source_pytest": "233 passed, 8 known Transformer warnings (final repeat: 20.74 s)",
+    "source_pytest": "241 passed, 8 known Transformer warnings",
     "json_compile_diff_checks": "pass",
     "temporary_preview_cleanup": "exact Vite/npm/cmd process chain stopped; port 4173 closed",
     "focused_ruff": "all six changed/new Python files passed",
     "internal_dashboard": "production build and 2/2 rendered-HTML tests passed",
     "public_site": "8/8 tests and production build passed",
-    "catalog_sha256": "5cd00cecf8461ad3d28134256aacfbc40a50c2ca59a7e77b043c9ce52ff28423",
-    "exhibition_manifest_sha256": "90fcce0b50714468d88e6786add2d9e5f928ecb797a51ff3ad37925f7bf10971",
+    "catalog_sha256": "1f153621925af936e240e1fc35c16e967e9250fe8575f79915a90ed23455f420",
+    "exhibition_manifest_sha256": "80233e63503fcd9b50578e8bbaa9d5d2e7e7027a104926a69e3360439b2e7193",
     "family_choice_sha256": "f48dc9d578619fd4bf9325aff568b1d58629903d844c54e5649159ca1b555f97",
     "diagnostic_summary_sha256": "095451f0aeccc13a902cfc2529de3bbcfbc2385724a68793f74e6b6cf62d8a1e0"
   },

@@ -828,7 +828,7 @@ Three pieces:
 |---|---|---|
 | `scripts/dicos_diag_producer.py` | same pod as the trainer | admits `checkpoints/last.pt` only after its copied epoch/hash match the post-visualization progress marker, then atomically queues it under `_diag/<run-tag>/queue`. Enforces one producer per tag and writes STOP/failure evidence from the launcher-owned `EXIT=` state. |
 | `scripts/dicos_diagnostics.py --watch-dir` | the other pod's GPU | drains the queue, generates 4,000 validation events per checkpoint, atomically writes only QA-passing `_diag/<run-tag>/metrics_epoch_NNNN.json`, and quarantines conflicts/failures. |
-| `scripts/refresh_continuation_outputs.py` | your workstation | hash-verifies metrics/history/visualizations, enforces validation-only contracts, rewrites continuation history, rebuilds figures, and immutably updates the internal dashboard. Deliberately does **not** publish the public site. |
+| `scripts/refresh_continuation_outputs.py` | your workstation | hash-verifies metrics/history/visualizations, enforces validation-only contracts, updates the internal dashboard, rebuilds loss/metrics versus epoch and validation-loss-best-so-far counterparts, rebuilds both exhibitions, and writes epoch audit twins. It flags but does **not** silently publish a new public best. |
 
 ```bash
 # producer, on the training pod
@@ -1586,19 +1586,24 @@ python exhibition/build_diagnostic_trend_figure.py dicos-p9 dicos-p10
 ```
 
 It reads each `exhibition/data/diagnostics/<run-tag>/` in the supplied lineage
-order (later tags win overlapping epochs) and writes four figures —
-`bias_vs_epoch`, `wasserstein_vs_epoch`, `headline_vs_epoch`,
-`energy_bins_vs_epoch`. Missing bins are plotted as `NaN` so a gap breaks the
+order (later tags win overlapping epochs) and writes four ordinary metric-vs-
+epoch figures plus four matching `*_of_best_loss_so_far` figures. The latter
+show 3090 metrics for the checkpoint selected only by accepted validation loss;
+diagnostic metrics never select it. Missing bins are plotted as `NaN` so a gap breaks the
 line visibly instead of being interpolated over. One command refreshes the whole
 local picture from a live run:
 
 ```bash
-python scripts/refresh_continuation_outputs.py --run-tag <tag>
+python scripts/refresh_continuation_outputs.py \
+  --family <family> --run-tag <tag> --run-dir _runs/<family>_<tag> \
+  --lineage <oldest-tag> ... <tag> --expected-epoch <epoch>
 ```
 
 It pulls diagnostics and history off the host, rewrites the continuation rows,
-and rebuilds both figure sets. It deliberately does **not** publish; publication
-is a separate, deliberate act (§14).
+rebuilds all figure/metric/gallery/catalog outputs, and writes exact epoch audit
+twins. Add `--offline` for a no-DiCOS-I/O rebuild test. Publication remains a
+separate verified act (§14), but `public_release_required=true` is a mandatory
+handoff whenever the accepted validation-loss best changes.
 
 The deterministic cross-family index is:
 
@@ -1607,9 +1612,11 @@ python exhibition/build_metrics_catalog.py
 ```
 
 It verifies every PNG/SVG, exhibition and historical C2ST manifest hash,
-accepted/latest/quarantined metric agreement, p9+p10 lineage, and conservative
+accepted/latest/quarantined metric agreement, active lineage, and conservative
 test accounting before replacing `exhibition/metrics_catalog.json` and
-`exhibition/METRICS_AND_FIGURES.md`. As of 2026-08-04 it covers 77 graphics.
+`exhibition/METRICS_AND_FIGURES.md`, and builds `exhibition/index.html` as the
+complete logically grouped exhibition. As of 2026-08-04 it covers 87 graphics;
+the compact current-model gallery is `exhibition/current.html`.
 
 ## 16. Minimum verification before claiming work is done
 
@@ -1621,7 +1628,7 @@ Run from the source repository:
 ```bash
 export PYTHONPATH=src                     # PowerShell: $env:PYTHONPATH='src'
 python -m compileall -q src vertex scripts tests
-PYTHONPATH=src python -m pytest -q         # expect 233 passed as of 2026-08-04
+PYTHONPATH=src python -m pytest -q         # expect 241 passed as of 2026-08-04
 python exhibition/build_exhibition.py     # expect 23 visuals; verify the manifest hash
 ```
 
