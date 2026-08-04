@@ -27,7 +27,9 @@ def test_dicos_config_role_is_explicit(monkeypatch) -> None:
     refresh.dicos(["info"])
     refresh.dicos(["info"], "config_3090.json")
     assert "DICOS_CONFIG" not in calls[0]
-    assert calls[1]["DICOS_CONFIG"].endswith(".dicos\\config_3090.json")
+    selected = Path(calls[1]["DICOS_CONFIG"])
+    assert selected.name == "config_3090.json"
+    assert selected.parent.name == ".dicos"
 
 
 def _metric(epoch: int) -> dict:
