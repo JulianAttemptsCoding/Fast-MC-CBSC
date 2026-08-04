@@ -79,5 +79,14 @@
     "sha256_mismatches": 0,
     "removed_stale_pre_layout_files": 134,
     "recoverability": "All removed mirror duplicates remain in canonical exhibition/current or exhibition/archive and in Git history."
+  },
+  "repository_and_gpu_state": {
+    "implementation_commit": "ad7152805545820f6cee99abb769c14c149fc4df",
+    "origin_main_pushed": true,
+    "dicos_4090_checkout_fast_forwarded": true,
+    "dicos_4090_checkout_clean": true,
+    "rtx_4090": "0 MiB, 0%, no dicos trainer process",
+    "rtx_3090": "1 MiB, 0%, no dicos trainer process",
+    "training_started": false
   }
 }

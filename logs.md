@@ -7628,3 +7628,10 @@ data split, threshold, or test event was touched.
   rename notation as literal Windows paths and emitted nonfatal `Test-Path`
   errors. Staging and files were unchanged; the corrected check uses
   `git diff --name-only --diff-filter=AM` and passed.
+- Committed and pushed the complete reorganization and pipeline update as
+  `ad7152805545820f6cee99abb769c14c149fc4df` (`refactor(exhibition): split
+  current archive`). The clean RTX 4090 DiCOS checkout fast-forwarded from
+  `e592c0c` to that exact commit and remained clean.
+- Post-sync self-match-safe probes found no trainer process on either backend.
+  RTX 4090 reported 0 MiB/0% and RTX 3090 reported 1 MiB/0%. This entire
+  organization pass started no training or event generation.
