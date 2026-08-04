@@ -682,7 +682,8 @@ export function ZdcDashboard() {
       <footer>
         <p>
           Visual similarity is diagnostic evidence—not physics validation. Frozen
-          validation metrics and untouched test evaluation remain authoritative.
+          validation metrics and separately governed test evaluation remain
+          authoritative.
         </p>
         <span>CBSC-ZDC v2.2 · localhost observatory</span>
       </footer>

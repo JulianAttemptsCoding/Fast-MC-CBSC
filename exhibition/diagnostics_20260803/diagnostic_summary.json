@@ -340,6 +340,333 @@
     250.0
   ],
   "n_events_per_epoch": 4000,
+  "per_epoch": [
+    {
+      "checkpoint_sha256": "936c4db5d8448a5d4e906e325b51cd3e590a9fcbbea085c57882049cc0604325",
+      "epoch": 16,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "578a57448a5919afa4ba823efd7169e00012558a2540574dd1e20c71750b8f8d",
+      "epoch": 17,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "5c845951237f14dda88b7c05f67888f86de64326c6f133a18a34c48fca358cec",
+      "epoch": 18,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "7d0263dc15bcd46cd44aebda06b5525abb9b0c1c8be54f37fe147d4cf9981d44",
+      "epoch": 19,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "3b81c84cf9a7dea700dbfc20125537afde5cd924f64fc07a17f53f8ef1741ebd",
+      "epoch": 20,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "908a10f138d4298eda3d5f8d9c8f9fb49b30707ec4bd8d57a1980953a3d23c3f",
+      "epoch": 21,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "f668956adf92f56d714437464b34bd6f81c3f2ac9e6fa04984d89f1a632111be",
+      "epoch": 22,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "a88dae3382e34ed7d3e2b287eaf24e46a9f823c5f0dcb8dea834161f975305f3",
+      "epoch": 23,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "c229dd7301ed27bd55dd8a0321e5e944087bd675d71d37842a424605291d6e99",
+      "epoch": 24,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "3bcc317e9e55c70f07703f1845a3bc5213f2f592677711cb4f4b0eccde44e775",
+      "epoch": 25,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "929105a90e9084345450eb3932d7dc04585756f0a7c71b5a3fab99321ef24f52",
+      "epoch": 26,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "c8c8d84c2208c2c76dde533eaa5197a083e53b81abc5f30743e5d2521b25d9f0",
+      "epoch": 27,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "86caec7e0157ca91f58dca492233cdbb7b27b34ef6c44c90154e5a2821563809",
+      "epoch": 28,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "ca7016e1b3424c5ffd8e47df7f5059bd94c4e8ab8509809cc4a76fe458c78443",
+      "epoch": 29,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "ab4312892479349b5eb6b0f53dc8a1ac227545b8ab1dcc45b3ede4a04de0c98f",
+      "epoch": 30,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "c04e215b5de828a2ffcbe2473574b4b9580010a3108cd95007dc4dbc5cbd2769",
+      "epoch": 31,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "c066314c1dda71b0fa43316b98ed8298c0ed91ac2b9ce8301dd6481c2d69057e",
+      "epoch": 32,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "4a1ea1752ae25080820842424084fe4dafe304e0b3e45cc1ed1fc7cad1aafa34",
+      "epoch": 33,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "cecfe6a4ffc4def19824ab240dabcc3168d1b9372cf464fb7bb567183b44c9e5",
+      "epoch": 34,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "eb111599250377e28ba77e0c8fa61e5a98f3b1b5df078bf0d623ef15f1bd089a",
+      "epoch": 35,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "4b58d73a7c4dfa0bca7c990b86843299833262e2a021a8875bee3c9299e59ada",
+      "epoch": 36,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "e5cffc50df80c7022e198f61eb8f238d4cc68b58841b0dbcb82a453e778ad4dd",
+      "epoch": 37,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e",
+      "epoch": 38,
+      "qa_pass": true,
+      "run_tag": "dicos-p9",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "a86430183c2cd41e2607923728cfbf910c181e1fbe17eea0849cf5fdc299a150",
+      "epoch": 39,
+      "qa_pass": true,
+      "run_tag": "dicos-p10",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "4a7583cce169a1cdac206aa1d03a50e41a05444a5172218dbbb89b3227ed1011",
+      "epoch": 40,
+      "qa_pass": true,
+      "run_tag": "dicos-p10",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "quarantined",
+      "status_reason": "required epoch visualization failed the frozen absolute layer-closure tolerance; checkpoint is not accepted for comparison, publication, or reuse pending a corrected diagnostic contract and re-audit"
+    }
+  ],
   "quarantined_epochs": [
     40
   ],
@@ -348,6 +675,8 @@
     "dicos-p9",
     "dicos-p10"
   ],
+  "schema_version": 2,
+  "scientific_status": "descriptive validation diagnostics; not a fidelity gate and not Geant4 validation",
   "selection_seed": 20260803,
   "test_events_used": 0,
   "trend": {

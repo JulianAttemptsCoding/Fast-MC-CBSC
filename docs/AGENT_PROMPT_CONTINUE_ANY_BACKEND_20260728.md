@@ -507,10 +507,11 @@ continued alone with **real early stopping restored (patience 3)**. An agent
 picking this up must not carry the widened patience into that continuation.
 
 Two things this phase does **not** establish, regardless of outcome: anything
-about Geant4 fidelity, and anything about untouched-test performance. The bank
-is the pilot bank; the 76,300-event test split remains sealed and untouched.
+about Geant4 fidelity, and anything about governed-test performance. The phase
+used the pilot bank and zero test events; the separately disclosed historical
+test exceptions and exact remaining-count uncertainty are in §3.
 
-### 7b. STATE VERIFIED 2026-08-04T15:53+08:00 — read this before doing anything
+### 7b. STATE VERIFIED 2026-08-04T16:32:58+08:00 — read this before doing anything
 
 **Nothing is training or generating. Both GPUs are idle, proved from their
 process trees.** The RTX 4090 reported `0 MiB / 0%`; the RTX 3090 reported
@@ -1528,11 +1529,12 @@ epoch**, not from `best.pt`. For the published checkpoint those coincide only
 when the best epoch is also the final one. Check before claiming a figure shows
 the published weights.
 
-The last verified public state was commit `e53f8fc`, manifest SHA-256
-`a8b28719a149b43acef79a39742adb5493e4aac1453b99fc4e76e5917a4ca4fa`,
-24,837,777 bytes on disk across `public/data`, serving
-`dicos-p9-calibrated-lr1e4:joint:0038`. Recheck rather than trusting it; this
-moves with every publication.
+The last verified public source state was commit `03627a6`, manifest SHA-256
+`cf14cff538f9e5c281b4fb4e0ea9d2c30e664063dd5eedfc48c3c84d53de57c3`,
+24,837,900 bytes on disk across `public/data`, with four accepted family
+snapshots and `dicos-p7-calibrated-lr3e4:joint:0022` as the explicit default.
+Recheck workflow and live state rather than trusting this; it moves with every
+publication.
 
 ## 15. Exhibition figures
 
@@ -1575,10 +1577,11 @@ is a guard, not an obstacle.
 **Metric-vs-epoch trends** come from a third builder:
 
 ```bash
-python exhibition/build_diagnostic_trend_figure.py <run-tag>    # default dicos-p9
+python exhibition/build_diagnostic_trend_figure.py dicos-p9 dicos-p10
 ```
 
-It reads `exhibition/data/diagnostics/<run-tag>/` and writes four figures —
+It reads each `exhibition/data/diagnostics/<run-tag>/` in the supplied lineage
+order (later tags win overlapping epochs) and writes four figures —
 `bias_vs_epoch`, `wasserstein_vs_epoch`, `headline_vs_epoch`,
 `energy_bins_vs_epoch`. Missing bins are plotted as `NaN` so a gap breaks the
 line visibly instead of being interpolated over. One command refreshes the whole
@@ -1592,6 +1595,17 @@ It pulls diagnostics and history off the host, rewrites the continuation rows,
 and rebuilds both figure sets. It deliberately does **not** publish; publication
 is a separate, deliberate act (§14).
 
+The deterministic cross-family index is:
+
+```bash
+python exhibition/build_metrics_catalog.py
+```
+
+It verifies every PNG/SVG, exhibition and historical C2ST manifest hash,
+accepted/latest/quarantined metric agreement, p9+p10 lineage, and conservative
+test accounting before replacing `exhibition/metrics_catalog.json` and
+`exhibition/METRICS_AND_FIGURES.md`. As of 2026-08-04 it covers 77 graphics.
+
 ## 16. Minimum verification before claiming work is done
 
 `pytest` needs `PYTHONPATH=src`. Without it collection fails with
@@ -1602,14 +1616,14 @@ Run from the source repository:
 ```bash
 export PYTHONPATH=src                     # PowerShell: $env:PYTHONPATH='src'
 python -m compileall -q src vertex scripts tests
-PYTHONPATH=src python -m pytest -q         # expect 230 passed as of 2026-08-04
+PYTHONPATH=src python -m pytest -q         # expect 233 passed as of 2026-08-04
 python exhibition/build_exhibition.py     # expect 23 visuals; verify the manifest hash
 ```
 
 Run from the public repository:
 
 ```bash
-python -m unittest discover -s tests -v   # expect 7 tests
+python -m unittest discover -s tests -v   # expect 8 tests
 npm ci
 npm run build
 ```

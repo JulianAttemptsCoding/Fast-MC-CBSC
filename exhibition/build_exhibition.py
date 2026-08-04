@@ -13,7 +13,7 @@ import hashlib
 import html
 import json
 import math
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 import matplotlib as mpl
@@ -64,10 +64,10 @@ WARN = "#C47F00"
 BLOCK = "#B42318"
 
 BEST_FILES = {
-    "calibrated_lr3e5": "compute-extension-r2-calibrated-lr3e5_joint_epoch_0004.json",
-    "calibrated_lr1e4": "compute-extension-r2-calibrated-lr1e4_joint_epoch_0004.json",
-    "calibrated_lr3e4": "compute-extension-r1-calibrated-lr3e4_joint_epoch_0004.json",
-    "calibrated_lr1e4_halfbatch": "compute-extension-r1-calibrated-lr1e4-halfbatch_joint_epoch_0004.json",
+    "calibrated_lr3e5": "dicos-r3-calibrated-lr3e5_joint_epoch_0008.json",
+    "calibrated_lr1e4": "dicos-p9-calibrated-lr1e4_joint_epoch_0038.json",
+    "calibrated_lr3e4": "dicos-p7-calibrated-lr3e4_joint_epoch_0022.json",
+    "calibrated_lr1e4_halfbatch": "dicos-p7-calibrated-lr1e4-halfbatch_joint_epoch_0021.json",
 }
 
 COMPONENTS = [
@@ -115,6 +115,12 @@ def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def write_text_atomic(path: Path, text: str) -> None:
+    temporary = path.with_name(f".{path.name}.tmp")
+    temporary.write_text(text, encoding="utf-8")
+    temporary.replace(path)
+
+
 def style() -> None:
     mpl.rcParams.update(
         {
@@ -134,6 +140,7 @@ def style() -> None:
             "savefig.bbox": "tight",
             "savefig.pad_inches": 0.18,
             "svg.fonttype": "none",
+            "svg.hashsalt": "cbsc-zdc-exhibition",
         }
     )
 
@@ -161,7 +168,7 @@ def save(fig: mpl.figure.Figure, stem: str, *, svg: bool = True) -> list[Path]:
     if svg:
         paths.append(FIG / f"{stem}.svg")
         svg_temporary = paths[-1].with_name(f".{paths[-1].name}.tmp.svg")
-        fig.savefig(svg_temporary)
+        fig.savefig(svg_temporary, metadata={"Date": None})
         normalized_svg = "\n".join(
             line.rstrip()
             for line in svg_temporary.read_text(encoding="utf-8").splitlines()
@@ -176,8 +183,8 @@ def fig01_loss_small_multiples(history: dict) -> list[Path]:
     fig, axes = plt.subplots(2, 2, figsize=(13.333, 7.5), sharey=True)
     title(
         fig,
-        "Training and validation loss across every completed epoch",
-        "Four calibrated continuation families · bounded 26,624-train / 6,656-validation bank · test split unopened",
+        "Training and validation loss in the common comparison window",
+        "Four calibrated families · epochs 0–10 only · bounded 26,624-train / 6,656-validation bank · zero test use",
     )
     for ax, variant in zip(axes.flat, VARIANTS):
         rows = history[variant]
@@ -199,7 +206,7 @@ def fig01_loss_small_multiples(history: dict) -> list[Path]:
     ]
     fig.legend(handles=handles, loc="upper right", bbox_to_anchor=(0.955, 0.915), frameon=False, ncol=2)
     fig.subplots_adjust(left=0.07, right=0.96, top=0.86, bottom=0.10, hspace=0.34, wspace=0.18)
-    footer(fig, "Lower is better for this frozen weighted objective. Curves are short screening continuations, not converged final training.")
+    footer(fig, "Lower is better for this frozen weighted objective. This like-for-like view stops at epoch 10; the companion continuation figures show all later observations.")
     return save(fig, "01_train_validation_loss_each_model")
 
 
@@ -207,7 +214,7 @@ def fig02_validation_comparison(history: dict) -> list[Path]:
     fig, (ax, ax2) = plt.subplots(1, 2, figsize=(13.333, 7.5), gridspec_kw={"width_ratios": [1.65, 1]})
     title(
         fig,
-        "More compute lowered validation loss in all four calibrated families",
+        "Validation loss fell in all four families over the common window",
         "Epochs 0–4 on T4; epochs 5–10 continued on an RTX 4090. "
         "Absolute trajectories at left; total change from each family’s first completed epoch at right",
     )
@@ -242,7 +249,7 @@ def fig02_validation_comparison(history: dict) -> list[Path]:
     for bar, value in zip(bars, ordered_c):
         ax2.text(value + 0.035, bar.get_y() + bar.get_height() / 2, f"{value:.2f}%", va="center", fontweight="bold")
     fig.subplots_adjust(left=0.075, right=0.95, top=0.84, bottom=0.11, wspace=0.32)
-    footer(fig, "Result: 4/4 final epochs beat their family’s first completed epoch. This supports optimization progress, not Geant4 fidelity.")
+    footer(fig, "Result: 4/4 epoch-10 values beat their family’s first completed epoch. This common-window result supports optimization progress, not Geant4 fidelity.")
     return save(fig, "02_validation_loss_comparison")
 
 
@@ -250,8 +257,8 @@ def fig03_component_heatmaps(history: dict) -> list[Path]:
     fig, axes = plt.subplots(2, 2, figsize=(13.333, 7.5))
     title(
         fig,
-        "Which objective components moved during continuation training",
-        "Cell value = change from epoch 0 as a percentage of |epoch-0 value| · blue/lower is an objective decrease",
+        "Which objective components moved in the common comparison window",
+        "Epochs 0–10 only · cell value = change from epoch 0 as a percentage of |epoch-0 value| · blue/lower is an objective decrease",
     )
     vmax = 25.0
     for ax, variant in zip(axes.flat, VARIANTS):
@@ -408,8 +415,8 @@ def fig06_compute_budget(terminal: dict) -> list[Path]:
     fig, (ax, ax2) = plt.subplots(1, 2, figsize=(13.333, 7.5), gridspec_kw={"width_ratios": [1.7, 1]})
     title(
         fig,
-        "The four current-best families were trained on on-demand T4 GPUs",
-        "Two parallel waves preserved local storage and completed within the $100 conservative ceiling",
+        "The initial calibrated comparison ran on on-demand T4 GPUs",
+        "Historical Vertex execution ledger · two parallel waves completed within the $100 conservative ceiling",
     )
     variants = terminal["variants"]
     starts = [datetime.fromisoformat(v["start_time"].replace("Z", "+00:00")) for v in variants]
@@ -439,7 +446,7 @@ def fig06_compute_budget(terminal: dict) -> list[Path]:
     clean_axis(ax2, grid="y")
     ax2.set_title(f"{cost['extension_total_t4_hours']:.2f} cumulative extension T4-hours", loc="left", fontsize=11)
     fig.subplots_adjust(left=0.12, right=0.95, top=0.82, bottom=0.13, wspace=0.32)
-    footer(fig, "On-demand NVIDIA T4 only; no Spot, CPU fallback, test evaluation, or extra Vertex job was used to produce this exhibition.")
+    footer(fig, "Historical T4 ledger only. It does not describe or authorize the current DiCOS continuation pipeline, which assigns training to RTX 4090 and diagnostics to RTX 3090.")
     return save(fig, "06_vertex_compute_and_budget")
 
 
@@ -516,8 +523,8 @@ def fig08_data_geometry() -> list[Path]:
     ax.axis("off")
     title(
         fig,
-        "Production data, detector geometry, and the sealed evaluation boundary",
-        "Full ROOT conversion and immutable geometry feed train/validation screening; test remains closed",
+        "Production data, detector geometry, and the controlled evaluation boundary",
+        "Immutable geometry feeds train/validation screening; new decisions use no test events",
     )
     boxes = [
         (0.04, "ROOT source\\n764,940 events\\n24.5 GB archived in GCS", "#D6EAF8"),
@@ -541,10 +548,10 @@ def fig08_data_geometry() -> list[Path]:
     ax.text(0.275, 0.315, "HCAL · 64 layers\n6,390 channels", ha="center", va="center", fontsize=10)
     ax.text(0.04, 0.18, "65 layers · 6,790 channels · positions in mm · target energy in GeV", fontsize=9.5, color=MUTED)
     rounded_box(ax, (0.49, 0.22), 0.19, 0.18, "Primary claim domain\\n$50\\!\\leq K_{inc}\\!\\leq250$ GeV\\nvalidation-only screening", "#EAF7F1", fontsize=11)
-    rounded_box(ax, (0.75, 0.22), 0.19, 0.18, "Final test split\\n76,300 events\\nSEALED", "#FBE8E7", fontsize=11, edge=BLOCK)
-    arrow(ax, (0.68, 0.31), (0.75, 0.31), "only after protocol freeze", color=BLOCK)
+    rounded_box(ax, (0.75, 0.22), 0.19, 0.18, "Test split\\n76,300 events\\nNO NEW DECISION USE", "#FBE8E7", fontsize=10, edge=BLOCK)
+    arrow(ax, (0.68, 0.31), (0.75, 0.31), "frozen protocol only", color=BLOCK)
     fig.subplots_adjust(left=0.02, right=0.98, top=0.90, bottom=0.04)
-    footer(fig, "No legacy data and no test events were used for preprocessing, model selection, thresholds, loss weights, or these figures.")
+    footer(fig, "These gallery figures and model decisions use zero test events. Historical isolated studies used 40,000 test events plus a 200-test-event diagnostic draw; neither fed model decisions.")
     return save(fig, "08_data_geometry_and_split_contract")
 
 
@@ -560,12 +567,12 @@ def fig09_claim_boundary() -> list[Path]:
     )
     rows = [
         ("Structural execution", "PASS", "T4 runtime, real production data, finite gradients, checkpoint reload, invariant checks", PASS),
-        ("Optimization continuation", "PASS", "All 4 calibrated families ended below their first completed validation loss", PASS),
+        ("Optimization continuation", "PASS", "All 4 accepted histories contain a lower-loss checkpoint than their first completed epoch", PASS),
         ("Resource feasibility", "PASS", "On-demand T4, 25–62% memory headroom, conservative ledger $53.10 / $100", PASS),
         ("Fixed-sample visual QA", "MIXED", "Some showers look credible; response, hit-count, and profile proxies are non-monotonic", WARN),
         ("Physics validation", "NOT ESTABLISHED", "Conditional distribution agreement, correlations, C2ST, and reconstruction closure not proven", BLOCK),
-        ("Hardware portability", "QA NEEDED", "Benchmark the intended backend; prior hardware measurements do not block training", WARN),
-        ("Final test evaluation", "SEALED", "0 test events opened; final protocol and three-seed runs are not complete", BLOCK),
+        ("Two-GPU pipeline", "READY", "RTX 4090 training and RTX 3090 post-epoch diagnostics are explicitly assigned and QA-gated", PASS),
+        ("Governed test evaluation", "NO NEW USE", "Historical exceptions disclosed; final protocol and three-seed runs are incomplete", BLOCK),
     ]
     y0, row_h = 0.80, 0.092
     for i, (name, status, detail, color) in enumerate(rows):
@@ -630,7 +637,7 @@ def fig10_longitudinal(best: dict[str, dict], position: int) -> list[Path]:
 
 
 def fig11_distributions(best: dict[str, dict]) -> list[Path]:
-    variant = "calibrated_lr1e4_halfbatch"
+    variant = "calibrated_lr3e4"
     payload = best[variant]
     truth_summaries = [g["geant4"]["summary"] for g in payload["groups"]]
     fast_summaries = [d["summary"] for g in payload["groups"] for d in g["fast_mc"]]
@@ -643,8 +650,8 @@ def fig11_distributions(best: dict[str, dict]) -> list[Path]:
     fig, axes = plt.subplots(2, 2, figsize=(13.333, 7.5))
     title(
         fig,
-        "Best current visual family: distribution checks on fixed validation samples",
-        r"Calibrated LR $1\times10^{-4}$ half batch · epoch 4 · 50 Geant4 events vs 250 conditional Fast-MC draws",
+        "Lowest accepted-loss visual family: fixed validation distributions",
+        rf"Calibrated LR $3\times10^{{-4}}$ · epoch {payload['epoch']} · 50 Geant4 events vs 250 conditional Fast-MC draws",
     )
     for ax, (key, label, unit) in zip(axes.flat, metrics):
         truth = np.array([x[key] for x in truth_summaries], dtype=float)
@@ -678,7 +685,7 @@ def sparse_points(deposit: dict, geometry: dict, max_points: int = 1000):
 
 
 def fig12_shower_3d(best: dict[str, dict], geometry: dict, position: int) -> list[Path]:
-    variant = "calibrated_lr1e4_halfbatch"
+    variant = "calibrated_lr3e4"
     group = next(g for g in best[variant]["groups"] if g["selection_position"] == position)
     deposits = [group["geant4"]["deposit"]] + [d["deposit"] for d in group["fast_mc"]]
     labels = ["Geant4"] + [f"Fast MC draw {i}" for i in range(1, 6)]
@@ -691,7 +698,7 @@ def fig12_shower_3d(best: dict[str, dict], geometry: dict, position: int) -> lis
     title(
         fig,
         "One Geant4 shower and five Fast-MC draws under the same four-momentum",
-        f"Best current visual family · epoch {best[variant]['epoch']} · $K_{{inc}}={group['kinetic_energy_gev']:.1f}$ GeV · top 1,000 cells by deposited energy per panel",
+        f"Lowest accepted-loss visual family · epoch {best[variant]['epoch']} · $K_{{inc}}={group['kinetic_energy_gev']:.1f}$ GeV · top 1,000 cells by deposited energy per panel",
     )
     axes = []
     for i, (deposit, label) in enumerate(zip(deposits, labels), start=1):
@@ -712,9 +719,13 @@ def fig12_shower_3d(best: dict[str, dict], geometry: dict, position: int) -> lis
         ax.yaxis.pane.set_alpha(0.03)
         ax.zaxis.pane.set_alpha(0.03)
     sm = mpl.cm.ScalarMappable(norm=norm, cmap="viridis")
-    cbar = fig.colorbar(sm, ax=axes, fraction=0.018, pad=0.02)
+    # Reserve a wider gutter and shorten the bar so its log tick labels stay
+    # clear of the two right-hand detector-coordinate axes.
+    cbar = fig.colorbar(
+        sm, ax=axes, fraction=0.014, pad=0.055, shrink=0.72, aspect=28
+    )
     cbar.set_label("Cell deposited energy (GeV, log scale)")
-    fig.subplots_adjust(left=0.02, right=0.91, top=0.83, bottom=0.06, hspace=0.02, wspace=-0.05)
+    fig.subplots_adjust(left=0.02, right=0.84, top=0.83, bottom=0.06, hspace=0.02, wspace=-0.03)
     footer(fig, "Sparse display preserves the highest-energy cells for legibility. Axes are detector coordinates in mm; depth is offset from the front face.")
     return save(fig, "12_same_condition_3d_energy_deposits", svg=False)
 
@@ -742,7 +753,7 @@ a{color:inherit;text-decoration:none}a:focus-visible{outline:3px solid #2f80ed;o
 <p>Presentation-ready figures generated from verified training and fixed validation evidence. Physics validation is not established.</p>
 <div class="grid">""" + "".join(cards) + "</div></main></body></html>"
     path = HERE / "index.html"
-    path.write_text(document, encoding="utf-8")
+    write_text_atomic(path, document)
     return path
 
 
@@ -786,8 +797,8 @@ def main() -> None:
         *[DASH / name for name in BEST_FILES.values()],
     ]
     manifest = {
-        "schema_version": 1,
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "schema_version": 2,
+        "build_is_content_deterministic": True,
         "test_events_used": 0,
         "selected_validation_position": position,
         "selection_sha256": next(iter(hashes)),
@@ -814,7 +825,7 @@ def main() -> None:
             "physics_validation": "NOT_ESTABLISHED",
         },
     }
-    (HERE / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    write_text_atomic(HERE / "manifest.json", json.dumps(manifest, indent=2) + "\n")
     print(json.dumps({"visual_count": len(generated), "selected_validation_position": position, "manifest": str(HERE / "manifest.json")}, indent=2))
 
 

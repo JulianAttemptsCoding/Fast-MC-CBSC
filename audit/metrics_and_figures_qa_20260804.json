@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-metrics-and-figures-qa",
+  "created_at": "2026-08-04T16:27:34+08:00",
+  "source_commit_at_start": "827a0a3",
+  "scope": "figures, graphics, metric summaries, dashboards, and public-site presentation only",
+  "status": "pass_with_browser_controller_unavailable",
+  "training_started": false,
+  "event_generation_started": false,
+  "new_test_events_used": 0,
+  "final_live_state": {
+    "verified_at": "2026-08-04T08:32:58Z",
+    "rtx_4090": "0 MiB, 0%, PIPELINE_PROCESSES=NONE",
+    "rtx_3090": "1 MiB, 0%, PIPELINE_PROCESSES=NONE"
+  },
+  "scientific_boundary": "optimization and descriptive validation evidence only; Geant4 fidelity is not established",
+  "metric_contract": {
+    "accepted_and_quarantined_separated": true,
+    "best_accepted_checkpoint_only": true,
+    "latest_accepted_and_latest_observed_separate": true,
+    "quarantined_epoch_40_visible": true,
+    "quarantined_epoch_40_selectable": false,
+    "diagnostic_lineage": ["dicos-p9", "dicos-p10"],
+    "diagnostic_events_per_epoch": 4000,
+    "diagnostic_split": "validation",
+    "diagnostic_test_events": 0,
+    "noise_resolution_descriptive_only": 0.02
+  },
+  "accepted_standings": {
+    "calibrated_lr3e5": {"epoch": 8, "validation_loss": 4.843470557018744},
+    "calibrated_lr1e4": {"epoch": 38, "validation_loss": 4.635219681489869},
+    "calibrated_lr3e4": {"epoch": 22, "validation_loss": 4.597151546143159},
+    "calibrated_lr1e4_halfbatch": {"epoch": 21, "validation_loss": 4.673036068110655}
+  },
+  "graphics_qa": {
+    "graphics_validated": 77,
+    "exhibition_manifest_visuals": 23,
+    "historical_c2st_manifest_figures": 33,
+    "all_png_decoded": true,
+    "all_svg_parsed": true,
+    "all_manifest_hashes_match": true,
+    "visual_inspection": "pass after footer and 3D colorbar iterations",
+    "byte_reproducibility": "45/45 generated gallery, metric, and catalog files identical across consecutive complete builds",
+    "public_export_reproducibility": "6/6 public data files identical across consecutive exports"
+  },
+  "public_site": {
+    "repository_commit": "03627a6c54b44e2f8d870a92eac8dc940b4c31ce",
+    "snapshot_count": 4,
+    "default_snapshot_id": "dicos-p7-calibrated-lr3e4:joint:0022",
+    "public_snapshot_membership_changed": false,
+    "public_copy_corrected": true,
+    "test_events_in_public_artifacts": 0,
+    "deployment_verification": "GitHub Actions run 30892096628 completed successfully for 03627a6; live page HTTP 200 with expected title/build asset and live manifest default/snapshot/test-use contract verified"
+  },
+  "verification": {
+    "source_pytest": "233 passed, 8 known Transformer warnings (final repeat: 20.74 s)",
+    "json_compile_diff_checks": "pass",
+    "temporary_preview_cleanup": "exact Vite/npm/cmd process chain stopped; port 4173 closed",
+    "focused_ruff": "all six changed/new Python files passed",
+    "internal_dashboard": "production build and 2/2 rendered-HTML tests passed",
+    "public_site": "8/8 tests and production build passed",
+    "catalog_sha256": "5cd00cecf8461ad3d28134256aacfbc40a50c2ca59a7e77b043c9ce52ff28423",
+    "exhibition_manifest_sha256": "90fcce0b50714468d88e6786add2d9e5f928ecb797a51ff3ad37925f7bf10971",
+    "family_choice_sha256": "f48dc9d578619fd4bf9325aff568b1d58629903d844c54e5649159ca1b555f97",
+    "diagnostic_summary_sha256": "095451f0aeccc13a902cfc2529de3bbcfbc2385724a68793f74e6b6cf62d8a1e0"
+  },
+  "historical_test_accounting": {
+    "total": 76300,
+    "c2st_used": 40000,
+    "paired_draw_used": 200,
+    "overlap": "unresolved",
+    "untouched_remainder_min": 36100,
+    "untouched_remainder_max": 36300
+  },
+  "failed_attempts_and_corrections": [
+    "family-choice builder imported a removed symbol and stale tuple contract; rewritten against current history/status inputs",
+    "a no-argument diagnostic build selected dicos-p9 only and temporarily omitted p10; default changed to dicos-p9+dicos-p10 and rebuilt",
+    "paired-diagnostic builder was invoked without its required results/out-dir arguments; no paired artifact changed",
+    "direct PNG overwrite raised Windows/OneDrive OSError; all active builders now stage and atomically replace PNG, SVG, and JSON outputs",
+    "first pytest shell invocation used an unavailable pytest executable; python -m pytest then exposed omitted PYTHONPATH, and the contract-correct full run passed",
+    "first 3D colorbar correction used a dedicated axes that clipped title/footer under tight bounding; replaced with a spaced, shortened shared colorbar and visually rechecked",
+    "browser-control transport closed on setup and two retries; no interactive browser pass is claimed",
+    "a broad Ruff invocation included legacy source and found 370 pre-existing out-of-scope style issues; no unrelated file or lint policy changed, and focused Ruff over all changed/new Python files passed"
+  ]
+}

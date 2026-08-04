@@ -7065,3 +7065,113 @@ data split, threshold, or test event was touched.
   each matched `origin/main`; public remained at its previously accepted
   `e53f8fc` epoch-38 snapshot. A read-only live request returned HTTP 200 with
   the Fast-MC page marker present. No public payload or deployment changed.
+
+## 2026-08-04 — Figure, metric, and website organization QA
+
+- Scope was local figures/graphics/metrics plus dashboard/public presentation;
+  source began clean and synchronized at `827a0a3`. No project trainer,
+  checkpoint producer, 3090 diagnostic consumer, or event-generation job was
+  launched. No production or test event was read.
+- Inventory found five evidence families: 23 common-gallery artifacts, two
+  continuation figures plus summaries, four large-validation diagnostic
+  figures plus summary, 33 hash-manifested historical C2ST figures, and six
+  paired historical diagnostics. Historical test accounting remains 40,000
+  C2ST events plus a 200-test-event paired draw with unresolved overlap;
+  exactly 36,100–36,300 test events remain untouched.
+- Initial builder probes exposed three defects/failures. The family-choice
+  builder failed on an import of the removed `CONTINUATION` symbol and also
+  expected the pre-tuple `read_history()` contract. A no-argument diagnostic
+  build selected p9 alone and temporarily omitted p10/e40. The paired builder
+  was invoked without its required `--results`/`--out-dir` arguments; that was
+  an invocation failure and no paired artifact changed. Rewrote family choice,
+  made p9+p10 the current diagnostic default, and rebuilt with explicit lineage.
+- Metric summaries now distinguish best accepted, latest accepted, and latest
+  observed. Epoch 40 remains plotted and machine-readable as quarantined but
+  is excluded from accepted best, slope, publication, and reuse. Current best
+  accepted losses: lr3e5 e8 `4.843470557018744`; lr1e4 e38
+  `4.635219681489869`; lr3e4 e22 `4.597151546143159`; half-batch e21
+  `4.673036068110655`. Large diagnostics validate 4,000 validation / 0 train /
+  0 test events at every p9+p10 epoch 16–40.
+- The gallery now labels its loss/component views as the like-for-like epoch
+  0–10 window rather than “every epoch,” loads the actual accepted family
+  payloads (e8/e38/e22/e21), and uses lr3e4 e22 for lowest-accepted-loss
+  distribution and 3D panels. Historical T4 compute is labeled historical;
+  the future RTX 4090 training / RTX 3090 diagnostic topology is separate.
+- Removed false wholly-sealed/untouched-test wording from the gallery and both
+  dashboards. Current figures and public artifacts use zero test events;
+  historical exceptions and the conservative untouched range are disclosed.
+- A direct diagnostic PNG overwrite raised Windows/OneDrive `OSError: [Errno
+  22] Invalid argument`. Active figure builders now stage and atomically
+  replace PNG, normalized/date-free SVG, and JSON outputs; gallery/manifest
+  text replacement is atomic too. This corrected the write path rather than
+  weakening any scientific or QA assertion.
+- Visual inspection found clipped footers in both continuation figures and log
+  colorbar ticks overlapping the right-hand 3D axes. Footers were wrapped with
+  reserved layout space. The first dedicated-colorbar correction removed the
+  title/footer under tight bounding and was rejected; the second correction
+  used a shortened shared colorbar with a wider gutter. Direct reinspection
+  passed. Claim-boundary, split-boundary, current-distribution, common-window,
+  historical-compute, and headline-diagnostic figures were also inspected.
+- Added deterministic `exhibition/build_metrics_catalog.py` and generated
+  `exhibition/{METRICS_AND_FIGURES.md,metrics_catalog.json}`. It decoded or
+  parsed 77/77 PNG/SVG files, verified every exhibition source/visual/gallery
+  hash, verified 33/33 historical C2ST manifest hashes, and required the two
+  accepted-metric summaries to agree. Catalog SHA-256:
+  `5cd00cecf8461ad3d28134256aacfbc40a50c2ca59a7e77b043c9ce52ff28423`.
+  Exhibition manifest SHA-256:
+  `90fcce0b50714468d88e6786add2d9e5f928ecb797a51ff3ad37925f7bf10971`.
+- Complete consecutive rebuild check covered 45 gallery, continuation,
+  diagnostic, summary, and catalog outputs: 45/45 SHA-256 values were
+  byte-identical. Consecutive public export check covered six data files: 6/6
+  byte-identical. The public manifest now declares lr3e4 e22 as
+  `default_snapshot_id` while retaining the exact same four accepted snapshot
+  members and zero test events.
+- First test invocation used a nonexistent `pytest` command. `python -m pytest`
+  then correctly exposed the omitted source-layout `PYTHONPATH`; the
+  contract-correct full run `$env:PYTHONPATH='src'; python -m pytest -q` passed
+  `233 passed, 8 known Transformer warnings in 30.77 s`. Internal dashboard
+  production build and 2/2 rendered-HTML tests passed. Public site 8/8 tests and
+  Vite production build passed.
+- In-app browser-control setup and two retries all failed before tab creation
+  with `Transport closed`, including a minimal reachability check. No
+  interactive browser pass is claimed. Production builds, frontend contract
+  tests, local preview startup, manifest/data validation, and direct raster/
+  vector inspection passed; the controller limitation is recorded rather than
+  hidden.
+- Public presentation correction was committed as `03627a6`
+  (`fix(site): clarify snapshot and test status`) and pushed from `e53f8fc`.
+  GitHub Actions run `30892096628` was observed `in_progress` for head
+  `03627a6c54b44e2f8d870a92eac8dc940b4c31ce`; workflow completion and live
+  HTTP verification remain required before declaring deployment.
+- Added audit twins `audit/metrics_and_figures_qa_20260804.{json,md}` and
+  refreshed the continuing-agent handoff with the p9+p10 build command,
+  77-graphic catalog, 233/8 and public 8/8 expectations, current public commit,
+  explicit default snapshot, and corrected manifest identity. Scientific
+  conclusion is unchanged: optimization/descriptive validation evidence exists;
+  Geant4 fidelity is not established.
+- GitHub Actions run `30892096628` then completed successfully for public head
+  `03627a6c54b44e2f8d870a92eac8dc940b4c31ce`. A cache-busted live request
+  returned HTTP 200 with the `CBSC-ZDC Event Observatory` title and the exact
+  built asset. The live manifest returned schema 3, four accepted snapshots,
+  default `dicos-p7-calibrated-lr3e4:joint:0022`, and
+  `sync.test_events_used = 0`. Deployment is therefore verified; the initial
+  check for the old `Fast-MC Visual` page marker was false because that string
+  is not the deployed HTML title, and the contract-correct title check passed.
+- Final read-only live probes at `2026-08-04T08:32:58Z` used explicit 3090
+  config selection and a base64/stdin process scanner whose search tokens were
+  assembled only inside the remote script; its PID and parent were excluded.
+  RTX 4090 reported `0 MiB / 0%`, RTX 3090 `1 MiB / 0%`, and both reported
+  `PIPELINE_PROCESSES=NONE`. No credential value was read or printed and no
+  remote file or job state was changed.
+- A final broad Ruff invocation accidentally included legacy `src/`, `vertex/`,
+  and `scripts/` scope and stopped on 370 pre-existing style findings (chiefly
+  semicolon/unused-import debt outside this figure task). No assertion or lint
+  configuration was weakened and no unrelated source was rewritten. The
+  project-consistent focused invocation over the six changed/new Python files
+  passed with `All checks passed!`.
+- Final JSON parsing, `compileall`, and `git diff --check` passed. The complete
+  source suite was repeated after the final documentation/audit edits and
+  passed `233 passed, 8 known Transformer warnings in 20.74 s`.
+- The temporary local public-site preview was resolved to the exact Vite
+  listener PID and its npm/cmd parent chain, stopped explicitly, and port 4173
+  was confirmed closed. No unrelated Node process was stopped.

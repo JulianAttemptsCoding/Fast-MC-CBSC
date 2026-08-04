@@ -1,9 +1,10 @@
-"""Per-family loss graphs covering every epoch actually run.
+"""Per-family loss graphs covering every observed epoch.
 
 The exhibition's own figures compare the four families over an identical epoch
 range, which is what makes them comparable -- so they stop at epoch 10. This
-builds the complementary view: one panel per family showing its whole training
-history, including the solo continuation that only one family has.
+builds the complementary view: one panel per family showing its whole observed
+training history. Quarantined observations remain visible but are excluded
+from accepted-best and latest-accepted metrics.
 
 Output goes to exhibition/continuation_20260802/, deliberately outside
 exhibition/manifest.json, so the 23-visual exhibition contract is untouched.
@@ -76,9 +77,27 @@ def style() -> None:
 
 
 def save_svg_clean(fig, path: Path) -> None:
-    fig.savefig(path, metadata={"Date": None})
-    lines = path.read_text(encoding="utf-8").splitlines()
-    path.write_text("\n".join(line.rstrip() for line in lines) + "\n", encoding="utf-8")
+    temporary = path.with_name(f".{path.name}.tmp.svg")
+    fig.savefig(temporary, metadata={"Date": None})
+    lines = temporary.read_text(encoding="utf-8").splitlines()
+    temporary.write_text(
+        "\n".join(line.rstrip() for line in lines) + "\n", encoding="utf-8"
+    )
+    temporary.replace(path)
+
+
+def save_png_atomic(fig, path: Path) -> None:
+    temporary = path.with_name(f".{path.name}.tmp.png")
+    fig.savefig(temporary)
+    temporary.replace(path)
+
+
+def write_json_atomic(path: Path, payload: dict) -> None:
+    temporary = path.with_name(f".{path.name}.tmp")
+    temporary.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    temporary.replace(path)
 
 
 def read_continuation() -> dict[str, list[dict[str, float]]]:
@@ -255,29 +274,42 @@ def build() -> Path:
 
     handles, labels = axes.ravel()[1].get_legend_handles_labels()
     axes.ravel()[0].legend(handles, labels, loc="upper right", frameon=False, fontsize=9)
-    fig.subplots_adjust(left=0.07, right=0.97, top=0.835, bottom=0.09,
+    fig.subplots_adjust(left=0.07, right=0.97, top=0.835, bottom=0.13,
                         hspace=0.42, wspace=0.20)
     fig.text(
         0.02, 0.015,
         "Lower is better for this frozen weighted objective. Purple × = "
         "quarantined QA failure. Pilot bank only (26,624 train / 6,656 "
-        "validation); zero test events in training/selection. Optimization "
+        "validation).\nZero test events in training/selection. Optimization "
         "evidence, not Geant4 fidelity.",
-        ha="left", fontsize=9.5, color="#6b7f92",
+        ha="left", fontsize=8.8, color="#6b7f92", linespacing=1.35,
     )
 
     OUT.mkdir(parents=True, exist_ok=True)
     png = OUT / "loss_all_families_every_epoch.png"
-    fig.savefig(png)
+    save_png_atomic(fig, png)
     save_svg_clean(fig, OUT / "loss_all_families_every_epoch.svg")
     plt.close(fig)
 
-    summary = {
-        variant: {
-            "epochs": [r["epoch"] for r in series],
-            "final_validation_loss": series[-1]["validation_loss"],
-            "best_validation_loss": min(r["validation_loss"] for r in series),
-            "best_epoch": min(series, key=lambda r: r["validation_loss"])["epoch"],
+    summary = {"schema_version": 2, "families": {}}
+    for variant, series in history.items():
+        accepted = [
+            row for row in series if row.get("status", "accepted") == "accepted"
+        ]
+        if not accepted:
+            raise ValueError(f"{variant}: no accepted epochs")
+        best = min(accepted, key=lambda row: row["validation_loss"])
+        latest_accepted = accepted[-1]
+        latest_observed = series[-1]
+        summary["families"][variant] = {
+            "observed_epochs": [r["epoch"] for r in series],
+            "best_accepted_validation_loss": best["validation_loss"],
+            "best_accepted_epoch": best["epoch"],
+            "latest_accepted_epoch": latest_accepted["epoch"],
+            "latest_accepted_validation_loss": latest_accepted["validation_loss"],
+            "latest_observed_epoch": latest_observed["epoch"],
+            "latest_observed_validation_loss": latest_observed["validation_loss"],
+            "latest_observed_status": latest_observed.get("status", "accepted"),
             "continuation_run_tags": _tail_tags(continuation.get(variant, [])),
             "continuation_epochs": [
                 r["epoch"] for r in continuation.get(variant, [])
@@ -287,11 +319,7 @@ def build() -> Path:
                 if r.get("status") == "quarantined"
             ],
         }
-        for variant, series in history.items()
-    }
-    (OUT / "loss_summary.json").write_text(
-        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    write_json_atomic(OUT / "loss_summary.json", summary)
     return png
 
 

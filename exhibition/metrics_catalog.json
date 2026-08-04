@@ -1,0 +1,781 @@
+{
+  "graphics": {
+    "count_by_category": {
+      "common_window_gallery": 24,
+      "continuation_and_standings": 4,
+      "historical_c2st_test_study": 33,
+      "historical_paired_test_exception": 6,
+      "large_validation_diagnostics": 10
+    },
+    "files": [
+      {
+        "bytes": 70461,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 819,
+        "path": "c2st_20260728/figures/01_total_response_vs_energy.png",
+        "sha256": "45f2f303ad0cc54593aea918be1dca56b8e84ce94dbc59490335eee0849b858a",
+        "width": 1066
+      },
+      {
+        "bytes": 80204,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 819,
+        "path": "c2st_20260728/figures/02_response_resolution_vs_energy.png",
+        "sha256": "5cf7cea3ec01a843bf8acd98c7c4e74b54b820e3a3f26e80f853bb22e9fd87f1",
+        "width": 1085
+      },
+      {
+        "bytes": 72825,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 819,
+        "path": "c2st_20260728/figures/03_hit_count_vs_energy.png",
+        "sha256": "9d724f88e3ce9260bbf490c6843c22e88707850daafefa0a025b3c505c93b4fc",
+        "width": 1085
+      },
+      {
+        "bytes": 72634,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 819,
+        "path": "c2st_20260728/figures/04_radial_rms_vs_energy.png",
+        "sha256": "e97744ac6a0337e40ce009fc89dc8232b7b4dc46ae97330fa641631892c3b08b",
+        "width": 1061
+      },
+      {
+        "bytes": 66934,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 819,
+        "path": "c2st_20260728/figures/05_top1_fraction_vs_energy.png",
+        "sha256": "70e88696ff457fae170ab242cea0deb769c66ca4991b8a13dc2a4ece705bca63",
+        "width": 1082
+      },
+      {
+        "bytes": 63151,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 819,
+        "path": "c2st_20260728/figures/06_top5_fraction_vs_energy.png",
+        "sha256": "e46a9c3a007cc74a96164f36e14afbb1bd9f97541863368e53ffa167f1aefb67",
+        "width": 1070
+      },
+      {
+        "bytes": 68128,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 819,
+        "path": "c2st_20260728/figures/07_depth_centroid_vs_energy.png",
+        "sha256": "302bd09ab7943476cdb91c920d5634730f46dbf6dc2efa36ba58febba0ef0622",
+        "width": 1070
+      },
+      {
+        "bytes": 80067,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 819,
+        "path": "c2st_20260728/figures/08_ecal_fraction_vs_energy.png",
+        "sha256": "973fd3839aebb336076ddb6b7d5442f399388a95d50f34231fa883bbe8446017",
+        "width": 1085
+      },
+      {
+        "bytes": 73259,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 819,
+        "path": "c2st_20260728/figures/09_late_fraction_vs_energy.png",
+        "sha256": "dc38114ee19ad4bf5ca94cb4e031a1e3a6e04c8241d08707e6536ab761d7cf73",
+        "width": 1082
+      },
+      {
+        "bytes": 59861,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 819,
+        "path": "c2st_20260728/figures/10_energy_gini_vs_energy.png",
+        "sha256": "b409f2435f34ca1cd17e43b95c4406d7a057ac0d99d5c8c2251b869530e00090",
+        "width": 1070
+      },
+      {
+        "bytes": 64032,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 819,
+        "path": "c2st_20260728/figures/11_active_layers_vs_energy.png",
+        "sha256": "24b2a164aed1c75bcbee43344b037f1ec1ddeed7dd1636165bf81580be34d986",
+        "width": 1070
+      },
+      {
+        "bytes": 173375,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 1100,
+        "path": "c2st_20260728/figures/12_longitudinal_profiles.png",
+        "sha256": "b6139c3a1e810c05b782eb13487a7a5470ab84f4d6b37c12a1d53fd990fd5b82",
+        "width": 1740
+      },
+      {
+        "bytes": 130438,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 630,
+        "path": "c2st_20260728/figures/13_radial_energy_density.png",
+        "sha256": "e8ddbc728dbde4b51f36aade4d8636229ebbee393b36b3396af106983607791e",
+        "width": 2058
+      },
+      {
+        "bytes": 43928,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 824,
+        "path": "c2st_20260728/figures/14_cell_energy_spectrum.png",
+        "sha256": "7bb3be8cc68cded49e378c755db3a6ad002d75cf4a32675d0b8e3624d2c6be18",
+        "width": 1087
+      },
+      {
+        "bytes": 100532,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 745,
+        "path": "c2st_20260728/figures/15_per_family_radial_rms.png",
+        "sha256": "3fd0de166f1301d55dd49f14cc4dd004859262c8613ee0b010647322157fd096",
+        "width": 1135
+      },
+      {
+        "bytes": 96288,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 745,
+        "path": "c2st_20260728/figures/16_per_family_top1_fraction.png",
+        "sha256": "f8e9003c796504bc0f310c51c3d5356dfb70681c4b3e7185504bd68ac8c7991f",
+        "width": 1142
+      },
+      {
+        "bytes": 148824,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 941,
+        "path": "c2st_20260728/figures/17_relative_bias_heatmap.png",
+        "sha256": "4b46973fae7d2e3f916e167b7182eb9cd6f767806348c2e592e4f85fb3aa00dc",
+        "width": 1520
+      },
+      {
+        "bytes": 62797,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 726,
+        "path": "c2st_20260728/figures/18_gumbel_selection_sharpness.png",
+        "sha256": "d807118d40595991507d24041189b37f393db8e9d94597cf0d316ad38ef7ec01",
+        "width": 1077
+      },
+      {
+        "bytes": 260143,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 1218,
+        "path": "c2st_20260728/figures/20_cascade_flowchart.png",
+        "sha256": "1b9f49d776bd018cdf2bb1dc7a205f46ce9227d3076b2c43e5cf1a885552d8e8",
+        "width": 2696
+      },
+      {
+        "bytes": 133383,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 894,
+        "path": "c2st_20260728/figures/21_loss_weight_calibration.png",
+        "sha256": "3fb01da55bd90709b59840a8feb0424220ebe94f7f8a9b183fe179ac6623c34a",
+        "width": 2603
+      },
+      {
+        "bytes": 121038,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 984,
+        "path": "c2st_20260728/figures/22_weight_versus_defect.png",
+        "sha256": "3e57237c9f820a6ef078a1b1db19802f4c62fe446b96b742e6afe4d77a603a66",
+        "width": 1712
+      },
+      {
+        "bytes": 294265,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 929,
+        "path": "c2st_20260728/figures/23_loss_versus_epoch.png",
+        "sha256": "723f567fab2672f46812db326d52ead9a7610fed1207ca4d93efc58f6ba8f2aa",
+        "width": 2448
+      },
+      {
+        "bytes": 198514,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 1644,
+        "path": "c2st_20260728/figures/24_component_losses_versus_epoch.png",
+        "sha256": "86cf3f4eb1f8430b3af2d5f0a2fcc4f647793d938b9fa481b6b95efe3db437da",
+        "width": 2416
+      },
+      {
+        "bytes": 104010,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 901,
+        "path": "c2st_20260728/figures/25_dist_total_response.png",
+        "sha256": "788c69d9f8e8a553078f094216218997d22f07048d4724f781cf862021b9601a",
+        "width": 2153
+      },
+      {
+        "bytes": 125673,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 903,
+        "path": "c2st_20260728/figures/26_dist_hit_count.png",
+        "sha256": "31b3c015066840eeef4022990710f394c2591694865cc33b49d2911088eb380f",
+        "width": 2170
+      },
+      {
+        "bytes": 116543,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 903,
+        "path": "c2st_20260728/figures/27_dist_radial_rms.png",
+        "sha256": "0acb7138ac492201c859cdc292125455d073261ac7b6f58e97a5d3b46256a86a",
+        "width": 2154
+      },
+      {
+        "bytes": 93998,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 901,
+        "path": "c2st_20260728/figures/28_dist_top1_fraction.png",
+        "sha256": "ce2f2047af7566759fb7516b81c6cb3ff1a34e6c81a0cb9112e7365d770cb8fd",
+        "width": 2156
+      },
+      {
+        "bytes": 107537,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 903,
+        "path": "c2st_20260728/figures/29_dist_depth_centroid.png",
+        "sha256": "b5470f422c7c65b05d46cd7b4551cea89df1daafa7eb4aab2fff1fcdd17ab045",
+        "width": 2158
+      },
+      {
+        "bytes": 99244,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 903,
+        "path": "c2st_20260728/figures/30_dist_late_fraction.png",
+        "sha256": "041df0c155a6f0d33f80b1c274bfdf99c0bf60ff4d7326bb982a356c75ad8fd3",
+        "width": 2152
+      },
+      {
+        "bytes": 351615,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 1887,
+        "path": "c2st_20260728/figures/31_toolkit.png",
+        "sha256": "4220e3707444c9b47e590759049024523372baffdcba3d91a8648c97bbc127d3",
+        "width": 2755
+      },
+      {
+        "bytes": 255029,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 1600,
+        "path": "c2st_20260728/figures/32_classifier_architectures.png",
+        "sha256": "89f09ca1e5484300457d1b66dfaf59ac4d8807fd4f0a2c1738a263506e37df75",
+        "width": 2640
+      },
+      {
+        "bytes": 116236,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 822,
+        "path": "c2st_20260728/figures/33_diffusion_schematic.png",
+        "sha256": "72bfc80f517285cf310a280a091907190ff5d10016b7deac611bbf8dc8549ce1",
+        "width": 2413
+      },
+      {
+        "bytes": 125597,
+        "category": "historical_c2st_test_study",
+        "format": "png",
+        "height": 1052,
+        "path": "c2st_20260728/figures/34_diffusion_results_simplified.png",
+        "sha256": "b2ac81961b216aff80ab6bdebbcc5ff45377a8a69ea7a46fb85ff0165379b135",
+        "width": 2108
+      },
+      {
+        "bytes": 292635,
+        "category": "continuation_and_standings",
+        "format": "png",
+        "height": 1200,
+        "path": "continuation_20260802/family_choice.png",
+        "sha256": "7c5ec22cf73c1debb8e52e0dc0951c9598714e36a9df2fc1c9d43392ba7523e7",
+        "width": 2133
+      },
+      {
+        "bytes": 162308,
+        "category": "continuation_and_standings",
+        "format": "svg",
+        "path": "continuation_20260802/family_choice.svg",
+        "sha256": "a04a130708e1315df9444e6dd36f136c8fa63b727bf32b0c415bac3f801c6dbb"
+      },
+      {
+        "bytes": 333996,
+        "category": "continuation_and_standings",
+        "format": "png",
+        "height": 1200,
+        "path": "continuation_20260802/loss_all_families_every_epoch.png",
+        "sha256": "9f402b217a95076e2ae8376567b4aaa96bc0e32de0a2daeda3f04cecd29d490a",
+        "width": 2133
+      },
+      {
+        "bytes": 220151,
+        "category": "continuation_and_standings",
+        "format": "svg",
+        "path": "continuation_20260802/loss_all_families_every_epoch.svg",
+        "sha256": "6ba0ac144551660e513a60589e92eb6fa32eba6d5af02efe201eb44f87967fed"
+      },
+      {
+        "bytes": 366737,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1520,
+        "path": "diagnostics_20260803/bias_vs_epoch.png",
+        "sha256": "43c8ae143ea5e2af0418d820be0766d7ee979facb0a722f537b8d7eeb6f4737a",
+        "width": 2133
+      },
+      {
+        "bytes": 278960,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/bias_vs_epoch.svg",
+        "sha256": "a386a3a1fa8413810d44f5b20c113ed33161914d9a92007eb61e3a2890360782"
+      },
+      {
+        "bytes": 106454,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 704,
+        "path": "diagnostics_20260803/diagnostic_trend.png",
+        "sha256": "822ce872849654b2e4ea18f11f3934c7606bdcab6e350c602d9f0e781865f6fe",
+        "width": 2133
+      },
+      {
+        "bytes": 91286,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/diagnostic_trend.svg",
+        "sha256": "ad116aa7b019c89e52de6db46d32299951cb5a22cef102e34a3b57681f8ed1b0"
+      },
+      {
+        "bytes": 367919,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 768,
+        "path": "diagnostics_20260803/energy_bins_vs_epoch.png",
+        "sha256": "bfcf14b3f2cb798833ed43c29331e02590902c1bebc7e230f2bcbb6f3a8733d3",
+        "width": 2133
+      },
+      {
+        "bytes": 164211,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/energy_bins_vs_epoch.svg",
+        "sha256": "7d1dcef07d7639e7666cf5ba25efe54a8e48e5745c0f59d750ae376e915cc7c7"
+      },
+      {
+        "bytes": 272151,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1120,
+        "path": "diagnostics_20260803/headline_vs_epoch.png",
+        "sha256": "b8505a75fcc05b1fdfa0cd3b45cdbb9faf36ca1042448da1932ad8cd707dfdcd",
+        "width": 2133
+      },
+      {
+        "bytes": 174442,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/headline_vs_epoch.svg",
+        "sha256": "6042a5447dfe85bb03f09101e10f2f20f5c1e77473fa0475197a49bdc321933c"
+      },
+      {
+        "bytes": 406703,
+        "category": "large_validation_diagnostics",
+        "format": "png",
+        "height": 1920,
+        "path": "diagnostics_20260803/wasserstein_vs_epoch.png",
+        "sha256": "a62947d2990cf16fe9d75b0f7a54efe3872992a79dcd6eb8e44cf6dfa6dc6c48",
+        "width": 2133
+      },
+      {
+        "bytes": 222056,
+        "category": "large_validation_diagnostics",
+        "format": "svg",
+        "path": "diagnostics_20260803/wasserstein_vs_epoch.svg",
+        "sha256": "d7075d47aa0b41d10eec8fba6c788142cd480fba23fffb0796b2c3cddcee344e"
+      },
+      {
+        "bytes": 263962,
+        "category": "common_window_gallery",
+        "format": "png",
+        "height": 1370,
+        "path": "figures/01_train_validation_loss_each_model.png",
+        "sha256": "49065976fbb64bfb524a4a7438f466e0fcc47ee70a838d0c77052c6d67caa042",
+        "width": 2329
+      },
+      {
+        "bytes": 72959,
+        "category": "common_window_gallery",
+        "format": "svg",
+        "path": "figures/01_train_validation_loss_each_model.svg",
+        "sha256": "163beec693cd74237fef42f38364235ff7ba3bb4824f711efb7b6dbf3936f371"
+      },
+      {
+        "bytes": 271021,
+        "category": "common_window_gallery",
+        "format": "png",
+        "height": 1370,
+        "path": "figures/02_validation_loss_comparison.png",
+        "sha256": "485a876225cd1d618538529ac5b4e0f0137290cd03e144976a19ad4164a81b4b",
+        "width": 2281
+      },
+      {
+        "bytes": 46735,
+        "category": "common_window_gallery",
+        "format": "svg",
+        "path": "figures/02_validation_loss_comparison.svg",
+        "sha256": "1648311401d0db7034175992a1ae9741f0492b292dff3a7f67b9e0e4d7fb5a1b"
+      },
+      {
+        "bytes": 281082,
+        "category": "common_window_gallery",
+        "format": "png",
+        "height": 1370,
+        "path": "figures/03_objective_component_evolution.png",
+        "sha256": "189a4bed2202cbf36d8cc3d52d2b9493a0ac6450edd77274de0f9d8100eb89cf",
+        "width": 2303
+      },
+      {
+        "bytes": 134205,
+        "category": "common_window_gallery",
+        "format": "svg",
+        "path": "figures/03_objective_component_evolution.svg",
+        "sha256": "078ab673441f1fec7913ec11ea1fc950f863b24334e8292abebeae59d62725db"
+      },
+      {
+        "bytes": 369446,
+        "category": "common_window_gallery",
+        "format": "png",
+        "height": 1370,
+        "path": "figures/04_fixed_sample_proxy_trajectories.png",
+        "sha256": "efa1380182d66f058babe0f26ceed553da8efe04a9dda18fbbd9a81268d36805",
+        "width": 2389
+      },
+      {
+        "bytes": 51762,
+        "category": "common_window_gallery",
+        "format": "svg",
+        "path": "figures/04_fixed_sample_proxy_trajectories.svg",
+        "sha256": "d3779fc1036a57fae099d76d055000c45a7677192e4eb9d1f3e27e8634a34394"
+      },
+      {
+        "bytes": 153442,
+        "category": "common_window_gallery",
+        "format": "png",
+        "height": 1438,
+        "path": "figures/05_loss_vs_visual_proxy_boundary.png",
+        "sha256": "4a14ecde865f466b0cf521cc232bc9f82a9602f283ed6decc64acb1c00a5bd20",
+        "width": 2367
+      },
+      {
+        "bytes": 33972,
+        "category": "common_window_gallery",
+        "format": "svg",
+        "path": "figures/05_loss_vs_visual_proxy_boundary.svg",
+        "sha256": "0d6fc3d56b50ff1e498c858179351b18f193861238d275b00ed7c369501c6360"
+      },
+      {
+        "bytes": 140693,
+        "category": "common_window_gallery",
+        "format": "png",
+        "height": 1370,
+        "path": "figures/06_vertex_compute_and_budget.png",
+        "sha256": "625ee05f1b205f1b8c0c51a3bf18c39412a6d4d2b70b5e4ddbf70c7c0ccf446b",
+        "width": 2397
+      },
+      {
+        "bytes": 23944,
+        "category": "common_window_gallery",
+        "format": "svg",
+        "path": "figures/06_vertex_compute_and_budget.svg",
+        "sha256": "504623864a57eec28bf4f2437af14f5fd0a6b6f42286f6bbffd706463f178f8b"
+      },
+      {
+        "bytes": 214996,
+        "category": "common_window_gallery",
+        "format": "png",
+        "height": 1370,
+        "path": "figures/07_model_architecture_and_exact_decoder.png",
+        "sha256": "94cdfd608844ac0c2e18f610a00f7a55c296756d54076e5c857177ea1b6d33b1",
+        "width": 2368
+      },
+      {
+        "bytes": 26278,
+        "category": "common_window_gallery",
+        "format": "svg",
+        "path": "figures/07_model_architecture_and_exact_decoder.svg",
+        "sha256": "8ecdf951156e7ca2b79b9ecf33cb31d977409a52bf74e1f2acd9422e1d690fc3"
+      },
+      {
+        "bytes": 220692,
+        "category": "common_window_gallery",
+        "format": "png",
+        "height": 1370,
+        "path": "figures/08_data_geometry_and_split_contract.png",
+        "sha256": "593d98f76a6c0cb1b10bb90778b905468a7272f50a5234e7ede07ddcbc3f7f74",
+        "width": 2535
+      },
+      {
+        "bytes": 17569,
+        "category": "common_window_gallery",
+        "format": "svg",
+        "path": "figures/08_data_geometry_and_split_contract.svg",
+        "sha256": "739451fe0df8b730372777e85e548a4322a81f545afa5a200632317e3f4215ef"
+      },
+      {
+        "bytes": 220032,
+        "category": "common_window_gallery",
+        "format": "png",
+        "height": 1370,
+        "path": "figures/09_evidence_and_claim_boundary.png",
+        "sha256": "26841ba70f57c92503eb98745132d987cd49911aeeae5136d2cc08babfc7f9a5",
+        "width": 2416
+      },
+      {
+        "bytes": 21198,
+        "category": "common_window_gallery",
+        "format": "svg",
+        "path": "figures/09_evidence_and_claim_boundary.svg",
+        "sha256": "a292f4f5159eb4a0f04cf2de5abe44c458e334a9509ca445ae021df0dc3ce918"
+      },
+      {
+        "bytes": 455482,
+        "category": "common_window_gallery",
+        "format": "png",
+        "height": 1370,
+        "path": "figures/10_same_condition_longitudinal_profiles.png",
+        "sha256": "3f0163808500ad9c19f9811daba36da7df42be51f63c55ca5bd93aa3add30dfb",
+        "width": 2348
+      },
+      {
+        "bytes": 100503,
+        "category": "common_window_gallery",
+        "format": "svg",
+        "path": "figures/10_same_condition_longitudinal_profiles.svg",
+        "sha256": "c191c782a7f6bf4928526f1e09f1d2644ece0b791a82db47fd51537b50cd6566"
+      },
+      {
+        "bytes": 178983,
+        "category": "common_window_gallery",
+        "format": "png",
+        "height": 1370,
+        "path": "figures/11_best_model_sample_distributions.png",
+        "sha256": "f65a60e4c0dffa586abbab0625d729f731067ee3a02864680effdca7954e37d4",
+        "width": 2298
+      },
+      {
+        "bytes": 67934,
+        "category": "common_window_gallery",
+        "format": "svg",
+        "path": "figures/11_best_model_sample_distributions.svg",
+        "sha256": "121bc8f999891a0e0c757b8cb7d20ed2f6ca31ebcd49ef19e50e4d69d8274245"
+      },
+      {
+        "bytes": 942379,
+        "category": "common_window_gallery",
+        "format": "png",
+        "height": 1370,
+        "path": "figures/12_same_condition_3d_energy_deposits.png",
+        "sha256": "a0b40cbcd2feff369587e023418e346b568db8d43fdb25ca224fcd9135e1ebd5",
+        "width": 2446
+      },
+      {
+        "bytes": 176807,
+        "category": "common_window_gallery",
+        "format": "png",
+        "height": 900,
+        "path": "figures/example.png",
+        "sha256": "60f806f97f1ac2144452bf9694b173915eb42eca3de26ccd736a44581fd577b0",
+        "width": 1600
+      },
+      {
+        "bytes": 61264,
+        "category": "historical_paired_test_exception",
+        "format": "png",
+        "height": 937,
+        "path": "paired_diagnostics_20260730/01_hcal_cell_energy_spectrum.png",
+        "sha256": "bd15e468aede147d861a814cbb0329138b66e7140e9cd1be69ef0c43a8a4eb37",
+        "width": 1080
+      },
+      {
+        "bytes": 37785,
+        "category": "historical_paired_test_exception",
+        "format": "png",
+        "height": 751,
+        "path": "paired_diagnostics_20260730/02_hcal_total_energy_response.png",
+        "sha256": "18194a81e6fd3f4b6025dcb376890e67ec745cb32e0bf7f1eb3dc8e8956e1fa2",
+        "width": 1080
+      },
+      {
+        "bytes": 42205,
+        "category": "historical_paired_test_exception",
+        "format": "png",
+        "height": 751,
+        "path": "paired_diagnostics_20260730/03_hcal_energy_fraction.png",
+        "sha256": "d3004770a0cf9a0a26ef27512216cedf3bfc5771c202016b28ebfd1670161279",
+        "width": 1085
+      },
+      {
+        "bytes": 38418,
+        "category": "historical_paired_test_exception",
+        "format": "png",
+        "height": 751,
+        "path": "paired_diagnostics_20260730/04_hcal_hit_multiplicity.png",
+        "sha256": "dd97c56a814f4eb82e6bbf971c1edc4d6fc12290e516e0a0bf589875fb9a24af",
+        "width": 1084
+      },
+      {
+        "bytes": 86870,
+        "category": "historical_paired_test_exception",
+        "format": "png",
+        "height": 751,
+        "path": "paired_diagnostics_20260730/05_hcal_fraction_vs_energy.png",
+        "sha256": "7a65864ab6226bd0a459674826f7d7abadd2473613c3c8269b4ca8b155c2d7fa",
+        "width": 1146
+      },
+      {
+        "bytes": 76772,
+        "category": "historical_paired_test_exception",
+        "format": "png",
+        "height": 751,
+        "path": "paired_diagnostics_20260730/06_hcal_hits_vs_energy.png",
+        "sha256": "0f2a0237f0871d3cf8fdcd2c7115610956069bd5a56623e2349d5149a277fcac",
+        "width": 1121
+      }
+    ],
+    "total": 77
+  },
+  "metrics": {
+    "families": {
+      "calibrated_lr1e4": {
+        "best_accepted_epoch": 38,
+        "best_accepted_validation_loss": 4.635219681489869,
+        "latest_accepted_epoch": 39,
+        "latest_accepted_validation_loss": 4.663274642140066,
+        "latest_observed_epoch": 40,
+        "latest_observed_status": "quarantined",
+        "latest_observed_validation_loss": 4.70276516527592,
+        "quarantined_epochs": [
+          40
+        ],
+        "slope_final_3_accepted_epochs": -0.028718820777155648
+      },
+      "calibrated_lr1e4_halfbatch": {
+        "best_accepted_epoch": 21,
+        "best_accepted_validation_loss": 4.673036068110655,
+        "latest_accepted_epoch": 22,
+        "latest_accepted_validation_loss": 4.678375580300349,
+        "latest_observed_epoch": 22,
+        "latest_observed_status": "accepted",
+        "latest_observed_validation_loss": 4.678375580300349,
+        "quarantined_epochs": [],
+        "slope_final_3_accepted_epochs": -0.0030469620384904954
+      },
+      "calibrated_lr3e4": {
+        "best_accepted_epoch": 22,
+        "best_accepted_validation_loss": 4.597151546143159,
+        "latest_accepted_epoch": 22,
+        "latest_accepted_validation_loss": 4.597151546143159,
+        "latest_observed_epoch": 22,
+        "latest_observed_status": "accepted",
+        "latest_observed_validation_loss": 4.597151546143159,
+        "quarantined_epochs": [],
+        "slope_final_3_accepted_epochs": -0.009324824303868917
+      },
+      "calibrated_lr3e5": {
+        "best_accepted_epoch": 8,
+        "best_accepted_validation_loss": 4.843470557018744,
+        "latest_accepted_epoch": 10,
+        "latest_accepted_validation_loss": 4.874425800792644,
+        "latest_observed_epoch": 10,
+        "latest_observed_status": "accepted",
+        "latest_observed_validation_loss": 4.874425800792644,
+        "quarantined_epochs": [],
+        "slope_final_3_accepted_epochs": 0.015477621886949913
+      }
+    },
+    "large_validation_diagnostics": {
+      "epochs": [
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "events_per_epoch": 4000,
+      "quarantined_epochs": [
+        40
+      ],
+      "run_tags": [
+        "dicos-p9",
+        "dicos-p10"
+      ],
+      "scientific_status": "descriptive validation diagnostics; not a fidelity gate and not Geant4 validation",
+      "split": "validation",
+      "test_events_used": 0
+    },
+    "noise_resolution": 0.02
+  },
+  "qa": {
+    "accepted_metric_summaries_agree": true,
+    "all_manifest_hashes_match": true,
+    "all_png_decoded": true,
+    "all_svg_parsed": true,
+    "c2st_manifest_figures": 33,
+    "exhibition_manifest_visuals": 23,
+    "status": "PASS"
+  },
+  "schema_version": 1,
+  "test_split_accounting": {
+    "current_training_selection_and_gallery_used": 0,
+    "historical_c2st_used": 40000,
+    "historical_overlap": "unresolved",
+    "historical_paired_draw_used": 200,
+    "total": 76300,
+    "untouched_remainder_max": 36300,
+    "untouched_remainder_min": 36100
+  }
+}

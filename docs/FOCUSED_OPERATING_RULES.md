@@ -104,7 +104,9 @@ the continuing-agent handoff.
 ## Current stop state
 
 - Organization/QA only: do not start or resume training yet.
-- Both GPUs were last verified idle; re-probe because state can change.
+- Both GPUs were verified idle at 2026-08-04 08:32:58 UTC: RTX 4090 0 MiB/0%,
+  RTX 3090 1 MiB/0%, and no pipeline process on either. Re-probe because state
+  can change.
 - `dicos-p10` epoch 40 is quarantined: visualization layer-closure residual
   `2.6702880859375e-05 GeV` exceeded the frozen `2e-05 GeV` tolerance. Its
   checkpoint is not an accepted parent.

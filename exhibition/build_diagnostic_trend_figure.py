@@ -17,8 +17,8 @@ Four figures:
                          hit-count Wasserstein, profile L1, zero fractions
   energy_bins_vs_epoch   mean bias and resolution difference per energy bin
 
-Input is `exhibition/data/diagnostics/metrics_epoch_*.json`. Figures are built
-to be partial while a run is in flight. Output goes to
+Input is `exhibition/data/diagnostics/<run-tag>/metrics_epoch_*.json`. Figures
+are built to be partial while a run is in flight. Output goes to
 exhibition/diagnostics_20260803/, outside exhibition/manifest.json, so the
 23-visual exhibition contract is untouched.
 """
@@ -26,6 +26,7 @@ exhibition/diagnostics_20260803/, outside exhibition/manifest.json, so the
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -47,7 +48,7 @@ STATUS_PATH = HERE / "data" / "continuation_status.json"
 #: figure. Where two tags carry the same epoch, the LATER tag wins: it is on
 #: the live branch, and the earlier one was superseded when the new run
 #: resumed from a best checkpoint rather than a last one.
-RUN_TAGS = sys.argv[1:] or ["dicos-p9"]
+RUN_TAGS = sys.argv[1:] or ["dicos-p9", "dicos-p10"]
 RUN_TAG = "+".join(RUN_TAGS)
 
 NAVY = "#0f2a43"
@@ -70,6 +71,41 @@ FEATURES = [
 ]
 
 
+def _validate_metric(path: Path, row: dict, expected_epoch: int) -> None:
+    expected = {
+        "schema_version": 1,
+        "kind": "cbsc-zdc-large-validation-diagnostic",
+        "split": "validation",
+        "epoch": expected_epoch,
+        "n_events": 4000,
+        "validation_pool": 50877,
+        "selection_seed": 20260803,
+        "kinetic_range_gev": [50.0, 250.0],
+        "split_counts": {"train": 0, "validation": 4000, "test": 0},
+    }
+    for key, value in expected.items():
+        if row.get(key) != value:
+            raise ValueError(f"{path}: expected {key}={value!r}")
+    checkpoint = row.get("checkpoint_sha256", "")
+    if not re.fullmatch(r"[0-9a-f]{64}", checkpoint):
+        raise ValueError(f"{path}: invalid checkpoint_sha256")
+    qa = row.get("qa", {})
+    required_qa = {
+        "test_events_used": 0,
+        "train_events_used": 0,
+        "generated_nonfinite": 0,
+        "generated_negative": 0,
+        "truth_nonfinite": 0,
+        "truth_negative": 0,
+        "events_outside_energy_bins": 0,
+        "empty_energy_bins": 0,
+        "pass": True,
+    }
+    for key, value in required_qa.items():
+        if qa.get(key) != value:
+            raise ValueError(f"{path}: diagnostic QA {key} failed")
+
+
 def load() -> list[dict]:
     by_epoch: dict[int, dict] = {}
     for tag in RUN_TAGS:
@@ -77,7 +113,12 @@ def load() -> list[dict]:
         if not directory.is_dir():
             continue
         for path in sorted(directory.glob("metrics_epoch_*.json")):
+            match = re.fullmatch(r"metrics_epoch_(\d{4,})\.json", path.name)
+            if not match:
+                continue
+            expected_epoch = int(match.group(1))
             row = json.loads(path.read_text(encoding="utf-8"))
+            _validate_metric(path, row, expected_epoch)
             row["run_tag"] = tag
             # Later tag wins: it is the live branch for that epoch.
             by_epoch[int(row["epoch"])] = row
@@ -95,6 +136,16 @@ def quarantined_epochs() -> list[int]:
     })
 
 
+def status_for(run_tag: str, epoch: int) -> tuple[str, str | None]:
+    if not STATUS_PATH.is_file():
+        return "accepted", None
+    payload = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    for row in payload.get("overrides", []):
+        if row.get("run_tag") == run_tag and int(row.get("epoch", -1)) == epoch:
+            return row["status"], row.get("reason")
+    return payload.get("default_status", "accepted"), None
+
+
 def style() -> None:
     plt.rcParams.update({
         "figure.dpi": 160, "savefig.dpi": 160, "font.size": 10,
@@ -106,9 +157,27 @@ def style() -> None:
 
 
 def save_svg_clean(fig, path: Path) -> None:
-    fig.savefig(path, metadata={"Date": None})
-    lines = path.read_text(encoding="utf-8").splitlines()
-    path.write_text("\n".join(line.rstrip() for line in lines) + "\n", encoding="utf-8")
+    temporary = path.with_name(f".{path.name}.tmp.svg")
+    fig.savefig(temporary, metadata={"Date": None})
+    lines = temporary.read_text(encoding="utf-8").splitlines()
+    temporary.write_text(
+        "\n".join(line.rstrip() for line in lines) + "\n", encoding="utf-8"
+    )
+    temporary.replace(path)
+
+
+def save_png_atomic(fig, path: Path) -> None:
+    temporary = path.with_name(f".{path.name}.tmp.png")
+    fig.savefig(temporary)
+    temporary.replace(path)
+
+
+def write_json_atomic(path: Path, payload: dict) -> None:
+    temporary = path.with_name(f".{path.name}.tmp")
+    temporary.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    temporary.replace(path)
 
 
 def _finish(fig, epochs, title, subtitle, name) -> Path:
@@ -132,7 +201,7 @@ def _finish(fig, epochs, title, subtitle, name) -> Path:
                 ax.axvline(epoch, color=QUARANTINE, lw=1.2, ls="--", zorder=0)
     OUT.mkdir(parents=True, exist_ok=True)
     png = OUT / f"{name}.png"
-    fig.savefig(png)
+    save_png_atomic(fig, png)
     save_svg_clean(fig, OUT / f"{name}.svg")
     plt.close(fig)
     return png
@@ -355,7 +424,20 @@ def build() -> list[Path]:
     if energy:
         produced.append(energy)
 
+    per_epoch = []
+    for row in rows:
+        status, reason = status_for(row["run_tag"], int(row["epoch"]))
+        per_epoch.append({
+            "epoch": int(row["epoch"]),
+            "run_tag": row["run_tag"],
+            "checkpoint_sha256": row["checkpoint_sha256"],
+            "status": status,
+            "status_reason": reason,
+            "qa_pass": row["qa"]["pass"],
+            "split_counts": row["split_counts"],
+        })
     summary = {
+        "schema_version": 2,
         "run_tag": RUN_TAG,
         "run_tags": RUN_TAGS,
         "epochs_by_run_tag": {
@@ -369,6 +451,11 @@ def build() -> list[Path]:
         "selection_seed": latest["selection_seed"],
         "test_events_used": 0,
         "quarantined_epochs": quarantined_epochs(),
+        "per_epoch": per_epoch,
+        "scientific_status": (
+            "descriptive validation diagnostics; not a fidelity gate and not "
+            "Geant4 validation"
+        ),
         "high_level_c2st_auc": [
             r.get("evaluation", {}).get("high_level_c2st_auc") for r in rows
         ],
@@ -386,9 +473,7 @@ def build() -> list[Path]:
         },
         "figures": [p.name for p in produced],
     }
-    (OUT / "diagnostic_summary.json").write_text(
-        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    write_json_atomic(OUT / "diagnostic_summary.json", summary)
     return produced
 
 
