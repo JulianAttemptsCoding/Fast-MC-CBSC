@@ -510,13 +510,15 @@ Two things this phase does **not** establish, regardless of outcome: anything
 about Geant4 fidelity, and anything about untouched-test performance. The bank
 is the pilot bank; the 76,300-event test split remains sealed and untouched.
 
-### 7b. STATE VERIFIED 2026-08-04T07:17Z — read this before doing anything
+### 7b. STATE VERIFIED 2026-08-04T15:53+08:00 — read this before doing anything
 
 **Nothing is training or generating. Both GPUs are idle, proved from their
-process trees.** The RTX 4090 reported `0 MiB / 0%` and no `dicos_train`; the
-RTX 3090 reported `1 MiB / 0%` and a self-match-safe `/proc` scan found no
-trainer. The project owner has explicitly requested organization and QA only:
-do not start or resume training in this phase.
+process trees.** The RTX 4090 reported `0 MiB / 0%`; the RTX 3090 reported
+`1 MiB / 0%`; self-match-safe `/proc` scans found no trainer, diagnostic
+producer, or diagnostic consumer on either. The shared checkout is `07c1dda`;
+the updated 4090 pipeline suite passed 21 tests and immutable artifact
+verification passed 18/18. The project owner has explicitly requested
+organization and QA only: do not start or resume training in this phase.
 
 `dicos-p10` died at `2026-08-04T03:13:56Z` after completing epochs 39 and 40:
 

@@ -35,6 +35,10 @@ The exact commands and state machine are in `docs/TWO_GPU_PIPELINE.md`.
 | focused pipeline regression | 80 passed |
 | full source suite | 230 passed; 8 known warnings |
 | Ruff / compileall / diff whitespace | pass / pass / pass |
+| shared DiCOS checkout | `07c1dda` |
+| 4090 pipeline/visualization suite | 21 passed; 2 known warnings |
+| DiCOS immutable artifact verification | 18/18 passed |
+| 3090 environment import smoke | pass in `.venv_3090` |
 | RTX 4090 live state | 0 MiB, 0%; no pipeline processes |
 | RTX 3090 live state | 1 MiB, 0%; no pipeline processes |
 | new train/test events used | 0 / 0 |
@@ -44,6 +48,12 @@ The first unqualified full-suite invocation omitted `PYTHONPATH=src` and failed
 during collection on five package imports; the contract-correct rerun passed.
 An optional remote Git query also found that the 3090 image has no Git; this did
 not affect its repeated GPU/process proof.
+
+The first updated on-pod test command collected from the workdir parent and
+failed on three `scripts.*` imports. Its contract-correct rerun from `repo/`
+passed. A first nested-quote 3090 smoke command was rejected locally; the
+base64/stdin retry imported the updated consumer successfully. Neither failed
+attempt started generation or touched scientific artifacts.
 
 ## Remaining launch gate
 

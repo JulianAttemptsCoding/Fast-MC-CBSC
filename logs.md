@@ -7041,3 +7041,23 @@ data split, threshold, or test event was touched.
   primary commands and sets the 3090 config only for diagnostic commands.
   Final counts after that guard: focused `80 passed`; full `230 passed, 8 known
   warnings in 29.35 s`.
+- Committed/pushed the implementation as `6fe6a28` and the portable config-role
+  assertion as `07c1dda`; local `main` and `origin/main` were synchronized and
+  clean. Fast-forwarded the idle shared `repo/` to `07c1dda`, preserving only
+  its pre-existing untracked editable-install `src/cbsc_zdc_fastmc.egg-info/`.
+- The first updated on-pod regression invocation ran from the shared workdir
+  parent with only `repo/src` on `PYTHONPATH`; three `scripts.*` imports failed
+  during collection. Repeated from `repo/` with `PYTHONPATH=src`, the actual
+  repository test contract: producer, consumer, refresh, and visualization
+  suite passed `21 passed, 2 known warnings in 20.36 s` on the RTX 4090 pod.
+- The first 3090 import-smoke command was rejected by local CLI parsing because
+  nested `python -c` quotes split the remote argument; no remote code ran.
+  Retried via base64/stdin without credential exposure. The `.venv_3090`
+  environment imported the updated consumer and reported RTX 3090, pooled cap
+  200,000, and the strict queued-checkpoint epoch pattern.
+- Final `dicos.py verify` passed 18/18 immutable geometry, corpus, split, audit,
+  checkpoint, and hygiene checks. Final live probes at
+  `2026-08-04T15:53+08:00` again showed RTX 4090 `0 MiB / 0%`, RTX 3090
+  `1 MiB / 0%`, and `PIPELINE_PROCESSES=NONE` on both. No training, diagnostic
+  generation, checkpoint, metric, figure, dashboard, or public-site artifact
+  was created by these remote checks.
