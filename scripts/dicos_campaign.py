@@ -313,6 +313,13 @@ def launch(plan: SegmentPlan, workdir: Path, frozen: Path,
     env = dict(os.environ)
     env["PYTHONPATH"] = str(workdir / "repo" / "src")
     env["PYTHONNOUSERSITE"] = "1"
+    # Every accepted run since dicos-r2 was archived as `aborted_r2_slow_loader`
+    # has used this. It makes each loader worker hold all 187 shards resident
+    # instead of 4, so a shard is verified once per worker rather than
+    # thousands of times -- never zero times. It is a transport property, proven
+    # byte-identical over 400 samples through both cache sizes, and it is
+    # recorded in each run's environment.json.
+    env.setdefault("CBSC_ZDC_SHARD_CACHE", "0")
 
     train_log = workdir / "_runs" / f"{plan.run_tag}train.log"
     journal.event("segment_launch", run_tag=plan.run_tag, run_dir=str(run_dir),
@@ -329,14 +336,35 @@ def launch(plan: SegmentPlan, workdir: Path, frozen: Path,
         process = subprocess.Popen(trainer, stdout=handle, stderr=subprocess.STDOUT,
                                    cwd=str(workdir), env=env)
         if producer_script.exists():
+            # The producer rejects absolute paths outright: it resolves both
+            # arguments under the workdir and refuses anything that escapes it.
+            # Passing absolute paths killed it instantly on the first launch,
+            # and because nothing waits on it until the trainer exits, it sat as
+            # a zombie while the campaign looked healthy -- no checkpoint would
+            # ever have reached the 3090.
             producer = subprocess.Popen(
                 [str(venv_python), str(producer_script),
-                 "--run-dir", str(run_dir),
-                 "--wrapper-log", str(train_log),
+                 "--run-dir", str(run_dir.relative_to(workdir)),
+                 "--wrapper-log", str(train_log.relative_to(workdir)),
                  "--run-tag", plan.run_tag],
                 stdout=(workdir / "_runs" / f"{plan.run_tag}prod.log").open("ab"),
                 stderr=subprocess.STDOUT, cwd=str(workdir), env=env,
             )
+            # A dead producer means no diagnostics for the entire campaign, so
+            # it is verified rather than assumed.
+            time.sleep(5)
+            if producer.poll() is not None:
+                process.terminate()
+                log_tail = ""
+                producer_log = workdir / "_runs" / f"{plan.run_tag}prod.log"
+                if producer_log.exists():
+                    log_tail = producer_log.read_text(
+                        encoding="utf-8", errors="replace")[-800:]
+                raise CampaignError(
+                    f"diagnostic producer exited immediately "
+                    f"({producer.returncode}); refusing to train blind. "
+                    f"Producer log tail: {log_tail}"
+                )
             journal.event("producer_started", run_tag=plan.run_tag, pid=producer.pid)
         exit_code = process.wait()
         elapsed = round(time.time() - started, 3)
