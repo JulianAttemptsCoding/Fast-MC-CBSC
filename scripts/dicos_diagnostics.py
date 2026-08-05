@@ -473,32 +473,19 @@ def run_one(context: DiagnosticContext, checkpoint: Path) -> dict:
     return result
 
 
-def watch(context: DiagnosticContext, queue_dir: Path, output_dir: Path) -> int:
-    """Process checkpoints dropped into `queue_dir` until a `STOP` file appears.
+def drain_once(context: DiagnosticContext, queue_dir: Path, output_dir: Path) -> int:
+    """Consume every checkpoint currently queued. Returns the failure count.
 
-    The producer copies an epoch's checkpoint in; this consumes it and leaves a
-    metrics file behind. A failed checkpoint is set aside rather than retried
-    forever, so one bad file cannot stall the queue.
+    Shared by single-queue `watch` and campaign-wide `watch_root`, so the two
+    modes cannot drift apart in how they deduplicate, quarantine, or record.
     """
     queue_dir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
     done_dir = queue_dir / "done"
     done_dir.mkdir(exist_ok=True)
     failures = 0
-    _log(f"watching {queue_dir}")
-
-    while True:
-        pending = sorted(p for p in queue_dir.glob("*.pt") if p.is_file())
-        # Drain before stopping. Checking STOP first abandoned everything the
-        # producer queued after the last pass -- the producer writes STOP as
-        # soon as training exits, which is exactly when the last few epochs
-        # are still waiting.
-        if (queue_dir / "STOP").exists() and not pending:
-            _log(f"STOP seen and queue drained, exiting failures={failures}")
-            return 1 if failures else 0
-        if not pending:
-            time.sleep(20)
-            continue
+    pending = sorted(p for p in queue_dir.glob("*.pt") if p.is_file())
+    if True:
         for checkpoint in pending:
             try:
                 match = QUEUED_CHECKPOINT_PATTERN.fullmatch(checkpoint.name)
@@ -545,12 +532,83 @@ def watch(context: DiagnosticContext, queue_dir: Path, output_dir: Path) -> int:
                 f"+/- {result['trend_stderr']['response_bias_fraction']:.6f}"
             )
             checkpoint.rename(done_dir / checkpoint.name)
+    return failures
+
+
+def watch(context: DiagnosticContext, queue_dir: Path, output_dir: Path) -> int:
+    """Process checkpoints dropped into `queue_dir` until a `STOP` file appears.
+
+    The producer copies an epoch's checkpoint in; this consumes it and leaves a
+    metrics file behind. A failed checkpoint is set aside rather than retried
+    forever, so one bad file cannot stall the queue.
+    """
+    queue_dir.mkdir(parents=True, exist_ok=True)
+    failures = 0
+    _log(f"watching {queue_dir}")
+    while True:
+        pending = [p for p in queue_dir.glob("*.pt") if p.is_file()]
+        # Drain before stopping. Checking STOP first abandoned everything the
+        # producer queued after the last pass -- the producer writes STOP as
+        # soon as training exits, which is exactly when the last few epochs
+        # are still waiting.
+        if (queue_dir / "STOP").exists() and not pending:
+            _log(f"STOP seen and queue drained, exiting failures={failures}")
+            return 1 if failures else 0
+        if not pending:
+            time.sleep(20)
+            continue
+        failures += drain_once(context, queue_dir, output_dir)
+
+
+def watch_root(context: DiagnosticContext, root: Path) -> int:
+    """Follow every run tag under `root`, including tags that appear later.
+
+    A campaign starts a new run tag per segment, and the 3090 consumer cannot be
+    started from inside the 4090 pod, so a consumer bound to one queue directory
+    would stop serving as soon as the campaign advanced a segment. This mode
+    discovers `<root>/<run-tag>/queue` as tags appear and keeps the expensive
+    `DiagnosticContext` -- shard verification and validation-pool construction --
+    built exactly once.
+
+    A per-tag `STOP` retires that tag only. The whole consumer exits when
+    `<root>/CAMPAIGN_STOP` exists and every queue is drained, so an operator
+    ends it deliberately rather than by a segment finishing.
+    """
+    root.mkdir(parents=True, exist_ok=True)
+    failures = 0
+    retired: set[Path] = set()
+    _log(f"watching campaign root {root}")
+    while True:
+        queues = sorted(
+            q for q in root.glob("*/queue") if q.is_dir() and q not in retired
+        )
+        pending_total = 0
+        for queue_dir in queues:
+            output_dir = queue_dir.parent
+            pending = [p for p in queue_dir.glob("*.pt") if p.is_file()]
+            pending_total += len(pending)
+            if pending:
+                _log(f"draining {queue_dir} ({len(pending)} queued)")
+                failures += drain_once(context, queue_dir, output_dir)
+            elif (queue_dir / "STOP").exists():
+                retired.add(queue_dir)
+                _log(f"retired {queue_dir}: STOP seen and queue drained")
+        if (root / "CAMPAIGN_STOP").exists() and pending_total == 0:
+            _log(f"CAMPAIGN_STOP seen and all queues drained, failures={failures}")
+            return 1 if failures else 0
+        if pending_total == 0:
+            time.sleep(20)
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", type=Path, help="one-shot mode")
     parser.add_argument("--watch-dir", type=Path, help="watch mode queue directory")
+    parser.add_argument(
+        "--watch-root", type=Path,
+        help="campaign mode: follow every <root>/<run-tag>/queue, including "
+             "tags that appear later, and exit only on <root>/CAMPAIGN_STOP",
+    )
     parser.add_argument("--output", type=Path, help="one-shot output file")
     parser.add_argument("--output-dir", type=Path, help="watch mode output directory")
     parser.add_argument("--manifest", default="prep/data/dataset_manifest.json")
@@ -576,14 +634,18 @@ def main(argv=None) -> int:
     parser.add_argument("--device", default="cuda")
     args = parser.parse_args(argv)
 
-    if bool(args.checkpoint) == bool(args.watch_dir):
-        parser.error("give exactly one of --checkpoint or --watch-dir")
+    modes = [bool(args.checkpoint), bool(args.watch_dir), bool(args.watch_root)]
+    if sum(modes) != 1:
+        parser.error("give exactly one of --checkpoint, --watch-dir or --watch-root")
     if args.checkpoint and not args.output:
         parser.error("--checkpoint requires --output")
     if args.watch_dir and not args.output_dir:
         parser.error("--watch-dir requires --output-dir")
 
     context = DiagnosticContext(args)
+
+    if args.watch_root:
+        return watch_root(context, args.watch_root)
 
     if args.watch_dir:
         return watch(context, args.watch_dir, args.output_dir)
