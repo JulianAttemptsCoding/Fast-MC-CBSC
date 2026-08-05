@@ -80,6 +80,46 @@ All checks must pass in the same session immediately before launch:
 Never infer liveness from a PID file or log alone. Probe the process tree. Never
 reuse a tag or job name; old `EXIT` or `STOP` state is deliberately fatal.
 
+## Running it as an unattended campaign
+
+The sequence below is the manual, one-segment procedure and remains the
+reference for what happens per epoch. From 2026-08-05 there is also a supervisor
+that performs it repeatedly without an operator:
+
+```bash
+# 3090 first: one consumer for the whole campaign, following tags as they appear
+DICOS_CONFIG=$HOME/.dicos/config_3090.json PYTHONPATH=src python scripts/dicos.py start   'cd "<WORKDIR>" && PYTHONNOUSERSITE=1 PYTHONPATH=repo/src .venv_3090/bin/python      repo/scripts/dicos_diagnostics.py --n-events 4000 --selection-seed 20260803      --watch-root _diag --device cuda' --name campdiag
+
+# 4090: the supervisor owns the trainer and the producer for every segment
+PYTHONPATH=src python scripts/dicos.py start   'cd "<WORKDIR>" && PYTHONNOUSERSITE=1 PYTHONPATH=repo/src .venv/bin/python      repo/scripts/dicos_campaign.py --plan repo/configs/campaigns/<plan>.json      --workdir .' --name <name>
+```
+
+`--dry-run` freezes the next segment and prints its diff against the parent
+frozen config without launching anything. Use it before every campaign.
+
+The supervisor applies the same pre-launch gate per segment, and additionally
+**reads its own config diff** and refuses to launch if anything outside the
+allowed continuation delta moved — an unattended process freezes configs with
+nobody watching the diff, so the diff must be read by the process.
+
+**Stopping it: kill the supervisor first**, so it cannot observe the trainer's
+exit and start another segment, then the trainer. Then write
+`_diag/CAMPAIGN_STOP` so the 3090 consumer exits once its queues drain. A
+per-tag `STOP` retires only that tag.
+
+**Refreshing local outputs:** `python scripts/refresh_campaign_outputs.py`, with
+no arguments. It derives family, run tag, run directory, expected epoch and
+lineage from the campaign's recorded state, because those change every segment
+and a wrong `--lineage` silently drops the earlier epochs from every trend
+figure. It does not publish.
+
+**Two settings that are not optional, both learned by launching without them:**
+the producer takes **workdir-relative** paths and dies instantly on absolute
+ones — as a zombie, while the campaign log reads `producer_started` — and
+`CBSC_ZDC_SHARD_CACHE=0` must be set or the loader starves the GPU, which is the
+configuration that got `dicos-r2` archived. The supervisor now sets both and
+verifies producer liveness five seconds after launch.
+
 ## Exact start order
 
 Replace every angle-bracket value with a declared value. These are templates,
