@@ -1,0 +1,138 @@
+{
+  "campaign_id": "camp-20260805",
+  "chain_index": 0,
+  "current": {
+    "additional_epochs": 20,
+    "epochs_absolute": 43,
+    "family": "calibrated_lr3e4",
+    "parent_best_sha256": "31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb",
+    "parent_last_epoch": 22,
+    "parent_last_sha256": "eb533f18f08b1080ea367d75e77fb560d3957a2368a70d12e26e57191608460f",
+    "parent_run_dir": "_runs/calibrated_lr3e4_dicos-p7",
+    "patience": 20,
+    "reason": "first segment of the declared chain",
+    "resume_from_stem": "dicosc01",
+    "run_tag": "dicos-c-01"
+  },
+  "hashes": {
+    "config_delta": {
+      "evaluation.closure_tolerance_relative": [
+        "<absent>",
+        "1e-05"
+      ],
+      "project.name": [
+        "cbsc-zdc-v2-2-viability-calibrated_lr3e4-continuation-compute-extension-r1-dicos-r2-dicos-p6-dicos-p7",
+        "cbsc-zdc-v2-2-viability-calibrated_lr3e4-continuation-compute-extension-r1-dicos-r2-dicos-p6-dicos-p7-dicos-c-01"
+      ],
+      "project.run_dir": [
+        "runs/calibrated_lr3e4_dicos_p7",
+        "runs/calibrated_lr3e4_dicos_c_01"
+      ],
+      "provenance.closure_tolerance_gev": [
+        "<absent>",
+        "2e-05"
+      ],
+      "provenance.closure_tolerance_relative": [
+        "<absent>",
+        "1e-05"
+      ],
+      "provenance.closure_tolerance_relative_changed": [
+        "<absent>",
+        "True"
+      ],
+      "provenance.early_stopping_patience": [
+        "6",
+        "20"
+      ],
+      "provenance.epochs_available": [
+        "6",
+        "20"
+      ],
+      "provenance.parent_closure_tolerance_relative": [
+        "<absent>",
+        "0.0"
+      ],
+      "provenance.parent_config": [
+        "calibrated_lr3e4_dicos-p6.yaml",
+        "calibrated_lr3e4_dicos-p7.yaml"
+      ],
+      "provenance.parent_config_sha256": [
+        "8a801e5d661c2e504333366347501d42a0131fbd0ee6c9cce089741e83fa4c75",
+        "c63acd03055647219076b23f4260596b3c4a09865821fd02862f8d064f834037"
+      ],
+      "provenance.parent_last_epoch": [
+        "16",
+        "22"
+      ],
+      "provenance.parent_project_name": [
+        "cbsc-zdc-v2-2-viability-calibrated_lr3e4-continuation-compute-extension-r1-dicos-r2-dicos-p6",
+        "cbsc-zdc-v2-2-viability-calibrated_lr3e4-continuation-compute-extension-r1-dicos-r2-dicos-p6-dicos-p7"
+      ],
+      "provenance.restart_scheduler_on_resume": [
+        "<absent>",
+        "False"
+      ],
+      "provenance.selected_by": [
+        "lowest absolute validation loss of all four calibrated families (4.605498 at absolute epoch 15)",
+        "first segment of the declared chain"
+      ],
+      "provenance.template_sha256": [
+        "f58dca6732213684108450130957c7ef607db83720f62af0c125a0da182f2024",
+        "e2612a223286842a7148c36bdb394750b1a3e7d124b6e0796de3b49cc4a230ba"
+      ],
+      "training.early_stopping_patience": [
+        "6",
+        "20"
+      ],
+      "training.epochs": [
+        "23",
+        "43"
+      ],
+      "training.restart_scheduler_on_resume": [
+        "True",
+        "False"
+      ],
+      "training.resume_best_from_relative": [
+        "checkpoints/calibrated_lr3e4_p6_best.pt",
+        "checkpoints/calibrated_lr3e4_dicosc01_best.pt"
+      ],
+      "training.resume_best_from_sha256": [
+        "d73aa900a367c8cb1d1fdc53309822b07366e9cb66073513741e867514e3fcba",
+        "31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb"
+      ],
+      "training.resume_from_relative": [
+        "checkpoints/calibrated_lr3e4_p6_last.pt",
+        "checkpoints/calibrated_lr3e4_dicosc01_last.pt"
+      ],
+      "training.resume_from_sha256": [
+        "763d45bbe3c075d9c0256df7e40b1946ab47816f28fa28767049f275116c964d",
+        "31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb"
+      ]
+    },
+    "frozen_sha256": "29fc4fe0f79276e4919c58554f544707e016a7dcb99912726b284caa15c450d7",
+    "parent_frozen": "/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/prep/configs/frozen_calibrated_lr3e4_dicos-p7.yaml",
+    "parent_frozen_sha256": "4051591355f22fa07f8a8aaea80a86a05cac85f92430fc13bfb52dc034ab609a",
+    "resume_sha256": "31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb",
+    "staged": {
+      "best": {
+        "path": "/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/prep/checkpoints/calibrated_lr3e4_dicosc01_best.pt",
+        "sha256": "31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb"
+      },
+      "last": {
+        "path": "/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/prep/checkpoints/calibrated_lr3e4_dicosc01_last.pt",
+        "sha256": "31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb"
+      }
+    },
+    "template_sha256": "e2612a223286842a7148c36bdb394750b1a3e7d124b6e0796de3b49cc4a230ba"
+  },
+  "parent": {
+    "best_sha256": "31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb",
+    "family": "calibrated_lr3e4",
+    "last_epoch": 22,
+    "last_sha256": "eb533f18f08b1080ea367d75e77fb560d3957a2368a70d12e26e57191608460f",
+    "run_dir": "_runs/calibrated_lr3e4_dicos-p7"
+  },
+  "segments_run": 1,
+  "status": "training",
+  "updated_at": "2026-08-05T02:58:19Z"
+}

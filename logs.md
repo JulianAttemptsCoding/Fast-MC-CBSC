@@ -7947,3 +7947,166 @@ selection rule are untouched. This establishes nothing about Geant4 fidelity.
 `dicos-p10` epoch 40 **remains `ARTIFACT QUARANTINED`.** It was quarantined
 under the old rule, and re-auditing it under the new one is a separate declared
 act that has not been performed. It is not a valid parent.
+
+## 2026-08-05 — campaign `camp-20260805` declared and launched
+
+Source commit `106eca0` on both the workstation and the pod `repo/` checkout,
+both clean, both matching `origin/main`.
+
+### Declaration
+
+**Scientific question.** Does the strongest calibrated family continue improving
+on the 26,624/6,656 pilot bank when given further 20-epoch segments, and does the
+ordering between families survive being given comparable numbers of epochs?
+
+**Owner's rule, encoded exactly.** Continue `lr3e4` for another 20 epochs. If the
+best loss is within 6 epochs of the most current epoch, continue the same family;
+otherwise advance to `lr1e4_halfbatch` on the same rule, then `lr3e5`. The owner
+originally named a third family "lr1e5", which does not exist; asked which of the
+four was meant, they answered `lr3e5`.
+
+`calibrated_lr1e4` is **excluded** by the owner's instruction. It has had 39
+epochs, the most of any family, and its `dicos-p10` epoch-40 checkpoint is
+`ARTIFACT QUARANTINED` and is not a valid parent.
+
+**Boundary, unchanged.** Optimization evidence on the pilot bank. Establishes
+nothing about Geant4 fidelity, three-seed behaviour, or untouched-test
+performance. The 76,300-event test split is not read by training, diagnostics or
+visualization. `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+**Comparability.** Every segment uses the energy-scaled closure tolerance
+declared earlier today, so segments here are a new declared experiment relative
+to any run frozen before it.
+
+### The three parents, verified on the host
+
+    family                      run        best epoch  validation loss     best.pt sha256
+    calibrated_lr3e4            dicos-p7           22  4.597151546143159   31802b9f...9bfb
+    calibrated_lr1e4_halfbatch  dicos-p7           21  4.673036068110655   ffab832a...ead9b1
+    calibrated_lr3e5            dicos-r3            8  4.843470557018744   3641c1a6...14a79
+
+`parent_last_epoch` is the **best** epoch, not the last, because the resume
+continues from the best checkpoint. For the half-batch family those differ — best
+21, last 22 — and getting it wrong would have silently shifted its horizon by one.
+
+### What was built
+
+**`src/cbsc_zdc/training/campaign.py`** holds the decision logic as pure
+functions, unit-tested without a GPU, a pod or a filesystem. It encodes three
+rules that were previously an operator's job to remember: `epochs` is an absolute
+target so `n` further epochs needs `parent_last_epoch + 1 + n`; patience equals
+the segment horizon; and a structural invariant failure is terminal for its
+family.
+
+**`scripts/dicos_campaign.py`** is the I/O. Per segment it stages the parent,
+builds a template, freezes it through the CLI — never hand-edited — and then
+**reads its own diff** against the parent frozen config, refusing to launch if
+anything outside the allowed continuation delta moved. An unattended process
+freezes configs with nobody watching the diff, so the diff has to be read by the
+process. It also refuses to launch if the run directory exists or another trainer
+is in the process tree, using a runtime-assembled search token that cannot match
+the probe itself.
+
+**Freezing is idempotent.** A pod expires, the campaign is relaunched, and the
+same segment is prepared again. Freezing is deterministic given the same template
+and artifacts, so an existing frozen config is reused exactly when re-freezing
+reproduces it byte for byte; any other difference stops the campaign rather than
+overwriting a frozen config.
+
+**`scripts/dicos_diagnostics.py --watch-root`** was added because the campaign
+creates a new run tag per segment and the 3090 consumer cannot be started from
+inside the 4090 pod. A consumer bound to one queue directory would stop serving
+the moment the campaign advanced. It discovers `<root>/<tag>/queue` as tags
+appear, keeps the expensive `DiagnosticContext` built once, retires a tag on its
+own `STOP`, and exits only on `<root>/CAMPAIGN_STOP`. Single-queue and
+campaign-wide modes share one `drain_once` path so they cannot drift apart.
+
+**`scripts/refresh_campaign_outputs.py`** derives `--family`, `--run-tag`,
+`--run-dir`, `--expected-epoch` and `--lineage` from the campaign's own recorded
+state, because those change under the operator every segment and a wrong
+`--lineage` silently drops the earlier epochs from every trend figure.
+
+### A design decision, and why it went the other way
+
+**Figures are not generated on the pod.** The exhibition builders write into
+`exhibition/current/`, so running them inside the pod's `repo/` checkout would
+dirty the clean tree that the pre-launch gate and every `git pull` depend on.
+Relocating their output is a real refactor and doing it while training runs
+trades a certain hazard for an uncertain benefit. The per-epoch **metrics** —
+the actual scientific evidence — are produced and namespaced on the pod as
+before; figures are a deterministic rendering of them and are rebuilt by one
+workstation command.
+
+Two things consequently cannot be autonomous, and neither is a matter of effort:
+
+* **the public website.** The pods have no Node, so the site cannot be built
+  there;
+* **any `git push` or site publication from a pod.** The only writable directory
+  on DiCOS is the multi-tenant project workdir, and `$HOME` is not writable, so a
+  credential file would have to live where other tenants can read it. That is not
+  a tradeoff worth making for convenience.
+
+Publication was already a deliberate act under section 14; it stays one.
+
+### Pre-launch gate, all in the same session
+
+    workstation / pod repo / origin   106eca0, all three clean and equal
+    RTX 4090   0 MiB, 0 %, NO_TRAINER, NO_CAMPAIGN
+    RTX 3090   1 MiB, 0 %, consumers: NONE  (self-match-safe /proc scan)
+    run dir    _runs/calibrated_lr3e4_dicos-c-01  RUN_DIR_ABSENT
+
+A dry run was performed first, which froze the segment and printed the diff
+without launching anything.
+
+### Segment 1 — `dicos-c-01`, calibrated_lr3e4, absolute epochs 23..42
+
+    template   e2612a223286842a7148c36bdb394750b1a3e7d124b6e0796de3b49cc4a230ba
+    frozen     29fc4fe0f79276e4919c58554f544707e016a7dcb99912726b284caa15c450d7
+    parent     4051591355f22fa07f8a8aaea80a86a05cac85f92430fc13bfb52dc034ab609a
+               (frozen_calibrated_lr3e4_dicos-p7.yaml)
+    resume     31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb
+               the p7 epoch-22 best, staged to BOTH resume slots
+
+**The complete field-by-field diff against the parent frozen config**, which the
+supervisor computed and refused to proceed without:
+
+    training.epochs                        23    -> 43     (22 + 1 + 20)
+    training.early_stopping_patience        6    -> 20     (equals the horizon)
+    training.restart_scheduler_on_resume  True   -> False  (continue the cosine)
+    training.resume_from_sha256           763d45bb -> 31802b9f
+    training.resume_best_from_sha256      d73aa900 -> 31802b9f
+    training.resume_from_relative         p6_last  -> dicosc01_last
+    training.resume_best_from_relative    p6_best  -> dicosc01_best
+    evaluation.closure_tolerance_relative <absent> -> 1e-05
+    project.name, project.run_dir
+    provenance.*                          (12 fields, exempt by design)
+
+Learning rate, batch size, gradient accumulation, workers, precision, seed,
+solver steps, response caps, loss weights, geometry, splits and audit are
+untouched. Every backend-portability invariant holds.
+
+**Launched once**, and the output was checked rather than the start re-issued:
+
+    campdiag  3090 consumer  pid 14287   --watch-root _diag --n-events 4000
+    camp01    4090 campaign  pid 20326 -> supervisor 20329
+              trainer 20410, producer 20411
+    run.lock acquired 2026-08-05T02:58:20Z, host jupyterlabgpurtx4090-julianjuan
+
+Single writer confirmed from the lock and the process tree.
+
+The trainer spent its first minutes in preflight rather than on the GPU — 84%
+CPU and 52 GB read at `T+3:45`, which is the 187-shard verification against the
+manifest on shared CephFS, not a stall. The 3090 consumer was likewise quiet
+while building its validation pool. Neither quiet log is a failed start, and
+that is exactly the mistake `docs/TWO_GPU_PIPELINE.md` warns about.
+
+`CBSC_ZDC_SHARD_CACHE` is **not** set for this campaign, so the loader uses its
+default 4-shard cache rather than the previous wave's resident-all-shards
+setting. It is a transport property, recorded in each run's `environment.json`,
+and it does not change any scientific value.
+
+### Expected shape
+
+At the measured 4090 rate of 649.83 s/epoch, one 20-epoch segment is roughly
+**3.6 hours**. Cost on DiCOS is accounted in ASGC SRUs and is not the binding
+constraint; wall-clock and GPU availability are. No paid cloud compute was used.
