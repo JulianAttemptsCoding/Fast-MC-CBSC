@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-training-campaign-plan",
+  "campaign_id": "camp-20260805",
+  "run_tag_prefix": "dicos-c",
+  "declared_at": "2026-08-05",
+
+  "scientific_question": "Does the strongest calibrated family continue improving on the 26,624/6,656 pilot bank when given further 20-epoch segments, and does the ordering between families survive being given comparable numbers of epochs?",
+
+  "declared_by": "project owner, 2026-08-05: continue lr3e4 for another 20 epochs; if the best loss is within 6 epochs of the most current epoch continue, otherwise move to lr1e4_halfbatch on the same rule, then lr3e5",
+
+  "boundary": "Optimization evidence on the pilot bank only. Establishes nothing about Geant4 fidelity, three-seed behaviour, or untouched-test performance. The 76,300-event test split stays sealed and is not read by training, diagnostics, or visualization.",
+
+  "segment_epochs": 20,
+  "improvement_window": 6,
+  "improvement_rule": "after a segment, continue the same family when latest_epoch - best_epoch <= improvement_window, otherwise advance to the next family in the chain",
+  "max_segments": 24,
+
+  "patience_rule": "early_stopping_patience equals the segment horizon. A constant patience counts staleness against an inherited best reached at the end of an anneal and stopped dicos-p8 at 6 of 24 epochs.",
+  "scheduler_rule": "restart_scheduler_on_resume is false. CosineAnnealingLR is periodic in 2*T_max, so a continued cosine climbs back toward peak by itself; that produced dicos-p9's 0.067 improvement where a restart produced nothing.",
+  "resume_rule": "resume from the parent BEST checkpoint on both resume slots, hash-verified before a weight is loaded.",
+
+  "closure_tolerance_relative": 1e-05,
+  "closure_tolerance_note": "Declared 2026-08-05. Every segment in this campaign uses the energy-scaled closure tolerance, so segments here are not directly comparable to runs frozen before that change. See audit/closure_tolerance_20260805_terminal_analysis.json.",
+
+  "chain": [
+    "calibrated_lr3e4",
+    "calibrated_lr1e4_halfbatch",
+    "calibrated_lr3e5"
+  ],
+
+  "artifacts": {
+    "audit": "prep/train_data_audit_pilot.json",
+    "geometry": "prep/geometry_frozen",
+    "manifest": "prep/data/dataset_manifest.json",
+    "splits": "prep/training_pilot_splits.json"
+  },
+
+  "families": {
+    "calibrated_lr3e4": {
+      "parent_run_dir": "_runs/calibrated_lr3e4_dicos-p7",
+      "parent_last_epoch": 22,
+      "parent_validation_loss": 4.597151546143159,
+      "parent_best_sha256": "31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb",
+      "parent_last_sha256": "eb533f18f08b1080ea367d75e77fb560d3957a2368a70d12e26e57191608460f",
+      "parent_template": "configs/templates/dicos_p7_20260803/calibrated_lr3e4_dicos-p7.yaml",
+      "parent_frozen": "prep/configs/frozen_calibrated_lr3e4_dicos-p7.yaml",
+      "note": "the best result in the project. Its dicos-p7 segment improved only 0.008346, inside the ~0.02 run-to-run resolution, so it had effectively plateaued over six epochs -- but it has had only 23 epochs against lr1e4's 39, which is what this campaign tests."
+    },
+    "calibrated_lr1e4_halfbatch": {
+      "parent_run_dir": "_runs/calibrated_lr1e4_halfbatch_dicos-p7",
+      "parent_last_epoch": 21,
+      "parent_validation_loss": 4.673036068110655,
+      "parent_best_sha256": "ffab832ac4798ca75bde5dd5e687ce3f634ab32b6c88f40169d3db59f0ead9b1",
+      "parent_last_sha256": "79bcdeac0d4550d230f2de5eb12e15be9ba73cf872802ac9f3862e2bf29aa2b9",
+      "parent_template": "configs/templates/dicos_p7_20260803/calibrated_lr1e4_halfbatch_dicos-p7.yaml",
+      "parent_frozen": "prep/configs/frozen_calibrated_lr1e4_halfbatch_dicos-p7.yaml",
+      "note": "best epoch 21 while its last epoch is 22, so the parent_last_epoch here is the BEST epoch, which is what the resume actually continues from."
+    },
+    "calibrated_lr3e5": {
+      "parent_run_dir": "_runs/calibrated_lr3e5_dicos-r3",
+      "parent_last_epoch": 8,
+      "parent_validation_loss": 4.843470557018744,
+      "parent_best_sha256": "3641c1a62a4575745124e27c6c2a26af577a4334c27c010eae067ae917914a79",
+      "parent_last_sha256": "213fc9658b8b5033d989968ce65cbd275975132a917f30e6a2a0764166e1ae68",
+      "parent_template": "configs/templates/dicos_continuation_20260801/calibrated_lr3e5_dicos-r2.yaml",
+      "parent_frozen": "prep/configs/frozen_calibrated_lr3e5_dicos-r2.yaml",
+      "note": "the least-trained family, 8 epochs, and last on absolute loss. Most headroom, weakest prior."
+    }
+  },
+
+  "excluded": {
+    "calibrated_lr1e4": "not in the chain by the owner's instruction. It has had 39 epochs, the most of any family, and its dicos-p10 epoch-40 checkpoint is ARTIFACT QUARANTINED and is not a valid parent."
+  }
+}
