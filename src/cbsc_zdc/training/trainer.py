@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 from ..config import RunPaths
 from ..contracts import NEUTRON_MASS_GEV
 from ..data.dataset import ShardedSparseDataset,load_geometry
-from ..eval.invariants import invariant_report
+from ..eval.invariants import closure_tolerances, invariant_report
 from ..eval.visualization import export_epoch_visualization
 from ..models.system import CBSCZDC
 from ..preflight import validate_frozen_artifacts
@@ -209,12 +209,14 @@ def _checkpoint_invariant_gate(model: CBSCZDC, config: dict[str, Any], seed: int
         seed=seed,
         stochastic=True,
     )
+    absolute, relative = closure_tolerances(config)
     return invariant_report(
         output,
         model.layer_index,
         model.valid_mask,
         model.threshold_gev,
-        float(config["evaluation"].get("closure_tolerance_gev", 2e-5)),
+        absolute,
+        relative,
     )
 
 

@@ -51,6 +51,27 @@ EARLY_STOPPING_PATIENCE = 3
 #: stopping is expected to reach first, not a planned horizon. Epochs 11..39.
 EPOCHS = 40
 
+#: Relative term for the structural closure tolerance, declared 2026-08-05.
+#:
+#: The two closure invariants compare float32 reductions over thousands of
+#: cells, so their residual is a few units in the last place of the magnitude
+#: being summed and therefore grows with it. The absolute 2e-5 GeV floor cannot
+#: express that and ended `dicos-p10` at epoch 40 on a residual of
+#: 2.6702880859375e-05 GeV -- seven float32 ULP at that event's 33.1646 GeV
+#: response, with every structural field exactly zero.
+#:
+#: 1e-5 comes from the 100 measured per-position rows in
+#: `_diag/dicos-p10/viz_invariants_epoch_{0040,0039_control}.json`: the residual
+#: never exceeded 7 ULP (p95 5, median 1), i.e. 8.052e-07 relative. 1e-5 sits
+#: 12x above that ceiling and roughly two orders of magnitude below the residual
+#: a single mis-decoded cell would produce, so it admits float32 noise without
+#: admitting a defect. The absolute floor is unchanged and still binds below the
+#: 2 GeV crossover.
+#:
+#: Setting this is a DECLARED THRESHOLD CHANGE. Anything compared across it is
+#: a new declared experiment.
+CLOSURE_TOLERANCE_RELATIVE = 1.0e-05
+
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -92,6 +113,7 @@ def build(
         "largest validation-loss improvement over absolute epochs 5..10"
     ),
     restart_scheduler: bool = True,
+    closure_tolerance_relative: float | None = None,
 ) -> Built:
     last_sha256 = _check("last_sha256", last_sha256)
     best_sha256 = _check("best_sha256", best_sha256)
@@ -152,6 +174,22 @@ def build(
     training["resume_best_from_relative"] = f"checkpoints/{family}_{checkpoint_stem}_best.pt"
     training["resume_best_from_sha256"] = best_sha256
 
+    # Declared 2026-08-05. The absolute floor is untouched; this adds the
+    # scale term the residual actually needs. A parent frozen before this date
+    # has no such key, so its own runs stay bit-reproducible under the old rule.
+    closure_tolerance_relative = (
+        CLOSURE_TOLERANCE_RELATIVE
+        if closure_tolerance_relative is None
+        else float(closure_tolerance_relative)
+    )
+    if closure_tolerance_relative < 0:
+        raise ValueError("closure_tolerance_relative must be nonnegative")
+    parent_relative = float(
+        parent.get("evaluation", {}).get("closure_tolerance_relative", 0.0)
+    )
+    config.setdefault("evaluation", {})
+    config["evaluation"]["closure_tolerance_relative"] = closure_tolerance_relative
+
     config["provenance"] = {
         "parent_config": parent_path.name,
         "parent_config_sha256": _sha256(parent_path),
@@ -162,6 +200,14 @@ def build(
         "early_stopping_patience": patience,
         "early_stopping_can_fire": early_stopping_can_fire,
         "restart_scheduler_on_resume": bool(restart_scheduler),
+        "closure_tolerance_gev": float(
+            config["evaluation"].get("closure_tolerance_gev", 2e-5)
+        ),
+        "closure_tolerance_relative": closure_tolerance_relative,
+        "parent_closure_tolerance_relative": parent_relative,
+        "closure_tolerance_relative_changed": (
+            closure_tolerance_relative != parent_relative
+        ),
     }
 
     output_dir = Path(output_dir)
@@ -217,6 +263,15 @@ def main(argv=None) -> None:
              "learning rate; use when resuming from the end of an anneal",
     )
     parser.add_argument(
+        "--closure-tolerance-relative",
+        type=float,
+        default=CLOSURE_TOLERANCE_RELATIVE,
+        help="relative term added to the absolute closure tolerance, so the "
+             "bound is max(absolute, relative * total_response). Declared "
+             "2026-08-05 after an absolute-only tolerance ended dicos-p10 on "
+             "seven float32 ULP. Pass 0.0 to reproduce the old absolute rule.",
+    )
+    parser.add_argument(
         "--selected-by",
         default="largest validation-loss improvement over absolute epochs 5..10",
         help="Why this family is being continued. Recorded in provenance.",
@@ -233,6 +288,7 @@ def main(argv=None) -> None:
         epochs=args.epochs,
         run_tag=args.run_tag,
         parent_last_epoch=args.parent_last_epoch,
+        closure_tolerance_relative=args.closure_tolerance_relative,
         checkpoint_stem=args.checkpoint_stem,
         selected_by=args.selected_by,
         restart_scheduler=not args.no_restart_scheduler,

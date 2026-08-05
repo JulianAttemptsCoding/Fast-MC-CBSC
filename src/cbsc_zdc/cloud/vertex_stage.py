@@ -16,7 +16,7 @@ from ..contracts import NEUTRON_MASS_GEV
 from ..data.dataset import load_geometry
 from ..eval.benchmark import benchmark_model
 from ..eval.evaluator import evaluate_checkpoint
-from ..eval.invariants import invariant_report
+from ..eval.invariants import closure_tolerances, invariant_report
 from ..models.system import CBSCZDC
 from ..training.checkpoint import load_checkpoint
 from ..training.trainer import train_from_config
@@ -196,12 +196,14 @@ def run_smoke_postflight(config: dict, training_result: dict, run_dir: Path) -> 
         [total, torch.zeros_like(total), torch.zeros_like(total), momentum], dim=1
     ).to(torch.float32)
     output = model.sample(p4, profile_steps=1, share_steps=1, seed=20260724)
+    _absolute, _relative = closure_tolerances(config)
     invariants = invariant_report(
         output,
         model.layer_index,
         model.valid_mask,
         model.threshold_gev,
-        float(config["evaluation"].get("closure_tolerance_gev", 2e-5)),
+        _absolute,
+        _relative,
     )
     dump_json(invariants, run_dir / "reports/smoke_invariants.json")
     if not invariants["pass"]:
@@ -293,12 +295,14 @@ def run_training_postflight(
         share_steps=share_steps,
         seed=int(config["training"]["seed"]),
     )
+    _absolute, _relative = closure_tolerances(config)
     invariants = invariant_report(
         output,
         model.layer_index,
         model.valid_mask,
         model.threshold_gev,
-        float(config["evaluation"].get("closure_tolerance_gev", 2e-5)),
+        _absolute,
+        _relative,
     )
     dump_json(invariants, run_dir / "reports/training_postflight_invariants.json")
     if not invariants["pass"]:

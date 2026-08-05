@@ -11,7 +11,7 @@ import torch
 from ..contracts import mass_shell_diagnostics, validate_p4_total
 from ..data.dataset import ShardedSparseDataset, load_geometry
 from ..utils import load_json, sha256_file, sha256_json
-from .invariants import invariant_report
+from .invariants import closure_tolerances, invariant_report
 from .metrics import distribution_metrics, high_level_features, layer_sums
 
 
@@ -128,7 +128,7 @@ def export_epoch_visualization(
     generation_seed = int(settings.get("generation_seed", 20260725))
     profile_steps = int(config["evaluation"].get("profile_steps", 8))
     share_steps = int(config["evaluation"].get("share_steps", 8))
-    tolerance = float(config["evaluation"].get("closure_tolerance_gev", 2e-5))
+    tolerance, relative_tolerance = closure_tolerances(config)
     stage = str(config["training"].get("stage", "joint"))
     device = model.node_features.device
     output_dir = Path(destination)
@@ -195,6 +195,7 @@ def export_epoch_visualization(
                 model.valid_mask,
                 model.threshold_gev,
                 tolerance,
+                relative_tolerance,
             )
             invariant_row.update(
                 {
@@ -227,6 +228,7 @@ def export_epoch_visualization(
                 "test_events_used": 0,
                 "checkpoint_sha256": checkpoint_hash,
                 "tolerance_gev": tolerance,
+                "closure_tolerance_relative": relative_tolerance,
                 "sample_count": sample_count,
                 "draws_per_condition": draws,
                 "profile_steps": profile_steps,

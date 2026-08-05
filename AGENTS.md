@@ -98,3 +98,22 @@ owner and are not negotiable by an agent.
     Any needed visual outside `exhibition/` must be explicitly labeled in
     `exhibition/visual_layout.json`, finite, and rejected by QA if the exact
     allowlist changes.
+
+28. **A threshold is not a free parameter in either direction, and a threshold
+    must be able to express the quantity it bounds.** Rule 23 forbids relaxing
+    one to make a run pass. This is the other half: do not silently tighten or
+    re-derive one either, and when evidence shows a threshold is *mis-specified*
+    -- bounding a quantity whose scale it cannot represent -- record the
+    evidence, state the options with their costs, and get the owner's decision.
+    Changing it is a declared change: record both config hashes, say plainly
+    that anything compared across it is a new declared experiment, and pin the
+    new behaviour with tests that also prove the old behaviour still holds for
+    configs frozen before the change.
+
+    The worked example is `closure_tolerance_gev`. It was absolute, the residual
+    it bounds is float32 rounding that scales with event energy, and at 300 GeV
+    a single ULP already exceeded the entire tolerance. It ended `dicos-p10` on
+    a structurally perfect epoch. Corrected 2026-08-05 to
+    `max(absolute, closure_tolerance_relative * total_response)` with the
+    absolute floor unchanged; see `logs.md` and
+    `audit/closure_tolerance_20260805_terminal_analysis.{json,md}`.

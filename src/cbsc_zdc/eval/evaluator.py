@@ -11,7 +11,7 @@ from ..models.system import CBSCZDC
 from ..preflight import validate_frozen_artifacts
 from ..training.checkpoint import load_checkpoint
 from ..utils import dump_json,load_yaml
-from .invariants import invariant_report
+from .invariants import closure_tolerances, invariant_report
 from .metrics import c2st_auc,distribution_metrics,high_level_features,response_bins,wasserstein_1d
 
 
@@ -51,7 +51,7 @@ def evaluate_checkpoint(checkpoint_path,geometry_path,manifest_path,splits_path,
                     batch = {name: value[:remaining] for name, value in batch.items()}
             p4=batch['p4_total_gev'].to(device); out=model.sample(p4,int(config['evaluation'].get('profile_steps',8)),int(config['evaluation'].get('share_steps',8)),seed+seen,True)
             truth.append(batch['cell_energy_gev'].numpy()); generated.append(out.cell_energy.cpu().numpy()); kinetic.append(batch['kinetic_energy_gev'].numpy())
-            inv_reports.append(invariant_report(output=out, layer_index=model.layer_index, valid_mask=model.valid_mask, threshold_gev=model.threshold_gev, tolerance=float(config['evaluation'].get('closure_tolerance_gev',2e-5))))
+            inv_reports.append(invariant_report(output=out, layer_index=model.layer_index, valid_mask=model.valid_mask, threshold_gev=model.threshold_gev, tolerance=closure_tolerances(config)[0], relative_tolerance=closure_tolerances(config)[1]))
             seen+=len(p4)
     if not truth:
         raise RuntimeError('evaluation selection is empty')

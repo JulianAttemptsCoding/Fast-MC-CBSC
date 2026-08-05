@@ -59,6 +59,31 @@ The exporter stops on:
 - structural invariant failure;
 - epoch artifact overwrite.
 
+**The two closure invariants are bounded on an energy-scaled tolerance, changed
+2026-08-05.** The bound is
+`max(evaluation.closure_tolerance_gev, evaluation.closure_tolerance_relative *
+total_response)`. The absolute floor is unchanged at 2e-5 GeV and still binds
+below the 2 GeV crossover; the relative term is 1e-5 in configs frozen from
+2026-08-05 onward and **defaults to 0.0**, so a config frozen earlier keeps the
+original absolute-only rule and its runs stay reproducible.
+
+The reason is that these invariants compare float32 reductions over thousands of
+cells, so the residual is a few units in the last place of the magnitude being
+summed and grows with it, while an absolute tolerance does not. At 300 GeV a
+single float32 ULP is 3.05e-5 GeV and already exceeded the entire 2e-5
+tolerance. This ended `dicos-p10` at epoch 40 on an otherwise perfect epoch.
+Every term — absolute floor, relative term, scale, and the effective bound — is
+written into each invariant report so any verdict can be recomputed from the
+record. **Anything compared across this change is a new declared experiment.**
+
+`RUN/reports/visualization/invariant_failure_epoch_NNNN.json` carries the
+reduced invariants, the tolerance terms, the checkpoint SHA-256, and every
+per-position row with its `selection_position`, `dataset_index`,
+`generation_seed`, `kinetic_energy_gev` and `total_response_max_gev`. Note that
+`RUN/reports/invariant_epoch_NNNN.json` is a **different, much smaller** check —
+seven fixed conditions against the visualization's 50x5 — so `"pass": true`
+there is not evidence that the visualization passed.
+
 Artifacts are written under:
 
 ```text

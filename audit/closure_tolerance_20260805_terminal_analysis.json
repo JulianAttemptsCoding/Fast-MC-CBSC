@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-terminal-analysis",
+  "name": "closure_tolerance_20260805",
+  "created_at": "2026-08-05",
+  "change_class": "DECLARED THRESHOLD CHANGE",
+  "authorized_by": "project owner, explicit delegation after options and costs were presented",
+  "option_chosen": "A - scale-aware tolerance",
+  "comparability": "anything compared across this change is a new declared experiment",
+  "qa_labels": [
+    "QA PASS",
+    "PHYSICS VALIDATION NOT ESTABLISHED"
+  ],
+  "why_no_workaround": {
+    "option_c_as_documented": "change nothing, add automatic resume",
+    "finding": "option C does not work",
+    "reasons": [
+      "the trainer restores RNG state from the checkpoint and the visual bank is a fixed 50x5 selection with per-position seeds, so resuming from best.pt re-runs identical epochs and re-hits the identical failure - an infinite loop",
+      "resuming from the failing last.pt is forbidden: it is an artifact quarantined by an invariant failure"
+    ],
+    "consequence": "a 20-epoch run had roughly a coin-flip chance of dying with no legitimate recovery path"
+  },
+  "defect": {
+    "field": "evaluation.closure_tolerance_gev",
+    "was": "absolute 2e-5 GeV",
+    "bounds": [
+      "layer_closure_max_gev",
+      "event_closure_max_gev"
+    ],
+    "nature_of_residual": "float32 reduction error over thousands of cells; a few units in the last place of the magnitude summed, therefore scaling with it",
+    "breaking_point": "at 300 GeV one float32 ULP is 3.05e-5 GeV, already exceeding the whole 2e-5 tolerance"
+  },
+  "measurement": {
+    "sources": [
+      "_diag/dicos-p10/viz_invariants_epoch_0040.json",
+      "_diag/dicos-p10/viz_invariants_epoch_0039_control.json"
+    ],
+    "rows": 100,
+    "residual_over_ulp_of_total_response": {
+      "max": 7.0,
+      "p99": 7.0,
+      "p95": 5.0,
+      "median": 1.0
+    },
+    "residual_over_total_response": {
+      "max": 8.052e-07,
+      "p95": 4.071e-07,
+      "median": 8.377e-08
+    },
+    "total_response_range_gev": [
+      1.0692,
+      36.9113
+    ],
+    "conclusion": "the residual is ULP-quantized: bounded and small in ULP, varying 100x in absolute terms"
+  },
+  "change": {
+    "bound": "max(closure_tolerance_gev, closure_tolerance_relative * total_response)",
+    "closure_tolerance_gev": {
+      "value": 2e-05,
+      "status": "unchanged",
+      "note": "still binds below the 2 GeV crossover"
+    },
+    "closure_tolerance_relative": {
+      "value": 1e-05,
+      "status": "new",
+      "default": 0.0
+    },
+    "backward_compatibility": "the 0.0 default means every config frozen before 2026-08-05 keeps the exact absolute-only rule and its accepted runs stay reproducible",
+    "declared_by": "scripts/build_final_continuation.py, only for configs it generates from 2026-08-05"
+  },
+  "why_1e_minus_5": {
+    "headroom_over_measured_noise_ceiling": "12x above 8.052e-07 relative",
+    "margin_below_a_real_defect": "a single mis-decoded cell shifts a layer budget by of order the cell energy, ~0.05 GeV at 33 GeV = 1.5e-3 relative, roughly 150x above the tolerance",
+    "crossover_with_absolute_floor_gev": 2.0,
+    "assessment": "admits float32 noise without admitting a defect; the ~150x gap between regimes means the choice is not delicate"
+  },
+  "empirical_validation": {
+    "method": "replay all 100 measured rows under the new rule",
+    "fail_under_old_rule": 1,
+    "fail_under_new_rule": 0,
+    "tightest_row": {
+      "residual_gev": 2.670288e-05,
+      "tolerance_gev": 0.0003316457,
+      "total_response_gev": 33.1646,
+      "budget_used_fraction": 0.081,
+      "headroom_factor": 12.4,
+      "source": "epoch 40, selection position 36"
+    },
+    "structural_fields_all_rows": {
+      "nonfinite": 0,
+      "negative": 0,
+      "outside_valid_support": 0,
+      "support_mask_mismatch": 0,
+      "count_mismatch_max": 0,
+      "requested_realized_mismatch_max": 0,
+      "dust_cells": 0
+    }
+  },
+  "defect_found_during_implementation": {
+    "bug": "max(absolute, relative * scale) applied unconditionally raises a deliberately negative tolerance to 0.0 when relative is 0.0",
+    "symptom": "tests/test_epoch_visualization.py::test_epoch_visualization_writes_evidence_when_invariants_fail reported DID NOT RAISE, because it forces failure by setting closure_tolerance_gev = -1.0 and an exact-zero residual then passed",
+    "fix": "the relative branch participates only when relative > 0.0",
+    "pinned_by": "tests/test_closure_tolerance.py::test_a_deliberately_negative_tolerance_is_not_raised_to_zero",
+    "note": "exactly the failure mode AGENTS.md 23 exists to catch - a change that made a guard stop guarding. Caught by the suite, not by inspection."
+  },
+  "files_changed": [
+    "src/cbsc_zdc/eval/invariants.py",
+    "src/cbsc_zdc/training/trainer.py",
+    "src/cbsc_zdc/eval/visualization.py",
+    "src/cbsc_zdc/eval/evaluator.py",
+    "src/cbsc_zdc/cloud/vertex_stage.py",
+    "scripts/build_final_continuation.py",
+    "tests/test_closure_tolerance.py",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs/VISUALIZATION_DASHBOARD.md"
+  ],
+  "single_reader": "closure_tolerances(config) serves all five gates so they cannot drift apart",
+  "gates_sharing_the_tolerance": {
+    "_checkpoint_invariant_gate": {
+      "draws_per_epoch": 7,
+      "fatal": true
+    },
+    "export_epoch_visualization": {
+      "draws_per_epoch": 250,
+      "fatal": true
+    },
+    "asymmetry_unchanged": "the 7-draw gate can still pass while the 250-draw export fails"
+  },
+  "agents_md_rule_added": 28,
+  "verification": {
+    "compileall": "exit 0",
+    "pytest": "265 passed",
+    "test_count_change": {
+      "from": 257,
+      "to": 265,
+      "reason": "eight new contracts in tests/test_closure_tolerance.py"
+    }
+  },
+  "boundary": {
+    "changed": "a diagnostic threshold only",
+    "unchanged": [
+      "model",
+      "loss",
+      "data",
+      "split",
+      "seed",
+      "any selection rule"
+    ],
+    "establishes_about_fidelity": "nothing",
+    "p10_epoch_40": "remains ARTIFACT QUARANTINED; it was quarantined under the old rule and re-auditing it under the new one is a separate declared act that has not been performed. It is not a valid parent."
+  }
+}
