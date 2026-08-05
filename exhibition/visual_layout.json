@@ -32,10 +32,6 @@
     "may_select_current_checkpoint": false
   },
   "needed_outside_exhibition_exceptions": [
-    "dashboard/dist/client/favicon.svg",
-    "dashboard/dist/client/file.svg",
-    "dashboard/dist/client/globe.svg",
-    "dashboard/dist/client/window.svg",
     "dashboard/public/favicon.svg",
     "dashboard/public/file.svg",
     "dashboard/public/globe.svg",
@@ -45,7 +41,6 @@
     "paper/CBSC_ZDC_Auditor_Specification_v2_2.pdf"
   ],
   "outside_exception_rationale": {
-    "dashboard/dist/client/*.svg": "generated production-build copies needed for local deployment-package QA",
     "dashboard/public/*.svg": "required application-shell source icons",
     "legacy/**/paper/*.pdf": "immutable historical specification evidence",
     "paper/CBSC_ZDC_Auditor_Specification_v2_2.pdf": "active project specification document"
@@ -53,13 +48,18 @@
   "ignored_directory_names": [
     ".git",
     ".mypy_cache",
+    ".next",
     ".pytest_cache",
     ".ruff_cache",
     ".venv",
     ".vinext",
+    ".wrangler",
     "__pycache__",
-    "node_modules"
+    "dist",
+    "node_modules",
+    "out"
   ],
+  "ignored_directory_rationale": "Build outputs and dependency trees are gitignored, so requiring their contents to exist makes this contract fail on any clean checkout while proving nothing about project evidence. The guard's purpose is to catch a graphic escaping exhibition/current or exhibition/archive into tracked source; ignoring generated directories preserves that purpose and makes the check reproduce identically on the workstation, the pods, and a fresh clone.",
   "root_html_exception": {
     "path": "exhibition/index.html",
     "reason": "required non-substantive landing/router page for current and archive"

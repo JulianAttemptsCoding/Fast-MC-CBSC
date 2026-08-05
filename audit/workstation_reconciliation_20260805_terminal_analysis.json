@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-terminal-analysis",
+  "name": "workstation_reconciliation_20260805",
+  "created_at": "2026-08-05",
+  "phase": "organization and verification only",
+  "training_launched_this_session": false,
+  "event_generation_this_session": false,
+  "paid_compute_used": false,
+  "test_events_used": 0,
+  "qa_labels": [
+    "QA PASS",
+    "PHYSICS VALIDATION NOT ESTABLISHED"
+  ],
+
+  "starting_state": {
+    "workstation_commit": "ca69349bdb6e10f24a050eda874536eb135642f5",
+    "workstation_worktree": {
+      "modified": 47,
+      "deleted": 153,
+      "untracked": 12
+    },
+    "pod_repo_commit": "e56aa14757181f02ae351fa77bf9650c1003a3d1",
+    "pod_repo_clean": true,
+    "origin_main_commit": "e56aa14757181f02ae351fa77bf9650c1003a3d1",
+    "rtx_4090": "0 MiB, 0 %, no dicos_train in process tree",
+    "rtx_3090": "1 MiB, 0 %, no dicos_train by self-match-safe /proc scan",
+    "any_job_active": false
+  },
+
+  "corrected_intermediate_conclusion": {
+    "wrong_claim": "the pod repository is 19 commits ahead of origin/main",
+    "cause": "git rev-list --left-right --count origin/main...HEAD was run before any git fetch, so origin/main was a cached ref still pinned at ca69349",
+    "truth": "the prior session's push had succeeded; origin/main was already e56aa14",
+    "durable_fix": "session-start checklist must run git fetch before comparing against origin/main"
+  },
+
+  "actual_defect": {
+    "summary": "the workstation checkout was 19 commits behind and additionally carried a partial degraded copy of some of those commits as uncommitted worktree edits",
+    "collateral_loss_found": [
+      "legacy/ - 65 tracked files deleted from disk, untouched by the pod commits",
+      "fixtures/ - untracked locally at ca69349, tracked by the pod commits, absent from disk"
+    ],
+    "observed_symptom": "pytest 1 failed, 203 passed; FileNotFoundError fixtures/outfile_neutron1_schema_fixture.root"
+  },
+
+  "dirty_worktree_disposition": {
+    "policy": "never discard a dirty worktree",
+    "action": "committed whole to a labelled branch before any other operation",
+    "branch": "backup/local-worktree-20260805",
+    "commit": "7a9e39e",
+    "then": "main fast-forwarded to e56aa14, restoring legacy/ and fixtures/ from tracked blobs"
+  },
+
+  "transport": {
+    "method": "git bundle of ca69349..HEAD created inside the permitted pod workdir",
+    "artifact": "_transfer_pod_commits.bundle",
+    "bytes": 17440712,
+    "sha256": "4bbfd83fbcbcbb4c98496a92249b23d68b063043fdf48779a0b2caafd6f9012b",
+    "hash_verified_both_ends": true,
+    "note": "a plain git pull would have produced the same result once the fetch was done; the bundle was built before that was known and is recorded because it is what ran"
+  },
+
+  "loss_analysis": {
+    "files_only_in_backup": 0,
+    "files_differing": 27,
+    "identical_to_ca69349_stale_copies": 17,
+    "genuinely_locally_edited": 10,
+    "substance_confirmed_present_in_main": [
+      "src/cbsc_zdc/eval/visualization.py invariant_failure_epoch_NNNN",
+      "tests/test_epoch_visualization.py evidence test",
+      "AGENTS.md rules 26 and 27",
+      "logs.md - main 7642 lines vs backup 7147"
+    ],
+    "not_a_superset_in_either_direction": {
+      "path": "audit/p10_failure_20260804_terminal_analysis.json",
+      "main_keys_only": ["academic_boundary", "checkpoint", "completed_epochs", "created_at", "epoch_40_validation_diagnostic", "failure", "imported_evidence", "kind", "live_state_verified_2026_08_04T06_09Z", "name", "schema_version"],
+      "backup_keys_only": ["backend", "date", "doc_pass", "epoch_40_diagnostics", "extends", "finding", "fixed_this_session", "format_version", "outputs_refreshed", "phase", "public_repo_commit", "qa_labels", "scientific_boundary", "source_commit", "standings_unchanged", "supersedes", "termination", "training_launched_this_session", "worktree_at_start"],
+      "decision": "main version kept; dropped provenance remains recoverable at 7a9e39e",
+      "follow_up": "do not delete backup/local-worktree-20260805 without deciding what to do with those provenance fields"
+    }
+  },
+
+  "repaired_failures": [
+    {
+      "id": "stale-manifest-source-hashes",
+      "failing_tests": [
+        "tests/test_exhibition_metrics.py::test_manifests_and_accepted_metric_summaries_agree",
+        "tests/test_epoch_evidence_pipeline.py::test_complete_gallery_references_every_graphic"
+      ],
+      "error": "exhibition source hash mismatch: audit/compute_extension_20260727_r2_terminal_analysis.json",
+      "manifest_expected": "fd24d699d9081ac86f79086362bdd981ac7071540ab199e0e2738fc8c476ca0a",
+      "file_actual": "2e64cbca13afdca6ed64e5d410f59d8ebaabefeb4669d0f9e1d968d02778892e",
+      "crlf_ruled_out": {
+        "crlf_count": 0,
+        "bare_lf_count": 132,
+        "as_is_sha256": "2e64cbca13afdca6ed64e5d410f59d8ebaabefeb4669d0f9e1d968d02778892e",
+        "lf_normalized_sha256": "2e64cbca13afdca6ed64e5d410f59d8ebaabefeb4669d0f9e1d968d02778892e",
+        "conclusion": "identical, so line endings were not the cause"
+      },
+      "cause": "manifest was built against earlier content of three audit files",
+      "fix": "python exhibition/build_exhibition.py regenerated the manifest",
+      "new_manifest_sha256": "069476089bc003d2437a7098af6a819596a101017ab1813cfd799c5a84c18bec",
+      "thresholds_or_assertions_changed": "none"
+    },
+    {
+      "id": "qa-contract-required-gitignored-build-output",
+      "failing_tests": [
+        "tests/test_exhibition_metrics.py::test_every_exhibition_graphic_decodes_or_parses",
+        "tests/test_epoch_evidence_pipeline.py::test_complete_gallery_references_every_graphic"
+      ],
+      "error": "outside-exhibition visual exceptions changed; missing=['dashboard/dist/client/favicon.svg','dashboard/dist/client/file.svg','dashboard/dist/client/globe.svg','dashboard/dist/client/window.svg']",
+      "cause": "exhibition/visual_layout.json listed four files under dashboard/dist/ as required exceptions, but .gitignore line 47 ignores /dashboard/dist/ because it is Next.js build output; the contract therefore asserted the presence of an artifact the repository deliberately does not carry, and failed on this checkout and on any fresh clone, both pods, and CI",
+      "identity_of_the_four_files": "stock Next.js scaffold icons copied at build time from dashboard/public/, whose tracked originals remain in the exception list",
+      "fix": "removed the four dist entries and their rationale from needed_outside_exhibition_exceptions; added dist, out, .next and .wrangler to ignored_directory_names beside the existing node_modules, .venv and .vinext entries; added a written ignored_directory_rationale",
+      "guard_intent_preserved": "catch a graphic escaping exhibition/current or exhibition/archive into tracked source",
+      "guard_intent_unchanged": true,
+      "what_was_removed": "a dependency on untracked generated output",
+      "agents_md_27_assessment": "AGENTS.md 27 governs declared diagnostic thresholds; this is a build-artifact inventory and no scientific value moved"
+    }
+  ],
+
+  "verification": {
+    "compileall": "exit 0 over src vertex scripts tests exhibition",
+    "pytest": "257 passed, 8 known Transformer nested-tensor warnings",
+    "expected_test_count_change": {
+      "from": 204,
+      "to": 257,
+      "reason": "204 was the workstation's stale figure; the pod session added nine test modules and extended four"
+    },
+    "build_exhibition": {
+      "visuals": 23,
+      "selected_validation_position": 21,
+      "manifest_sha256": "069476089bc003d2437a7098af6a819596a101017ab1813cfd799c5a84c18bec"
+    },
+    "build_metrics_catalog": {
+      "graphics": 117,
+      "current": 65,
+      "archive": 52,
+      "status": "PASS",
+      "all_png_decoded": true,
+      "all_svg_parsed": true,
+      "all_manifest_hashes_match": true,
+      "accepted_metric_summaries_agree": true
+    },
+    "build_continuation_loss_figures": "exit 0",
+    "build_all_metric_trends": {
+      "epochs": "16..40",
+      "numeric_metric_leaf_count": 348,
+      "figures": 8
+    },
+    "public_repo": {
+      "unittest": "7 tests OK",
+      "npm_ci": "0 vulnerabilities",
+      "npm_run_build": "built in 1.37 s"
+    },
+    "live_url": {
+      "url": "https://julianattemptscoding.github.io/Fast-MC-Visual-Tests/",
+      "http_status": 200,
+      "bytes": 1314,
+      "sha256": "7693d96826286da5f5b461796e79e6c5235f1f8c4d07a00c7db9cf5df859b307",
+      "title": "CBSC-ZDC Event Observatory"
+    }
+  },
+
+  "standings_unchanged": {
+    "calibrated_lr3e4": {"validation_loss": 4.597151546143159, "epoch": 22, "run": "dicos-p7", "rank": 1},
+    "calibrated_lr1e4": {"validation_loss": 4.635219681489869, "epoch": 38, "run": "dicos-p9", "rank": 2},
+    "calibrated_lr1e4_halfbatch": {"validation_loss": 4.673036, "epoch": 21, "run": "dicos-p7", "rank": 3},
+    "calibrated_lr3e5": {"validation_loss": 4.843471, "epoch": 8, "run": "dicos-r3", "rank": 4}
+  },
+
+  "quarantine_in_force": {
+    "artifact": "calibrated_lr1e4_dicos-p10 epoch 40",
+    "state": "ARTIFACT QUARANTINED",
+    "not_a_valid_parent": true
+  },
+
+  "publication": {
+    "owed": false,
+    "reason": "no family's lowest verified validation loss changed",
+    "public_site_serving": "dicos-p9-calibrated-lr1e4:joint:0038"
+  },
+
+  "scientific_boundary": {
+    "established": "optimization improvement on the 26,624/6,656 pilot bank under fixed-condition validation-only QA",
+    "not_established": [
+      "Geant4 fidelity",
+      "three-seed behavior",
+      "untouched-test performance",
+      "downstream reconstruction fidelity",
+      "diversity or memorization acceptance"
+    ],
+    "c2st_auroc_range_all_epochs_measured": "0.77-0.92",
+    "c2st_threshold_never_approached": 0.65
+  },
+
+  "standing_hazard_recorded": {
+    "observation": "a ps -eo pid,ppid,etime,args probe on the 4090 printed the JupyterLab command line containing --NotebookApp.token=<value>",
+    "handling": "value not copied into any file, commit, log or message",
+    "durable_fix": "future process-tree probes on a pod must filter that command out rather than print it verbatim"
+  },
+
+  "environment": {
+    "workstation_python": "3.13.1",
+    "workstation_node": "v22.14.0",
+    "pod_venvs": "untouched",
+    "gpu_time_consumed": "none"
+  }
+}

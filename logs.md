@@ -7640,3 +7640,171 @@ data split, threshold, or test event was touched.
   split into extra arguments. No remote command ran and no state changed. The
   retry uses separate plain `git pull`, `git status --porcelain`, and
   `git rev-parse` clauses without nested quoting.
+
+## 2026-08-05 — workstation reconciliation with the pushed pod state, and three repaired exhibition-QA failures
+
+No training, no event generation, no pod writes other than one `git bundle`
+written inside the permitted workdir. Zero test events used.
+
+### Starting state, established rather than read from a document
+
+    workstation  ca69349  worktree dirty: 47 M, 153 D, 12 ??
+    RTX 4090     0 MiB, 0 %, no dicos_train in the process tree
+    RTX 3090     1 MiB, 0 %, no dicos_train found by a self-match-safe /proc scan
+    pod repo/    e56aa14, clean
+    origin/main  e56aa14
+
+**A stale remote-tracking ref produced one wrong intermediate conclusion, and it
+is recorded because the correction matters.** `git rev-list --left-right --count
+origin/main...HEAD` was run before any `git fetch`, so it compared against a
+local `origin/main` still pinned at `ca69349` and reported the pod as 19 commits
+ahead of the remote. It was not. The prior session's push had succeeded and
+`origin/main` was already `e56aa14`. The lesson is that `origin/main` without a
+preceding `fetch` is a cached value, not remote state, and the session-start
+checklist in `CLAUDE.md` and the handoff should say `git fetch` first.
+
+The real defect was narrower and local: **the workstation checkout was 19
+commits behind and additionally carried a partial, degraded copy of some of
+those same commits as uncommitted worktree edits.** The local tree had also lost
+two directories that the pod commits do not touch — all 65 tracked files under
+`legacy/` and the untracked `fixtures/` — so `pytest` reported
+`1 failed, 203 passed` with
+`FileNotFoundError: fixtures/outfile_neutron1_schema_fixture.root`.
+
+### Disposition of the dirty worktree — preserved, never discarded
+
+The worktree was committed whole to a labelled branch before anything else:
+
+    backup/local-worktree-20260805   7a9e39e
+
+`main` was then fast-forwarded, which restored `legacy/` and `fixtures/` from
+their tracked blobs. The transport was a `git bundle` of `ca69349..HEAD` built
+in the pod workdir and verified by hash on both ends:
+
+    _transfer_pod_commits.bundle
+    17,440,712 bytes
+    sha256 4bbfd83fbcbcbb4c98496a92249b23d68b063043fdf48779a0b2caafd6f9012b
+
+A plain `git pull` would have produced the same result once the fetch was done;
+the bundle was built before that was known and is recorded because it is what
+actually ran.
+
+**Nothing was lost.** `git diff --name-status main..backup/...` reports zero `A`
+entries — no file exists in the backup that is absent from `main`. Of 27 files
+differing, 17 were byte-identical to their `ca69349` versions (stale local
+copies). The 10 genuinely locally-edited files were each checked for whether
+`main` already carries their substance:
+
+    src/cbsc_zdc/eval/visualization.py   invariant_failure_epoch_NNNN  present in main
+    tests/test_epoch_visualization.py    the new evidence test         present in main
+    AGENTS.md                            rules 26 and 27               present in main
+    logs.md                              main 7,642 lines vs backup 7,147, main ahead
+
+One file is not a superset in either direction:
+`audit/p10_failure_20260804_terminal_analysis.json`. The pod rewrote it under a
+different schema. `main`'s version carries the failure numbers, the checkpoint
+identity, and the epoch-40 validation diagnostic; the backup version carries
+provenance fields the rewrite dropped — `source_commit`, `worktree_at_start`,
+`backend`, `qa_labels`, `supersedes`. **`main`'s version is kept and the dropped
+provenance remains recoverable at `7a9e39e`.** Do not delete that branch without
+deciding what to do with those fields.
+
+### Three exhibition-QA failures on arrival, and what each actually was
+
+Reconciled `main` did not pass its own suite: `3 failed, 254 passed`.
+
+**One — three stale source hashes in `exhibition/manifest.json`.**
+
+    exhibition source hash mismatch:
+      audit/compute_extension_20260727_r2_terminal_analysis.json
+      manifest fd24d699d9081ac86f79086362bdd981ac7071540ab199e0e2738fc8c476ca0a
+      actual   2e64cbca13afdca6ed64e5d410f59d8ebaabefeb4669d0f9e1d968d02778892e
+
+CRLF was ruled out before anything was changed: the file contains 0 CRLF and 132
+bare LF, and its as-is and LF-normalized digests are identical. The manifest was
+simply built against earlier content of three audit files. `python
+exhibition/build_exhibition.py` regenerated it — 23 visuals,
+`selected_validation_position` 21, new manifest
+`069476089bc003d2437a7098af6a819596a101017ab1813cfd799c5a84c18bec` — and two of
+the three failures cleared. No threshold and no assertion moved.
+
+**Two — a QA contract that required gitignored build output to exist.**
+
+    ValueError: outside-exhibition visual exceptions changed; missing=[
+      'dashboard/dist/client/favicon.svg', 'dashboard/dist/client/file.svg',
+      'dashboard/dist/client/globe.svg',   'dashboard/dist/client/window.svg']
+
+`verify_visual_layout` walks the repository for graphic files outside
+`exhibition/` and requires the set to equal
+`needed_outside_exhibition_exceptions` exactly. Four of those entries live under
+`dashboard/dist/`, which `.gitignore:47` ignores because it is Next.js build
+output. The contract therefore failed on this checkout and would fail on any
+fresh clone, on both pods, and in CI — it was asserting the presence of an
+artifact the repository deliberately does not carry. The four files are the
+stock Next.js scaffold icons, copied at build time from `dashboard/public/`,
+whose tracked originals remain in the exception list.
+
+Fixed in `exhibition/visual_layout.json` by removing the four `dist` entries and
+their rationale, and adding `dist`, `out`, `.next` and `.wrangler` to
+`ignored_directory_names` beside the `node_modules`, `.venv` and `.vinext`
+entries already there. A written `ignored_directory_rationale` now states why.
+**This does not weaken the guard.** Its purpose is to catch a graphic escaping
+`exhibition/current` or `exhibition/archive` into tracked source, and that is
+unchanged; what was removed is a dependency on untracked generated output. The
+allowlist stays exact and still rejects any unexpected outside-exhibition
+visual. `AGENTS.md` 27 governs declared diagnostic thresholds; this is a
+build-artifact inventory and no scientific value moved.
+
+### Verification, all run after every edit above was in place
+
+    PYTHONPATH=src python -m compileall -q src vertex scripts tests exhibition  exit 0
+    PYTHONPATH=src python -m pytest -q                   257 passed, 8 warnings
+    python exhibition/build_exhibition.py                23 visuals
+      manifest 069476089bc003d2437a7098af6a819596a101017ab1813cfd799c5a84c18bec
+    python exhibition/build_metrics_catalog.py           117 graphics, status PASS
+      65 current / 52 archive, all PNG decoded, all SVG parsed,
+      all manifest hashes match, accepted summaries agree
+    python exhibition/build_continuation_loss_figures.py exit 0
+    python exhibition/build_all_metric_trends.py         25 epochs 16..40,
+      348 numeric metric leaves, 8 figures
+
+    public repo  python -m unittest discover -s tests    7 tests OK
+    public repo  npm ci                                  0 vulnerabilities
+    public repo  npm run build                           built in 1.37 s
+    live URL     https://julianattemptscoding.github.io/Fast-MC-Visual-Tests/
+      HTTP 200, 1,314 bytes,
+      sha256 7693d96826286da5f5b461796e79e6c5235f1f8c4d07a00c7db9cf5df859b307
+      title "CBSC-ZDC Event Observatory"
+
+**The expected test count moves 204 -> 257.** 204 was the workstation's stale
+figure; the pod session added `test_archive_exhibition_snapshot`,
+`test_dicos_diag_producer`, `test_dicos_diagnostics_watch`,
+`test_dicos_external_metrics_controller`, `test_epoch_evidence_pipeline`,
+`test_exhibition_metrics`, `test_external_validation_bank`,
+`test_hydrate_dashboard_evidence` and `test_refresh_continuation_outputs`, and
+extended four more. `CLAUDE.md` and handoff section 16 are updated to 257.
+
+### Standings and boundary — both unchanged by this session
+
+    calibrated_lr3e4            4.597152  epoch 22  dicos-p7   best
+    calibrated_lr1e4            4.635220  epoch 38  dicos-p9
+    calibrated_lr1e4_halfbatch  4.673036  epoch 21  dicos-p7
+    calibrated_lr3e5            4.843471  epoch  8  dicos-r3
+
+`dicos-p10` epoch 40 remains `ARTIFACT QUARANTINED`. No family's lowest verified
+validation loss changed, so no publication was owed and none was made; the
+public site still serves `dicos-p9-calibrated-lr1e4:joint:0038`.
+`PHYSICS VALIDATION NOT ESTABLISHED`. C2ST AUROC remains 0.77-0.92 at every
+epoch measured.
+
+### Incidental, recorded because it is a standing hazard
+
+A `ps -eo pid,ppid,etime,args` probe on the 4090 printed the JupyterLab command
+line, which contains `--NotebookApp.token=<value>`. The value was not copied
+into any file, commit, log or message. Any future process-tree probe on a pod
+should filter that command out rather than print it verbatim.
+
+### Environment
+
+Python 3.13.1, Node v22.14.0 on the workstation. Pod venvs untouched. No paid
+compute. No DiCOS GPU time consumed.

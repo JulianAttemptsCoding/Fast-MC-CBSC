@@ -1279,10 +1279,6 @@
     "current_reaches_latest_observed_epoch": 40,
     "exhibition_manifest_visuals": 23,
     "needed_outside_exhibition_exceptions": [
-      "dashboard/dist/client/favicon.svg",
-      "dashboard/dist/client/file.svg",
-      "dashboard/dist/client/globe.svg",
-      "dashboard/dist/client/window.svg",
       "dashboard/public/favicon.svg",
       "dashboard/public/file.svg",
       "dashboard/public/globe.svg",

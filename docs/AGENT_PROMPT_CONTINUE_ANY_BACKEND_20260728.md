@@ -80,8 +80,13 @@ Before any experiment or edit:
 5. read `CLAUDE.md` if present — it carries the host-specific operating rules
    (paths, `PYTHONPATH=src`, account identities) that this backend-neutral
    document deliberately does not hard-code;
-6. inspect `git status --short`, `git log -5 --oneline`, remotes, and
-   `git rev-list --left-right --count origin/main...HEAD` in both repositories;
+6. run `git fetch origin` **before** comparing anything, then inspect
+   `git status --short`, `git log -5 --oneline`, remotes, and
+   `git rev-list --left-right --count origin/main...HEAD` in both repositories.
+   Without the fetch, `origin/main` is a cached ref rather than remote state.
+   Also compare against the DiCOS `repo/` checkout — it is a full clone that
+   commits and pushes, so the workstation can legitimately be *behind* it, and
+   on 2026-08-05 it was, by 19 commits;
 7. read the newest entries in `logs.md` and the newest
    `audit/*_terminal_analysis.{json,md}`;
 8. verify from the **process tree**, not from a log, that no unknown job is
@@ -1650,15 +1655,23 @@ Run from the source repository:
 
 ```bash
 export PYTHONPATH=src                     # PowerShell: $env:PYTHONPATH='src'
-python -m compileall -q src vertex scripts tests
-PYTHONPATH=src python -m pytest -q         # expect 244 passed as of 2026-08-04
+python -m compileall -q src vertex scripts tests exhibition
+PYTHONPATH=src python -m pytest -q         # expect 257 passed as of 2026-08-05
 python exhibition/build_exhibition.py     # expect 23 visuals; verify the manifest hash
+python exhibition/build_metrics_catalog.py       # expect 117 graphics; status PASS
+python exhibition/build_continuation_loss_figures.py
+python exhibition/build_all_metric_trends.py     # expect 348 numeric metric leaves
 ```
+
+The count reached 257 on 2026-08-05. Earlier figures in this file (203, 204,
+244) are superseded; each was accurate when written and each was overtaken by a
+session that added test modules. If your count disagrees, establish which
+modules exist before assuming a regression.
 
 Run from the public repository:
 
 ```bash
-python -m unittest discover -s tests -v   # expect 8 tests
+python -m unittest discover -s tests -v   # expect 7 tests (verified 2026-08-05)
 npm ci
 npm run build
 ```
@@ -1735,13 +1748,19 @@ Before you answer, establish state — do not report from this document, which
 was written at a moment that has passed:
 
 ```bash
-cd "$SOURCE_REPO" && git status --short && git log -5 --oneline \
+cd "$SOURCE_REPO" && git fetch origin && git status --short && git log -5 --oneline \
   && git rev-list --left-right --count origin/main...HEAD
-cd "$PUBLIC_REPO" && git status --short && git log -3 --oneline
+cd "$PUBLIC_REPO" && git fetch origin && git status --short && git log -3 --oneline
 PYTHONPATH=src python scripts/dicos.py exec \
   'nvidia-smi --query-gpu=name,memory.used,utilization.gpu --format=csv,noheader; \
    ps -eo pid,etime,args | grep "[d]icos_train" || echo NONE'
+PYTHONPATH=src python scripts/dicos.py exec \
+  'cd "<WORKDIR>/repo" && git fetch origin && git log -1 --oneline && git status --short'
 ```
+
+The `git fetch` calls are load-bearing. `origin/main` without one is a cached
+ref, and the pod `repo/` checkout commits and pushes on its own, so the
+workstation being behind is a normal state rather than a fault.
 
 Then start your response with:
 
