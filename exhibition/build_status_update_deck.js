@@ -254,6 +254,21 @@ function stat(slide, x, y, w, value, label, valueColor) {
   s.addNotes("Both curves improve with energy, as expected for a sampling calorimeter. Fast-MC tracks the shape but sits consistently above the control.");
 }
 
+// ------------------------- 7. energy-resolved response bias vs epoch
+{
+  const s = contentSlide(
+    "Response bias resolved by incident energy, every epoch",
+    "Dotted red are the predeclared thresholds. Purple dashed marks a quarantined checkpoint."
+  );
+  fitImage(s, F("exhibition/current/diagnostics/energy_bins_vs_epoch.png"),
+    { x: 0.5, y: 1.36, w: 12.4, h: 4.55 });
+  s.addText(
+    "The 100–125 GeV bin sits near +0.40 mean response bias for 25 consecutive epochs, far outside the ±0.05 band, and does not improve as the loss falls. Most other bins stay inside or near the band.",
+    { x: 0.9, y: 6.05, w: 11.6, h: 0.75,
+      fontFace: BODY_FONT, fontSize: 13, color: SLATE, margin: 0 });
+  s.addNotes("This is a structured, energy-localised defect rather than global noise, and it is not being fixed by further optimization.");
+}
+
 // ------------------------------------------------- 7. classifier
 {
   const s = contentSlide(
@@ -300,6 +315,69 @@ function stat(slide, x, y, w, value, label, valueColor) {
 
   footer(s, "The condition-only control sits exactly at chance, so the separation comes from the calorimeter deposits and not from mismatched incident conditions.");
   s.addNotes("The condition-only control at exactly 0.5 with p = 1.0 is the important sanity check. Also note the high-level GBM beats the low-level hybrid here, which says the remaining discrepancy lives in summary shower observables, not in fine per-cell structure.");
+}
+
+// ------------------------- 9. separability vs energy
+{
+  const s = contentSlide(
+    "Separability does not depend on incident energy",
+    "Monitoring-holdout AUROC per energy bin, accepted best checkpoint."
+  );
+  fitImage(s, F("exhibition/current/external_metrics/current_auroc_vs_energy.png"),
+    { x: 1.6, y: 1.4, w: 10.1, h: 4.15 });
+  stat(s, 1.6, 5.72, 3.2, "0.82 – 0.93", "AUROC across every energy bin", PURPLE);
+  stat(s, 5.05, 5.72, 3.2, "0.65", "acceptance gate, never reached", "8C2F2F");
+  stat(s, 8.5, 5.72, 3.2, "0.50", "chance, for reference", MUTED);
+  s.addNotes("There is no energy window in which the generator becomes hard to distinguish. The discrepancy is present across the whole claim domain.");
+}
+
+// ------------------------- 10. distribution metrics vs epoch
+{
+  const s = contentSlide(
+    "Distribution metrics across 25 consecutive epochs",
+    "4,000 fixed validation events per epoch. Dotted red are predeclared thresholds."
+  );
+  fitImage(s, F("exhibition/current/diagnostics/headline_vs_epoch.png"),
+    { x: 0.5, y: 1.34, w: 12.4, h: 4.7 });
+  s.addText(
+    "Top left is the whole fidelity story: AUROC moves between 0.77 and 0.92 over 25 epochs and never approaches the 0.65 gate, while the validation loss improves steadily. Bottom centre: Fast-MC emits roughly twice as many zero-response events as Geant4 throughout.",
+    { x: 0.9, y: 6.15, w: 11.6, h: 0.72,
+      fontFace: BODY_FONT, fontSize: 12.5, color: SLATE, margin: 0 });
+  s.addNotes("The key point for colleagues: optimization progress and distribution fidelity are decoupled here. A better loss has not bought a less detectable generator.");
+}
+
+// ------------------------- 11. observable means vs epoch
+{
+  const s = contentSlide(
+    "Nine shower observables: means against Geant4, every epoch",
+    "Green is the Geant4 mean on the same fixed validation events; orange is Fast-MC."
+  );
+  // Near-square nine-panel figure: a tall left column keeps the panel labels
+  // readable, where a full-width box would squeeze it to 6.7 inches.
+  fitImage(s, F("exhibition/current/diagnostics/feature_moments_vs_epoch.png"),
+    { x: 0.45, y: 1.28, w: 8.7, h: 5.55 });
+  s.addText(
+    [{ text: "Systematic offsets, not noise.\n\n", options: { bold: true } },
+     { text: "Total response runs about 14% high.\n\nRadial RMS is consistently too wide.\n\nLeading-cell fraction is too low and ECAL fraction too high.\n\nHit count and the two transverse centroids sit close to Geant4." }],
+    { x: 9.3, y: 1.7, w: 3.6, h: 4.9,
+      fontFace: BODY_FONT, fontSize: 12.5, color: SLATE, margin: 0 });
+  s.addNotes("These are the observables a reconstruction would actually use, so the offsets matter more than the aggregate loss.");
+}
+
+// ------------------------- 12. observable spreads vs epoch
+{
+  const s = contentSlide(
+    "The same nine observables: spreads against Geant4",
+    "Event-to-event standard deviation. Getting the mean right is not the same as getting the width right."
+  );
+  fitImage(s, F("exhibition/current/diagnostics/feature_resolutions_vs_epoch.png"),
+    { x: 0.45, y: 1.28, w: 8.7, h: 5.55 });
+  s.addText(
+    [{ text: "Right mean, wrong width.\n\n", options: { bold: true } },
+     { text: "Fast-MC over-disperses total response: about 5.1 against Geant4's 4.4.\n\nIt under-disperses hit count and leading-cell fraction.\n\nHit count is the clearest case - the mean matches on the previous slide, the width does not.\n\nThis is exactly the kind of mismatch a classifier exploits." }],
+    { x: 9.3, y: 1.7, w: 3.6, h: 4.9,
+      fontFace: BODY_FONT, fontSize: 12.5, color: SLATE, margin: 0 });
+  s.addNotes("Worth pausing on: several observables have the right central value and the wrong spread, which is exactly what a classifier picks up on.");
 }
 
 // ------------------------------------------------- 8. profiles

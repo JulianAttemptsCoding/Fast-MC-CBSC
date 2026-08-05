@@ -13,8 +13,8 @@ sitting here looking like evidence.
 | | |
 |---|---|
 | Built | 2026-08-05 |
-| Slides | 12 |
-| SHA-256 | `cfb3acc0e5166e74ced10be015359bb12ca2ebc2aa8981c36042d5cad80d785b` |
+| Slides | 17 |
+| SHA-256 | `ea6c7ee6eed76ee62fb5c6dafc57c64b250a720c97f06a223016c9141cad3fd5` |
 | Generator | `exhibition/build_status_update_deck.js` |
 | Audience | Project colleagues who last saw the 2026-07-28 state |
 
@@ -22,8 +22,16 @@ sitting here looking like evidence.
 study's AUROC of `0.99945`, and showed no energy reconstruction at all. This deck
 adds the four-family loss progression through epoch 40, the first downstream
 four-momentum reconstruction measured against a Geant4 control run through the
-identical readout adapter, the current low-level C2ST monitor, and the
-same-condition profile, 3D and distribution comparisons.
+identical readout adapter, the current low-level C2ST monitor, per-epoch trends
+for the distribution metrics and for nine shower observables against Geant4 in
+both mean and spread, energy-resolved response bias against the predeclared
+thresholds, and the same-condition profile, 3D and distribution comparisons.
+
+**It is results only, by request.** No architecture diagram, no data or geometry
+contract, no method slides. `current/model/07` and `current/model/08` are
+deliberately not used. `external_metrics_at_new_accepted_bests.png` is also
+deliberately not used: it currently holds a single point at epoch 38 and reads
+as an empty plot.
 
 **One thing the deck is careful about, and any future version must stay careful
 about.** The July `0.99945` and today's `0.8727` are *not* the same measurement:

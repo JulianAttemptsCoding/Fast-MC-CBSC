@@ -1136,13 +1136,13 @@
         "width": 2446
       },
       {
-        "bytes": 2469429,
+        "bytes": 3859770,
         "category": "current_presentations",
         "format": "pptx",
         "path": "current/presentations/CBSC_ZDC_status_update_20260805.pptx",
         "scope": "current",
-        "sha256": "cfb3acc0e5166e74ced10be015359bb12ca2ebc2aa8981c36042d5cad80d785b",
-        "slides": 12
+        "sha256": "ea6c7ee6eed76ee62fb5c6dafc57c64b250a720c97f06a223016c9141cad3fd5",
+        "slides": 17
       }
     ],
     "total": 119
@@ -1319,7 +1319,7 @@
     "current": {
       "bytes": 18868,
       "path": "current/index.html",
-      "sha256": "88159cde6c465b9ca37dded929f1e69bad8ff1cf6334d3072c810e57988e6570"
+      "sha256": "4f9a35e603871a889ee480dc120831ffb13581fa867c1e5d12e88ec0e92e45ff"
     }
   },
   "test_split_accounting": {

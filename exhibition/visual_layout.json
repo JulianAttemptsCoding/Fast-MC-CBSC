@@ -46,6 +46,7 @@
     "paper/CBSC_ZDC_Auditor_Specification_v2_2.pdf": "active project specification document"
   },
   "ignored_directory_names": [
+    ".claude",
     ".git",
     ".mypy_cache",
     ".next",
@@ -59,7 +60,7 @@
     "node_modules",
     "out"
   ],
-  "ignored_directory_rationale": "Build outputs and dependency trees are gitignored, so requiring their contents to exist makes this contract fail on any clean checkout while proving nothing about project evidence. The guard's purpose is to catch a graphic escaping exhibition/current or exhibition/archive into tracked source; ignoring generated directories preserves that purpose and makes the check reproduce identically on the workstation, the pods, and a fresh clone.",
+  "ignored_directory_rationale": "Build outputs, dependency trees and agent worktrees are gitignored, so requiring their contents to exist makes this contract fail on any clean checkout while proving nothing about project evidence. The guard's purpose is to catch a graphic escaping exhibition/current or exhibition/archive into tracked source; ignoring generated directories preserves that purpose and makes the check reproduce identically on the workstation, the pods, and a fresh clone. `.claude` is listed because `.claude/worktrees/<name>/` holds a full second checkout whenever a background task is running, and every exhibition figure in it would otherwise register as an unexpected outside-exhibition visual.",
   "root_html_exception": {
     "path": "exhibition/index.html",
     "reason": "required non-substantive landing/router page for current and archive"
