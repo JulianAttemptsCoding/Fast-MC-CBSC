@@ -57,10 +57,11 @@
     ".wrangler",
     "__pycache__",
     "dist",
+    "external_models",
     "node_modules",
     "out"
   ],
-  "ignored_directory_rationale": "Build outputs, dependency trees and agent worktrees are gitignored, so requiring their contents to exist makes this contract fail on any clean checkout while proving nothing about project evidence. The guard's purpose is to catch a graphic escaping exhibition/current or exhibition/archive into tracked source; ignoring generated directories preserves that purpose and makes the check reproduce identically on the workstation, the pods, and a fresh clone. `.claude` is listed because `.claude/worktrees/<name>/` holds a full second checkout whenever a background task is running, and every exhibition figure in it would otherwise register as an unexpected outside-exhibition visual.",
+  "ignored_directory_rationale": "Build outputs, dependency trees and agent worktrees are gitignored, so requiring their contents to exist makes this contract fail on any clean checkout while proving nothing about project evidence. The guard's purpose is to catch a graphic escaping exhibition/current or exhibition/archive into tracked source; ignoring generated directories preserves that purpose and makes the check reproduce identically on the workstation, the pods, and a fresh clone. `.claude` is listed because `.claude/worktrees/<name>/` holds a full second checkout whenever a background task is running, and every exhibition figure in it would otherwise register as an unexpected outside-exhibition visual. `external_models` is listed for the same reason: `scripts/build_audit_bundle.py` stages the sibling evaluator repositories there, each of which carries its own figures, and without this the shipped bundle fails its own test suite on arrival.",
   "root_html_exception": {
     "path": "exhibition/index.html",
     "reason": "required non-substantive landing/router page for current and archive"

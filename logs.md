@@ -8270,3 +8270,79 @@ Both epochs sit above the inherited 4.597152 parent best, which is the expected
 shape: the continued cosine was resumed at the annealed 1e-6 and is climbing
 back toward peak before it can improve. That is the same trajectory `dicos-p9`
 took before its 0.067 improvement, and it is not yet evidence either way.
+
+### 2026-08-05 — external audit bundle
+
+Built for an outside reviewer at the owner's request.
+
+    CBSC_ZDC_audit_bundle_20260805.zip
+    109,139,425 bytes (104.1 MB), cap 255 MB
+    sha256 0131f3114707973ca8dc17f73932e95664657972a54d43ededaa31dc7580e337
+    1,383 files, 148.0 MB uncompressed
+    builder scripts/build_audit_bundle.py
+
+Contents: the full tracked repository (684 files), `CLAUDE.md`, the two sibling
+evaluator repositories, the four accepted-best dashboard payloads, live campaign
+evidence pulled from the pod, and four generated files — `AUDIT_README.md`,
+`GIT_PROVENANCE.md`, `MANIFEST.sha256` and a standard-library `verify_bundle.py`.
+
+**The builder works from `git ls-files`, not a directory walk.** That is the
+primary control: an untracked local file cannot be swept in by accident, which
+is exactly how a credential would escape. `POD_ACCESS.local.md` is present on
+this workstation and holds live tokens.
+
+**Three fail-closed refusals**, none of which write an archive: a denylisted
+path, a live credential, or exceeding the size cap. The credential check is the
+strong one — it reads the real values out of `~/.dicos/*.json` and the pod-access
+note and searches every staged file for them verbatim, including binaries. The
+values are never printed, logged or written. Result: **4 live values searched
+for, 0 findings across 1,383 files.**
+
+An independent post-extraction sweep confirmed it: `POD_ACCESS.local.md`, `.git`,
+`node_modules`, `.venv` and `.claude` all absent; zero checkpoint files; zero
+files containing a live credential.
+
+**The two evaluator repositories are pinned and verified, not just copied.**
+
+    external_models/classifier_c2st__Fast-MC-tester    1e7abc59  452 files
+    external_models/four_momentum__ASIoP-ZDC-2         34aeaa61  232 files
+
+Each commit is the one recorded as `external_repo_commit` in the corresponding
+`metrics.json`, and the build refuses if the checkout has moved — shipping a
+different evaluator than the numbers came from would make the bundle misleading.
+Both matched on the first attempt.
+
+**Two defects found by testing the shipped artifact rather than the source
+tree.** Extracting the archive into a clean directory and running the suite
+there produced failures the repository does not have:
+
+1. **5 failures** because `external_models/` carries the evaluator repos' own
+   figures, which the exhibition layout guard counted as visuals escaping
+   `current/` and `archive/`. Same class as the `.claude/worktrees` case earlier
+   today. `external_models` added to `ignored_directory_names` with the reason
+   written down.
+2. **4 remaining failures** because four tests resolve the *accepted-best*
+   dashboard payload per family, and `dashboard/public/data/*.json` is gitignored
+   — about 870 MB across 68 files, so `git ls-files` skipped all of it. The
+   builder now stages exactly those four (54.5 MB), derived from
+   `public_snapshots.json` rather than hardcoded so the selection cannot drift.
+   The other 46 referenced epochs are omitted and `AUDIT_README.md` says so.
+
+Both were invisible from the source tree. A bundle that fails its own suite on
+arrival is worse than no bundle, because it costs the reviewer's trust before
+they read anything.
+
+    final verification, on the extracted archive
+      zipfile.testzip()                OK
+      verify_bundle.py                 1,383/1,383 verified, 0 missing,
+                                       0 changed, 0 unmanifested
+      PYTHONPATH=src pytest -q         294 passed
+
+`AUDIT_README.md` is written to point the reviewer at the weak points rather
+than sell the work: the AUROC 0.77-0.92 separability result is stated as the
+headline, the five known concrete defects are listed, the untouched-test
+remainder is given as the honest 36,100-36,300 range, and five open questions
+are posed. Copies kept in-repo as `docs/AUDIT_BUNDLE_README.md` and
+`scripts/verify_audit_bundle.py`.
+
+Repository verification unchanged at 294 passed, catalog 119 graphics PASS.
