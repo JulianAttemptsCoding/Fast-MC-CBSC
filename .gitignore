@@ -62,3 +62,6 @@ Thumbs.db
 /POD_ACCESS.local.md
 *.local.md
 *.secrets
+
+# Campaign refresh working directory (pulled from the pod, never authoritative)
+/.campaign_scratch/
