@@ -8346,3 +8346,69 @@ are posed. Copies kept in-repo as `docs/AUDIT_BUNDLE_README.md` and
 `scripts/verify_audit_bundle.py`.
 
 Repository verification unchanged at 294 passed, catalog 119 graphics PASS.
+
+### 2026-08-05 — `dicos-c-02` produces a new project best, and two defects fixed
+
+**`calibrated_lr3e4` reached validation 4.5503306071196254 at epoch 34**, against
+the inherited 4.597151546143159 from `dicos-p7` epoch 22. That is an improvement
+of **0.046821**, roughly 2.3x the ~0.02 run-to-run resolution, so it is a real
+improvement rather than noise. It is the lowest validation loss the project has
+produced.
+
+    _runs/calibrated_lr3e4_dicos-c-02/checkpoints/best.pt
+      epoch 34, best_metric 4.5503306071196254
+      sha256 5995c86a89f9a9c36a966c4ced5102d697663ac0958e49814763961e25bc2089
+
+Trajectory over the segment, absolute epochs 23..42:
+
+    23 4.600282   28 4.589876   33 4.577270   38 4.636858
+    24 4.641767   29 4.656522   34 4.550331   39 4.593581
+    25 4.652393   30 4.629731   35 4.572274   40 4.643115
+    26 4.612053   31 4.610056   36 4.606194   41 4.608568
+    27 4.695695   32 4.593310   37 4.613150   42 4.595299
+
+The first five epochs sat above the parent best, which is the expected shape of a
+resumed cosine climbing back from an annealed 1e-6 toward peak; the improvement
+arrived once it had. This is the same pattern `dicos-p9` showed.
+
+**Standings, provisional pending the epoch-34 diagnostics and a checkpoint
+re-verification:**
+
+    calibrated_lr3e4            4.550331  epoch 34  dicos-c-02   <- new best
+    calibrated_lr1e4            4.635220  epoch 38  dicos-p9
+    calibrated_lr1e4_halfbatch  4.673036  epoch 21  dicos-p7
+    calibrated_lr3e5            4.843471  epoch  8  dicos-r3
+
+The `lr3e4` lead over `lr1e4` widens from 0.038068 to **0.084889**.
+
+**A publication is now owed** under the standing policy, because a family's
+lowest verified validation loss changed. It has not been made: publication is a
+deliberate act, the segment was still running at the time of writing, and the
+epoch-34 checkpoint should be independently re-verified first.
+
+**The declared continue rule will advance the chain.** Best epoch 34 against
+latest epoch 42 is a distance of 8, outside the 6-epoch improvement window, so
+`classify()` returns `advance_family` and the campaign moves to
+`calibrated_lr1e4_halfbatch`. That is the owner's rule operating as declared, not
+a judgement made now.
+
+### Two defects fixed
+
+1. **An open Office document broke the exhibition catalog.** PowerPoint writes a
+   `~$name.pptx` lock file beside a document it has open; it is transient and
+   unreadable while held, and `graphic_inventory` tried to hash it:
+   `PermissionError: [Errno 13] Permission denied:
+   exhibition/current/presentations/~$CBSC_ZDC_status_update_20260805.pptx`.
+   The inventory now skips `~$` files. This would have hit anyone who opened a
+   bundled deck and then rebuilt.
+
+2. **`refresh_campaign_outputs.py` could never bootstrap a new run tag.** It read
+   the latest diagnostic epoch from
+   `exhibition/data/diagnostics/<tag>/` and skipped the family when that was
+   empty -- but populating that directory is precisely what the refresh it
+   skipped would have done. It reported
+   `calibrated_lr3e4/dicos-c-02: no diagnostics imported yet, skipping` while 11
+   metrics files sat on the pod. It now asks the pod for the epoch and falls back
+   to local only when the pod cannot be reached.
+
+Verification after both: `294 passed`, catalog `119 graphics, status PASS`.

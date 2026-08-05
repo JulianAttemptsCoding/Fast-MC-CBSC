@@ -104,6 +104,10 @@ def graphic_inventory() -> list[dict]:
     for path in sorted([
         *HERE.rglob("*.png"), *HERE.rglob("*.svg"), *HERE.rglob("*.pptx")
     ]):
+        # Word/PowerPoint write a `~$name` lock file beside an open document.
+        # It is transient, unreadable while the app holds it, and not evidence.
+        if path.name.startswith("~$"):
+            continue
         relative = path.relative_to(HERE).as_posix()
         scope = relative.split("/", 1)[0]
         if scope not in {"current", "archive"}:

@@ -86,13 +86,26 @@ def segments_by_family(events: list[dict]) -> dict[str, list[str]]:
 
 
 def latest_epoch(family: str, tag: str) -> int | None:
+    """Highest epoch with a diagnostic metric, asked of the pod first.
+
+    Looking only at the local directory cannot bootstrap a new run tag: the
+    refresh that populates it is the very thing being skipped. The pod is the
+    authority while a campaign is live, so ask it, and fall back to whatever is
+    already local when it cannot be reached.
+    """
+    listing = _dicos(["exec", f'ls _diag/{tag}/metrics_epoch_*.json 2>/dev/null || true'],
+                     config="config_3090.json")
+    remote = [
+        int(name.rsplit("_", 1)[1].split(".")[0])
+        for name in listing.split()
+        if "metrics_epoch_" in name and name.endswith(".json")
+    ]
     directory = ROOT / "exhibition" / "data" / "diagnostics" / tag
-    if not directory.exists():
-        return None
-    epochs = [
+    local = [
         int(path.stem.rsplit("_", 1)[1])
         for path in directory.glob("metrics_epoch_*.json")
-    ]
+    ] if directory.exists() else []
+    epochs = remote + local
     return max(epochs) if epochs else None
 
 
