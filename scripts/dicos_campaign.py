@@ -247,9 +247,30 @@ def prepare_segment(plan: SegmentPlan, workdir: Path, paths: dict,
     frozen_dir = workdir / "prep" / "configs"
     frozen_dir.mkdir(parents=True, exist_ok=True)
     frozen = frozen_dir / f"frozen_{plan.family}_{plan.run_tag}.yaml"
+
+    # A pod expires, the campaign is relaunched, and this segment is prepared
+    # again. Freezing is deterministic given the same template and artifacts, so
+    # an existing config is reusable exactly when re-freezing reproduces it byte
+    # for byte. Anything else is a real disagreement and must stop the campaign
+    # rather than be overwritten -- a frozen config is never edited in place.
+    candidate = frozen_dir / f".frozen_{plan.family}_{plan.run_tag}.candidate.yaml"
+    candidate.unlink(missing_ok=True)
+    freeze(paths, built.path, candidate)
     if frozen.exists():
-        raise CampaignError(f"frozen config already exists, refusing to overwrite: {frozen}")
-    freeze(paths, built.path, frozen)
+        existing_sha = sha256_file(frozen)
+        candidate_sha = sha256_file(candidate)
+        if existing_sha != candidate_sha:
+            candidate.unlink(missing_ok=True)
+            raise CampaignError(
+                f"frozen config {frozen} already exists with sha256 {existing_sha} "
+                f"but re-freezing this segment produces {candidate_sha}. Refusing "
+                "to overwrite a frozen config; resolve which is correct by hand."
+            )
+        candidate.unlink(missing_ok=True)
+        journal.event("frozen_config_reused", run_tag=plan.run_tag,
+                      path=str(frozen), sha256=existing_sha)
+    else:
+        candidate.replace(frozen)
 
     parent_frozen = Path(campaign["families"][plan.family]["parent_frozen"])
     if not parent_frozen.is_absolute():
