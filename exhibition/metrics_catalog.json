@@ -2,7 +2,7 @@
   "comprehensive_gallery": {
     "bytes": 1421,
     "path": "index.html",
-    "sha256": "00b9a92aca64185c9de7a04fba5ebd7e9b669a7ff284d6584a125629034321db"
+    "sha256": "6a10fd5d93c6c9c078d9bada41c13e722df6f86427bab8dec126062232db4cac"
   },
   "graphics": {
     "count_by_category": {
@@ -10,17 +10,27 @@
       "current_continuation_and_standings": 6,
       "current_external_metric_source_evidence": 5,
       "current_model_and_contract": 11,
+      "current_presentations": 1,
       "current_validation_diagnostics": 34,
-      "historical_c2st_test_study": 33,
+      "historical_c2st_test_study": 34,
       "historical_common_window_snapshot": 12,
       "historical_miscellaneous": 1,
       "historical_paired_test_exception": 6
     },
     "count_by_scope": {
-      "archive": 52,
-      "current": 65
+      "archive": 53,
+      "current": 66
     },
     "files": [
+      {
+        "bytes": 3721156,
+        "category": "historical_c2st_test_study",
+        "format": "pptx",
+        "path": "archive/c2st_20260728/CBSC_ZDC_FastMC_overview.pptx",
+        "scope": "archive",
+        "sha256": "48f81cf92679870924762b03d3098481737cff42ef3b84cbdbe9717ff7587fde",
+        "slides": 46
+      },
       {
         "bytes": 70461,
         "category": "historical_c2st_test_study",
@@ -1124,9 +1134,18 @@
         "scope": "current",
         "sha256": "a0b40cbcd2feff369587e023418e346b568db8d43fdb25ca224fcd9135e1ebd5",
         "width": 2446
+      },
+      {
+        "bytes": 2469429,
+        "category": "current_presentations",
+        "format": "pptx",
+        "path": "current/presentations/CBSC_ZDC_status_update_20260805.pptx",
+        "scope": "current",
+        "sha256": "cfb3acc0e5166e74ced10be015359bb12ca2ebc2aa8981c36042d5cad80d785b",
+        "slides": 12
       }
     ],
-    "total": 117
+    "total": 119
   },
   "metrics": {
     "accepted_best_external_metrics": {
@@ -1293,14 +1312,14 @@
   "schema_version": 1,
   "scoped_galleries": {
     "archive": {
-      "bytes": 19970,
+      "bytes": 20158,
       "path": "archive/index.html",
-      "sha256": "9556e9e22482186ef4867ac239fa73702ecaee2b9cd24c24b912d226304eb6cf"
+      "sha256": "5f92818132921e8dd05f7985eba5aa8cc48f6c41b1da374b2d57dc71d39099ad"
     },
     "current": {
-      "bytes": 18484,
+      "bytes": 18868,
       "path": "current/index.html",
-      "sha256": "19358e491f47b2515bf021b58066d459b55beaf598cf795377f7eb60caed746a"
+      "sha256": "88159cde6c465b9ca37dded929f1e69bad8ff1cf6334d3072c810e57988e6570"
     }
   },
   "test_split_accounting": {

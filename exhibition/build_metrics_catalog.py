@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import html
 import json
+import zipfile
 import re
 import xml.etree.ElementTree as ET
 from collections import Counter
@@ -48,6 +49,8 @@ def category(path: Path) -> str:
         return "current_external_metric_source_evidence"
     if relative.startswith("current/external_metrics/"):
         return "current_accepted_best_external_metrics"
+    if relative.startswith("current/presentations/"):
+        return "current_presentations"
     if relative.startswith("archive/common_window_20260727/"):
         return "historical_common_window_snapshot"
     if relative.startswith("archive/c2st_20260728/"):
@@ -94,7 +97,13 @@ def verify_c2st_manifests() -> int:
 
 def graphic_inventory() -> list[dict]:
     records = []
-    for path in sorted([*HERE.rglob("*.png"), *HERE.rglob("*.svg")]):
+    # Slide decks are cataloged too. They were previously invisible here, so
+    # the archived C2ST overview was the one exhibition artifact whose bytes
+    # nothing verified -- a deck is exactly the artifact that leaves the group
+    # and is therefore the one most worth hashing.
+    for path in sorted([
+        *HERE.rglob("*.png"), *HERE.rglob("*.svg"), *HERE.rglob("*.pptx")
+    ]):
         relative = path.relative_to(HERE).as_posix()
         scope = relative.split("/", 1)[0]
         if scope not in {"current", "archive"}:
@@ -118,10 +127,29 @@ def graphic_inventory() -> list[dict]:
                 raise ValueError(f"undersized graphic {relative}: {width}x{height}")
             record["width"] = width
             record["height"] = height
-        else:
+        elif path.suffix == ".svg":
             root = ET.parse(path).getroot()
             if not root.tag.endswith("svg"):
                 raise ValueError(f"invalid SVG root: {relative}")
+        else:
+            # A .pptx is a ZIP of OOXML parts. Verify it actually opens and
+            # carries a presentation part, so a truncated or half-written deck
+            # cannot sit in the exhibition looking like evidence.
+            with zipfile.ZipFile(path) as archive:
+                broken = archive.testzip()
+                if broken is not None:
+                    raise ValueError(f"corrupt deck member in {relative}: {broken}")
+                names = set(archive.namelist())
+            required = {"[Content_Types].xml", "ppt/presentation.xml"}
+            missing = sorted(required - names)
+            if missing:
+                raise ValueError(f"deck {relative} is missing {missing}")
+            record["slides"] = sum(
+                1 for name in names
+                if name.startswith("ppt/slides/slide") and name.endswith(".xml")
+            )
+            if record["slides"] < 1:
+                raise ValueError(f"deck {relative} contains no slides")
         records.append(record)
     return records
 
@@ -254,6 +282,7 @@ def scoped_gallery(graphics: list[dict], scope: str, output: Path) -> Path:
         "current_external_metric_source_evidence": (
             "Current accepted-best evaluator source figures"
         ),
+        "current_presentations": "Current status-update slide decks",
         "historical_common_window_snapshot": "Historical common-window snapshot",
         "historical_c2st_test_study": "Historical isolated C2ST test study",
         "historical_paired_test_exception": "Historical paired test exception",
@@ -277,6 +306,22 @@ def scoped_gallery(graphics: list[dict], scope: str, output: Path) -> Path:
                 for fmt, record in sorted(by_format.items())
             )
             title = Path(stem).name.replace("_", " ").title()
+            if display is None:
+                # A slide deck carries no raster to thumbnail. It is still
+                # cataloged and hashed; it just renders as a download card.
+                deck = next(iter(by_format.values()))
+                slides = deck.get("slides")
+                detail = f"{slides} slides" if slides else deck["format"].upper()
+                cards.append(
+                    '<figure class="document"><figcaption><strong>'
+                    + html.escape(title)
+                    + "</strong><span>"
+                    + html.escape(detail)
+                    + " · "
+                    + links
+                    + "</span></figcaption></figure>"
+                )
+                continue
             cards.append(
                 '<figure><a class="image" href="'
                 + html.escape(Path(display["path"]).relative_to(scope).as_posix())

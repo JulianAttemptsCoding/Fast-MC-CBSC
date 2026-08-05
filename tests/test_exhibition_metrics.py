@@ -79,9 +79,12 @@ def test_current_gallery_is_complete_and_reaches_latest_evidence() -> None:
     payload = json.loads(
         (ROOT / "exhibition" / "metrics_catalog.json").read_text(encoding="utf-8")
     )
+    # 52 -> 53 and 65 -> 66 on 2026-08-05, when slide decks joined the
+    # inventory: the archived C2ST overview and the new colleague status
+    # update. The counts stay exact so an unnoticed addition still fails.
     assert payload["graphics"]["count_by_scope"] == {
-        "archive": 52,
-        "current": 65,
+        "archive": 53,
+        "current": 66,
     }
     assert payload["qa"]["current_reaches_latest_observed_epoch"] == 40
     assert payload["qa"]["all_graphics_under_current_or_archive"] is True
@@ -113,3 +116,35 @@ def test_every_local_gallery_link_and_image_target_exists() -> None:
                 continue
             target = (page.parent / parsed.path).resolve()
             assert target.is_file(), f"{page.relative_to(HERE)} -> {value}"
+
+
+def test_slide_decks_are_cataloged_hashed_and_structurally_valid() -> None:
+    """A deck is the artifact that actually leaves the group, so it must be QA'd.
+
+    Before 2026-08-05 the inventory globbed only PNG and SVG, so the archived
+    C2ST overview deck was the one exhibition artifact whose bytes nothing
+    verified. Decks are now hashed like any other graphic, and a truncated or
+    half-written one fails the build rather than sitting in the exhibition
+    looking like evidence.
+    """
+    decks = [row for row in catalog.graphic_inventory() if row["format"] == "pptx"]
+    assert decks, "no slide deck is being cataloged"
+    for deck in decks:
+        assert deck["scope"] in {"current", "archive"}
+        assert len(deck["sha256"]) == 64
+        assert deck["bytes"] > 0
+        assert deck["slides"] >= 1
+        assert (HERE / deck["path"]).is_file()
+
+
+def test_the_colleague_status_update_deck_is_present_and_current() -> None:
+    graphics = {row["path"]: row for row in catalog.graphic_inventory()}
+    deck = graphics.get(
+        "current/presentations/CBSC_ZDC_status_update_20260805.pptx"
+    )
+    assert deck is not None, "the status-update deck is not in the catalog"
+    assert deck["category"] == "current_presentations"
+    assert deck["scope"] == "current"
+    # Every figure it embeds must still exist under current/, or the deck is
+    # showing evidence the exhibition no longer carries.
+    assert deck["slides"] >= 10

@@ -16,8 +16,8 @@ remain visible as negative evidence.
 
 ## Graphics inventory
 
-Validated graphics: **117**.
-Current: **65**. Archive: **52**.
+Validated graphics: **119**.
+Current: **66**. Archive: **53**.
 
 | Category | PNG/SVG files |
 |---|---:|
@@ -25,8 +25,9 @@ Current: **65**. Archive: **52**.
 | `current_continuation_and_standings` | 6 |
 | `current_external_metric_source_evidence` | 5 |
 | `current_model_and_contract` | 11 |
+| `current_presentations` | 1 |
 | `current_validation_diagnostics` | 34 |
-| `historical_c2st_test_study` | 33 |
+| `historical_c2st_test_study` | 34 |
 | `historical_common_window_snapshot` | 12 |
 | `historical_miscellaneous` | 1 |
 | `historical_paired_test_exception` | 6 |

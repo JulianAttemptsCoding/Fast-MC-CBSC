@@ -8187,3 +8187,86 @@ is present in the process tree and **not** defunct, and the run's
 
 `dicos-c-01` is a run tag that produced no epochs and must not be compared
 against anything.
+
+### 2026-08-05 — colleague status-update deck, and slide decks join the catalog
+
+Built at the owner's request for colleagues who last saw the 2026-07-28 state:
+the model running, the C2ST study's AUROC 0.99945, and no energy reconstruction.
+
+    exhibition/current/presentations/CBSC_ZDC_status_update_20260805.pptx
+    12 slides
+    sha256 cfb3acc0e5166e74ced10be015359bb12ca2ebc2aa8981c36042d5cad80d785b
+    generator exhibition/build_status_update_deck.js
+
+Every slide is built around a figure that already exists under
+`exhibition/current/`, so the deck introduces no claim the exhibition cannot
+back. Figures used: the four-family loss history, the accepted running-best
+loss, the four-momentum accuracy bars and their energy dependence, the C2ST seed
+spread, the same-condition longitudinal profiles, the same-condition 3D
+deposits, and the fixed-condition validation distributions.
+
+**The comparison the deck refuses to make.** The July `0.99945` and today's
+`0.8727` are not the same measurement — July used 40,000 **test**-split events
+with a hybrid classifier against **epoch-4** checkpoints; today uses 8,000
+**validation** events with a 3-seed ensemble against an **epoch-38** checkpoint.
+Slide 2 states this in a callout rather than presenting `0.999 -> 0.873` as a
+tracked quantity. Both agree qualitatively: a classifier separates Fast-MC from
+Geant4 easily, and no checkpoint the project has produced approaches the 0.65
+gate.
+
+**Two visual defects found and fixed by QA, neither visible in a file listing.**
+
+1. The first build hard-coded a width and height per image and **stretched seven
+   of eight figures by 10–37%**. Detected by comparing each placed aspect ratio
+   against the PNG's own IHDR dimensions. The generator now fits every figure to
+   its true aspect ratio inside a box.
+2. Correcting the aspect ratios made one figure taller, which put it **through
+   the four stat cards on the running-best slide**. Detected by an explicit
+   image-versus-text overlap scan. Both that slide and the energy-dependence
+   slide were re-laid out.
+
+No LibreOffice is installed on this workstation, so the skill's render-and-look
+QA path was unavailable. Geometry was verified programmatically instead —
+aspect-ratio skew, out-of-bounds shapes, and image/text overlap — and the source
+figures were each inspected at full resolution before use. The decorative
+circles that bleed off slides 1 and 12 are deliberate.
+
+**Slide decks now join the exhibition catalog.** `graphic_inventory` globbed only
+PNG and SVG, so the archived C2ST overview deck was the one exhibition artifact
+whose bytes nothing verified — and a deck is precisely the artifact that leaves
+the group. `exhibition/build_metrics_catalog.py` now also globs `*.pptx`,
+verifies each opens as a ZIP with `[Content_Types].xml` and
+`ppt/presentation.xml`, records its slide count, and hashes it like any other
+graphic. A deck has no raster to thumbnail, so the gallery renders it as a
+download card instead of crashing on a missing display record.
+
+    graphics 117 -> 119   (the new deck, and the archived C2ST deck)
+    current   65 -> 66
+    archive   52 -> 53
+
+The exact scope counts in `tests/test_exhibition_metrics.py` moved with them and
+stay exact, so an unnoticed addition still fails. Two new tests pin that every
+cataloged deck is hashed, structurally valid and non-empty, and that the status
+update deck is present under `current_presentations`.
+
+### Verification
+
+    PYTHONPATH=src python -m pytest -q                  294 passed
+    python exhibition/build_metrics_catalog.py          119 graphics, status PASS
+    pptx schema/relationship/content-type validation    All validations PASSED
+
+Test count 292 -> 294.
+
+### Campaign state at the time of writing
+
+`dicos-c-02` is training and the full evidence chain is verified end to end:
+
+    epoch 23  validation 4.600281582395294
+    epoch 24  validation 4.641767282262554
+    _diag/dicos-c-02/metrics_epoch_0023.json  qa.pass true
+      split_counts {train 0, validation 4000, test 0}
+
+Both epochs sit above the inherited 4.597152 parent best, which is the expected
+shape: the continued cosine was resumed at the annealed 1e-6 and is climbing
+back toward peak before it can improve. That is the same trajectory `dicos-p9`
+took before its 0.067 improvement, and it is not yet evidence either way.
