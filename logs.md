@@ -8110,3 +8110,80 @@ and it does not change any scientific value.
 At the measured 4090 rate of 649.83 s/epoch, one 20-epoch segment is roughly
 **3.6 hours**. Cost on DiCOS is accounted in ASGC SRUs and is not the binding
 constraint; wall-clock and GPU availability are. No paid cloud compute was used.
+
+### `dicos-c-01` aborted after 6 minutes — two defects the launch exposed
+
+Both would have run for hours looking healthy, and neither was visible without
+launching. Recorded in full because the failed-attempts clause is what produces
+every guard in this project.
+
+**One — the diagnostic producer died instantly and silently.**
+
+    ValueError: run directory must be a safe workdir-relative path
+      dicos_diag_producer.py:50 resolve_under <- :309 main
+
+`dicos_diag_producer.py` resolves `--run-dir` and `--wrapper-log` under the
+workdir and refuses anything that escapes it. The supervisor passed **absolute**
+paths, so the producer exited immediately. The campaign log had already recorded
+`producer_started` with its pid, and because nothing waits on the producer until
+the trainer exits, it sat in the process table as `[python] <defunct>` — a
+zombie — while everything else looked correct.
+
+The consequence is the part worth writing down: **the campaign would have
+trained for hours with no checkpoint ever reaching the 3090**, and the first
+symptom would have been an empty `_diag/dicos-c-02/` noticed at the end. It was
+caught only because the process tree was read rather than the log.
+
+Fixed two ways. The producer now gets `run_dir.relative_to(workdir)` and
+`train_log.relative_to(workdir)`, and its liveness is **verified five seconds
+after launch** rather than assumed. A dead producer now terminates the trainer
+and aborts the segment with the producer's log tail in the message, because
+training blind is worse than not training.
+
+**Two — `CBSC_ZDC_SHARD_CACHE` was unset, so the run recorded
+`shard_cache_size: 4`.**
+
+That is the slow-loader configuration that got `dicos-r2` archived as
+`_runs/aborted_r2_slow_loader/`. Every accepted run since has used `0`, which
+keeps all 187 shards resident per worker so a shard is verified once per worker
+rather than thousands of times — never zero times. It is a transport property,
+admitted only after byte-identity was proven over 400 samples through both cache
+sizes (`4ba4d7a713c9c1a574a5f27857a5fe46d8fe1e4a7fa8f456692ea4d367507c9b`).
+
+The symptom was the GPU sitting at 487 MiB and **0% utilization** with the model
+loaded and four loader workers at ~85% CPU: the model was starving, not stalled.
+`env.setdefault("CBSC_ZDC_SHARD_CACHE", "0")` now matches every accepted run.
+
+**Disposition.** No epoch completed, so no scientific evidence was produced or
+lost. Stopped in the safe order — supervisor first, so it could not observe the
+trainer's exit and start a second segment, then the trainer. GPU confirmed
+released at `0 MiB` and a self-match-safe `/proc` scan confirmed `holders: NONE`
+**before** anything was moved, because a live process resolves paths per write
+and would have followed the directory.
+
+Archived rather than deleted:
+
+    _runs/calibrated_lr3e4_dicos-c-01 -> _runs/aborted_c01_producer_path_and_shard_cache/
+    _diag/dicos-c-01                  -> _diag/aborted-c01
+    the train and producer logs moved inside that directory
+
+### Relaunched as `dicos-c-02`
+
+The campaign's own state carried `segments_run=1`, so the relaunch produced a
+**new tag** rather than reusing an aborted one. The parent is unchanged — the
+`dicos-p7` epoch-22 best — and the frozen config was regenerated and matched the
+existing one byte for byte, so the idempotent-freeze path reused it rather than
+overwriting a frozen config.
+
+    started camp02 pid=20972 -> supervisor 20975, trainer 21056, producer 21057
+    2026-08-05T03:06:44Z campaign_start
+    2026-08-05T03:06:46Z segment_frozen    dicos-c-02
+    2026-08-05T03:06:46Z segment_launch    dicos-c-02
+    2026-08-05T03:06:51Z producer_started  dicos-c-02  pid 21057
+
+Both fixes verified in the live run rather than in the diff: producer pid 21057
+is present in the process tree and **not** defunct, and the run's
+`environment.json` records `shard_cache_size: 0`.
+
+`dicos-c-01` is a run tag that produced no epochs and must not be compared
+against anything.

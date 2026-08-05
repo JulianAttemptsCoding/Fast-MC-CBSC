@@ -516,15 +516,77 @@ about Geant4 fidelity, and anything about governed-test performance. The phase
 used the pilot bank and zero test events; the separately disclosed historical
 test exceptions and exact remaining-count uncertainty are in §3.
 
-### 7b. STATE VERIFIED 2026-08-04T17:55:00+08:00 — read this before doing anything
+### 7b0. STATE AS OF 2026-08-05 — TRAINING IS RUNNING. Establish it yourself.
 
-**Nothing is training or generating. Both GPUs are idle, proved from their
-process trees.** The RTX 4090 reported `0 MiB / 0%`; the RTX 3090 reported
-`1 MiB / 0%`; self-match-safe `/proc` scans found no trainer, diagnostic
-producer, or diagnostic consumer on either. The shared checkout is `07c1dda`;
-the updated 4090 pipeline suite passed 21 tests and immutable artifact
-verification passed 18/18. The project owner has explicitly requested
-organization and QA only: do not start or resume training in this phase.
+**A campaign is in flight on both GPUs.** Do not read liveness from this file;
+the previous revision said "nothing is training" and was correct when written.
+
+    PYTHONPATH=src python scripts/dicos.py exec \
+      'cd "<WORKDIR>" && nvidia-smi --query-gpu=memory.used,utilization.gpu \
+         --format=csv,noheader; ps -eo pid,etime,args | grep "[d]icos_campaign"; \
+       tail -3 _campaign/camp-20260805/events.jsonl'
+
+**Campaign `camp-20260805`,** declared by the project owner on 2026-08-05:
+continue `calibrated_lr3e4` in 20-epoch segments; after each segment continue the
+same family if `latest_epoch - best_epoch <= 6`, otherwise advance to
+`calibrated_lr1e4_halfbatch`, then `calibrated_lr3e5`. `calibrated_lr1e4` is
+excluded by the owner's instruction. Plan and hashes:
+`configs/campaigns/campaign_20260805.json`. Evidence:
+`audit/campaign_20260805_terminal_analysis.{json,md}`.
+
+Two long-lived processes, both started from the workstation:
+
+| job | pod | what it is |
+|---|---|---|
+| `camp02` | RTX 4090 | `scripts/dicos_campaign.py`, which owns the trainer and the diagnostic producer for every segment |
+| `campdiag` | RTX 3090 | `scripts/dicos_diagnostics.py --watch-root _diag`, which follows every run tag as it appears |
+
+The campaign supervisor freezes each segment through the CLI and **reads its own
+diff** against the parent frozen config, refusing to launch if anything outside
+the allowed continuation delta moved. It refuses to launch if the run directory
+exists or another trainer is in the process tree. It cannot be resumed past a
+structural invariant failure — that is terminal for a family and it advances —
+because the failing `last.pt` is quarantined and resuming from `best.pt` would
+deterministically reproduce the same failure.
+
+**To stop the campaign:** kill the supervisor **first**, so it cannot observe the
+trainer's exit and start another segment, then the trainer. Then write
+`_diag/CAMPAIGN_STOP` to end the 3090 consumer once its queues drain.
+
+**To bring every local output current, at any time:**
+
+```bash
+python scripts/refresh_campaign_outputs.py
+```
+
+It derives family, run tag, run directory, expected epoch and lineage from the
+campaign's own recorded state, because those change every segment and a wrong
+`--lineage` silently drops the earlier epochs from every trend figure. It does
+**not** publish; publication stays the deliberate act described in §14.
+
+**What is not autonomous, and why it is not a matter of effort.** The pods have
+no Node, so the public site cannot be built there. The only writable directory on
+DiCOS is the multi-tenant project workdir and `$HOME` is not writable, so a git
+credential would have to sit where other tenants can read it — so no pod pushes.
+And the exhibition builders write into `exhibition/current/`, so running them
+inside the pod's `repo/` checkout would dirty the clean tree that the pre-launch
+gate and every `git pull` depend on. Per-epoch **metrics** do accumulate on the
+pod; figures are a deterministic rendering of them.
+
+**`closure_tolerance_gev` was corrected on 2026-08-05** and every campaign
+segment uses the energy-scaled form, so these segments are a new declared
+experiment relative to any run frozen before it. See `AGENTS.md` 28 and
+`audit/closure_tolerance_20260805_terminal_analysis.{json,md}`.
+
+### 7b. STATE VERIFIED 2026-08-04T17:55:00+08:00 — superseded by §7b0 above
+
+**This section describes the moment before the campaign started. Its liveness
+claim is stale; its evidence is not.** The RTX 4090 reported `0 MiB / 0%`; the
+RTX 3090 reported `1 MiB / 0%`; self-match-safe `/proc` scans found no trainer,
+diagnostic producer, or diagnostic consumer on either. The shared checkout is
+`07c1dda`; the updated 4090 pipeline suite passed 21 tests and immutable artifact
+verification passed 18/18. The owner's "organization and QA only" instruction
+recorded here was lifted on 2026-08-05, when they asked for training to continue.
 
 The complete current exhibition was rebuilt offline and is byte-reproducible
 across all 145 tracked files. It contains 87 validated PNG/SVG graphics,

@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-terminal-analysis",
+  "name": "campaign_20260805",
+  "created_at": "2026-08-05",
+  "campaign_id": "camp-20260805",
+  "status": "training in flight; no scientific conclusion available or claimed",
+  "qa_labels": ["QA PASS", "PHYSICS VALIDATION NOT ESTABLISHED"],
+
+  "declaration": {
+    "question": "Does the strongest calibrated family continue improving on the 26,624/6,656 pilot bank when given further 20-epoch segments, and does the ordering between families survive being given comparable numbers of epochs?",
+    "chain": ["calibrated_lr3e4", "calibrated_lr1e4_halfbatch", "calibrated_lr3e5"],
+    "segment_epochs": 20,
+    "improvement_window": 6,
+    "rule": "after a segment, continue the same family when latest_epoch - best_epoch <= 6, otherwise advance",
+    "owner_naming_correction": "the owner named a third family 'lr1e5', which does not exist; asked which of the four was meant, they answered lr3e5",
+    "excluded": {
+      "calibrated_lr1e4": "owner's instruction; 39 epochs already, and its dicos-p10 epoch-40 checkpoint is ARTIFACT QUARANTINED and not a valid parent"
+    }
+  },
+
+  "boundary": {
+    "evidence_class": "optimization on the pilot bank",
+    "not_established": ["Geant4 fidelity", "three-seed behaviour", "untouched-test performance"],
+    "test_events_used": 0,
+    "comparability": "every segment uses the energy-scaled closure tolerance declared 2026-08-05, so these segments are a new declared experiment relative to any run frozen before it"
+  },
+
+  "parents_verified_on_host": {
+    "calibrated_lr3e4": {
+      "run": "dicos-p7", "best_epoch": 22, "validation_loss": 4.597151546143159,
+      "best_sha256": "31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb",
+      "last_sha256": "eb533f18f08b1080ea367d75e77fb560d3957a2368a70d12e26e57191608460f"
+    },
+    "calibrated_lr1e4_halfbatch": {
+      "run": "dicos-p7", "best_epoch": 21, "last_epoch": 22, "validation_loss": 4.673036068110655,
+      "best_sha256": "ffab832ac4798ca75bde5dd5e687ce3f634ab32b6c88f40169d3db59f0ead9b1",
+      "last_sha256": "79bcdeac0d4550d230f2de5eb12e15be9ba73cf872802ac9f3862e2bf29aa2b9"
+    },
+    "calibrated_lr3e5": {
+      "run": "dicos-r3", "best_epoch": 8, "last_epoch": 10, "validation_loss": 4.843470557018744,
+      "best_sha256": "3641c1a62a4575745124e27c6c2a26af577a4334c27c010eae067ae917914a79",
+      "last_sha256": "213fc9658b8b5033d989968ce65cbd275975132a917f30e6a2a0764166e1ae68"
+    }
+  },
+  "parent_last_epoch_semantics": "parent_last_epoch is the BEST epoch, not the last, because the resume continues from the best checkpoint. For the half-batch family those differ (21 vs 22) and using the last would have shifted its horizon by one.",
+
+  "aborted_segment": {
+    "run_tag": "dicos-c-01",
+    "wall_minutes": 6,
+    "epochs_completed": 0,
+    "evidence_lost": "none",
+    "defects": [
+      {
+        "id": "producer-absolute-paths",
+        "error": "ValueError: run directory must be a safe workdir-relative path (dicos_diag_producer.py:50 resolve_under <- :309 main)",
+        "cause": "the supervisor passed absolute --run-dir and --wrapper-log; the producer resolves both under the workdir and refuses anything that escapes it",
+        "why_it_was_invisible": "producer_started had already been logged with its pid, and nothing waits on the producer until the trainer exits, so it sat as [python] <defunct> while everything else looked correct",
+        "consequence_if_undetected": "the campaign would have trained for hours with no checkpoint ever reaching the 3090",
+        "detected_by": "reading the process tree rather than the log",
+        "fix": [
+          "pass workdir-relative paths",
+          "verify producer liveness five seconds after launch; a dead producer terminates the trainer and aborts the segment"
+        ]
+      },
+      {
+        "id": "missing-shard-cache-setting",
+        "recorded_value": "shard_cache_size: 4",
+        "expected_value": 0,
+        "cause": "CBSC_ZDC_SHARD_CACHE was not set in the trainer environment",
+        "precedent": "this is the slow-loader configuration that got dicos-r2 archived as aborted_r2_slow_loader",
+        "symptom": "GPU at 487 MiB and 0% utilization with the model loaded and four loader workers at ~85% CPU - starving, not stalled",
+        "fix": "env.setdefault('CBSC_ZDC_SHARD_CACHE', '0')",
+        "note": "a transport property, admitted only after byte-identity was proven over 400 samples through both cache sizes (4ba4d7a713c9c1a574a5f27857a5fe46d8fe1e4a7fa8f456692ea4d367507c9b)"
+      }
+    ],
+    "stop_procedure": [
+      "supervisor killed first so it could not observe the trainer exit and start a second segment",
+      "trainer killed second",
+      "GPU confirmed released at 0 MiB",
+      "self-match-safe /proc scan confirmed holders: NONE BEFORE anything was moved, because a live process resolves paths per write and would follow the directory"
+    ],
+    "archived_to": {
+      "_runs/calibrated_lr3e4_dicos-c-01": "_runs/aborted_c01_producer_path_and_shard_cache/",
+      "_diag/dicos-c-01": "_diag/aborted-c01"
+    },
+    "comparability": "dicos-c-01 produced no epochs and must not be compared against anything"
+  },
+
+  "live_segment": {
+    "run_tag": "dicos-c-02",
+    "family": "calibrated_lr3e4",
+    "absolute_epochs": "23..42",
+    "patience": 20,
+    "restart_scheduler_on_resume": false,
+    "frozen_sha256": "29fc4fe0f79276e4919c58554f544707e016a7dcb99912726b284caa15c450d7",
+    "template_sha256": "e2612a223286842a7148c36bdb394750b1a3e7d124b6e0796de3b49cc4a230ba",
+    "parent_frozen_sha256": "4051591355f22fa07f8a8aaea80a86a05cac85f92430fc13bfb52dc034ab609a",
+    "resume_sha256": "31802b9fcdde49a7369786b028b17ff1b09fd22c6587c118c9d41783b9a49bfb",
+    "resume_note": "the p7 epoch-22 best, staged to BOTH resume slots",
+    "frozen_config_reused": "regenerated byte-identically, so the idempotent path reused it rather than overwriting a frozen config",
+    "fixes_verified_live": [
+      "producer pid present in the process tree and not defunct",
+      "environment.json records shard_cache_size: 0"
+    ]
+  },
+
+  "config_delta_guard": {
+    "mechanism": "the supervisor reads its own diff against the parent frozen config and refuses to launch if anything outside an explicit allowlist moved",
+    "rationale": "an unattended process freezes configs with nobody watching the diff, so the diff has to be read by the process",
+    "pinned_by": "tests/test_campaign.py, including that the allowlist contains no scientific value",
+    "refused_fields": [
+      "training.learning_rate", "training.batch_size", "training.seed",
+      "training.gradient_accumulation", "training.num_workers",
+      "evaluation.closure_tolerance_gev", "evaluation.profile_steps",
+      "evaluation.share_steps"
+    ]
+  },
+
+  "autonomy": {
+    "autonomous_on_dicos": [
+      "training across segments and families",
+      "per-epoch structural gates",
+      "per-epoch 3090 diagnostics namespaced by run tag",
+      "campaign state and event journalling"
+    ],
+    "not_autonomous": {
+      "public_website": "the pods have no Node, so the site cannot be built there",
+      "push_or_publication_from_a_pod": "the only writable directory on DiCOS is the multi-tenant project workdir and HOME is not writable, so a credential file would have to live where other tenants can read it",
+      "exhibition_figures": "the builders write into exhibition/current/, so running them inside the pod repo checkout would dirty the clean tree that the pre-launch gate and every git pull depend on"
+    },
+    "mitigation": "scripts/refresh_campaign_outputs.py rebuilds the whole local picture from the campaign's own recorded state with no arguments, so the arguments that change every segment cannot be got wrong"
+  },
+
+  "cost": {
+    "accounting": "ASGC SRUs; no paid cloud compute",
+    "measured_rate_4090_seconds_per_epoch": 649.83,
+    "estimated_segment_hours": 3.6
+  }
+}
