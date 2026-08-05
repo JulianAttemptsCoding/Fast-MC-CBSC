@@ -1,26 +1,57 @@
 {
   "cbsc_test_events_used": 0,
-  "checkpoint_sha256": "4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e",
+  "checkpoint_sha256": "eeeff17abe4e4e362783f2d7f140d50d591d75bb74656047a6efa3811ffef1bd",
   "controller": {
+    "action": "pulled immutable external metric evidence",
     "bank_ready": true,
+    "cbsc_test_events_used": 0,
+    "cbsc_training_started": false,
+    "checkpoint_sha256": "eeeff17abe4e4e362783f2d7f140d50d591d75bb74656047a6efa3811ffef1bd",
+    "destination": "exhibition/current/external_metrics/source_data/dicos-c-02/epoch_0034",
+    "epoch": 34,
     "evaluate": {
+      "raw": "EXIT=0",
       "state": "complete"
     },
     "export": {
+      "raw": "EXIT=0",
       "state": "complete"
     },
-    "results_ready": true
+    "family": "calibrated_lr3e4",
+    "files": [
+      "auroc/figures/auroc_evaluator_training.png",
+      "auroc/figures/auroc_seed_spread.png",
+      "auroc/figures/auroc_vs_energy.png",
+      "auroc/metrics.json",
+      "four_momentum/figures/four_momentum_accuracy.png",
+      "four_momentum/figures/four_momentum_vs_energy.png",
+      "four_momentum/metrics.json",
+      "manifest.json"
+    ],
+    "kind": "cbsc-zdc-external-metric-controller-status",
+    "new_files": [
+      "auroc/figures/auroc_evaluator_training.png",
+      "auroc/figures/auroc_seed_spread.png",
+      "auroc/figures/auroc_vs_energy.png",
+      "auroc/metrics.json",
+      "four_momentum/figures/four_momentum_accuracy.png",
+      "four_momentum/figures/four_momentum_vs_energy.png",
+      "four_momentum/metrics.json",
+      "manifest.json"
+    ],
+    "results_ready": true,
+    "run_tag": "dicos-c-02",
+    "schema_version": 1
   },
-  "epoch": 38,
-  "family": "calibrated_lr1e4",
+  "epoch": 34,
+  "family": "calibrated_lr3e4",
   "kind": "cbsc-zdc-current-external-metrics-state",
-  "determinism_audit": "audit/external_metrics_determinism_20260804.json",
-  "local_manifest": "exhibition/current/external_metrics/source_data/dicos-p9/epoch_0038/manifest.json",
-  "release_pending": false,
-  "run_tag": "dicos-p9",
+  "local_manifest": "exhibition/current/external_metrics/source_data/dicos-c-02/epoch_0034/manifest.json",
+  "release_pending": true,
+  "run_tag": "dicos-c-02",
   "schema_version": 1,
   "selection_role": "descriptive only; may not select or tune CBSC",
   "source_split": "validation",
   "status": "complete",
-  "validation_loss": 4.635219681489869
+  "validation_loss": 4.5503306071196254
 }

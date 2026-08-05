@@ -77,6 +77,30 @@ FEATURES = [
 ]
 
 
+def family_for_run_tags(run_tags: list[str]) -> str:
+    """Which calibrated family a set of run tags belongs to.
+
+    `best_loss_so_far_rows` needs a family name to overlay a lineage's own
+    best-so-far trajectory. That was hardcoded to `calibrated_lr1e4` back when
+    it was the only family with 3090 diagnostics; with a campaign now producing
+    diagnostics for several families concurrently, hardcoding it silently
+    overlaid the WRONG family's history and returned zero matching rows for
+    every family except lr1e4 (`diagnostic.get(key)` could never find a key
+    from another family's rows). The family is read off the tags actually being
+    plotted instead.
+    """
+    try:
+        from exhibition.build_continuation_loss_figures import read_history
+    except ModuleNotFoundError:  # direct ``python exhibition/script.py`` entry
+        from build_continuation_loss_figures import read_history
+
+    history, _ = read_history()
+    for family, rows in history.items():
+        if any(str(row.get("run_tag")) in run_tags for row in rows):
+            return family
+    raise ValueError(f"no family found in continuation history for tags {run_tags}")
+
+
 def best_loss_so_far_rows(
     rows: list[dict], family: str,
 ) -> tuple[list[dict], list[int], list[dict], list[int]]:
@@ -495,8 +519,9 @@ def build() -> list[Path]:
     style()
     epochs = [int(r["epoch"]) for r in rows]
     latest = rows[-1]
+    family = family_for_run_tags(RUN_TAGS)
     subtitle = (
-        f"calibrated_lr1e4 continuation ({RUN_TAG}). "
+        f"{family} continuation ({RUN_TAG}). "
         f"{latest['n_events']:,} fixed validation events per epoch, drawn from a "
         f"{latest['validation_pool']:,}-event pool, against the site's 250. "
         "Quarantined checkpoints remain visible as negative evidence."
@@ -512,15 +537,15 @@ def build() -> list[Path]:
         produced.append(energy)
 
     best_rows, best_epochs, best_selection, unavailable = best_loss_so_far_rows(
-        rows, "calibrated_lr1e4"
+        rows, family
     )
     best_produced: list[Path] = []
     if best_rows:
         best_subtitle = (
-            f"calibrated_lr1e4 continuation ({RUN_TAG}); 4,000 fixed validation "
+            f"{family} continuation ({RUN_TAG}); 4,000 fixed validation "
             "events. At each completed epoch, show 3090 metrics from the accepted "
             "validation-loss best so far.\nMetrics never select the checkpoint; "
-            "the inherited e15 best has no matching 3090 diagnostic, so this "
+            "an early best with no matching 3090 diagnostic is skipped, so this "
             f"historical trace begins at e{best_epochs[0]}."
         )
         best_produced = [

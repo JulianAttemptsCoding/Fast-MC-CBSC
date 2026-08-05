@@ -8412,3 +8412,169 @@ a judgement made now.
    to local only when the pod cannot be reached.
 
 Verification after both: `294 passed`, catalog `119 graphics, status PASS`.
+
+### 2026-08-05 — a persistent watcher, and a real multi-family champion bug it exposed
+
+Built at the owner's request: a script that keeps figures and metrics current
+for as long as the campaign trains, running whenever training is running.
+
+    scripts/watch_campaign_outputs.py
+
+Polls `scripts/refresh_campaign_outputs.refresh()` on an interval (default
+300 s), appends one compact line to `logs.md` per new epoch imported and a full
+paragraph for a new family-level best or a campaign-status transition, and
+exits on its own once the campaign reaches a terminal state. It requires the
+workstation to stay on; nothing about it runs on a pod. `--once` for a single
+pass, `--status`/`--stop` for operator control via a sentinel file, matching
+the project's existing `CAMPAIGN_STOP` idiom. A live pid, checked from the
+process table rather than trusted from a stale lock file, refuses a second
+instance -- the same discipline `AGENTS.md` already requires for a DiCOS
+trainer.
+
+### Bugs found by actually running it against the live campaign, not by reading the code
+
+**1. `latest_epoch()` resolved `DICOS_CONFIG` relative to cwd, not `~/.dicos/`.**
+`scripts/dicos.py`'s `config_path()` does `Path(override).expanduser()` on
+whatever `DICOS_CONFIG` holds; passing the bare filename `"config_3090.json"`
+looked for it in the repo root and failed with "no credentials," so the
+watcher's first real pass found zero diagnostics for a segment that had 19 of
+them. Fixed to pass `str(Path.home() / ".dicos" / "config_3090.json")`.
+
+**2. `pull_and_sync_visualizations` raised `ModuleNotFoundError: No module
+named 'scripts'`** when `refresh_continuation_outputs.py` runs as a bare
+script file (as `refresh_campaign_outputs.py`'s subprocess call does) rather
+than via `-m`. Its own `from scripts.sync_dicos_visualizations import sync`
+needs `ROOT`, not `ROOT/scripts`, on `sys.path`. Fixed by inserting `ROOT` at
+the top of the file, guarded so it is a no-op when already present.
+
+**3. `dicos-c-03` resuming `calibrated_lr1e4_halfbatch` from `dicos-p7`'s BEST
+(epoch 21) collided with `dicos-p7`'s own epoch 22**, and
+`build_continuation_loss_figures.py`'s duplicate-epoch guard correctly
+refused it. This is the exact "resuming from best re-runs an epoch number"
+scenario the handoff already documents for p9/p10 -- but this is the first
+time it happened *inside an unattended campaign*, where nobody is present to
+manually resolve which branch is live. Automated the resolution using the
+campaign's own recorded evidence rather than a guess: `dicos_campaign.py`'s
+`verify_config_delta` already writes `provenance.parent_last_epoch` into every
+`segment_frozen` event, so `fork_points()` reads that to know exactly where
+each segment forked, and `prune_superseded_rows()` drops rows from the parent
+tag past that fork point, logging every removal rather than letting it vanish.
+Both are pure functions with 12 new unit tests pinning the exact incident.
+
+**4. Restoring bug #2 exposed bug #4: `dashboard/public/data/manifest.json`
+legitimately changes every sync, and `exhibition/manifest.json` pins its
+hash.** Same failure class as this morning's CRLF investigation, but this time
+the content genuinely changed (new epochs synced in), not a checkout artifact.
+`build_exhibition.py` re-pins it correctly; it just needed to run as part of
+the campaign refresh.
+
+**5. Two CRLF-corrupted evidence files, found while chasing #4.** A scan of
+every manifest-declared artifact under `exhibition/` for hash mismatches
+explainable by CRLF found exactly two, both under
+`exhibition/current/external_metrics/source_data/dicos-p9/epoch_0038/`:
+`auroc/metrics.json` (202,361 bytes on disk, pinned at 195,584) and
+`four_momentum/metrics.json` (7,827 against 7,596). Both proved byte-identical
+to their pin after LF-normalization, so both were restored to LF in place --
+not a content change, undoing a lossy Windows checkout. `.gitattributes` added
+(`exhibition/**/*.json`, `audit/**/*.json`, `configs/**/*.json`,
+`prep/**/*.json`, all `eol=lf`) so this class of corruption cannot recur on any
+future checkout, on any OS.
+
+**6. My own first fix was itself actively harmful.** Believing the exhibition
+catalog needed a fresh `build_exhibition.py` + `build_metrics_catalog.py` +
+`build_all_metric_trends.py` pass after every campaign refresh, I added one
+with no arguments. `refresh_continuation_outputs.py` already runs all three
+internally, correctly, as the last thing each per-family subprocess call does
+-- so my extra pass was not just redundant, it was destructive:
+`build_all_metric_trends.py` and `build_diagnostic_trend_figure.py` both
+default their run-tag lineage to `["dicos-p9", "dicos-p10"]` when called with
+none, so my no-argument call **silently overwrote** whichever family's
+correct state the per-family loop had just written with that stale default.
+Caught directly: `all_metric_trends.json` reverted from the freshly-correct
+`[22..27]` back to `[16..40]` after a halfbatch refresh had just written the
+former. Removed the redundant pass entirely.
+
+**7. The real, load-bearing bug: `calibrated_lr1e4` was hardcoded as *the*
+family in four places**, dating from when it was the only family with 3090
+diagnostics:
+
+    exhibition/build_diagnostic_trend_figure.py:515  best_loss_so_far_rows(rows, "calibrated_lr1e4")
+    exhibition/build_diagnostic_trend_figure.py:499,520  subtitle text
+    exhibition/build_all_metric_trends.py:70          same hardcoded call
+    exhibition/build_metrics_catalog.py:540           family = metrics["families"]["calibrated_lr1e4"]
+
+`best_loss_so_far_rows(rows, family)` looks up `family`'s own history and
+tries to match it against `rows`' own diagnostic keys -- when `family` is
+hardcoded to lr1e4 but `rows` is lr3e4's own diagnostics, the key lookup can
+never succeed, so `best_rows` came back **silently empty** for every family
+except lr1e4. This is why the `*_of_best_loss_so_far.png` companion figures
+had been generating for lr3e4 and lr1e4_halfbatch runs all along without ever
+being populated -- "figures: 4" instead of "figures: 8" in every per-family
+refresh, unnoticed because nothing asserted the count until this session's
+work made it visible.
+
+Separately, `build_metrics_catalog.py`'s own consistency check compared the
+shared current-diagnostics slot's latest epoch against `calibrated_lr1e4`'s
+own declared `latest_observed_epoch` -- correct back when lr1e4 was the only
+family ever refreshed, wrong the moment `calibrated_lr3e4` (now the project's
+actual leader) becomes the family whose diagnostics occupy that shared slot.
+
+**Fixed by deriving the family from the run tags actually being processed**,
+added as `family_for_run_tags()` in `build_diagnostic_trend_figure.py` and
+reused by the other two files rather than reimplemented. This is a different
+derivation from "who is the campaign's overall champion" -- `best_loss_so_far`
+needs the SAME family whose lineage is being plotted, not the project-wide
+leader.
+
+**Separately, the shared current-diagnostics slot itself needed to track the
+project-wide champion**, since it is a single slot that can only represent one
+lineage and `exhibition/current/diagnostics/*.png` are the figures shown as
+"the" current diagnostics. `refresh()` now computes the campaign's actual
+overall best (lowest validation loss among families processed this pass, via
+a new `family_bests()` reusable from both this script and the watcher) and
+explicitly re-targets the shared slot at that family's own lineage as a final
+step, rather than leaving it to whichever family happened to be processed
+last by dict-iteration order.
+
+### Three tests updated, made robust to a live campaign rather than repinned to a moment
+
+`test_manifests_and_accepted_metric_summaries_agree`,
+`test_current_gallery_is_complete_and_reaches_latest_evidence`, and
+`test_public_selection_is_derived_from_current_accepted_bests` all hardcoded
+values that describe *whichever family currently leads* -- `run_tags`,
+`current_reaches_latest_observed_epoch`, `default_snapshot_id`. Pinning
+today's exact values would have failed again within minutes of continued
+training. Each now asserts the underlying invariant against independently
+recomputed evidence (`family_for_run_tags`, `family_bests`) instead of a
+number that a live campaign moves out from under. Verified against two
+different real epoch counts (42, then 29 after further training progress)
+without touching the test again.
+
+Also cleaned up a self-inflicted mistake: the Office `~$CBSC_ZDC_status_update
+_20260805.pptx` lock file was accidentally committed via `git add -A` in this
+session's very own "skip Office lock files" commit, while the deck was open.
+`.gitignore` gained a `~$*` rule so this cannot recur regardless of what any
+individual builder chooses to skip.
+
+### Verification
+
+    PYTHONPATH=src python -m pytest -q          330 passed  (294 -> 330)
+    two consecutive full refresh passes, both exit 0, both catalog PASS,
+      graphics 124, training genuinely advanced between them (epoch 42 -> 29
+      for the newer family, confirming idempotent stability rather than a
+      frozen snapshot)
+    scripts/watch_campaign_outputs.py --once    clean, imports new epochs,
+      writes last_known.json, appends compact per-epoch lines to logs.md
+
+### Standings at time of writing
+
+    calibrated_lr3e4            4.550331  epoch 34  dicos-c-02   <- champion
+    calibrated_lr1e4            4.635220  epoch 38  dicos-p9
+    calibrated_lr1e4_halfbatch  4.659069  epoch 25  dicos-c-03
+    calibrated_lr3e5            4.843471  epoch  8  dicos-r3
+
+lr3e4's external metrics (AUROC, four-momentum) completed remotely during this
+session and are now correctly reflected: `external metrics: dicos-c-02 e34
+status=complete`, `{"transactions": 2, "figures": 7}`. A publication is owed
+(lr3e4's lowest verified loss changed) and has not been made; it remains a
+deliberate, separate act.

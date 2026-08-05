@@ -62,12 +62,20 @@ def load_rows() -> list[dict]:
 
 def best_rows(rows: list[dict]) -> tuple[list[dict], list[int]]:
     try:
-        from exhibition.build_diagnostic_trend_figure import best_loss_so_far_rows
+        from exhibition.build_diagnostic_trend_figure import (
+            best_loss_so_far_rows, family_for_run_tags,
+        )
     except ModuleNotFoundError:
-        from build_diagnostic_trend_figure import best_loss_so_far_rows
+        from build_diagnostic_trend_figure import (
+            best_loss_so_far_rows, family_for_run_tags,
+        )
 
+    # `calibrated_lr1e4` was hardcoded here back when it was the only family
+    # with 3090 diagnostics; with multiple families now producing them
+    # concurrently, the family must be read off the tags actually being
+    # plotted (RUN_TAGS), or every non-lr1e4 call silently returns zero rows.
     selected, epochs, _trace, _missing = best_loss_so_far_rows(
-        rows, "calibrated_lr1e4"
+        rows, family_for_run_tags(RUN_TAGS)
     )
     return selected, epochs
 

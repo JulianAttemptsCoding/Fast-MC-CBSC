@@ -158,6 +158,14 @@ def graphic_inventory() -> list[dict]:
     return records
 
 
+def _family_for_run_tags(run_tags: list[str]) -> str:
+    try:
+        from exhibition.build_diagnostic_trend_figure import family_for_run_tags
+    except ModuleNotFoundError:
+        from build_diagnostic_trend_figure import family_for_run_tags
+    return family_for_run_tags(run_tags)
+
+
 def current_metrics() -> dict:
     loss = read_json(CURRENT / "continuation" / "loss_summary.json")
     choice = read_json(CURRENT / "continuation" / "family_choice.json")
@@ -537,9 +545,21 @@ def build() -> dict:
     counts = Counter(record["category"] for record in graphics)
     scope_counts = Counter(record["scope"] for record in graphics)
     latest_epoch = metrics["large_validation_diagnostics"]["epochs"][-1]
-    family = metrics["families"]["calibrated_lr1e4"]
+    # The shared diagnostic_summary.json/all_metric_trends.json slot holds
+    # exactly one lineage at a time, and now that a campaign refreshes several
+    # families in one pass, whichever ran last decides what that lineage is.
+    # `calibrated_lr1e4` was correct back when it was the only family with
+    # 3090 diagnostics; the family this check compares against must instead be
+    # whichever family the shared slot's own run tags actually belong to.
+    diagnostics_family = _family_for_run_tags(
+        metrics["large_validation_diagnostics"]["run_tags"]
+    )
+    family = metrics["families"][diagnostics_family]
     if latest_epoch != family["latest_observed_epoch"]:
-        raise ValueError("current diagnostics do not reach the latest observed epoch")
+        raise ValueError(
+            "current diagnostics do not reach the latest observed epoch "
+            f"for {diagnostics_family}"
+        )
     payload = {
         "schema_version": 1,
         "graphics": {

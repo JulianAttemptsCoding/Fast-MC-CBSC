@@ -67,13 +67,30 @@ def test_current_best_visualizations_are_resolved_not_hardcoded() -> None:
 
 
 def test_public_selection_is_derived_from_current_accepted_bests() -> None:
+    from scripts.refresh_campaign_outputs import family_bests
+
     selection = prepare_public_best_release.derive_selection()
     assert len(selection["snapshots"]) == 4
     assert len({row["family"] for row in selection["snapshots"]}) == 4
-    assert selection["default_snapshot_id"] == (
-        "dicos-p7-calibrated-lr3e4:joint:0022"
+    assert all(
+        "lowest verified validation-loss" in row["basis"]
+        for row in selection["snapshots"]
     )
-    assert all("lowest verified validation-loss" in row["basis"] for row in selection["snapshots"])
+
+    # `default_snapshot_id` tracks whichever family currently holds the
+    # lowest validation loss campaign-wide -- calibrated_lr3e4 overtook
+    # lr1e4's long-standing lead 2026-08-05 at dicos-c-02 epoch 34, and it
+    # will move again as the campaign continues. Rather than pin today's
+    # exact id (which would fail again within minutes of a live campaign),
+    # check it against the same evidence independently: the family with the
+    # lowest recorded loss in continuation_history.csv.
+    bests = family_bests()
+    champion = min(bests, key=lambda family: bests[family][0])
+    default_row = next(
+        row for row in selection["snapshots"]
+        if row["id"] == selection["default_snapshot_id"]
+    )
+    assert default_row["family"] == champion
 
 
 def test_complete_gallery_references_every_graphic() -> None:

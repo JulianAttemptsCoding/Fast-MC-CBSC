@@ -1,0 +1,13 @@
+# Hash-pinned evidence. `core.autocrlf=true` on a Windows checkout converts
+# these to CRLF, which changes their byte content without changing their git
+# diff (autocrlf normalizes the comparison), so the corruption is invisible to
+# `git status` while breaking every sha256 pin computed against the committed
+# LF bytes. Found 2026-08-05 when `exhibition/current/external_metrics/source_
+# data/dicos-p9/epoch_0038/{auroc,four_momentum}/metrics.json` failed
+# `load_transactions()`'s hash check with an exact CRLF-sized byte delta.
+# Forcing LF for these trees makes every future checkout match the pin it was
+# committed against, on any OS.
+exhibition/**/*.json text eol=lf
+audit/**/*.json text eol=lf
+configs/**/*.json text eol=lf
+prep/**/*.json text eol=lf

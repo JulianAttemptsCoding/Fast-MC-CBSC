@@ -31,6 +31,20 @@
   "test_events_used": 0,
   "transactions": [
     {
+      "angular_median_mrad": 9.511374118176608,
+      "auroc_mean": 0.8624148148148149,
+      "auroc_std": 0.014731988462305359,
+      "checkpoint_sha256": "eeeff17abe4e4e362783f2d7f140d50d591d75bb74656047a6efa3811ffef1bd",
+      "condition_only_auroc": 0.5,
+      "energy_relative_rmse": 0.21564963981328203,
+      "epoch": 34,
+      "four_momentum_macro_rms": 0.29417091469738127,
+      "geant4_reference_macro_rms": 0.20779912872768125,
+      "high_level_auroc": 0.8947305555555556,
+      "run_tag": "dicos-c-02",
+      "validation_loss": 4.5503306071196254
+    },
+    {
       "angular_median_mrad": 15.559848215446166,
       "auroc_mean": 0.8726555555555556,
       "auroc_std": 0.011687150998288242,

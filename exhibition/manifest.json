@@ -7,8 +7,8 @@
   "best_payloads": {
     "calibrated_lr3e5": "dicos-r3-calibrated-lr3e5_joint_epoch_0008.json",
     "calibrated_lr1e4": "dicos-p9-calibrated-lr1e4_joint_epoch_0038.json",
-    "calibrated_lr3e4": "dicos-p7-calibrated-lr3e4_joint_epoch_0022.json",
-    "calibrated_lr1e4_halfbatch": "dicos-p7-calibrated-lr1e4-halfbatch_joint_epoch_0021.json"
+    "calibrated_lr3e4": "dicos-c-02-calibrated-lr3e4_joint_epoch_0034.json",
+    "calibrated_lr1e4_halfbatch": "dicos-c-03-calibrated-lr1e4-halfbatch_joint_epoch_0025.json"
   },
   "source_files": [
     {
@@ -23,8 +23,8 @@
     },
     {
       "path": "dashboard/public/data/manifest.json",
-      "bytes": 54380,
-      "sha256": "70daac9c6e6e2445b6561269cced28bce44183b5191d3cf5feec9a43aafea5ef"
+      "bytes": 77066,
+      "sha256": "468d9f761b11d98aff1ebc5737b9e11936e3e619b383cbb0fe62e31efa264fa8"
     },
     {
       "path": "dashboard/public/data/geometry.json",
@@ -33,8 +33,8 @@
     },
     {
       "path": "exhibition/current/continuation/family_choice.json",
-      "bytes": 2129,
-      "sha256": "63ac3e43b46e66e2dd4b3d3d6f18c4d43cd07aa3aee9a20009da90a4969d3ac8"
+      "bytes": 2132,
+      "sha256": "f7866a555cd9595cd0478b412aa00455d13baf635f52bc290fe056af3b423fe0"
     },
     {
       "path": "dashboard/public/data/dicos-r3-calibrated-lr3e5_joint_epoch_0008.json",
@@ -47,14 +47,14 @@
       "sha256": "5410b5cdae509698592a0d4e04e875d3a3fee8a0847ddada22eb6aee47cef9a1"
     },
     {
-      "path": "dashboard/public/data/dicos-p7-calibrated-lr3e4_joint_epoch_0022.json",
-      "bytes": 13582543,
-      "sha256": "79dddc253ad75e6333ab21cc50fd08ce2cf10d66ebdc38bede83d6802bb5f7f1"
+      "path": "dashboard/public/data/dicos-c-02-calibrated-lr3e4_joint_epoch_0034.json",
+      "bytes": 13537276,
+      "sha256": "8698f5bf6f9e52319fcdb1c75b2c7f1c4af28fd377cd232495f0c26aa9ee9600"
     },
     {
-      "path": "dashboard/public/data/dicos-p7-calibrated-lr1e4-halfbatch_joint_epoch_0021.json",
-      "bytes": 13690511,
-      "sha256": "37935916f4bd0efa0020bde15838dee0db393760ccf28e700fb1c0f7bf0de2cb"
+      "path": "dashboard/public/data/dicos-c-03-calibrated-lr1e4-halfbatch_joint_epoch_0025.json",
+      "bytes": 15082939,
+      "sha256": "d80f7f273d412c1c8bea514030e0f292866868ec88b2082430d1e04de46dc850"
     }
   ],
   "visuals": [
@@ -169,32 +169,32 @@
     {
       "path": "current/model/10_same_condition_longitudinal_profiles.png",
       "scope": "current",
-      "bytes": 455482,
-      "sha256": "3f0163808500ad9c19f9811daba36da7df42be51f63c55ca5bd93aa3add30dfb"
+      "bytes": 453900,
+      "sha256": "4967627db9127817f69b2a9dfa8df57db2af429dff02fc392379306b42d99ab7"
     },
     {
       "path": "current/model/10_same_condition_longitudinal_profiles.svg",
       "scope": "current",
-      "bytes": 100503,
-      "sha256": "c191c782a7f6bf4928526f1e09f1d2644ece0b791a82db47fd51537b50cd6566"
+      "bytes": 100480,
+      "sha256": "6c3f5f5c5b61c237ccb05bb241b85345c02c02861d503eff439c119f66ecf912"
     },
     {
       "path": "current/model/11_best_model_sample_distributions.png",
       "scope": "current",
-      "bytes": 178983,
-      "sha256": "f65a60e4c0dffa586abbab0625d729f731067ee3a02864680effdca7954e37d4"
+      "bytes": 184429,
+      "sha256": "8ea92d96d98e401aa8d6b59d392fb2f7feced13253575d2a012d60ca971623c4"
     },
     {
       "path": "current/model/11_best_model_sample_distributions.svg",
       "scope": "current",
-      "bytes": 67934,
-      "sha256": "121bc8f999891a0e0c757b8cb7d20ed2f6ca31ebcd49ef19e50e4d69d8274245"
+      "bytes": 67952,
+      "sha256": "5fa208a13cd50b109a0511f21ed90210f7d348a515e49ea91f284e6818781462"
     },
     {
       "path": "current/model/12_same_condition_3d_energy_deposits.png",
       "scope": "current",
-      "bytes": 942379,
-      "sha256": "a0b40cbcd2feff369587e023418e346b568db8d43fdb25ca224fcd9135e1ebd5"
+      "bytes": 934666,
+      "sha256": "fdee7c4cc42bc7299a367911fb490d06b0a8cdda2a65570c9c1fa7cd4fc54a9f"
     }
   ],
   "gallery": {

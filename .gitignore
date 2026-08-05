@@ -1,3 +1,9 @@
+# Office lock files (`~$name.ext` beside an open document). Transient and
+# unreadable while the app holds it; one was swept into a commit via
+# `git add -A` on 2026-08-05 while PowerPoint had a bundled deck open, which
+# is exactly what this entry exists to prevent from recurring.
+~$*
+
 # Python caches and local test output
 __pycache__/
 *.py[cod]
@@ -65,3 +71,7 @@ Thumbs.db
 
 # Campaign refresh working directory (pulled from the pod, never authoritative)
 /.campaign_scratch/
+
+# watch_campaign_outputs.py runtime state: lock file, heartbeat log, stop
+# sentinel, and last-known evidence snapshot. All local-only and regenerated.
+/_watch/

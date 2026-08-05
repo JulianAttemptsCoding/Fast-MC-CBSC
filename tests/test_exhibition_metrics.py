@@ -54,11 +54,30 @@ def test_manifests_and_accepted_metric_summaries_agree() -> None:
     manifest = catalog.verify_exhibition_manifest()
     metrics = catalog.current_metrics()
     assert len(manifest["visuals"]) == 23
-    assert metrics["large_validation_diagnostics"]["run_tags"] == [
-        "dicos-p9",
-        "dicos-p10",
+
+    # The shared current-diagnostics slot tracks whichever family is the
+    # campaign's overall champion (lowest validation loss), not a fixed
+    # family -- calibrated_lr3e4 took the lead over lr1e4 2026-08-05 at
+    # dicos-c-02 epoch 34. Which family that is, and its lineage, will keep
+    # changing for as long as the campaign runs, so this checks the shared
+    # slot is self-consistent with THAT family's own record rather than
+    # pinning today's exact tags -- pinning them would fail again within
+    # minutes of a live campaign.
+    diagnostics = metrics["large_validation_diagnostics"]
+    run_tags = diagnostics["run_tags"]
+    assert run_tags, "shared diagnostics slot has no run tags"
+    # Same derivation build() itself uses to pick which family's
+    # latest_observed_epoch the shared slot must agree with -- reusing it
+    # here means this test checks the real invariant instead of a second,
+    # possibly-drifted heuristic for "who owns these tags."
+    champion = catalog._family_for_run_tags(run_tags)
+    assert champion in metrics["families"]
+    assert diagnostics["quarantined_epochs"] == metrics["families"][champion][
+        "quarantined_epochs"
     ]
-    assert metrics["large_validation_diagnostics"]["quarantined_epochs"] == [40]
+
+    # lr1e4's own frozen record is untouched by the campaign moving past it;
+    # this family stopped receiving new epochs 2026-08-04 and stays pinned.
     lr1e4 = metrics["families"]["calibrated_lr1e4"]
     assert lr1e4["latest_accepted_epoch"] == 39
     assert lr1e4["latest_observed_epoch"] == 40
@@ -79,14 +98,30 @@ def test_current_gallery_is_complete_and_reaches_latest_evidence() -> None:
     payload = json.loads(
         (ROOT / "exhibition" / "metrics_catalog.json").read_text(encoding="utf-8")
     )
-    # 52 -> 53 and 65 -> 66 on 2026-08-05, when slide decks joined the
-    # inventory: the archived C2ST overview and the new colleague status
-    # update. The counts stay exact so an unnoticed addition still fails.
+    # 52 -> 53 on 2026-08-05 when the archived C2ST overview deck joined the
+    # inventory. current 66 -> 71 the same day once the champion-family bug
+    # below was fixed: the "*_of_best_loss_so_far" companion figures and the
+    # external-metric transaction figures had been silently empty for every
+    # family except calibrated_lr1e4 (see test_manifests_and_accepted_metric_
+    # summaries_agree), so fixing it legitimately produced new graphics. The
+    # counts stay exact so an unnoticed addition still fails.
     assert payload["graphics"]["count_by_scope"] == {
         "archive": 53,
-        "current": 66,
+        "current": 71,
     }
-    assert payload["qa"]["current_reaches_latest_observed_epoch"] == 40
+    # This tracks whichever family is the campaign's current overall champion
+    # and moves with every completed epoch -- pinning a specific number here
+    # would fail again within minutes of a live campaign. `build()` already
+    # enforces the real invariant (raises if the shared diagnostics slot does
+    # not match its champion family's own declared latest_observed_epoch);
+    # this only checks that the written artifact is self-consistent with that
+    # same invariant, whatever the current epoch actually is.
+    latest = payload["qa"]["current_reaches_latest_observed_epoch"]
+    assert isinstance(latest, int) and latest > 0
+    assert any(
+        row.get("latest_observed_epoch") == latest
+        for row in payload["metrics"]["families"].values()
+    )
     assert payload["qa"]["all_graphics_under_current_or_archive"] is True
     current_paths = {
         row["path"]

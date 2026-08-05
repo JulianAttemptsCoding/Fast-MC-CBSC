@@ -33,6 +33,13 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    # Invoked as a bare script (this file's own path, not `-m`), including from
+    # refresh_campaign_outputs.py's subprocess call. `scripts` is only
+    # importable as a package once ROOT -- its parent -- is on sys.path, which
+    # `pull_and_sync_visualizations`'s `from scripts.sync_dicos_visualizations
+    # import sync` requires.
+    sys.path.insert(0, str(ROOT))
 DIAG_LOCAL = ROOT / "exhibition" / "data" / "diagnostics"
 VISUAL_LOCAL = ROOT / "exhibition" / "data" / "visualizations"
 CONTINUATION_CSV = ROOT / "exhibition" / "data" / "continuation_history.csv"
