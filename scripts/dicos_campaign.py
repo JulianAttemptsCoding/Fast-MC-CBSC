@@ -139,6 +139,46 @@ def other_trainer_running() -> list[tuple[int, str]]:
     return hits
 
 
+def other_supervisor_running(plan_name: str) -> list[tuple[int, str]]:
+    """Scan /proc for another dicos_campaign.py supervisor on this same plan.
+
+    Found the hard way 2026-08-10: a supervisor whose own trainer had already
+    crashed can still be alive for minutes afterward doing its own
+    post-launch bookkeeping (reading history, hashing checkpoints,
+    classifying the outcome). A `dicos.py stop` on it does not guarantee it
+    has actually exited by the time a caller checks GPU memory and concludes
+    it is safe to relaunch. Two supervisors then both write to the same
+    `_campaign/<id>/state.json` -- last write wins, with no lock -- and
+    whichever one finishes its own (possibly much slower, crash-path)
+    bookkeeping last silently overwrites the other's correct, live state
+    with a stale verdict.
+
+    Matched on the `--plan` file's own name rather than the campaign_id
+    inside it: the id is not yet loaded at the point this must run, but the
+    plan path is always present verbatim in every invocation's cmdline.
+    Mirrors `other_trainer_running()`'s discipline: built at runtime so this
+    probe cannot match its own /proc entry.
+    """
+    needle = "dicos_" + "campaign"
+    mine = {os.getpid(), os.getppid()}
+    hits: list[tuple[int, str]] = []
+    for entry in Path("/proc").glob("[0-9]*"):
+        try:
+            pid = int(entry.name)
+        except ValueError:
+            continue
+        if pid in mine:
+            continue
+        try:
+            raw = (entry / "cmdline").read_bytes().decode("utf-8", "replace")
+        except OSError:
+            continue
+        command = raw.replace("\0", " ").strip()
+        if needle in command and plan_name in command:
+            hits.append((pid, command[:200]))
+    return hits
+
+
 def read_history(run_dir: Path) -> list[dict]:
     """Epoch rows from the run's own history.csv."""
     history = run_dir / "logs" / "history.csv"
@@ -417,6 +457,15 @@ def main(argv=None) -> int:
                         help="freeze and verify the next segment, then stop "
                              "without launching a trainer")
     args = parser.parse_args(argv)
+
+    conflicting = other_supervisor_running(Path(args.plan).name)
+    if conflicting:
+        raise CampaignError(
+            f"another supervisor for {args.plan.name} is already running: "
+            f"{conflicting} -- confirm it has fully exited (it may still be "
+            "finishing post-launch bookkeeping after its own trainer already "
+            "died) before starting a second one"
+        )
 
     workdir = args.workdir.resolve()
     campaign = json.loads(Path(args.plan).read_text(encoding="utf-8"))

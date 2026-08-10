@@ -9101,3 +9101,84 @@ from and not reproduced. If it recurs, check first whether a
 against a stale or wrong `--plan` in the preceding minute -- that is the only
 correlated event found, even though the code path traced from it doesn't
 yet fully explain the specific rows lost.
+
+### 2026-08-10 (continued) -- the evidence regression, root-caused: two supervisors, one unlocked state file
+
+Full root cause found for the `continuation_history.csv` regression logged
+two entries above as unreproduced. It was never a test side effect.
+
+**What actually happened.** The first launch attempt (`camp0810-lr3e4`,
+supervisor pid 759) froze `dicos-e-01`, launched its trainer, and the
+trainer crashed immediately on the CUDA-driver-mismatch bug (logged
+separately). `dicos.py stop camp0810-lr3e4` was issued and its GPU-holding
+child was confirmed gone, but **the supervisor process itself (pid 759) was
+still alive**, mid-way through its own post-crash bookkeeping (reading
+history, hashing checkpoints, calling `classify()`). Relaunched anyway as
+`camp0810-lr3e4b` (pid 1432) -- both processes now targeted the *same*
+`_campaign/camp-20260810-lr3e4/state.json`, since the campaign id comes from
+the plan file's own contents, not from the `--name` given to `dicos.py
+start`, and nothing locks that file against a second supervisor.
+
+pid 1432 correctly wrote `status: training, segments_run: 2` after freezing
+`dicos-e-02` at 23:16:45Z. pid 759, still finishing its own crash-path
+bookkeeping, finally reached its verdict for the aborted `dicos-e-01` and
+wrote `status: halted, segments_run: 1` at 23:18:32Z -- overwriting pid
+1432's correct, still-live state with a stale one. `dicos-e-01`'s own
+`segment_frozen` event was real (freezing happens before a trainer ever
+touches the GPU), recording a real fork: `dicos-c-02 -> dicos-e-01` at epoch
+34. When the (correctly-configured, second) watcher ran its first pass three
+seconds later, `fork_points()`/`prune_superseded_rows()` read that real fork
+event and, per their existing logic, treated it as a genuine supersession --
+dropping `dicos-c-02`'s own real epochs 35-42, which nothing had actually
+superseded, since `dicos-e-01` produced zero rows of its own. The watcher
+then read the (also-stale) `status: halted` from the same clobbered file,
+correctly-per-its-own-contract treated that as terminal, and exited --
+leaving `dicos-e-02` training unwatched from 23:21:45Z on, unaffected on the
+GPU itself but with nothing tracking it.
+
+Confirmed via a direct `/proc` scan (not `ps`, absent on this pod) that pid
+759 was genuinely dead by the time this was diagnosed, and that pid
+1432/1434 (supervisor) plus 1563 (trainer) plus loader workers were the only
+live processes -- no live conflict remains, only the stale file it left
+behind. Corrected `_campaign/camp-20260810-lr3e4/state.json` by hand to the
+values pid 1432 itself had already written and would write again at its own
+next real decision point (`status: training, segments_run: 2`, `parent`
+unchanged), with an explicit note in the file explaining the correction and
+why it is safe (both source PIDs directly verified before writing it).
+
+### Two fixes, not just a recovery
+
+**1. `prune_superseded_rows()` now requires the forking child to have
+written at least one real epoch of its own** before treating it as
+superseding its parent -- a `segment_frozen` event proves a segment was
+*declared*, not that it ever produced conflicting data. Two new tests pin
+this: the exact zero-data case (must not prune) and a genuine fork with
+real child data (must still prune correctly, so this isn't a blanket
+disable).
+
+**2. `dicos_campaign.py` now refuses to start if another supervisor for the
+same `--plan` file is still alive**, scanning `/proc` at startup the same
+way `other_trainer_running()` already guards the trainer itself --
+`other_supervisor_running()`, matched on the plan file's own name (the
+campaign_id inside it isn't loaded yet at the point this must run, but the
+plan path is always in the cmdline verbatim). This is the actual fix: it
+would have refused the relaunch that raced pid 759 in the first place,
+forcing a wait instead of a collision. `dicos.py stop`'s own message
+("stopped X (pid Y)") only confirms a signal was sent, not that the process
+has exited -- a gap this closes structurally rather than relying on the
+operator to notice.
+
+### Current state, reconfirmed
+
+    dicos-e-02: training, 92-96% GPU util, sole live trainer+supervisor
+    _campaign/camp-20260810-lr3e4/state.json: manually corrected to match
+      reality; will be overwritten correctly by pid 1432 itself when the
+      segment actually finishes
+    watcher: was not running (exited on the stale 'halted' read); restarted
+      after this fix, see below
+
+### Verification
+
+    PYTHONPATH=src python -m compileall -q src vertex scripts tests exhibition   exit 0
+    PYTHONPATH=src python -m pytest -q                                           334 passed (332 -> 334)
+    git status after the full run                                               clean, no stray corruption

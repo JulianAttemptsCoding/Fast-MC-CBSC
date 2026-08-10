@@ -220,6 +220,15 @@ def prune_superseded_rows(
     if not rows:
         return []
     fieldnames = list(rows[0].keys())
+    # A fork's child_tag proves it superseded its parent only if the child
+    # actually wrote at least one epoch of its own. dicos-e-01 (2026-08-10)
+    # froze a segment from dicos-c-02 at epoch 34, then crashed before
+    # completing any epoch (a CUDA-driver mismatch on a newly swapped GPU
+    # pod) -- it left a real segment_frozen event with a real fork epoch, but
+    # produced zero rows anywhere. Treating that as a supersession pruned
+    # dicos-c-02's own genuine epochs 35-42, which were never actually
+    # superseded by anything: nothing else ever continued past 34.
+    tags_with_data = {row.get("run_tag") for row in rows}
     dropped: list[str] = []
     kept: list[dict] = []
     for row in rows:
@@ -232,6 +241,8 @@ def prune_superseded_rows(
             continue
         superseded = False
         for parent_tag, child_tag, fork_epoch in forks.get(family, []):
+            if child_tag not in tags_with_data:
+                continue
             if tag == parent_tag and epoch > fork_epoch:
                 dropped.append(
                     f"{family}/{tag} epoch {epoch} dropped from history: off "

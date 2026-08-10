@@ -244,6 +244,8 @@ def test_prune_only_touches_the_named_family(tmp_path: Path) -> None:
          "validation_loss": "4.6", "run_tag": "dicos-p7"},
         {"variant": "calibrated_lr1e4_halfbatch", "epoch": "22", "train_loss": "4.6",
          "validation_loss": "4.678376", "run_tag": "dicos-p7"},
+        {"variant": "calibrated_lr1e4_halfbatch", "epoch": "22", "train_loss": "4.6",
+         "validation_loss": "4.690804", "run_tag": "dicos-c-03"},
     ])
     dropped = prune_superseded_rows(
         path, {"calibrated_lr1e4_halfbatch": [("dicos-p7", "dicos-c-03", 21)]}
@@ -253,6 +255,61 @@ def test_prune_only_touches_the_named_family(tmp_path: Path) -> None:
     remaining = _read_csv(path)
     lr3e4_rows = [r for r in remaining if r["variant"] == "calibrated_lr3e4"]
     assert len(lr3e4_rows) == 1  # untouched
+
+
+def test_prune_ignores_a_fork_whose_child_wrote_no_real_epoch(tmp_path: Path) -> None:
+    """The real dicos-e-01 incident, 2026-08-10.
+
+    dicos-e-01 froze a segment continuing calibrated_lr3e4 from dicos-c-02's
+    best (epoch 34) -- a real segment_frozen event with a real fork epoch --
+    then crashed on a CUDA-driver mismatch before writing a single epoch.
+    Nothing ever superseded dicos-c-02's own epochs past 34: they are still
+    the live lineage, and pruning them destroyed real evidence for no reason.
+    A fork only justifies dropping the parent's rows if the child actually
+    produced at least one row of its own.
+    """
+    path = tmp_path / "continuation_history.csv"
+    _write_csv(path, [
+        {"variant": "calibrated_lr3e4", "epoch": "34", "train_loss": "4.6",
+         "validation_loss": "4.550331", "run_tag": "dicos-c-02"},
+        {"variant": "calibrated_lr3e4", "epoch": "35", "train_loss": "4.6",
+         "validation_loss": "4.572274", "run_tag": "dicos-c-02"},
+        {"variant": "calibrated_lr3e4", "epoch": "42", "train_loss": "4.6",
+         "validation_loss": "4.595299", "run_tag": "dicos-c-02"},
+    ])
+    forks = {"calibrated_lr3e4": [("dicos-c-02", "dicos-e-01", 34)]}
+
+    dropped = prune_superseded_rows(path, forks)
+
+    assert dropped == []
+    remaining = _read_csv(path)
+    epochs = sorted(int(r["epoch"]) for r in remaining if r["run_tag"] == "dicos-c-02")
+    assert epochs == [34, 35, 42]
+
+
+def test_prune_still_drops_when_the_forking_child_has_real_data(tmp_path: Path) -> None:
+    """A genuine fork (the child DID write epochs) still prunes correctly --
+    the fix above must not blanket-disable pruning, only the zero-data case.
+    """
+    path = tmp_path / "continuation_history.csv"
+    _write_csv(path, [
+        {"variant": "calibrated_lr1e4_halfbatch", "epoch": "21", "train_loss": "4.6",
+         "validation_loss": "4.673036", "run_tag": "dicos-p7"},
+        {"variant": "calibrated_lr1e4_halfbatch", "epoch": "22", "train_loss": "4.6",
+         "validation_loss": "4.678376", "run_tag": "dicos-p7"},
+        {"variant": "calibrated_lr1e4_halfbatch", "epoch": "22", "train_loss": "4.6",
+         "validation_loss": "4.690804", "run_tag": "dicos-c-03"},
+    ])
+    forks = {"calibrated_lr1e4_halfbatch": [("dicos-p7", "dicos-c-03", 21)]}
+
+    dropped = prune_superseded_rows(path, forks)
+
+    assert len(dropped) == 1
+    remaining = _read_csv(path)
+    epochs_by_tag = [(r["run_tag"], int(r["epoch"])) for r in remaining]
+    assert ("dicos-p7", 22) not in epochs_by_tag
+    assert ("dicos-p7", 21) in epochs_by_tag
+    assert ("dicos-c-03", 22) in epochs_by_tag
 
 
 def test_prune_keeps_a_row_from_a_tag_it_has_no_fork_point_for(tmp_path: Path) -> None:
