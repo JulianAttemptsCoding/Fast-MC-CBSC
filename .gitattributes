@@ -11,3 +11,4 @@ exhibition/**/*.json text eol=lf
 audit/**/*.json text eol=lf
 configs/**/*.json text eol=lf
 prep/**/*.json text eol=lf
+dashboard/public/data/*.json text eol=lf

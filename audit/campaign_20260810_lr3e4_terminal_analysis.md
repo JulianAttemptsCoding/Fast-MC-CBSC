@@ -1,10 +1,11 @@
-# Campaign `camp-20260810-lr3e4` — declared, blocked on the 4090
+# Campaign `camp-20260810-lr3e4` — declared, launched, training
 
 ## Disposition
 
-`QA PASS` for everything checked this session. Nothing launched. No scientific
-conclusion is available and none is claimed. `PHYSICS VALIDATION NOT
-ESTABLISHED`.
+`QA PASS` for everything checked this session. `dicos-e-02` is training on an
+L40S (the 4090 was retired by the owner mid-session), confirmed at 93–96% GPU
+utilization with its first epoch in flight. No scientific conclusion is
+available and none is claimed. `PHYSICS VALIDATION NOT ESTABLISHED`.
 
 ## Declaration
 
@@ -65,12 +66,24 @@ config against its immediate parent. `parent_template` is unchanged (it
 carries architecture/loss/schedule, not per-segment provenance). If launched
 as declared, the absolute epoch target is 55.
 
-**Not launched.** `prepare_segment()`/`launch()` in `dicos_campaign.py` run
-only as a job on the 4090 itself — `freeze-config` needs the pod's own Python
-environment and `launch()` needs the GPU. The pod is unreachable
-(`ConnectTimeoutError`, `scale-k8s-master01.twgrid.org:32545`, 30s connect
-budget exhausted) — same failure as every prior check this week. Nothing
-pod-side can run until the owner relaunches the DiCOSApp and re-authenticates.
+**Launched, as `dicos-e-02`.** The owner retired the 4090 entirely mid-session
+and provided a new L40S pod (port 30568) on the same credentials slot. The
+existing `.venv` (pinned `torch==2.6.0+cu124`, unchanged) failed to
+initialize CUDA there — `cudaErrorSystemDriverMismatch` (803) — traced to a
+0-byte `libcuda.so.1` stub on the pod's default loader path; the real,
+driver-matched library only exists under `/usr/lib64`. Fixed in `launch()`
+by prepending `/usr/lib64` to `LD_LIBRARY_PATH`, verified live
+(`torch.cuda.is_available()` False → True, same pinned build).
+
+The fix was written and locally tested but **not committed before the first
+real launch attempt** (`dicos-e-01`), which therefore ran the pod's stale
+pre-fix code and failed identically — a clean `RuntimeError`, exit 1, 0
+epochs, 0 checkpoints, 0 evidence lost. Archived rather than deleted
+(`_runs/aborted_e01_cuda_stub_before_fix`, `_diag/aborted-e01`), matching the
+`aborted_c01_producer_path_and_shard_cache` precedent from 2026-08-05.
+Committed (`2eddba1`), pushed, re-pulled on the pod, re-verified, relaunched.
+The supervisor's own persisted state advanced the run tag to `dicos-e-02`
+without any collision or manual bookkeeping.
 
 ## Bug fixed this session: no timeout on the pod-call subprocess
 
@@ -111,6 +124,6 @@ now 8/8 (was 7/7).
 
 ## Cost
 
-ASGC SRUs; no paid cloud compute; nothing launched this session. Once
-launched: measured 649.83 s/epoch on the 4090, so a 20-epoch segment is
-roughly 3.6 hours.
+ASGC SRUs; no paid cloud compute. The 649.83 s/epoch figure is a 4090
+measurement and does not carry over to the L40S, which has no measured rate
+yet — record one from `dicos-e-02`'s own `history.csv` once epochs land.

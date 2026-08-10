@@ -4,7 +4,7 @@
   "name": "campaign_20260810_lr3e4",
   "created_at": "2026-08-10",
   "campaign_id": "camp-20260810-lr3e4",
-  "status": "declared, not launched -- the 4090 trainer pod is unreachable",
+  "status": "launched and training -- dicos-e-02 on an L40S, GPU 93-96% util confirmed, first epoch in flight at time of writing",
   "qa_labels": ["QA PASS", "PHYSICS VALIDATION NOT ESTABLISHED"],
 
   "declaration": {
@@ -44,12 +44,23 @@
   "new_segment_plan": {
     "campaign_id": "camp-20260810-lr3e4",
     "run_tag_prefix": "dicos-e",
-    "prefix_collision_check": "confirmed via `_runs/` listing on the pod that no dicos-e-* run directory exists anywhere",
+    "prefix_collision_check": "confirmed via `_runs/` listing on the pod that no dicos-e-* run directory existed before this segment",
     "parent_frozen": "prep/configs/frozen_calibrated_lr3e4_dicos-c-02.yaml",
     "parent_frozen_choice": "dicos-c-02's own frozen config, not the family's original dicos-p7 baseline, per the diff-against-the-immediate-parent rule",
     "parent_template": "configs/templates/dicos_p7_20260803/calibrated_lr3e4_dicos-p7.yaml (unchanged; carries architecture/loss/schedule, not per-segment provenance)",
-    "epochs_absolute_if_launched": 55,
-    "launch_blocked_by": "4090 unreachable (ConnectTimeoutError, scale-k8s-master01.twgrid.org:32545) -- prepare_segment()/launch() only run on the pod itself"
+    "epochs_absolute": 55,
+    "live_run_tag": "dicos-e-02",
+    "first_attempt_dicos_e_01": "aborted after 0 epochs, same CUDA-driver-mismatch bug as launch_environment_bug_this_session below (the fix existed locally but was not yet committed/pulled to the pod at launch time). Archived, not deleted: _runs/aborted_e01_cuda_stub_before_fix, _diag/aborted-e01.",
+    "fleet_change_mid_session": "the owner retired the 4090 entirely and provided a new L40S pod (port 30568) on the same credentials slot, replacing the dead-4090 blocker this plan was declared against"
+  },
+
+  "launch_environment_bug_this_session": {
+    "id": "l40s-libcuda-stub",
+    "symptom": "torch==2.6.0+cu124 (the project's pinned build, unchanged) imported fine but every CUDA call failed with cudaErrorSystemDriverMismatch (803) on the new L40S pod",
+    "root_cause": "the default multiarch loader path's libcuda.so.1 (/usr/lib/x86_64-linux-gnu/) resolves to a 0-byte stub file on this pod image; the real, driver-matched library (matching nvidia-smi's reported 595.58.03) only exists under /usr/lib64/",
+    "verification": "LD_LIBRARY_PATH=/usr/lib64 .venv/bin/python -c torch.cuda.is_available() -> True, device NVIDIA L40S; same pinned torch build both before and after, so this is an environment fix, not a numerics-relevant version change",
+    "fix": "dicos_campaign.py launch() prepends /usr/lib64 to LD_LIBRARY_PATH for the trainer and producer subprocesses; no-op on a pod that does not have this problem",
+    "self_inflicted_delay": "fix was written and locally tested but not committed before the first real launch attempt (dicos-e-01), which therefore ran the pod's stale pre-fix code and failed identically; committed (2eddba1), pushed, pod repo re-pulled, re-verified live, then relaunched successfully as dicos-e-02"
   },
 
   "bug_fixed_this_session": {
@@ -78,8 +89,9 @@
   },
 
   "cost": {
-    "accounting": "ASGC SRUs; no paid cloud compute; nothing launched this session",
+    "accounting": "ASGC SRUs; no paid cloud compute",
     "measured_rate_4090_seconds_per_epoch": 649.83,
-    "estimated_segment_hours_once_launched": 3.6
+    "measured_rate_l40s_seconds_per_epoch": "not yet measured -- the 4090 figure does not apply to the new card; record from dicos-e-02's own history.csv once epochs land",
+    "estimated_segment_hours": "unknown pending an L40S rate; the 4090 estimate of 3.6h does not carry over"
   }
 }

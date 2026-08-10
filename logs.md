@@ -8882,3 +8882,222 @@ watcher. The 6h50m gap's root cause inside `dicos.py`'s own websocket loop is
 still not found, only defended against from the outside; a per-receive
 timeout on the kernel-websocket exec path would close it properly rather than
 just bounding the blast radius, and remains a follow-up.
+
+### 2026-08-10 — campaign figure/metric watcher started
+
+`scripts/watch_campaign_outputs.py` started against campaign `camp-20260805`, polling every 300s. It keeps figures and metrics current on the workstation for as long as the campaign is training and exits on its own once the campaign reaches a terminal state. It requires the workstation to stay on; nothing about it runs on a pod.
+
+### 2026-08-10 — campaign figure/metric watcher started
+
+`scripts/watch_campaign_outputs.py` started against campaign `camp-20260810-lr3e4`, polling every 300s. It keeps figures and metrics current on the workstation for as long as the campaign is training and exits on its own once the campaign reaches a terminal state. It requires the workstation to stay on; nothing about it runs on a pod.
+
+- calibrated_lr3e4/dicos-c-02 epoch 35 dropped from history: off the live lineage, superseded by dicos-e-01 forking from dicos-c-02 at epoch 34
+- calibrated_lr3e4/dicos-c-02 epoch 36 dropped from history: off the live lineage, superseded by dicos-e-01 forking from dicos-c-02 at epoch 34
+- calibrated_lr3e4/dicos-c-02 epoch 37 dropped from history: off the live lineage, superseded by dicos-e-01 forking from dicos-c-02 at epoch 34
+- calibrated_lr3e4/dicos-c-02 epoch 38 dropped from history: off the live lineage, superseded by dicos-e-01 forking from dicos-c-02 at epoch 34
+- calibrated_lr3e4/dicos-c-02 epoch 39 dropped from history: off the live lineage, superseded by dicos-e-01 forking from dicos-c-02 at epoch 34
+- calibrated_lr3e4/dicos-c-02 epoch 40 dropped from history: off the live lineage, superseded by dicos-e-01 forking from dicos-c-02 at epoch 34
+- calibrated_lr3e4/dicos-c-02 epoch 41 dropped from history: off the live lineage, superseded by dicos-e-01 forking from dicos-c-02 at epoch 34
+- calibrated_lr3e4/dicos-c-02 epoch 42 dropped from history: off the live lineage, superseded by dicos-e-01 forking from dicos-c-02 at epoch 34
+- campaign advanced: chain_index 2 -> 0
+- campaign status: campaign_complete -> halted
+
+### 2026-08-10 — campaign figure/metric watcher stopped
+
+Exit reason: campaign halted.
+
+### 2026-08-10 (continued) -- fleet swap (4090 -> L40S), a broken libcuda stub, and dicos-e-02 now training
+
+The owner relaunched the DiCOSApp. First URL given was port 32545 again --
+same actively-refused connection as the original dead 4090, so that pod
+never actually came back. The owner then said the 4090s were gone entirely
+and gave a new URL on an L40S pod (port 30568). Authenticated; confirmed via
+`nvidia-smi`: single NVIDIA L40S, 46068 MiB, driver 595.58.03, CUDA 13.0,
+compute capability 8.9 (same Ada generation as the retired 4090).
+
+**The existing `.venv` (torch==2.6.0+cu124, the pin every accepted run has
+used) failed to initialize CUDA on this pod**:
+`cudaErrorSystemDriverMismatch` (803), even though `import torch` succeeded
+and `nvidia-smi` itself worked fine from the shell. Root cause, found by
+walking the library search path rather than guessing at a version bump: the
+default multiarch loader path's `libcuda.so.1`
+(`/usr/lib/x86_64-linux-gnu/libcuda.so.1 -> libcuda.so.535.309.01`) is a
+**0-byte file** on this pod image -- a stub, not the real driver library.
+The real, driver-matched library only exists under `/usr/lib64/libcuda.so.1
+-> libcuda.so.595.58.03` (91 MB, matches `nvidia-smi`'s reported driver
+exactly). `nvidia-smi` apparently resolves its own copy differently and
+never hits the broken stub; torch's default `dlopen` search does.
+
+Confirmed directly before touching any code: `LD_LIBRARY_PATH=/usr/lib64
+.venv/bin/python -c "torch.cuda.is_available()"` -> `True`, device
+`NVIDIA L40S`. Same exact torch/cuda pin, zero numerics-relevant change --
+purely an environment/loader fix, not a version bump requiring a declared
+experiment.
+
+Fixed in `dicos_campaign.py`'s `launch()`: prepends `/usr/lib64` to
+`LD_LIBRARY_PATH` for both the trainer and the diagnostic producer (they
+share the same `env` dict). A no-op on any pod that doesn't have this
+problem.
+
+### A self-inflicted near-miss: the fix was written but not committed before the first real launch
+
+Wrote and locally verified the `LD_LIBRARY_PATH` fix, then launched
+`camp0810-lr3e4` (pid 759) without re-checking `git status` first. The
+pod's `repo/` checkout was still at the *previous* commit (`cbe3a25`, from
+before this fix), so it launched with the old, broken `launch()` and hit
+the exact same `cudaErrorSystemDriverMismatch` -- confirmed via
+`_runs/dicos-e-01train.log`, a clean uncaught `RuntimeError`, exit 1 at
+wall 131.6s, zero epochs, zero checkpoints written, **zero evidence lost**.
+Stopped (`dicos.py stop camp0810-lr3e4`), confirmed no trainer/producer
+process or GPU memory survived it, archived the aborted attempt rather
+than deleting it (matching the `aborted_c01_producer_path_and_shard_cache`
+precedent from 2026-08-05):
+
+    _runs/calibrated_lr3e4_dicos-e-01 -> _runs/aborted_e01_cuda_stub_before_fix
+    _diag/dicos-e-01 -> _diag/aborted-e01
+
+Committed the fix (`2eddba1`), pushed, re-pulled on the pod (now at
+`2eddba1`), re-verified `torch.cuda.is_available()` directly one more time,
+then relaunched as `camp0810-lr3e4b` (pid 1432). The supervisor's own state
+(`segments_run: 1` persisted from the aborted attempt, `parent` unchanged
+-- still `dicos-c-02`) naturally advanced the run tag to `dicos-e-02`
+rather than colliding with the archived `dicos-e-01`, with no manual
+tag bookkeeping needed.
+
+**dicos-e-02 confirmed actually training**, not just launched: producer
+alive past its 5s liveness check, `environment.json` confirms
+`shard_cache_size: 0` (the other historical starvation bug, already guarded
+by an existing `env.setdefault`, unaffected by any of this), and
+`nvidia-smi` settled at 93-96% utilization / ~12 GB used after the initial
+187-shard load. No `history.csv` row yet (first epoch of ~26,624 events
+still in flight at the time of writing).
+
+### A second near-miss: the watcher's default plan
+
+Started `scripts/watch_campaign_outputs.py` immediately after confirming
+GPU utilization, with no `--plan` argument -- its default
+(`configs/campaigns/campaign_20260805.json`) is the now five-day-*complete*
+campaign, not the one actually training. It started clean and logged
+`plan camp-20260805`, which would have sat idle forever refreshing nothing
+new while dicos-e-02 trained unwatched. Caught immediately by reading its
+own startup log line rather than assuming success from a clean launch;
+stopped (`Stop-Process`), stale lock reclaimed automatically on the next
+`acquire_lock()` call (exactly the behavior it was built for), relaunched
+with `--plan configs/campaigns/campaign_20260810_lr3e4.json` explicitly.
+Confirmed via `--status`: `lock pid 14676: ALIVE`, log line
+`plan camp-20260810-lr3e4`.
+
+### Current state at time of writing
+
+    4090: retired by the owner, will not return
+    L40S (port 30568): training dicos-e-02, 93-96% util, epoch 1 of the
+      target absolute 55 (resuming from dicos-c-02's best, epoch 34) in flight
+    3090: unchanged, reachable, idle, available for diagnostics as epochs land
+    watcher: pid 14676, plan camp-20260810-lr3e4, interval 300s, detached
+      from this session via Start-Process, survives the chat ending
+
+### Verification
+
+    PYTHONPATH=src python -m pytest -q          332 passed (unchanged by this entry's edits)
+    dry-run of camp-20260810-lr3e4               clean, config_delta only touched allowed fields
+    torch.cuda.is_available() on the L40S         False before the fix, True after, same pinned build
+    dicos-e-01                                    aborted, 0 epochs, archived, 0 evidence lost
+    dicos-e-02                                    launched, producer alive, shard_cache_size 0,
+                                                    GPU 93-96% util confirmed twice ~45s apart
+    watcher --status                              lock pid 14676 ALIVE, correct plan confirmed
+
+### What is still open
+
+The 4090-to-L40S swap invalidates the `docs/GPU_BENCHMARKS.md` 649.83
+s/epoch figure for cost/time estimates going forward; the L40S has no
+measured rate yet and one should be recorded from dicos-e-02's own
+`history.csv` once epochs start landing. `CLAUDE.md`'s fleet section
+updated locally to name the L40S (that file is git-excluded on this
+machine, not tracked, so nothing to push there). Whether other pod images
+in this fleet (the 3090, or any future replacement) share the same
+broken-stub `libcuda.so.1` is untested; the fix as written only helps where
+`/usr/lib64` genuinely holds a real library, and is a silent no-op
+everywhere else, so nothing needs auditing on that front unless a similar
+CUDA-init failure appears again.
+
+### 2026-08-10 (continued) -- an unreproduced evidence regression, and two real CRLF/pin gaps found chasing it
+
+While preparing to commit the L40S launch work, `git status` showed 24
+unexpected modified files: every `exhibition/current/` diagnostic and
+continuation figure, `exhibition/data/continuation_history.csv`, and several
+others -- none of them touched intentionally this session. Investigated
+rather than blindly committed or discarded, since this is exactly the class
+of silent evidence corruption `AGENTS.md`/`CLAUDE.md` exist to prevent.
+
+**The real damage:** `exhibition/data/continuation_history.csv` was missing
+8 rows -- `calibrated_lr3e4`/`dicos-c-02` epochs 35-42 -- that the last commit
+(`685dae3`) already had. Every dependent figure (`family_choice.json`, the
+loss/diagnostic PNGs and SVGs) had regenerated from that truncated view,
+regressing `calibrated_lr3e4`'s recorded lineage from epoch 42 back to just
+its best epoch (34).
+
+**Root cause: not confirmed.** File mtimes pinned the regression to the exact
+minute of a self-inflicted mistake: the *first* `watch_campaign_outputs.py`
+launch this session started with no `--plan` argument, silently defaulting to
+the already-*complete* `camp-20260805.json` rather than the new
+`camp-20260810-lr3e4.json` -- caught and killed about a minute later by
+reading its own startup log line, not by symptom. The timing match is
+precise, but tracing `refresh_campaign_outputs.py`'s actual code path for
+that plan does not obviously explain a content loss this specific
+(`latest_epoch()` and `segments_by_family()` both read from the pod's real
+event journal regardless of which plan file is passed, and
+`prune_superseded_rows()`'s fork-point math for that plan's parent chain
+doesn't touch `dicos-c-02`'s own rows). Three subsequent attempts to
+reproduce it -- rerunning the full pytest suite, twice, and bisecting it into
+two halves -- all came back clean, no corruption. Recorded here rather than
+silently fixed and forgotten, per the project's own standard for negative
+and inconclusive results.
+
+**Fixed by restoring, not regenerating:** `git checkout HEAD -- <affected
+paths>` for everything except this session's own intended edits. The
+underlying source of truth was never at risk -- `_diag/dicos-c-02/metrics_
+epoch_0035..0042.json` are still on the pod exactly as the campaign wrote
+them -- so nothing was actually lost, only a derived local view.
+
+### Two real, unrelated bugs surfaced while chasing the above
+
+**1. The restore itself corrupted a file `.gitattributes` doesn't cover.**
+`git checkout HEAD -- dashboard/public/data/manifest.json` (swept up in the
+broad restore above) came back CRLF on this Windows checkout, breaking its
+sha256 pin in `exhibition/manifest.json` -- the identical failure mode fixed
+2026-08-05 for `exhibition/**`, `audit/**`, `configs/**`, `prep/**`, but
+`dashboard/public/data/*.json` was never added to that list despite being
+hash-pinned the same way. Added it. `git checkout` did not immediately pick
+up the new attribute for a file already in the index (a known git rough
+edge, not a bug in this fix); resolved by writing the committed blob's bytes
+directly (`git cat-file -p HEAD:... > file`), verified byte-identical to the
+pin afterward.
+
+**2. `exhibition/manifest.json`'s pin for `family_choice.json` was already
+stale in the last commit, independent of everything else.** After the CRLF
+fix, two tests still failed on a *different* file:
+`exhibition/current/continuation/family_choice.json`'s committed content
+(2086 bytes) didn't match what the committed manifest pinned for it (2142
+bytes) -- present in `685dae3` itself, not something this session's
+restore introduced (`git status` showed both files clean/unmodified before
+the fix). Fixed the correct way, per the project's own standing rule: never
+hand-edit a hash pin, re-run the builder that computes it.
+`python exhibition/build_exhibition.py` then
+`python exhibition/build_metrics_catalog.py` -- catalog now reports
+`"all_manifest_hashes_match": true`, `"status": "PASS"`,
+`"current_reaches_latest_observed_epoch": 42`.
+
+### Verification
+
+    PYTHONPATH=src python -m compileall -q src vertex scripts tests exhibition   exit 0
+    PYTHONPATH=src python -m pytest -q                                           332 passed, 0 failed
+    git status after the full suite                                             clean (no recurrence)
+
+### What is still open
+
+The evidence-regression mechanism itself is not root-caused, only recovered
+from and not reproduced. If it recurs, check first whether a
+`watch_campaign_outputs.py` or `refresh_campaign_outputs.py` invocation ran
+against a stale or wrong `--plan` in the preceding minute -- that is the only
+correlated event found, even though the code path traced from it doesn't
+yet fully explain the specific rows lost.
