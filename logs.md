@@ -8578,3 +8578,158 @@ session and are now correctly reflected: `external metrics: dicos-c-02 e34
 status=complete`, `{"transactions": 2, "figures": 7}`. A publication is owed
 (lr3e4's lowest verified loss changed) and has not been made; it remains a
 deliberate, separate act.
+
+### 2026-08-05 — campaign figure/metric watcher started
+
+`scripts/watch_campaign_outputs.py` started against campaign `camp-20260805`, polling every 300s. It keeps figures and metrics current on the workstation for as long as the campaign is training and exits on its own once the campaign reaches a terminal state. It requires the workstation to stay on; nothing about it runs on a pod.
+
+- calibrated_lr1e4_halfbatch/dicos-c-03 epoch 30 imported, best so far 4.659069 @ e25 (dicos-c-03)
+
+- calibrated_lr1e4_halfbatch/dicos-c-03 epoch 31 imported, best so far 4.659069 @ e25 (dicos-c-03)
+
+- calibrated_lr1e4_halfbatch/dicos-c-03 epoch 32 imported, best so far 4.659069 @ e25 (dicos-c-03)
+
+- NEW BEST: calibrated_lr1e4_halfbatch reached validation 4.619967 at epoch 33 (dicos-c-03), improving on 4.659069 by 0.039102
+- calibrated_lr1e4_halfbatch/dicos-c-03 epoch 41 imported, best so far 4.619967 @ e33 (dicos-c-03)
+- NEW BEST: calibrated_lr3e5 reached validation 4.836910 at epoch 12 (dicos-c-04)
+- calibrated_lr3e5/dicos-c-04 epoch 11 imported, best so far 4.836910 @ e12 (dicos-c-04)
+- campaign advanced: chain_index 1 -> 2
+
+- calibrated_lr3e5/dicos-c-04 epoch 12 imported, best so far 4.836910 @ e12 (dicos-c-04)
+
+- calibrated_lr3e5/dicos-c-04 epoch 13 imported, best so far 4.836910 @ e12 (dicos-c-04)
+
+- calibrated_lr3e5/dicos-c-04 epoch 14 imported, best so far 4.836910 @ e12 (dicos-c-04)
+
+- calibrated_lr3e5/dicos-c-04 epoch 15 imported, best so far 4.836910 @ e12 (dicos-c-04)
+
+- calibrated_lr3e5/dicos-c-04 epoch 16 imported, best so far 4.836910 @ e12 (dicos-c-04)
+
+- calibrated_lr3e5/dicos-c-04 epoch 17 imported, best so far 4.836910 @ e12 (dicos-c-04)
+
+- NEW BEST: calibrated_lr3e5 reached validation 4.829209 at epoch 19 (dicos-c-04), improving on 4.836910 by 0.007701
+- calibrated_lr3e5/dicos-c-04 epoch 18 imported, best so far 4.829209 @ e19 (dicos-c-04)
+
+- NEW BEST: calibrated_lr3e5 reached validation 4.802990 at epoch 20 (dicos-c-04), improving on 4.829209 by 0.026219
+- calibrated_lr3e5/dicos-c-04 epoch 19 imported, best so far 4.802990 @ e20 (dicos-c-04)
+
+- NEW BEST: calibrated_lr3e5 reached validation 4.790333 at epoch 21 (dicos-c-04), improving on 4.802990 by 0.012657
+- calibrated_lr3e5/dicos-c-04 epoch 20 imported, best so far 4.790333 @ e21 (dicos-c-04)
+
+- calibrated_lr3e5/dicos-c-04 epoch 21 imported, best so far 4.790333 @ e21 (dicos-c-04)
+
+- calibrated_lr3e5/dicos-c-04 epoch 22 imported, best so far 4.790333 @ e21 (dicos-c-04)
+
+- calibrated_lr3e5/dicos-c-04 epoch 23 imported, best so far 4.790333 @ e21 (dicos-c-04)
+
+- calibrated_lr3e5/dicos-c-04 epoch 24 imported, best so far 4.761474 @ e24 (dicos-c-04)
+
+- NEW BEST: calibrated_lr3e5 reached validation 4.702203 at epoch 36 (dicos-c-05), improving on 4.761474 by 0.059271
+- calibrated_lr3e5/dicos-c-05 epoch 44 imported, best so far 4.702203 @ e36 (dicos-c-05)
+- campaign status: training -> campaign_complete
+
+### 2026-08-05 — campaign figure/metric watcher stopped
+
+Exit reason: campaign campaign_complete.
+
+### 2026-08-10 — campaign `camp-20260805` completed autonomously; a fourth family-champion bug found and fixed
+
+Picking this up five days after launch. The watcher ran unattended from
+2026-08-05T09:30:02Z to 2026-08-05T22:17:02Z (~12h47m), then exited on its own
+when the declared chain finished. Nothing has run since; this entry both
+records that run and fixes one gap it exposed.
+
+**The declared chain completed end to end, unattended, with no operator
+present:**
+
+    2026-08-05T12:45:45Z  calibrated_lr1e4_halfbatch NEW BEST 4.619967 @ e33 (dicos-c-03)
+    2026-08-05T12:45:45Z  campaign advanced: chain_index 1 -> 2 (halfbatch plateaued: best e33,
+                          latest e41, distance 8 > 6-epoch window)
+    2026-08-05T14:06:26Z..15:18:13Z  calibrated_lr3e5/dicos-c-04, four successive new bests,
+                          4.836910 -> 4.829209 -> 4.802990 -> 4.790333 -> 4.761474 (e24)
+    2026-08-05T22:17:02Z  calibrated_lr3e5/dicos-c-05 NEW BEST 4.702203 @ e36, epoch 44 imported
+    2026-08-05T22:17:02Z  campaign status: training -> campaign_complete (lr3e5 was the last
+                          family in the chain; its own best (e36) was 8 epochs behind its
+                          latest (e44), so the campaign correctly ended rather than looping)
+
+One six-hour-fifty-minute gap, 15:18:13Z to 22:17:02Z, sits in the middle with
+no polls logged. The watcher's own log shows no error in that window --
+`_dicos()`'s `subprocess.run` calls carry no timeout, so a single stalled pod
+request can block a poll indefinitely without crashing the loop, which is
+consistent with what's observed but not confirmed as the cause. Flagged as a
+follow-up rather than fixed now: the campaign still completed correctly, only
+slower.
+
+**Final standings, all four calibrated families, at time of writing:**
+
+    calibrated_lr3e4             4.550331  epoch 34  dicos-c-02   <- still the overall champion
+    calibrated_lr1e4_halfbatch   4.619967  epoch 33  dicos-c-03
+    calibrated_lr1e4             4.635220  epoch 38  dicos-p9
+    calibrated_lr3e5              4.702203  epoch 36  dicos-c-05
+
+lr3e5 improved the most of any family this run: 4.843471 -> 4.702203, a
+0.141268 gain across 36 further epochs, the largest single-run improvement in
+the project's history. It is still last, but the gap to lr1e4_halfbatch
+narrowed from 0.170 to 0.083.
+
+### A fourth instance of the "resume-from-best re-runs an epoch number" bug
+
+`calibrated_lr3e5`'s history failed the duplicate-epoch guard on epochs 9 and
+10. Unlike the three prior instances (all continuation-vs-continuation, fixed
+2026-08-05 with `fork_points()`/`prune_superseded_rows()`), this one is
+continuation-vs-**frozen baseline**: `exhibition/data/training_history.csv`
+(the static, asserted-exactly-epochs-0..10 file) records `calibrated_lr3e5`
+through epoch 10 -- its `dicos-r3` run's actual last epoch -- while the
+campaign's declared parent was `dicos-r3`'s **best**, epoch 8. `dicos-c-04`
+therefore starts fresh at epoch 9, re-running epochs 9 and 10 that
+`training_history.csv` had already recorded with different (non-identical)
+validation losses -- 4.8865099375628445 there against 4.887828409409977 here,
+confirming these are genuinely different runs of the same nominal epoch, not
+a duplicate of the same data.
+
+`read_history()` in `exhibition/build_continuation_loss_figures.py` simply
+concatenated `training_history.csv` rows with continuation rows, unguarded --
+correct for every prior family, since every earlier continuation resumed from
+its baseline's own *last* epoch, so the two sources never overlapped.
+`calibrated_lr3e5` is the first case where the accepted best sits strictly
+before the baseline's own last recorded epoch.
+
+**Fixed without touching the frozen file.** `training_history.csv` stays
+exactly what it was committed as; `read_history()` now drops a baseline row
+from the *merged in-memory view* whenever a continuation row exists for the
+same epoch, since the continuation is the branch that was explicitly
+continued forward from the fork point and the baseline's row past that point
+describes a lineage that was superseded the moment the campaign forked from
+it -- the same principle `prune_superseded_rows()` already applies between
+two continuation tags, extended to cover a continuation superseding its own
+frozen baseline.
+
+### Verification
+
+    PYTHONPATH=src python -m compileall -q src vertex scripts tests exhibition   exit 0
+    PYTHONPATH=src python -m pytest -q                                330 passed
+    build_continuation_loss_figures.py -> build_family_choice_figure.py ->
+      build_exhibition.py -> build_metrics_catalog.py, run in that order locally
+      (the 4090 pod is unreachable -- connection refused, likely expired days ago --
+      so the pod-dependent parts of a full campaign refresh could not run; nothing
+      pod-dependent needed rebuilding, since the watcher's last live pass already
+      pulled everything through campaign_complete)
+      final catalog: 124 graphics, status PASS
+
+### Current backend state
+
+RTX 4090 (port 32545): unreachable, connection actively refused -- the pod
+session has ended. RTX 3090: reachable, idle. No training or diagnostic
+process is running anywhere; the watcher exited on its own five days ago and
+has not been relaunched. `_watch/campaign_refresh/watch.lock` is absent,
+confirmed via `--status`.
+
+### What is still open
+
+No family's lowest verified validation loss changed relative to the last
+publication (`dicos-p9-calibrated-lr1e4:joint:0038` is still live), so no
+publication is newly owed by this session -- `calibrated_lr3e4`'s lead was
+already unpublished before this run and remains so. Whether to declare a
+follow-up campaign (all three families still show a real, non-plateaued trend
+at their windows; none has been run past the point where its own most recent
+segment closed with a clearly flat trajectory) is the owner's call.

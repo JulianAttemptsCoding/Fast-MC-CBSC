@@ -147,7 +147,22 @@ def read_history() -> tuple[
             })
     continuation = read_continuation()
     for variant, series in rows.items():
-        series.extend(continuation.get(variant, []))
+        extra = continuation.get(variant, [])
+        # `training_history.csv` is the frozen epochs-0..10 baseline and is
+        # never modified. Every continuation so far resumed from a baseline's
+        # own LAST epoch, so the two sources never overlapped -- but a
+        # continuation resumes from the accepted BEST, and calibrated_lr3e5's
+        # baseline (dicos-r3) has best epoch 8 while its own run continued to
+        # epoch 10, so dicos-c-04 (forking from epoch 8) re-produced epochs 9
+        # and 10 that dicos-r3 had already written. The continuation is the
+        # live branch; the frozen baseline's row for an epoch the live branch
+        # has since re-run is dropped from this MERGED view only -- the file
+        # on disk is untouched.
+        extra_epochs = {r["epoch"] for r in extra}
+        superseded = [r for r in series if r["epoch"] in extra_epochs]
+        if superseded:
+            series[:] = [r for r in series if r["epoch"] not in extra_epochs]
+        series.extend(extra)
         series.sort(key=lambda r: r["epoch"])
         seen = [r["epoch"] for r in series]
         if len(seen) != len(set(seen)):

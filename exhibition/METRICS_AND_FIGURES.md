@@ -10,9 +10,9 @@ remain visible as negative evidence.
 | Family | Best accepted | Latest accepted | Latest observed | Status |
 |---|---:|---:|---:|---|
 | `calibrated_lr1e4` | e38 / 4.635220 | e39 / 4.663275 | e40 / 4.702765 | quarantined |
-| `calibrated_lr1e4_halfbatch` | e25 / 4.659069 | e30 / 4.659172 | e30 / 4.659172 | accepted |
+| `calibrated_lr1e4_halfbatch` | e33 / 4.619967 | e41 / 4.661924 | e41 / 4.661924 | accepted |
 | `calibrated_lr3e4` | e34 / 4.550331 | e42 / 4.595299 | e42 / 4.595299 | accepted |
-| `calibrated_lr3e5` | e8 / 4.843471 | e10 / 4.874426 | e10 / 4.874426 | accepted |
+| `calibrated_lr3e5` | e36 / 4.702203 | e44 / 4.752450 | e44 / 4.752450 | accepted |
 
 ## Graphics inventory
 
@@ -34,7 +34,7 @@ Current: **71**. Archive: **53**.
 
 ## Scientific boundary
 
-Current large-sample diagnostics cover epochs 23–42 on 4,000 fixed validation events per epoch. Quarantined epochs: none. These are descriptive,
+Current large-sample diagnostics cover epochs 22–41 on 4,000 fixed validation events per epoch. Quarantined epochs: none. These are descriptive,
 not a fidelity gate or Geant4 validation.
 All **348** numeric diagnostic leaves are present at every epoch and are stored in `all_metric_trends.json`.
 

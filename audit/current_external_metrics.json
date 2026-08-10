@@ -1,57 +1,36 @@
 {
   "cbsc_test_events_used": 0,
-  "checkpoint_sha256": "eeeff17abe4e4e362783f2d7f140d50d591d75bb74656047a6efa3811ffef1bd",
+  "checkpoint_sha256": "96c5207de937fee4ae8ecb42e2bef66a87d46e4c213beddc7ea9d2f866f1473c",
   "controller": {
-    "action": "pulled immutable external metric evidence",
-    "bank_ready": true,
+    "action": "started evaluator waiter",
+    "bank_ready": false,
     "cbsc_test_events_used": 0,
     "cbsc_training_started": false,
-    "checkpoint_sha256": "eeeff17abe4e4e362783f2d7f140d50d591d75bb74656047a6efa3811ffef1bd",
-    "destination": "exhibition/current/external_metrics/source_data/dicos-c-02/epoch_0034",
-    "epoch": 34,
+    "checkpoint_sha256": "96c5207de937fee4ae8ecb42e2bef66a87d46e4c213beddc7ea9d2f866f1473c",
+    "epoch": 33,
     "evaluate": {
-      "raw": "EXIT=0",
-      "state": "complete"
+      "pid": 18199,
+      "state": "running"
     },
     "export": {
-      "raw": "EXIT=0",
-      "state": "complete"
+      "pid": 18017,
+      "state": "running"
     },
-    "family": "calibrated_lr3e4",
-    "files": [
-      "auroc/figures/auroc_evaluator_training.png",
-      "auroc/figures/auroc_seed_spread.png",
-      "auroc/figures/auroc_vs_energy.png",
-      "auroc/metrics.json",
-      "four_momentum/figures/four_momentum_accuracy.png",
-      "four_momentum/figures/four_momentum_vs_energy.png",
-      "four_momentum/metrics.json",
-      "manifest.json"
-    ],
+    "family": "calibrated_lr1e4_halfbatch",
     "kind": "cbsc-zdc-external-metric-controller-status",
-    "new_files": [
-      "auroc/figures/auroc_evaluator_training.png",
-      "auroc/figures/auroc_seed_spread.png",
-      "auroc/figures/auroc_vs_energy.png",
-      "auroc/metrics.json",
-      "four_momentum/figures/four_momentum_accuracy.png",
-      "four_momentum/figures/four_momentum_vs_energy.png",
-      "four_momentum/metrics.json",
-      "manifest.json"
-    ],
-    "results_ready": true,
-    "run_tag": "dicos-c-02",
+    "results_ready": false,
+    "run_tag": "dicos-c-03",
     "schema_version": 1
   },
-  "epoch": 34,
-  "family": "calibrated_lr3e4",
+  "epoch": 33,
+  "family": "calibrated_lr1e4_halfbatch",
   "kind": "cbsc-zdc-current-external-metrics-state",
-  "local_manifest": "exhibition/current/external_metrics/source_data/dicos-c-02/epoch_0034/manifest.json",
+  "local_manifest": null,
   "release_pending": true,
-  "run_tag": "dicos-c-02",
+  "run_tag": "dicos-c-03",
   "schema_version": 1,
   "selection_role": "descriptive only; may not select or tune CBSC",
   "source_split": "validation",
-  "status": "complete",
-  "validation_loss": 4.5503306071196254
+  "status": "running_remote",
+  "validation_loss": 4.619967105273447
 }
