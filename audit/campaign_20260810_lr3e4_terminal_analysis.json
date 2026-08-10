@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-terminal-analysis",
+  "name": "campaign_20260810_lr3e4",
+  "created_at": "2026-08-10",
+  "campaign_id": "camp-20260810-lr3e4",
+  "status": "declared, not launched -- the 4090 trainer pod is unreachable",
+  "qa_labels": ["QA PASS", "PHYSICS VALIDATION NOT ESTABLISHED"],
+
+  "declaration": {
+    "question": "Does calibrated_lr3e4, the project's overall champion at the end of camp-20260805, keep improving when given further 20-epoch segments from its own best checkpoint?",
+    "chain": ["calibrated_lr3e4"],
+    "segment_epochs": 20,
+    "improvement_window": 6,
+    "rule": "after a segment, continue when latest_epoch - best_epoch <= 6, otherwise stop -- there is no next family in this single-family chain",
+    "owner_instruction": "2026-08-10: continue training calibrated_lr3e4 (name only; use whatever hyperparameters the family's own frozen template already carries), ensure the pipeline stays smooth"
+  },
+
+  "boundary": {
+    "evidence_class": "optimization on the pilot bank",
+    "not_established": ["Geant4 fidelity", "three-seed behaviour", "untouched-test performance"],
+    "test_events_used": 0,
+    "comparability": "unchanged from camp-20260805: the energy-scaled closure tolerance (relative=1e-5) declared 2026-08-05 is already baked into the parent template this continues from"
+  },
+
+  "parent_verified_on_host": {
+    "calibrated_lr3e4": {
+      "run": "dicos-c-02",
+      "run_dir": "_runs/calibrated_lr3e4_dicos-c-02",
+      "best_epoch": 34,
+      "validation_loss": 4.5503306071196254,
+      "best_sha256": "5995c86a89f9a9c36a966c4ced5102d697663ac0958e49814763961e25bc2089",
+      "last_sha256": "d382bd1f89857a1aa47e2c1c642bc5e3bf081afac849b1e5c92ca1ba07f51f5b",
+      "verified_via": "3090 (config_3090.json), shared filesystem read; sha256sum run directly on the pod against the checkpoint files, not assumed from prior notes"
+    }
+  },
+  "parent_last_epoch_semantics": "parent_last_epoch = 34, the BEST epoch of dicos-c-02, not its own last-written epoch (~42-43) -- resume continues from the best checkpoint, consistent with every prior segment in this project.",
+
+  "reconstructed_provenance": {
+    "dicos_c_01": "aborted after 0 epochs on the producer-path/shard-cache bugs fixed during the camp-20260805 session; archived as _runs/aborted_c01_producer_path_and_shard_cache. Confirmed by directory listing on the pod, not inferred.",
+    "dicos_c_02": "the clean restart of the same segment from the same parent (dicos-p7 best, epoch 22); its own frozen config's resume_from_sha256 matches dicos-p7's best hash exactly, confirming it did not resume from dicos-c-01 (which produced no checkpoint)."
+  },
+
+  "new_segment_plan": {
+    "campaign_id": "camp-20260810-lr3e4",
+    "run_tag_prefix": "dicos-e",
+    "prefix_collision_check": "confirmed via `_runs/` listing on the pod that no dicos-e-* run directory exists anywhere",
+    "parent_frozen": "prep/configs/frozen_calibrated_lr3e4_dicos-c-02.yaml",
+    "parent_frozen_choice": "dicos-c-02's own frozen config, not the family's original dicos-p7 baseline, per the diff-against-the-immediate-parent rule",
+    "parent_template": "configs/templates/dicos_p7_20260803/calibrated_lr3e4_dicos-p7.yaml (unchanged; carries architecture/loss/schedule, not per-segment provenance)",
+    "epochs_absolute_if_launched": 55,
+    "launch_blocked_by": "4090 unreachable (ConnectTimeoutError, scale-k8s-master01.twgrid.org:32545) -- prepare_segment()/launch() only run on the pod itself"
+  },
+
+  "bug_fixed_this_session": {
+    "id": "dicos-subprocess-no-timeout",
+    "location": "scripts/refresh_campaign_outputs.py:_dicos()",
+    "symptom": "bare subprocess.run(command, ...) with no timeout wrapping every call to scripts/dicos.py, used by both refresh() and (through it) watch_campaign_outputs.py's poll loop",
+    "risk": "dicos.py's own HTTP calls are individually bounded (30-300s), but nothing bounded the child process itself; a kernel-websocket exec that accepts a connection and never replies has no per-receive timeout on that path",
+    "relation_to_open_incident": "offered as a plausible mechanism for the still-unexplained 6h50m gap in the 2026-08-05 watcher run (15:18-22:17Z); not a confirmed root cause",
+    "fix": "360s outer timeout (above dicos.py's largest internal single-request budget of 300s); subprocess.TimeoutExpired converted into the same SystemExit contract _dicos() already raised on nonzero exit, so latest_epoch()'s existing fallback and run_loop()'s existing catch-and-retry both cover it without further changes",
+    "tests_added": [
+      "test_dicos_converts_a_subprocess_timeout_into_a_catchable_system_exit",
+      "test_dicos_passes_a_bounded_timeout_to_subprocess_run"
+    ],
+    "still_open": "root cause inside dicos.py's kernel-websocket receive loop not found; a per-receive timeout there would close the gap properly instead of only bounding the blast radius"
+  },
+
+  "repo_sync": {
+    "fast_mc_cbsc": "clean, 0/0 against origin/main before this session's edits",
+    "fast_mc_visual_tests": "1 commit behind origin/main (03627a6, owner's own 2026-08-04 commit, unrelated to this session); fast-forwarded, public suite 8/8 (was 7/7)"
+  },
+
+  "verification": {
+    "compileall": "src vertex scripts tests exhibition -- exit 0",
+    "pytest": "332 passed (330 -> 332)",
+    "public_repo_unittest": "8 passed (7 -> 8, from the pulled commit)"
+  },
+
+  "cost": {
+    "accounting": "ASGC SRUs; no paid cloud compute; nothing launched this session",
+    "measured_rate_4090_seconds_per_epoch": 649.83,
+    "estimated_segment_hours_once_launched": 3.6
+  }
+}

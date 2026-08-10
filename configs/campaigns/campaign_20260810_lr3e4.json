@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-training-campaign-plan",
+  "campaign_id": "camp-20260810-lr3e4",
+  "run_tag_prefix": "dicos-e",
+  "declared_at": "2026-08-10",
+  "scientific_question": "Does calibrated_lr3e4, the project's overall champion at the end of camp-20260805, keep improving when given further 20-epoch segments from its own best checkpoint?",
+  "declared_by": "project owner, 2026-08-10: continue training calibrated_lr3e4, same continuation rules as camp-20260805 (resume from best, 20-epoch segments, advance/stop on the 6-epoch improvement window)",
+  "boundary": "Optimization evidence on the pilot bank only. Establishes nothing about Geant4 fidelity, three-seed behaviour, or untouched-test performance. The 76,300-event test split stays sealed and is not read by training, diagnostics, or visualization.",
+  "segment_epochs": 20,
+  "improvement_window": 6,
+  "improvement_rule": "after a segment, continue the same family when latest_epoch - best_epoch <= improvement_window, otherwise stop -- there is no next family in this single-family chain",
+  "max_segments": 24,
+  "patience_rule": "early_stopping_patience equals the segment horizon. A constant patience counts staleness against an inherited best reached at the end of an anneal and stopped dicos-p8 at 6 of 24 epochs.",
+  "scheduler_rule": "restart_scheduler_on_resume is false. CosineAnnealingLR is periodic in 2*T_max, so a continued cosine climbs back toward peak by itself; that produced dicos-p9's 0.067 improvement where a restart produced nothing.",
+  "resume_rule": "resume from the parent BEST checkpoint on both resume slots, hash-verified before a weight is loaded.",
+  "closure_tolerance_relative": 1e-05,
+  "closure_tolerance_note": "Unchanged from camp-20260805: the energy-scaled closure tolerance declared 2026-08-05 is already baked into the parent template this segment continues from. See audit/closure_tolerance_20260805_terminal_analysis.json.",
+  "chain": [
+    "calibrated_lr3e4"
+  ],
+  "artifacts": {
+    "audit": "prep/train_data_audit_pilot.json",
+    "geometry": "prep/geometry_frozen",
+    "manifest": "prep/data/dataset_manifest.json",
+    "splits": "prep/training_pilot_splits.json"
+  },
+  "families": {
+    "calibrated_lr3e4": {
+      "parent_run_dir": "_runs/calibrated_lr3e4_dicos-c-02",
+      "parent_last_epoch": 34,
+      "parent_validation_loss": 4.5503306071196254,
+      "parent_best_sha256": "5995c86a89f9a9c36a966c4ced5102d697663ac0958e49814763961e25bc2089",
+      "parent_last_sha256": "d382bd1f89857a1aa47e2c1c642bc5e3bf081afac849b1e5c92ca1ba07f51f5b",
+      "parent_template": "configs/templates/dicos_p7_20260803/calibrated_lr3e4_dicos-p7.yaml",
+      "parent_frozen": "prep/configs/frozen_calibrated_lr3e4_dicos-c-02.yaml",
+      "note": "dicos-c-02 is the family's live run: camp-20260805's first attempt (dicos-c-01) aborted on the producer-path/shard-cache bug fixed that same session, and dicos-c-02 was the successful restart from the same parent (dicos-p7 best, epoch 22). dicos-c-02's own best is epoch 34 (4.550331), 8 epochs behind its own latest observed epoch (42-43), which is why camp-20260805 advanced past it to calibrated_lr1e4_halfbatch rather than continuing it further. This plan resumes exactly where that decision left off.",
+      "diagnostic_lineage": [
+        "dicos-c-01",
+        "dicos-c-02"
+      ],
+      "loss_lineage": [
+        "dicos-p6",
+        "dicos-p7",
+        "dicos-c-02"
+      ]
+    }
+  },
+  "excluded": {
+    "calibrated_lr1e4": "not part of this plan. 39 epochs, the most of any family; its dicos-p10 epoch-40 checkpoint is ARTIFACT QUARANTINED and is not a valid parent.",
+    "calibrated_lr1e4_halfbatch": "not part of this plan. Already carried forward by camp-20260805 to dicos-c-03 (best epoch 33, 4.619967); untouched here.",
+    "calibrated_lr3e5": "not part of this plan. Already carried forward by camp-20260805 to dicos-c-05 (best epoch 36, 4.702203); untouched here."
+  },
+  "lineage_note": "Scoped to calibrated_lr3e4 only, per the owner's 2026-08-10 instruction to continue that specific family. The other three calibrated families are left exactly where camp-20260805 left them."
+}

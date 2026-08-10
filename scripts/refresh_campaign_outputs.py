@@ -42,6 +42,17 @@ if str(ROOT / "src") not in sys.path:
 HISTORY_CSV = ROOT / "exhibition" / "data" / "continuation_history.csv"
 
 
+# dicos.py's own HTTP/websocket calls are bounded (30-300s per request), but a
+# stalled connect or a kernel that accepts a socket and never replies can still
+# run out the clock across several internal retries. Nothing bounded the child
+# process itself, so a single wedged pod request could block a watcher poll
+# indefinitely without the loop ever crashing or logging an error -- flagged
+# after the unexplained 6h50m gap in the 2026-08-05 watcher run. This timeout
+# is a backstop above dicos.py's largest single-request timeout (300s), not a
+# replacement for fixing the root cause inside dicos.py if one is found.
+DICOS_SUBPROCESS_TIMEOUT_SECONDS = 360
+
+
 def _dicos(args: list[str], config: str | None = None) -> str:
     command = [sys.executable, str(ROOT / "scripts" / "dicos.py"), *args]
     import os
@@ -50,7 +61,16 @@ def _dicos(args: list[str], config: str | None = None) -> str:
     env["PYTHONPATH"] = str(ROOT / "src")
     if config:
         env["DICOS_CONFIG"] = config
-    result = subprocess.run(command, capture_output=True, text=True, env=env)
+    try:
+        result = subprocess.run(
+            command, capture_output=True, text=True, env=env,
+            timeout=DICOS_SUBPROCESS_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        raise SystemExit(
+            f"dicos {' '.join(args)} timed out after "
+            f"{DICOS_SUBPROCESS_TIMEOUT_SECONDS}s (pod unreachable or wedged)"
+        )
     if result.returncode != 0:
         raise SystemExit(
             f"dicos {' '.join(args)} failed ({result.returncode}):\n{result.stderr}"

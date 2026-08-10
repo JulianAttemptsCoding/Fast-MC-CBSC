@@ -15,12 +15,53 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
+import subprocess
+
 from scripts.refresh_campaign_outputs import (
+    _dicos,
     _parent_tag_from_run_dir,
     fork_points,
     prune_superseded_rows,
     segments_by_family,
 )
+
+
+# --------------------------------------------------------------------------
+# _dicos -- a wedged pod call must not hang the caller forever
+# --------------------------------------------------------------------------
+
+
+def test_dicos_converts_a_subprocess_timeout_into_a_catchable_system_exit(monkeypatch):
+    """A stalled pod request must fail fast, not hang the watcher loop.
+
+    `latest_epoch()` already catches `SystemExit` from `_dicos()` and falls
+    back to local data; `run_loop()` already catches `SystemExit` around a
+    whole refresh pass and retries next interval. Both only help if a wedged
+    subprocess actually raises instead of blocking forever, which is what the
+    2026-08-05 6h50m watcher gap was flagged as being consistent with.
+    """
+    def _wedged(*args, **kwargs):
+        raise subprocess.TimeoutExpired(cmd=args[0], timeout=kwargs.get("timeout"))
+
+    monkeypatch.setattr(subprocess, "run", _wedged)
+    try:
+        _dicos(["exec", "ls"])
+        assert False, "expected SystemExit"
+    except SystemExit as error:
+        assert "timed out after" in str(error)
+
+
+def test_dicos_passes_a_bounded_timeout_to_subprocess_run(monkeypatch):
+    captured = {}
+
+    def _fake_run(command, **kwargs):
+        captured.update(kwargs)
+        return subprocess.CompletedProcess(command, 0, stdout="ok", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+    assert _dicos(["exec", "ls"]) == "ok"
+    assert isinstance(captured.get("timeout"), (int, float))
+    assert 0 < captured["timeout"] <= 600
 
 
 # --------------------------------------------------------------------------

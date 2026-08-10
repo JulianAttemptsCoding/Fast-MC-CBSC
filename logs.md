@@ -8764,3 +8764,121 @@ six panels legible, epoch axis 23..42, no rendering fault.
 
 Verification: `PYTHONPATH=src python -m pytest -q` 330 passed; catalog
 124 graphics, status PASS, `current_reaches_latest_observed_epoch` 42.
+
+### 2026-08-10 (continued) -- declared the next lr3e4 segment; the 4090 is still down; closed the no-timeout gap flagged earlier today
+
+Owner's instruction: continue training `calibrated_lr3e4` (the name only --
+learning rate and every other hyperparameter stay whatever the family's own
+frozen template already says, per the continuation rules camp-20260805
+already established), and make sure the pipeline stays smooth around it.
+
+**Session-start checks first.** `git fetch` + `git status` in both repos:
+`Fast MC CBSC` clean, 0/0 against `origin/main`. `Fast-MC-Visual-Tests` was
+1 commit *behind* `origin/main` -- `03627a6 fix(site): clarify snapshot and
+test status`, authored by the project owner on 2026-08-04, unrelated to this
+session. Fast-forwarded (safe, no local changes to lose); public test suite
+now 8/8 (was 7, the pulled commit added one).
+
+**4090 (trainer): still unreachable.** Same failure as the last check --
+`ConnectTimeoutError` against `scale-k8s-master01.twgrid.org:32545`, 30s
+connect timeout exhausted. The pod session has ended; nothing pod-dependent
+on the training side can run until the owner relaunches the DiCOSApp and
+`python scripts/dicos.py auth "<new URL>"` is re-run. 3090 (diagnostics):
+reachable, idle, GPU free.
+
+`_campaign/camp-20260805/state.json`, fetched via the 3090 (same shared
+filesystem, read-only access is enough): confirms `status: campaign_complete`,
+`chain_index: 2`, `segments_run: 5` -- nothing of camp-20260805 is still
+running anywhere, matching the five-day-old finding.
+
+**Declared `configs/campaigns/campaign_20260810_lr3e4.json`**, a new
+single-family plan continuing `calibrated_lr3e4` alone from where
+camp-20260805 left it, same rules throughout (resume from best, 20-epoch
+segments, patience = horizon, `restart_scheduler_on_resume: false`,
+6-epoch improvement window). `run_tag_prefix: "dicos-e"` -- a fresh prefix,
+chosen after confirming via `_runs/` listing that no `dicos-e-*` tag exists
+anywhere, so a first segment here cannot collide with any of the five
+`dicos-c-*` directories camp-20260805 already wrote.
+
+Parent facts verified directly against the pod (via 3090), not assumed from
+memory:
+
+    _runs/calibrated_lr3e4_dicos-c-02/checkpoints/best.pt
+      sha256 5995c86a89f9a9c36a966c4ced5102d697663ac0958e49814763961e25bc2089
+    _runs/calibrated_lr3e4_dicos-c-02/checkpoints/last.pt
+      sha256 d382bd1f89857a1aa47e2c1c642bc5e3bf081afac849b1e5c92ca1ba07f51f5b
+
+`parent_last_epoch: 34` -- dicos-c-02's own BEST epoch (4.550331), not its
+last-written epoch (~42-43), matching the resume-from-best convention
+`prepare_segment()` already enforces (both resume slots stage from
+`best.pt`). `parent_frozen` points at
+`prep/configs/frozen_calibrated_lr3e4_dicos-c-02.yaml` -- dicos-c-02's own
+frozen config, fetched and inspected directly -- rather than the
+family's original dicos-p7 baseline, per CLAUDE.md's "diff every new frozen
+config against its parent." `parent_template` is unchanged
+(`configs/templates/dicos_p7_20260803/calibrated_lr3e4_dicos-p7.yaml`): the
+template carries the fixed architecture/loss/schedule, not the per-segment
+provenance, so no template edit is needed to continue a family that has
+already been continued twice.
+
+Confirmed while reconstructing this: `_runs/aborted_c01_producer_path_and_
+shard_cache/` on the pod is the literal aborted first attempt -- dicos-c-01
+crashed on exactly the producer-`ModuleNotFoundError` and shard-cache
+starvation bugs fixed earlier in the camp-20260805 session, and dicos-c-02
+was the clean restart from the same parent (dicos-p7 best, epoch 22). This
+explains why dicos-c-02's own frozen config resumes from dicos-p7's hash
+rather than from a dicos-c-01 checkpoint: dicos-c-01 never produced one.
+
+**Not yet launched.** `prepare_segment()`/`launch()` in `dicos_campaign.py`
+only run as a job on the 4090 itself (`freeze-config` needs the pod's own
+Python environment; `launch()` needs the GPU). With the 4090 down there is
+nothing to submit to. The plan is written, hash-pinned against the real
+current checkpoint, and ready: once the pod is back, the whole thing is
+
+    python scripts/dicos.py start \
+      "python scripts/dicos_campaign.py --plan configs/campaigns/campaign_20260810_lr3e4.json --workdir . --dry-run" \
+      --name camp0810-dryrun
+
+to verify the freeze and config delta before spending any GPU time, then the
+same without `--dry-run` to actually launch. `scripts/watch_campaign_outputs.py`
+should start immediately after that launch, not before -- starting it against
+a dead 4090 would just poll a pod that cannot answer.
+
+**Closed the no-timeout gap flagged earlier today's log (2026-08-10, campaign
+completion entry).** `refresh_campaign_outputs.py`'s `_dicos()` wrapped every
+call to `scripts/dicos.py` (used by both `refresh()` and, through it,
+`watch_campaign_outputs.py`'s poll loop) in a bare `subprocess.run` with no
+timeout. `dicos.py`'s own HTTP calls are individually bounded (30-300s), but
+nothing bounded the *child process* itself -- a kernel-websocket exec that
+accepts a connection and then never replies has no per-receive timeout, so it
+could in principle wedge the subprocess past any of dicos.py's own budgets.
+This is offered as a plausible mechanism for the unexplained 6h50m gap in the
+2026-08-05 watcher run, not a confirmed diagnosis of it.
+
+Fixed with a 360s outer timeout (comfortably above dicos.py's largest single
+internal request budget of 300s) that converts `subprocess.TimeoutExpired`
+into the same `SystemExit` contract `_dicos()` already raised on a nonzero
+return code -- so every existing caller's error handling covers it for free:
+`latest_epoch()` already falls back to local data on `SystemExit`, and
+`watch_campaign_outputs.run_loop()` already catches `SystemExit` around a
+whole refresh pass and retries next interval. Two new tests in
+`tests/test_refresh_campaign_outputs.py` pin the timeout's presence and its
+conversion to `SystemExit`, with `subprocess.run` monkeypatched -- no pod
+required.
+
+### Verification
+
+    PYTHONPATH=src python -m compileall -q src vertex scripts tests exhibition   exit 0
+    PYTHONPATH=src python -m pytest -q                                           332 passed (330 -> 332)
+    python -m unittest discover -s tests -v   (Fast-MC-Visual-Tests)             8 passed (7 -> 8, new commit pulled)
+
+### What is still open
+
+Training cannot resume until the owner relaunches the 4090 DiCOSApp and
+re-authenticates (`python scripts/dicos.py auth "<URL>"`). Once that happens:
+run the plan above with `--dry-run` first, confirm the frozen config and its
+delta against dicos-c-02 look right, then launch for real and start the
+watcher. The 6h50m gap's root cause inside `dicos.py`'s own websocket loop is
+still not found, only defended against from the outside; a per-receive
+timeout on the kernel-websocket exec path would close it properly rather than
+just bounding the blast radius, and remains a follow-up.
