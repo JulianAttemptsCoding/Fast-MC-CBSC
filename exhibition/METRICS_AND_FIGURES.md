@@ -34,7 +34,7 @@ Current: **71**. Archive: **53**.
 
 ## Scientific boundary
 
-Current large-sample diagnostics cover epochs 22–41 on 4,000 fixed validation events per epoch. Quarantined epochs: none. These are descriptive,
+Current large-sample diagnostics cover epochs 23–42 on 4,000 fixed validation events per epoch. Quarantined epochs: none. These are descriptive,
 not a fidelity gate or Geant4 validation.
 All **348** numeric diagnostic leaves are present at every epoch and are stored in `all_metric_trends.json`.
 

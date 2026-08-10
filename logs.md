@@ -8733,3 +8733,34 @@ already unpublished before this run and remains so. Whether to declare a
 follow-up campaign (all three families still show a real, non-plateaued trend
 at their windows; none has been run past the point where its own most recent
 segment closed with a clearly flat trajectory) is the owner's call.
+
+### 2026-08-10 (continued) -- shared diagnostics slot had gone stale, fixed
+
+Answering "are the metrics/graphs/figures updated": **no, not fully** -- checked
+rather than assumed. `exhibition/current/diagnostics/{bias,wasserstein,headline,
+energy_bins}{_vs_epoch,_of_best_loss_so_far}.png/svg` and
+`diagnostic_summary.json`/`all_metric_trends.json` last wrote at 05:43:36 PDT
+(12:43:36 UTC) on 2026-08-05 -- the moment just before the lr3e5 duplicate-epoch
+bug started failing every subsequent champion-targeting rebuild. The shared
+slot was stuck showing `calibrated_lr1e4_halfbatch` (dicos-c-03), not the true
+overall champion `calibrated_lr3e4`.
+
+`family_bests()` itself was verified correct (returns lr3e4 first, 4.550331) --
+this was staleness from the figures never having been rebuilt since the bug
+started, not a logic error in champion selection.
+
+Rebuilt directly for lr3e4's real lineage, offline (the 4090 pod remains
+unreachable, so this ran locally rather than through a full campaign refresh):
+
+    python exhibition/build_diagnostic_trend_figure.py dicos-c-01 dicos-c-02
+    python exhibition/build_all_metric_trends.py dicos-c-01 dicos-c-02
+    python exhibition/build_exhibition.py
+    python exhibition/build_metrics_catalog.py
+
+`diagnostic_summary.json` now correctly reads `run_tags: [dicos-c-01, dicos-c-02]`,
+epochs 23..42. Visually inspected `headline_vs_epoch.png` at full resolution:
+correctly titled "calibrated_lr3e4 continuation (dicos-c-01+dicos-c-02)", all
+six panels legible, epoch axis 23..42, no rendering fault.
+
+Verification: `PYTHONPATH=src python -m pytest -q` 330 passed; catalog
+124 graphics, status PASS, `current_reaches_latest_observed_epoch` 42.
