@@ -320,6 +320,16 @@ def launch(plan: SegmentPlan, workdir: Path, frozen: Path,
     # byte-identical over 400 samples through both cache sizes, and it is
     # recorded in each run's environment.json.
     env.setdefault("CBSC_ZDC_SHARD_CACHE", "0")
+    # Some pod images ship a 0-byte stub at the default multiarch libcuda.so.1
+    # path, shadowing the real, correctly versioned driver library that only
+    # exists under /usr/lib64. Confirmed on the L40S/CUDA13 pod that replaced
+    # the retired 4090: torch imported fine but every CUDA call failed with
+    # cudaErrorSystemDriverMismatch (803) until /usr/lib64 was searched first.
+    # Prepending is a no-op on a pod that does not have this problem.
+    existing_ld_path = env.get("LD_LIBRARY_PATH", "")
+    env["LD_LIBRARY_PATH"] = "/usr/lib64" + (
+        ":" + existing_ld_path if existing_ld_path else ""
+    )
 
     train_log = workdir / "_runs" / f"{plan.run_tag}train.log"
     journal.event("segment_launch", run_tag=plan.run_tag, run_dir=str(run_dir),
