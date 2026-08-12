@@ -9274,3 +9274,144 @@ next session does not have to re-diagnose it from scratch.
    the watcher pointed at `configs/campaigns/campaign_20260810_lr3e4.json`,
    and run one refresh pass to catch up on however many epochs landed during
    the outage.
+
+### 2026-08-12 -- connectivity root-caused (SYN ladder, not a firewall), and dicos-e-02 completed with a new project best
+
+### The outage was a WebSocket connect bug on this workstation, not ASGC
+
+Both pods had been unreachable since 2026-08-11 with
+`could not open a kernel channel: [WinError 10060]`, while `git fetch`
+succeeded throughout. The owner confirmed their own JupyterLab tab worked and
+ran `python3 -c "print(1+1)"` -> `2` in a pod terminal instantly, proving the
+pods and ASGC's gateway were both healthy. So the fault was local to this
+workstation's client path.
+
+Measured rather than guessed. `GET /api/status` succeeded but took **21.4 s**;
+a second request on the same `requests.Session` took 0.2 s. A bare
+`socket.create_connection()` to the same host:port, five times in a row,
+connected in **21.2 s every single time** -- no variance. That is Windows'
+SYN-retransmit ladder exactly: 3 s + 6 s + 12 s = 21 s. The first two SYNs to
+the Taiwan host are dropped on the US->TW path and the third lands. The pod is
+fine; the first two packets of every new connection are not.
+
+`requests` hides this behind keep-alive, so only its first call per session
+pays. A kernel channel opens a **fresh** socket every time and always pays it.
+And `websocket-client`'s own connect gives up right at that ladder regardless
+of the timeout handed to it -- observed failing at **21.0 s with `timeout=30`
+and again at 21.0 s with `timeout=90`**, in the same script where a plain
+`socket.create_connection` to the same host:port succeeded at 21.2 s. The
+`timeout` parameter is not what was binding.
+
+**Fixed in `scripts/dicos.py`:** the TCP socket is now established by
+`Dicos._preconnect()` (where a 90 s budget is actually honoured) and handed to
+`websocket.create_connection(..., socket=...)` already open. Verified live
+immediately afterward: `dicos.py exec "hostname && nvidia-smi"` returned
+normally after two days of failure.
+
+Two correctness details handled while making that change, neither cosmetic:
+
+- **`_preconnect()` returns `None` for a non-`http` scheme, deliberately.**
+  `websocket-client` skips its own TLS wrapping entirely when it is handed a
+  socket, so pre-connecting a `wss://` channel would send plaintext to a TLS
+  port. Every DiCOSApp seen so far is plain `http://`, but a silent downgrade
+  is not an acceptable failure mode for one that is not, so TLS falls back to
+  the library's own connect path.
+- **The retry loop closes a socket it opened for a failed attempt.** The
+  handover to `websocket-client` only happens on success, so without this
+  three attempts leak three sockets and the last stays half-open against the
+  pod.
+
+### dicos-e-02 completed on its own during the outage
+
+The trainer is a detached process on the pod and was never affected by this
+workstation losing its client path -- as expected, and now confirmed rather
+than assumed:
+
+    _runs/dicos-e-02train.log:  EXIT=0  2026-08-11T04:03:34Z  wall 17209.014s
+    epochs completed: 20  (absolute 35..54, target 55)
+    best: epoch 47, validation 4.512720740207991
+
+**`calibrated_lr3e4` therefore has a new lowest verified validation loss:
+4.512721 at epoch 47 (`dicos-e-02`), improving on 4.5503306071196254 at epoch
+34 (`dicos-c-02`) by 0.037610.** Standings now:
+
+    calibrated_lr3e4             4.512721  epoch 47  dicos-e-02   <- champion
+    calibrated_lr1e4_halfbatch   4.619967  epoch 33  dicos-c-03
+    calibrated_lr1e4             4.635220  epoch 38  dicos-p9
+    calibrated_lr3e5             4.702203  epoch 36  dicos-c-05
+
+The campaign then ended itself correctly under the declared rule, with no
+operator present:
+
+    segment_decision  outcome=campaign_complete
+    reason: best epoch 47 (4.512721) is 7 epochs behind the latest epoch 54
+            and no family remains in the chain
+
+7 > the 6-epoch improvement window, single-family chain, so it stopped rather
+than starting another segment. That is the rule the owner specified on
+2026-08-10 executing exactly as declared.
+
+`GPU_BENCHMARKS.md` still has no L40S rate; this run gives one: 17209.014 s
+for 20 epochs = **860.5 s/epoch** at batch 6, against the 4090's measured
+649.83 s/epoch. Recorded here as a single-run observation, not promoted to
+that document, which is the source of truth and wants its own measurement.
+
+### The fork-awareness follow-up resolved itself; the ordering wart did not
+
+The 2026-08-11 entry left open that `build_diagnostic_trend_figure.py`'s
+lineage construction is not fork-aware. Re-reading it: `load()` already keys
+by epoch across tags with "later tag wins", so a fork *is* handled correctly
+as long as tags are passed oldest-first, which the refresh does. The failure
+seen on 2026-08-11 was genuinely transient -- `dicos-e-02` had only reached
+epoch 36 while `dicos-c-02` still supplied 37..42, so the shared slot's max
+epoch (42) disagreed with the pruned standings (36). Now that `dicos-e-02`
+covers 35..54 it fully supersedes the overlap: `diagnostic_summary.json` reads
+epochs 23..54, **32 rows, 32 unique**, no duplicates. Verified directly rather
+than inferred from the catalog passing.
+
+Still real, and left as a follow-up rather than refactored under time
+pressure: `refresh_campaign_outputs.refresh()` runs each per-family
+`refresh_continuation_outputs.py` subprocess *before*
+`prune_superseded_rows()`, so on a fork transition that subprocess's trailing
+`build_continuation_loss_figures.py` step sees the un-pruned duplicate and
+raises. This is anticipated by design -- the post-prune block at
+`refresh_campaign_outputs.py:420` re-runs exactly those builders, which is why
+the final state is correct and the catalog reports `PASS` with
+`current_reaches_latest_observed_epoch: 54`. The data import itself is
+unaffected (20 continuation rows and 20 visualizations were written before the
+figure step). But the failed subprocess's return code still poisons
+`result["exit_code"]`, so a fork-transition refresh **exits 1 despite having
+succeeded**, printing a full traceback on the way. That trains an operator to
+ignore a nonzero exit, which is the opposite of what it should do. The watcher
+is unaffected (`run_once` consumes the result dict, not an exit code). Fixing
+it properly means either pruning between the import and figure stages, or
+distinguishing a recovered figure-stage failure from a real one -- neither is
+a change to make while confirming a completed run.
+
+### Verification
+
+    PYTHONPATH=src python -m pytest -q                       335 passed
+    refresh catalog                                          124 graphics, status PASS,
+                                                               all_manifest_hashes_match true,
+                                                               current_reaches_latest_observed_epoch 54
+    diagnostic_summary.json                                  epochs 23..54, 32 rows, 32 unique
+    family_choice.json calibrated_lr3e4                      best e47, 4.512720740207991,
+                                                               tag dicos-e-02, latest_observed 54
+    dicos.py exec against the live pod                       works, after two days of failure
+
+### What is still open
+
+1. **A publication is now owed and has not been made.** `calibrated_lr3e4`'s
+   lowest verified validation loss changed (4.550331 -> 4.512721), and the
+   live public selection is still `dicos-p9-calibrated-lr1e4:joint:0038`.
+   Publication is a deliberate, separate act and is the owner's call, per the
+   standing rule; it is not done here.
+2. The refresh exit-code wart above.
+3. No campaign is running. The chain declared 2026-08-10 is complete. Whether
+   to declare another segment for `calibrated_lr3e4` -- its trend at epochs
+   48..54 sat above its epoch-47 best, which is what stopped it -- is the
+   owner's call.
+4. The standing scientific boundary is unchanged by any of this. A better
+   validation loss is optimization evidence on the pilot bank. C2ST AUROC and
+   the zero-response-rate disagreement are not re-measured by this run.
+   `PHYSICS VALIDATION NOT ESTABLISHED`.

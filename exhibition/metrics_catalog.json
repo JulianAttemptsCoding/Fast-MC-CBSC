@@ -540,94 +540,94 @@
         "width": 1121
       },
       {
-        "bytes": 117850,
+        "bytes": 116032,
         "category": "current_continuation_and_standings",
         "format": "png",
         "height": 992,
         "path": "current/continuation/best_validation_loss_so_far_vs_epoch.png",
         "scope": "current",
-        "sha256": "d022b6cfddb634b707fca1fa613a7418a5826c3a50eb7f7f2a9bbbac624a0e71",
+        "sha256": "7167647b759ebd3163139aede37573408f9801d087aed705bf5182eeb69a2880",
         "width": 2133
       },
       {
-        "bytes": 117867,
+        "bytes": 114747,
         "category": "current_continuation_and_standings",
         "format": "svg",
         "path": "current/continuation/best_validation_loss_so_far_vs_epoch.svg",
         "scope": "current",
-        "sha256": "d49b468587ef6bcf2b0072e87bc8ff6dc57b49a536eb35fedd57b45ae8ec3420"
+        "sha256": "a873b968941c04c61539e4b53a3dd8772d9a5af4a804c22a5a30ccd39d2967fe"
       },
       {
-        "bytes": 324986,
+        "bytes": 312827,
         "category": "current_continuation_and_standings",
         "format": "png",
         "height": 1200,
         "path": "current/continuation/family_choice.png",
         "scope": "current",
-        "sha256": "8a0822a40b3e3bcfd2810ead00b883bc2c741fe4e0ae0b026a74b83bedc89ee4",
+        "sha256": "fc385eb3c3b9ef9100e22f602e5ea5ba6935b16496325f8d5d7d3957bb9debea",
         "width": 2133
       },
       {
-        "bytes": 165529,
+        "bytes": 162443,
         "category": "current_continuation_and_standings",
         "format": "svg",
         "path": "current/continuation/family_choice.svg",
         "scope": "current",
-        "sha256": "ee1b44ac7972af3670a40044701e0162346ced6d5d0a7e1742602c6db96cc383"
+        "sha256": "aca7f09ac50dccb712dede7dd6dd649dc6e231476e651689854a777b594061b8"
       },
       {
-        "bytes": 335483,
+        "bytes": 335800,
         "category": "current_continuation_and_standings",
         "format": "png",
         "height": 1200,
         "path": "current/continuation/loss_all_families_every_epoch.png",
         "scope": "current",
-        "sha256": "5797eb8326ea5f547a2a7c9dd40b3886195a481c916d4304991264bea3aa8e0e",
+        "sha256": "2d49aef94bdda7a6f6da2a41e1b98c7efe4d08eb31ab3c11fdfc796294e53fa8",
         "width": 2133
       },
       {
-        "bytes": 247820,
+        "bytes": 247778,
         "category": "current_continuation_and_standings",
         "format": "svg",
         "path": "current/continuation/loss_all_families_every_epoch.svg",
         "scope": "current",
-        "sha256": "14ffae60c7ad8f6678eea2efbf959f0a7d05a05d3dc0625ac4e3ce0775996e8c"
+        "sha256": "5514ec887a5e17f598c7e776536df99733e2a27bd904d71c16849e0199fa4758"
       },
       {
-        "bytes": 223491,
+        "bytes": 229116,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1520,
         "path": "current/diagnostics/bias_of_best_loss_so_far.png",
         "scope": "current",
-        "sha256": "0fa9c3234ca97d7871da9a92a921c01b58bb3575052e95c6f6c96d39eefbd9a9",
+        "sha256": "6a18305d018cf45aef40d7eba9db2d45b8489386da928b912cd630ac91581212",
         "width": 2133
       },
       {
-        "bytes": 249253,
+        "bytes": 290633,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/bias_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "3eba0a5efcd5aebe2a0e8c4924391f4dbc8506b1710f8db1d3e942058f1c75be"
+        "sha256": "2e58dbc9a0fc5254d1429b3cb3e6d631cb02c7da8b5ef7612df519e90620e843"
       },
       {
-        "bytes": 337106,
+        "bytes": 377396,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1520,
         "path": "current/diagnostics/bias_vs_epoch.png",
         "scope": "current",
-        "sha256": "92a025a91e712ed2cd82ebc2a48dc4dec154dfb4a45999e5ee1029cb788cfabb",
+        "sha256": "a0b215308551e28120e9b90feeb932d0362ed8c997190c1580abe60dcf9ca092",
         "width": 2133
       },
       {
-        "bytes": 241164,
+        "bytes": 308421,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/bias_vs_epoch.svg",
         "scope": "current",
-        "sha256": "fe3bc7f3227ea0f12f2ec2c7397544f083ad210d3faca7ff4dca16de9aa8ed59"
+        "sha256": "38b2e562458699f4f35afbb4c5dc84f4295f3fe2f341e752c1586909a41d0cdf"
       },
       {
         "bytes": 106454,
@@ -648,256 +648,256 @@
         "sha256": "ad116aa7b019c89e52de6db46d32299951cb5a22cef102e34a3b57681f8ed1b0"
       },
       {
-        "bytes": 164779,
+        "bytes": 185661,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1808,
         "path": "current/diagnostics/energy_bin_moments_of_best_loss_so_far.png",
         "scope": "current",
-        "sha256": "022bf0654614e6a814168b6781fbbbddc61243922d9e9e59ddb5f0fbca7b0162",
+        "sha256": "26c9442989e315dc6cda34911eec9294b713ee1b682251f83b78391770df3f0d",
         "width": 2133
       },
       {
-        "bytes": 162772,
+        "bytes": 190286,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/energy_bin_moments_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "504e15af2dba0095b70764167024fc0707d7d5a1e6d45a19f313fd978857bc56"
+        "sha256": "5d99ca48590f0222085d9a45f048e59ecac06ae4a05892b397471e61ffafcb2c"
       },
       {
-        "bytes": 314340,
+        "bytes": 344427,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1808,
         "path": "current/diagnostics/energy_bin_moments_vs_epoch.png",
         "scope": "current",
-        "sha256": "a457f3c06a8160bdf2c1de95d66c8d11bb2c4a07c828cb121653529166c2c94f",
+        "sha256": "a9c7e8f2b887b5fcd8acac182d5cad743e82fd2641cf59dba68efe5dce767d7b",
         "width": 2133
       },
       {
-        "bytes": 173823,
+        "bytes": 196789,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/energy_bin_moments_vs_epoch.svg",
         "scope": "current",
-        "sha256": "1e6604ab9d65a68a569e179c49f65164eed3c2b03842b72842215ccff3f313b2"
+        "sha256": "468bdd242a76b0ac428f25a5e376db56007dfdba8817aee9347ad2d38ce82fca"
       },
       {
-        "bytes": 161542,
+        "bytes": 181692,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 768,
         "path": "current/diagnostics/energy_bins_of_best_loss_so_far.png",
         "scope": "current",
-        "sha256": "b5fe686620370bc341e047c5a6569bae002db9fd3cbe20f70ffff82dba7ff545",
+        "sha256": "065493476854e91833b8f86c4126f28ca1511d72242722ff3994abaa44eaee03",
         "width": 2133
       },
       {
-        "bytes": 154173,
+        "bytes": 178678,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/energy_bins_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "d14be472b7328f4615f6794e7e1d430922cfa766bfa6238ddd256ffc7a34fa04"
+        "sha256": "df6ec8c6b6fb67d2a64a93088d5aac55b0f5b1adeec0d00b8356f222009c188f"
       },
       {
-        "bytes": 337678,
+        "bytes": 370371,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 768,
         "path": "current/diagnostics/energy_bins_vs_epoch.png",
         "scope": "current",
-        "sha256": "30bf48bee1bb610a2d0d20b88234bb356d43c6fd71bc0a27fe75d13e801345b7",
+        "sha256": "35d0a76e4ca7fc9db17d1612522197b236bb8dd34044e060fc9ee6485dce9e34",
         "width": 2133
       },
       {
-        "bytes": 156133,
+        "bytes": 178410,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/energy_bins_vs_epoch.svg",
         "scope": "current",
-        "sha256": "cabc1b61193d002b043bb91da04221323fcfc550fd1ac160213c847a772bb564"
+        "sha256": "6c96dc95670d09dccc314491492702d0b88388c459de6abdb5423a943d86ba7c"
       },
       {
-        "bytes": 190180,
+        "bytes": 194425,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1504,
         "path": "current/diagnostics/feature_moments_of_best_loss_so_far.png",
         "scope": "current",
-        "sha256": "67a74a6e27668061bdc58bea85b9c00f2edeaa7ab8d7c1ca07d7fb6754f4a8ae",
+        "sha256": "15b0ff86861506322f0b13e8352b37c561618fa3b9d5938b96db57637ab5f06d",
         "width": 2133
       },
       {
-        "bytes": 181207,
+        "bytes": 203845,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/feature_moments_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "67fdcc39955c921ae5579dcb5ef9b97d8381e905fd629c6223b0ac1cdaf15e26"
+        "sha256": "23cf70d0cee62a28b53caa6603f2cb904b571bd95a5544413420b5d8428eb23c"
       },
       {
-        "bytes": 305281,
+        "bytes": 336584,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1504,
         "path": "current/diagnostics/feature_moments_vs_epoch.png",
         "scope": "current",
-        "sha256": "17b9363b64e04295d7d5753f2ab952311b3a721f345f13f20efc0f2b65c6f576",
+        "sha256": "0c6dc3d980d68b20abf011fd77fb6b7bc1f6d0053c138853f9c0c3c61142d89e",
         "width": 2133
       },
       {
-        "bytes": 172601,
+        "bytes": 209097,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/feature_moments_vs_epoch.svg",
         "scope": "current",
-        "sha256": "e829c12b37224db57d9d8ad4bfb002a9d08e45277156e881c14e45ba4b5ce357"
+        "sha256": "1efd8cc0aef9fcce5c50e38670588d23528ea80f68763ce1becca3c14cfccf2d"
       },
       {
-        "bytes": 183383,
+        "bytes": 184996,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1504,
         "path": "current/diagnostics/feature_resolutions_of_best_loss_so_far.png",
         "scope": "current",
-        "sha256": "0044024795d473bc6c3aaca35b1cce95e288b5df6b23e9f2ff6237a832210c52",
+        "sha256": "429c8b8097fc69e3c37b6192a5b3cde64535b04d9e9fb30f281ec7efb5241602",
         "width": 2133
       },
       {
-        "bytes": 176906,
+        "bytes": 198446,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/feature_resolutions_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "735307c7bc52c77d6c00992eb236bc5fd955b58a7e19623618831000a07673af"
+        "sha256": "dd1a30e426e5057beb3985687c23c2551151db9bb45fc39272f6cfe9c94c0810"
       },
       {
-        "bytes": 291667,
+        "bytes": 323173,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1504,
         "path": "current/diagnostics/feature_resolutions_vs_epoch.png",
         "scope": "current",
-        "sha256": "da22dff17067776f367919a40a71d847af4cfe5a4e88f2e08f01f181e8efa6ee",
+        "sha256": "e524459e86ab832f0ae24dd88b670843848045482568f97060ed4c0d51cf0c88",
         "width": 2133
       },
       {
-        "bytes": 168475,
+        "bytes": 206478,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/feature_resolutions_vs_epoch.svg",
         "scope": "current",
-        "sha256": "2b7d2f4aa6aea7d917bfcffa4d42bca2f0f3b60aa5adf66e759a66e19a0d5647"
+        "sha256": "dd00437b84370e5acecfb4b129b77c06ce83b0c213b7580c6155d05e1c5ed84e"
       },
       {
-        "bytes": 189745,
+        "bytes": 195000,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1120,
         "path": "current/diagnostics/headline_of_best_loss_so_far.png",
         "scope": "current",
-        "sha256": "f4ae6d4836a84fbde0a2c6c9fc6555880832d3eab2e1720624200c2105a05041",
+        "sha256": "c62e1b1b96cc298f4872fa6bfc44fa2501b3a8e5e0efd121b6e7595b791ede8f",
         "width": 2133
       },
       {
-        "bytes": 178440,
+        "bytes": 189558,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/headline_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "90c7a82425ecaa17a5e32e423bf4ebec055081355dc612b315d38765dbb21e58"
+        "sha256": "9a14fc8e93cd4a203b4126eb4c9f0366fb531a3c0b6cc4b9ab6555abb12cfc65"
       },
       {
-        "bytes": 250269,
+        "bytes": 275779,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1120,
         "path": "current/diagnostics/headline_vs_epoch.png",
         "scope": "current",
-        "sha256": "a242597e0331d8c573aaccbb521ab33797a8838d026871b72929d7d2e4e44ddb",
+        "sha256": "d42a4d442525ad4d596a88d9010e904c72c24f02acdfee533afc7ac88faa7f92",
         "width": 2133
       },
       {
-        "bytes": 163074,
+        "bytes": 189061,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/headline_vs_epoch.svg",
         "scope": "current",
-        "sha256": "19ee1f7360f55c863675d0f43511a4c13b1a4ed4cf5c779286b171dcf66e159b"
+        "sha256": "589332792fdd9ad9b7124b45e76badbb4da63a7fbd62a84d69d0d5b60cd1c4b7"
       },
       {
-        "bytes": 204871,
+        "bytes": 203982,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1296,
         "path": "current/diagnostics/profiles_and_qa_of_best_loss_so_far.png",
         "scope": "current",
-        "sha256": "f0d6d1b49ef85fe7aadf04cbaddb63085766f917b12b2bb7fec817cf1bd24578",
+        "sha256": "07841f0287c9a043d80851e4eb0a7081751be22dcca20f62c18cc911116ed1b0",
         "width": 2133
       },
       {
-        "bytes": 160489,
+        "bytes": 165267,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/profiles_and_qa_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "0d527fa56973b54041a761d9fbcf54169c2632cc8938a3b3a816344e5a6ffbe8"
+        "sha256": "a821504b83c5f1a2538354415aa698283ac54853fdab4c875dbf72187c6be92f"
       },
       {
-        "bytes": 260929,
+        "bytes": 268133,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1296,
         "path": "current/diagnostics/profiles_and_qa_vs_epoch.png",
         "scope": "current",
-        "sha256": "5d96b29c043fb18cdbf9b2be5b5974b31463a05c1ae8cdee402dede71078eb38",
+        "sha256": "0876fdb83cd6b79194e1c23b705a77eeabe6d55074d4f22959bf4694c89d1f53",
         "width": 2133
       },
       {
-        "bytes": 179090,
+        "bytes": 180629,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/profiles_and_qa_vs_epoch.svg",
         "scope": "current",
-        "sha256": "77fea011288e728cb55dbac7aae1382fd13050ed308c94fcd0d32c4b411d48dc"
+        "sha256": "c599252db8e2e83befca137b0e0eae01804dd413b8771e810ee85fc1e6de419f"
       },
       {
-        "bytes": 257929,
+        "bytes": 267985,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1920,
         "path": "current/diagnostics/wasserstein_of_best_loss_so_far.png",
         "scope": "current",
-        "sha256": "8ad047152fc2cee2202d0d9e7278dfcfeddb88e1d277028f4b282cb57401e245",
+        "sha256": "0db2de516932dc440e00db0cadc5c4fe3564fab2fba6fdd11be42fa2db70da1a",
         "width": 2133
       },
       {
-        "bytes": 220790,
+        "bytes": 232317,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/wasserstein_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "f8ed358c0ddf79fa28d4081246004e5a5b04b2daf50794b92f552018583a29eb"
+        "sha256": "1c084b9734736ef23c52fea2c29beea75bef95ee8b4febf6a5c3a157429faaee"
       },
       {
-        "bytes": 386596,
+        "bytes": 415488,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1920,
         "path": "current/diagnostics/wasserstein_vs_epoch.png",
         "scope": "current",
-        "sha256": "28dca83bc23af9aba39a88dfdac1f0f8a5423d5dcf14ba8be285afbe59f7b993",
+        "sha256": "c3e59b91d29c406d970c2c8719dc121113d391a9f347456d3dcc9057d175967d",
         "width": 2133
       },
       {
-        "bytes": 201322,
+        "bytes": 238447,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/wasserstein_vs_epoch.svg",
         "scope": "current",
-        "sha256": "e9ed8508f41c83a0c87c12ed7021c4674003e487f5083366207ad8ee7862af55"
+        "sha256": "41aa90bc40646e4cba1d268b3aa5f7dcf67de13e559b06abb93debb29ea7d4e4"
       },
       {
         "bytes": 92933,
@@ -915,7 +915,7 @@
         "format": "svg",
         "path": "current/external_metrics/current_accepted_best_external_metrics.svg",
         "scope": "current",
-        "sha256": "975f748db54dfa72520eed86e177036d8f1ae293eeac41d7c7be602189b23265"
+        "sha256": "1454036557c4600ceb1a81cc26d5f4ee6b24e70c92cece58584e8e8b17949438"
       },
       {
         "bytes": 159771,
@@ -983,7 +983,7 @@
         "format": "svg",
         "path": "current/external_metrics/external_metrics_at_new_accepted_bests.svg",
         "scope": "current",
-        "sha256": "4fb9693556e92bfbb9172d9f341d3d288c1093983cb1e04f60e22520da9f7f31"
+        "sha256": "cebc87aee5cdb48783a410da28f4778388598faca02d944668de138b50e555be"
       },
       {
         "bytes": 130250,
@@ -1140,49 +1140,49 @@
         "sha256": "a292f4f5159eb4a0f04cf2de5abe44c458e334a9509ca445ae021df0dc3ce918"
       },
       {
-        "bytes": 450957,
+        "bytes": 451059,
         "category": "current_model_and_contract",
         "format": "png",
         "height": 1370,
         "path": "current/model/10_same_condition_longitudinal_profiles.png",
         "scope": "current",
-        "sha256": "985ca7e3429b0cf62504c89cf4310cadf6d2448c47908c2b8729038c35824b8e",
+        "sha256": "b1183fd56427aa04ea1937f13cceb4f778c1ff678edf3a1823bc1d36b5f283de",
         "width": 2348
       },
       {
-        "bytes": 100636,
+        "bytes": 100650,
         "category": "current_model_and_contract",
         "format": "svg",
         "path": "current/model/10_same_condition_longitudinal_profiles.svg",
         "scope": "current",
-        "sha256": "c7cc1f6ac7bb604b1c0cdccb7e0940c5b6aacd458df0cc92356677b6a33045bc"
+        "sha256": "e8a513d09056c3fa4dd371046a1bf90d84598bb802023b8483344a4aba04b24c"
       },
       {
-        "bytes": 184429,
+        "bytes": 177847,
         "category": "current_model_and_contract",
         "format": "png",
         "height": 1370,
         "path": "current/model/11_best_model_sample_distributions.png",
         "scope": "current",
-        "sha256": "8ea92d96d98e401aa8d6b59d392fb2f7feced13253575d2a012d60ca971623c4",
+        "sha256": "97d30c9c8309ebc1b106c4c1e06039d0dacc612aff904c3268f11e6ad0e85e73",
         "width": 2293
       },
       {
-        "bytes": 67952,
+        "bytes": 66361,
         "category": "current_model_and_contract",
         "format": "svg",
         "path": "current/model/11_best_model_sample_distributions.svg",
         "scope": "current",
-        "sha256": "5fa208a13cd50b109a0511f21ed90210f7d348a515e49ea91f284e6818781462"
+        "sha256": "ddf50c02c2b8bf0a5032cd4885dbffc0f74cc34dc4d0ec0551aa8ae2251561cb"
       },
       {
-        "bytes": 934666,
+        "bytes": 947597,
         "category": "current_model_and_contract",
         "format": "png",
         "height": 1370,
         "path": "current/model/12_same_condition_3d_energy_deposits.png",
         "scope": "current",
-        "sha256": "fdee7c4cc42bc7299a367911fb490d06b0a8cdda2a65570c9c1fa7cd4fc54a9f",
+        "sha256": "39722a0a45da0fca9dd3b5c1d0b4ca9bfa939fed670029350e6c62427c8517fe",
         "width": 2446
       },
       {
@@ -1234,7 +1234,19 @@
         39,
         40,
         41,
-        42
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
       ],
       "leaf_count": 348
     },
@@ -1266,16 +1278,16 @@
         "slope_final_3_accepted_epochs": -0.007936683441151652
       },
       "calibrated_lr3e4": {
-        "best_accepted_epoch": 34,
-        "best_accepted_run_tag": "dicos-c-02",
-        "best_accepted_validation_loss": 4.5503306071196254,
-        "latest_accepted_epoch": 42,
-        "latest_accepted_validation_loss": 4.595299305015217,
-        "latest_observed_epoch": 42,
+        "best_accepted_epoch": 47,
+        "best_accepted_run_tag": "dicos-e-02",
+        "best_accepted_validation_loss": 4.512720740207991,
+        "latest_accepted_epoch": 54,
+        "latest_accepted_validation_loss": 4.587057172641224,
+        "latest_observed_epoch": 54,
         "latest_observed_status": "accepted",
-        "latest_observed_validation_loss": 4.595299305015217,
+        "latest_observed_validation_loss": 4.587057172641224,
         "quarantined_epochs": [],
-        "slope_final_3_accepted_epochs": -0.023907846273475548
+        "slope_final_3_accepted_epochs": -0.023330806813163046
       },
       "calibrated_lr3e5": {
         "best_accepted_epoch": 36,
@@ -1311,13 +1323,27 @@
         39,
         40,
         41,
-        42
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
       ],
       "events_per_epoch": 4000,
       "quarantined_epochs": [],
       "run_tags": [
         "dicos-c-01",
-        "dicos-c-02"
+        "dicos-c-02",
+        "dicos-e-01",
+        "dicos-e-02"
       ],
       "scientific_status": "descriptive validation diagnostics; not a fidelity gate and not Geant4 validation",
       "split": "validation",
@@ -1333,7 +1359,7 @@
     "all_svg_parsed": true,
     "c2st_manifest_figures": 33,
     "current_and_archive_galleries_contain_every_graphic": true,
-    "current_reaches_latest_observed_epoch": 42,
+    "current_reaches_latest_observed_epoch": 54,
     "exhibition_manifest_visuals": 23,
     "needed_outside_exhibition_exceptions": [
       "dashboard/public/favicon.svg",

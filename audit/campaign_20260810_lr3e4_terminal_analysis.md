@@ -1,11 +1,81 @@
-# Campaign `camp-20260810-lr3e4` — declared, launched, training
+# Campaign `camp-20260810-lr3e4` — complete
 
 ## Disposition
 
-`QA PASS` for everything checked this session. `dicos-e-02` is training on an
-L40S (the 4090 was retired by the owner mid-session), confirmed at 93–96% GPU
-utilization with its first epoch in flight. No scientific conclusion is
-available and none is claimed. `PHYSICS VALIDATION NOT ESTABLISHED`.
+`QA PASS`. `dicos-e-02` ran its full 20-epoch segment on an L40S to `exit 0`
+and the campaign ended itself under the declared improvement rule, unattended.
+`calibrated_lr3e4` has a new lowest verified validation loss. That is
+optimization evidence on the pilot bank and nothing more —
+`PHYSICS VALIDATION NOT ESTABLISHED`.
+
+## Outcome
+
+| field | value |
+|---|---|
+| run tag | `dicos-e-02` |
+| exit | 0, `2026-08-11T04:03:34Z`, wall 17209.014 s |
+| epochs | 20 (absolute 35–54, target 55) |
+| best | **epoch 47, validation 4.512720740207991** |
+| previous family best | epoch 34, 4.5503306071196254 (`dicos-c-02`) |
+| improvement | 0.037610 |
+
+The campaign's own decision, with no operator present:
+
+    outcome: campaign_complete
+    reason:  best epoch 47 (4.512721) is 7 epochs behind the latest epoch 54
+             and no family remains in the chain
+
+7 > the declared 6-epoch window, and this is a single-family chain, so the rule
+stops rather than advancing — exactly as specified on 2026-08-10.
+
+### Standings after
+
+| family | validation loss | epoch | run |
+|---|---:|---:|---|
+| `calibrated_lr3e4` | **4.512721** | 47 | `dicos-e-02` |
+| `calibrated_lr1e4_halfbatch` | 4.619967 | 33 | `dicos-c-03` |
+| `calibrated_lr1e4` | 4.635220 | 38 | `dicos-p9` |
+| `calibrated_lr3e5` | 4.702203 | 36 | `dicos-c-05` |
+
+### L40S throughput
+
+17209.014 s / 20 epochs = **860.5 s/epoch** at batch 6, against the 4090's
+measured 649.83 s/epoch. A single-run observation recorded here only;
+`docs/GPU_BENCHMARKS.md` remains the source of truth and wants its own
+measurement before this figure is used for planning.
+
+## The connectivity outage was a client bug, not ASGC
+
+Both pods were unreachable from this workstation 2026-08-11 → 2026-08-12 with
+`could not open a kernel channel: [WinError 10060]`, while `git fetch`
+succeeded throughout. ASGC and the pods were ruled out directly: the owner's
+own JupyterLab tab worked, and `python3 -c "print(1+1)"` returned `2`
+instantly in a pod terminal.
+
+Measured, not guessed. A bare `socket.create_connection()` to the pod
+connected in **21.2 s, five times running, with no variance** — Windows'
+SYN-retransmit ladder (3 + 6 + 12 s). The first two SYNs to the Taiwan host
+are dropped on the US→TW path; the third lands. `requests` hides this behind
+keep-alive so only its first call pays. A kernel channel opens a *fresh*
+socket every time and always pays it.
+
+The `timeout` parameter was never what bound: `websocket-client`'s own connect
+gave up at **21.0 s with `timeout=30` and again at 21.0 s with `timeout=90`**,
+in the same script where a plain socket to the same host:port succeeded at
+21.2 s.
+
+**Fix.** `Dicos._preconnect()` establishes the socket where a 90 s budget is
+honoured and hands it to `websocket.create_connection(socket=…)` already open.
+Verified live immediately afterward. Two details that are not cosmetic:
+
+- `_preconnect()` returns `None` for a non-`http` scheme **deliberately** —
+  `websocket-client` skips its own TLS wrapping when handed a socket, so
+  pre-connecting a `wss://` channel would send plaintext to a TLS port.
+- The retry loop closes a socket it opened for a failed attempt; the handover
+  only happens on success, so otherwise three attempts leak three sockets.
+
+Training was never affected — the trainer is a detached pod process and
+completed normally mid-outage, confirmed from its own log rather than assumed.
 
 ## Declaration
 
@@ -119,8 +189,36 @@ now 8/8 (was 7/7).
 ## Verification
 
     PYTHONPATH=src python -m compileall -q src vertex scripts tests exhibition   exit 0
-    PYTHONPATH=src python -m pytest -q                                           332 passed (330 -> 332)
+    PYTHONPATH=src python -m pytest -q                                           335 passed
     python -m unittest discover -s tests -v  (Fast-MC-Visual-Tests)              8 passed (7 -> 8)
+    refresh catalog          124 graphics, PASS, all_manifest_hashes_match true,
+                               current_reaches_latest_observed_epoch 54
+    diagnostic_summary.json  epochs 23..54, 32 rows, 32 unique
+    family_choice.json       calibrated_lr3e4 best e47, 4.512720740207991, dicos-e-02
+
+The fork overlap between `dicos-c-02` (diagnostics 23–42) and `dicos-e-02`
+(35–54) resolves correctly: `build_diagnostic_trend_figure.load()` keys by
+epoch with later-tag-wins, so `dicos-e-02` supersedes the overlap and the
+merged view has no duplicates. This closes the fork-awareness item left open
+on 2026-08-11 — that failure was transient, seen only while `dicos-e-02` had
+reached epoch 36 and `dicos-c-02` still supplied 37–42.
+
+## Open
+
+1. **A publication is owed and has not been made.** `calibrated_lr3e4`'s
+   lowest verified loss changed (4.550331 → 4.512721); the live public
+   selection is still `dicos-p9-calibrated-lr1e4:joint:0038`. Publication is a
+   deliberate, separate act and is the owner's call.
+2. `refresh()` runs each per-family subprocess *before*
+   `prune_superseded_rows()`, so a fork transition makes that subprocess's
+   trailing figure step raise on the un-pruned duplicate. The post-prune block
+   (`refresh_campaign_outputs.py:420`) re-runs those builders by design, so the
+   final state is correct — but the failed return code still poisons
+   `result["exit_code"]`, making a *successful* refresh exit 1 with a
+   traceback. The watcher is unaffected (`run_once` reads the result dict).
+3. No campaign is running; the declared chain is complete. Whether to declare
+   another `calibrated_lr3e4` segment is the owner's call — epochs 48–54 all
+   sat above the epoch-47 best, which is what stopped it.
 
 ## Cost
 

@@ -274,9 +274,9 @@
       ]
     },
     "calibrated_lr3e4": {
-      "best_accepted_epoch": 34,
-      "best_accepted_run_tag": "dicos-c-02",
-      "best_accepted_validation_loss": 4.5503306071196254,
+      "best_accepted_epoch": 47,
+      "best_accepted_run_tag": "dicos-e-02",
+      "best_accepted_validation_loss": 4.512720740207991,
       "continuation_epochs": [
         11,
         12,
@@ -309,18 +309,31 @@
         39,
         40,
         41,
-        42
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
       ],
       "continuation_run_tags": [
         "dicos-p6",
         "dicos-p7",
-        "dicos-c-02"
+        "dicos-c-02",
+        "dicos-e-02"
       ],
-      "latest_accepted_epoch": 42,
-      "latest_accepted_validation_loss": 4.595299305015217,
-      "latest_observed_epoch": 42,
+      "latest_accepted_epoch": 54,
+      "latest_accepted_validation_loss": 4.587057172641224,
+      "latest_observed_epoch": 54,
       "latest_observed_status": "accepted",
-      "latest_observed_validation_loss": 4.595299305015217,
+      "latest_observed_validation_loss": 4.587057172641224,
       "observed_epochs": [
         0,
         1,
@@ -364,7 +377,19 @@
         39,
         40,
         41,
-        42
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
       ],
       "quarantined_epochs": [],
       "running_best_validation_loss": [
@@ -410,7 +435,19 @@
         4.5503306071196254,
         4.5503306071196254,
         4.5503306071196254,
-        4.5503306071196254
+        4.5503306071196254,
+        4.5503306071196254,
+        4.5503306071196254,
+        4.519304749208174,
+        4.519304749208174,
+        4.512720740207991,
+        4.512720740207991,
+        4.512720740207991,
+        4.512720740207991,
+        4.512720740207991,
+        4.512720740207991,
+        4.512720740207991,
+        4.512720740207991
       ]
     },
     "calibrated_lr3e5": {

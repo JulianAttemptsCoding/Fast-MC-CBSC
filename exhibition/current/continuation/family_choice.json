@@ -27,16 +27,16 @@
       "slope_final_3_accepted_epochs": -0.007936683441151652
     },
     "calibrated_lr3e4": {
-      "best_accepted_epoch": 34,
-      "best_accepted_run_tag": "dicos-c-02",
-      "best_accepted_validation_loss": 4.5503306071196254,
-      "latest_accepted_epoch": 42,
-      "latest_accepted_validation_loss": 4.595299305015217,
-      "latest_observed_epoch": 42,
+      "best_accepted_epoch": 47,
+      "best_accepted_run_tag": "dicos-e-02",
+      "best_accepted_validation_loss": 4.512720740207991,
+      "latest_accepted_epoch": 54,
+      "latest_accepted_validation_loss": 4.587057172641224,
+      "latest_observed_epoch": 54,
       "latest_observed_status": "accepted",
-      "latest_observed_validation_loss": 4.595299305015217,
+      "latest_observed_validation_loss": 4.587057172641224,
       "quarantined_epochs": [],
-      "slope_final_3_accepted_epochs": -0.023907846273475548
+      "slope_final_3_accepted_epochs": -0.023330806813163046
     },
     "calibrated_lr3e5": {
       "best_accepted_epoch": 36,

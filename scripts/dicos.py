@@ -47,16 +47,36 @@ import os
 import posixpath
 import re
 import shlex
+import socket
 import sys
 import time
 import uuid
 from pathlib import Path
+from urllib.parse import urlparse
 
 import requests
 
 shlex_quote = shlex.quote
 
 CONFIG_PATH = Path.home() / ".dicos" / "config.json"
+
+# Establishing a TCP connection to ASGC can cost a full SYN-retransmit ladder.
+# Measured 2026-08-12 from a US workstation: every fresh connection to the
+# Taiwan host took 21.2s, five times out of five -- Windows' 3s+6s+12s SYN
+# retry schedule, i.e. the first two SYNs are dropped on the path and the third
+# lands. `requests` hides this behind keep-alive so only its first call pays;
+# a WebSocket opens a fresh socket every time and always pays.
+#
+# websocket-client's own connect path gives up right at that ladder regardless
+# of the `timeout` it is handed (observed failing at 21.0s with timeout=30 AND
+# timeout=90, while a plain `socket.create_connection` to the same host:port
+# succeeded at 21.2s in the same script). So the socket is established here,
+# where the budget is honoured, and handed to websocket-client already open.
+WS_CONNECT_TIMEOUT = 90
+# Per-recv timeout once the channel is up. Deliberately short and independent
+# of the overall command budget: a command that is working but silent (a clone,
+# a long hash) must not look like a dead connection.
+WS_RECV_TIMEOUT = 30
 
 
 TEMPLATE_PATH = Path(__file__).resolve().parent / "dicos_config.template.json"
@@ -115,6 +135,27 @@ class Dicos:
         self.readonly = [p for p in [self.data_file] if p]
         self.session = requests.Session()
         self.session.headers["Authorization"] = f"token {self.token}"
+
+    def _preconnect(self) -> socket.socket | None:
+        """Open the TCP socket for a kernel channel, tolerating a slow SYN.
+
+        See WS_CONNECT_TIMEOUT: websocket-client's own connect gives up at the
+        SYN-retransmit ladder, so the socket is established here instead and
+        handed over already open.
+
+        Returns None for a TLS endpoint, deliberately. websocket-client skips
+        its own TLS wrapping entirely when it is handed a socket, so
+        pre-connecting a `wss://` channel would hand the server plaintext on a
+        TLS port. Every DiCOSApp seen so far is plain `http://`, but a silent
+        downgrade is not an acceptable failure mode for the one that is not, so
+        TLS falls back to the library's own connect path.
+        """
+        parsed = urlparse(self.base)
+        if parsed.scheme != "http":
+            return None
+        return socket.create_connection(
+            (parsed.hostname, parsed.port or 80), timeout=WS_CONNECT_TIMEOUT
+        )
 
     # ------------------------------------------------------------ contents
     def _contents(self, path: str) -> str:
@@ -448,10 +489,23 @@ class Dicos:
             # launch a second training job.
             ws = None
             for attempt in range(3):
+                pre = None
                 try:
-                    ws = websocket.create_connection(ws_url, timeout=30)
+                    pre = self._preconnect()
+                    ws = websocket.create_connection(
+                        ws_url, socket=pre, timeout=WS_RECV_TIMEOUT
+                    )
                     break
                 except (ConnectionError, OSError, websocket.WebSocketException) as exc:
+                    # The handover only happens on success, so a socket opened
+                    # for a failed attempt is this loop's to close -- otherwise
+                    # three attempts leak three sockets and the last one stays
+                    # half-open against the pod.
+                    if pre is not None:
+                        try:
+                            pre.close()
+                        except OSError:
+                            pass
                     if attempt == 2:
                         raise SystemExit(f"could not open a kernel channel: {exc}")
                     time.sleep(2 * (attempt + 1))

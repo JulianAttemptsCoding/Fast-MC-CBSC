@@ -4,7 +4,44 @@
   "name": "campaign_20260810_lr3e4",
   "created_at": "2026-08-10",
   "campaign_id": "camp-20260810-lr3e4",
-  "status": "launched and training -- dicos-e-02 on an L40S, GPU 93-96% util confirmed, first epoch in flight at time of writing",
+  "status": "complete -- dicos-e-02 ran 20 epochs to exit 0 and the campaign ended itself under the declared improvement rule",
+
+  "outcome": {
+    "run_tag": "dicos-e-02",
+    "exit_code": 0,
+    "finished_at": "2026-08-11T04:03:34Z",
+    "wall_seconds": 17209.014,
+    "epochs_completed": 20,
+    "absolute_epoch_range": "35..54",
+    "best_epoch": 47,
+    "best_validation_loss": 4.512720740207991,
+    "previous_family_best": {"epoch": 34, "validation_loss": 4.5503306071196254, "run_tag": "dicos-c-02"},
+    "improvement": 0.03761,
+    "campaign_decision": "campaign_complete",
+    "campaign_decision_reason": "best epoch 47 (4.512721) is 7 epochs behind the latest epoch 54 and no family remains in the chain",
+    "decision_check": "7 > the declared 6-epoch improvement window, single-family chain, so the rule stops rather than advancing -- executed unattended with no operator present",
+    "measured_l40s_seconds_per_epoch": 860.45,
+    "measured_rate_note": "17209.014s / 20 epochs at batch 6, against the 4090's measured 649.83 s/epoch. A single-run observation recorded here only; docs/GPU_BENCHMARKS.md remains the source of truth and wants its own measurement."
+  },
+
+  "standings_after": {
+    "calibrated_lr3e4": {"validation_loss": 4.512720740207991, "epoch": 47, "run_tag": "dicos-e-02", "rank": 1},
+    "calibrated_lr1e4_halfbatch": {"validation_loss": 4.619967, "epoch": 33, "run_tag": "dicos-c-03", "rank": 2},
+    "calibrated_lr1e4": {"validation_loss": 4.635220, "epoch": 38, "run_tag": "dicos-p9", "rank": 3},
+    "calibrated_lr3e5": {"validation_loss": 4.702203, "epoch": 36, "run_tag": "dicos-c-05", "rank": 4}
+  },
+
+  "connectivity_incident": {
+    "id": "us-tw-syn-ladder-websocket",
+    "symptom": "both pods unreachable from the workstation 2026-08-11..2026-08-12 with 'could not open a kernel channel: [WinError 10060]', while git fetch succeeded throughout",
+    "ruled_out": "ASGC and the pods themselves -- the owner's own JupyterLab tab worked and ran python3 -c 'print(1+1)' -> 2 in a pod terminal instantly",
+    "root_cause": "every fresh TCP connection to the Taiwan host takes 21.2s, measured five times with no variance -- Windows' SYN-retransmit ladder (3+6+12s), i.e. the first two SYNs are dropped on the US->TW path and the third lands. requests hides this behind keep-alive; a kernel channel opens a fresh socket every time and always pays it.",
+    "why_the_timeout_parameter_did_not_help": "websocket-client's own connect gives up at that ladder regardless of the timeout handed to it -- observed failing at 21.0s with timeout=30 AND with timeout=90, in the same script where a plain socket.create_connection to the same host:port succeeded at 21.2s",
+    "fix": "Dicos._preconnect() establishes the socket where a 90s budget is honoured and hands it to websocket.create_connection(socket=...) already open; verified live immediately afterward",
+    "tls_guard": "_preconnect() returns None for a non-http scheme deliberately: websocket-client skips its own TLS wrapping when handed a socket, so pre-connecting a wss:// channel would send plaintext to a TLS port",
+    "socket_leak_guard": "the retry loop closes a socket it opened for a failed attempt, since the handover only happens on success",
+    "training_impact": "none -- the trainer is a detached process on the pod and completed normally during the outage, confirmed from its own log rather than assumed"
+  },
   "qa_labels": ["QA PASS", "PHYSICS VALIDATION NOT ESTABLISHED"],
 
   "declaration": {
@@ -84,8 +121,17 @@
 
   "verification": {
     "compileall": "src vertex scripts tests exhibition -- exit 0",
-    "pytest": "332 passed (330 -> 332)",
-    "public_repo_unittest": "8 passed (7 -> 8, from the pulled commit)"
+    "pytest": "335 passed",
+    "public_repo_unittest": "8 passed (7 -> 8, from the pulled commit)",
+    "catalog": "124 graphics, status PASS, all_manifest_hashes_match true, current_reaches_latest_observed_epoch 54",
+    "diagnostic_summary": "epochs 23..54, 32 rows, 32 unique -- the fork overlap between dicos-c-02 (23..42) and dicos-e-02 (35..54) resolves correctly under load()'s later-tag-wins keying",
+    "family_choice": "calibrated_lr3e4 best epoch 47, 4.512720740207991, tag dicos-e-02, latest_observed 54"
+  },
+
+  "open_items": {
+    "publication_owed": "calibrated_lr3e4's lowest verified validation loss changed (4.550331 -> 4.512721) and the live public selection is still dicos-p9-calibrated-lr1e4:joint:0038. Publication is a deliberate, separate act and is the owner's call; not done here.",
+    "refresh_exit_code_wart": "refresh() runs each per-family subprocess before prune_superseded_rows(), so on a fork transition that subprocess's trailing build_continuation_loss_figures.py step sees the un-pruned duplicate and raises. The post-prune block re-runs exactly those builders (by design, refresh_campaign_outputs.py:420), so the final state is correct -- but the failed subprocess's return code still poisons result['exit_code'], making a successful fork-transition refresh exit 1 with a traceback. The watcher is unaffected (run_once consumes the result dict, not an exit code).",
+    "boundary_unchanged": "a better validation loss is optimization evidence on the pilot bank. C2ST AUROC and the zero-response-rate disagreement are not re-measured by this run. PHYSICS VALIDATION NOT ESTABLISHED."
   },
 
   "cost": {
