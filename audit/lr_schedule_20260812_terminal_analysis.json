@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-terminal-analysis",
+  "name": "lr_schedule_20260812",
+  "created_at": "2026-08-12",
+  "campaign_id": "camp-20260812-lr3e4-anneal",
+  "status": "declared experiment launched; dicos-f-01 training, no result yet and none claimed",
+  "qa_labels": ["QA FINDING", "PHYSICS VALIDATION NOT ESTABLISHED"],
+
+  "finding": {
+    "summary": "calibrated_lr3e4's cosine schedule has been annealing over 6 epochs, not the horizon each config declared, for the entire project.",
+    "direct_evidence": {
+      "checkpoint": "_runs/calibrated_lr3e4_dicos-e-02/checkpoints/best.pt",
+      "scheduler_state": {"T_max": 6660, "eta_min": 1e-06, "base_lrs": [0.0003], "last_epoch": 34410},
+      "config_beside_it": {"training.epochs": 55, "training.learning_rate": 0.0003},
+      "updates_per_epoch": 1110,
+      "t_max_in_epochs": 6.0,
+      "period_in_epochs": 12.0
+    },
+    "mechanism": "checkpoint.py:75 restores scheduler_state unconditionally on every resume, and T_max is part of a CosineAnnealingLR state dict. An ancestor's 6-epoch horizon therefore propagated into every continuation of this family regardless of the horizon each new config declared. No config was hand-edited; the value was inherited.",
+    "confirmation_not_inference": {
+      "note": "the trainer records the realised per-epoch learning rate, so the period is read off the record rather than deduced from the loss",
+      "peaks_3e4_at_absolute_epochs": [28, 40, 52],
+      "troughs_1e6_at_absolute_epochs": [34, 46],
+      "observed_spacing": [12, 12, 12]
+    },
+    "loss_tracks_lr_phase": {
+      "trough_epochs": {"34": 4.550331, "45": 4.519305, "47": 4.512721},
+      "peak_epochs": {"40": 4.642563, "51": 4.654804, "52": 4.633719},
+      "within_cycle_swing": 0.14,
+      "trough_to_trough_gain": 0.04,
+      "interpretation": "the model is genuinely learning about 0.04 per 12-epoch cycle, but each cycle re-heats to the full 3e-4 peak and gives most of it back. Every recorded best for this family is whichever trough happened to be deepest."
+    },
+    "false_stop": {
+      "campaign": "camp-20260810-lr3e4",
+      "recorded_reason": "best epoch 47 (4.512721) is 7 epochs behind the latest epoch 54 and no family remains in the chain",
+      "why_it_is_an_artifact": "epoch 54 sat mid-descent at lr 2.25e-4 with the next trough due near epoch 58. An improvement window shorter than the learning-rate period measures where in the cycle a segment stopped, not whether the family converged.",
+      "same_class": "dicos-p8 was stopped by a constant patience at 6 of 24 epochs, i.e. before reaching the low-LR end of its own anneal"
+    },
+    "reframes_a_standing_note": "CLAUDE.md records that a scheduler restart 'produced nothing' where continuing produced dicos-p9's 0.067. That comparison is confounded: the restart run was ended early by patience and never reached the part of the anneal under test. It is not evidence against restarting with patience equal to the horizon."
+  },
+
+  "declared_change": {
+    "campaign_id": "camp-20260812-lr3e4-anneal",
+    "run_tag_prefix": "dicos-f",
+    "field": "training.restart_scheduler_on_resume",
+    "from": false,
+    "to": true,
+    "mechanism": "routes through trainer._restart_cosine_scheduler, which rebuilds CosineAnnealingLR with T_max = updates_per_epoch * (epochs - start_epoch) -- this segment's own horizon -- giving one 24-epoch anneal instead of four 6-epoch sawteeth",
+    "improvement_window": {"from": 6, "to": 12, "why": "at least one full former LR period, so the stopping rule cannot fire on phase"},
+    "segment_epochs": 24,
+    "patience": {"value": 24, "why": "equals the horizon; the anneal's low-LR end is the part under test and patience must not end the run before it"},
+    "unchanged": [
+      "training.learning_rate (3e-4)", "training.batch_size", "training.seed",
+      "training.gradient_accumulation", "training.num_workers", "loss_weights",
+      "geometry", "data.splits", "evaluation.closure_tolerance_gev",
+      "evaluation.closure_tolerance_relative"
+    ],
+    "comparability": "DECLARED EXPERIMENT -- segments frozen under this campaign are not directly comparable to any frozen before it",
+    "guard_note": "no guard was weakened. training.restart_scheduler_on_resume was already inside ALLOWED_CONFIG_DELTA; dicos_campaign.py merely hardcoded False. It is now campaign.get('restart_scheduler_on_resume', False), so every earlier campaign means exactly what it meant.",
+    "tests_added": [
+      "test_a_campaign_that_does_not_mention_the_scheduler_does_not_restart_it",
+      "test_a_campaign_may_declare_a_scheduler_restart",
+      "test_restart_scheduler_is_allowlisted_but_the_learning_rate_is_not"
+    ]
+  },
+
+  "launch": {
+    "job_name": "camp0812-anneal",
+    "supervisor_pid": 3526,
+    "run_tag": "dicos-f-01",
+    "parent": {"run": "dicos-e-02", "best_epoch": 47, "validation_loss": 4.512720740207991,
+               "best_sha256": "43fcf86ccd8e967bc4227daa69dc0be76bc261c0aa72963b6a76acaf65d23530"},
+    "epochs_absolute": 72,
+    "epochs_absolute_arithmetic": "47 + 1 + 24",
+    "frozen_sha256": "e0978e724d13e8e2a7141dec36852d89ba86d61a9ea153923b300ff9ff419658",
+    "template_sha256": "89590dae37925b12bed0f3518268a54730a2ba6ef204dd755fad169d61d5a00b",
+    "parent_frozen_sha256": "82d00f25a1d3e4ca4a3f751f5ed9278e423263dd54a98000bba36aa9f2449e0e",
+    "dry_run_delta_fields": [
+      "project.name", "project.run_dir", "provenance.*",
+      "training.early_stopping_patience", "training.epochs",
+      "training.restart_scheduler_on_resume",
+      "training.resume_from_relative", "training.resume_from_sha256",
+      "training.resume_best_from_relative", "training.resume_best_from_sha256"
+    ],
+    "learning_rate_in_delta": false,
+    "verified_live": {
+      "gpu_utilization_percent": 96,
+      "gpu_memory_mib": 12057,
+      "shard_cache_size": 0,
+      "diagnostic_producers": 1,
+      "producer_pid": 3658,
+      "producer_ppid": 3528,
+      "producer_note": "a second pid appeared in one /proc scan and was gone on re-check -- a transient child, not a second writer; rule 24 holds"
+    },
+    "watcher": {"pid": 34656, "interval_seconds": 600, "plan": "camp-20260812-lr3e4-anneal",
+                "note": "reclaimed a stale lock from dead pid 24900"}
+  },
+
+  "expectation": {
+    "early_epochs": "expected WORSE than 4.512721 -- the restart re-heats to 3e-4 from a checkpoint annealed to 2.1e-5. That is the same jump the sawtooth performed every 12 epochs; the difference is the descent now has 24 epochs rather than 6.",
+    "tests_exactly_one_thing": "whether annealing once over the declared horizon reaches a lower validation loss than the sawtooth's 4.512721",
+    "negative_result_policy": "a negative result is a real result and will be reported in full with the complete trajectory"
+  },
+
+  "operational_note": {
+    "id": "git-bash-mangles-usr-lib64",
+    "symptom": "python scripts/dicos.py exec \"LD_LIBRARY_PATH=/usr/lib64 …\" fails locally with 'Files/Git/usr/lib64: No such file or directory' and never reaches the pod",
+    "cause": "MSYS path conversion rewrites /usr/lib64 to C:/Program Files/Git/usr/lib64; the space splits the argument",
+    "resolution": "the prefix is unnecessary for the supervisor -- launch() sets LD_LIBRARY_PATH for the trainer subprocess and the supervisor is CPU-only. Keep it only for a direct one-off .venv/bin/python -c that needs CUDA, where the whole command is a single quoted argument and survives."
+  },
+
+  "boundary": {
+    "evidence_class": "optimization on the pilot bank",
+    "not_established": ["Geant4 fidelity", "three-seed behaviour", "untouched-test performance"],
+    "test_events_used": 0
+  },
+
+  "verification": {
+    "compileall": "src scripts tests -- exit 0",
+    "pytest": "338 passed (335 -> 338)",
+    "dry_run": "allowed delta fields only; training.learning_rate absent"
+  },
+
+  "still_open": {
+    "publication_owed": "calibrated_lr3e4's lowest verified loss changed to 4.512721 (dicos-e-02 e47) while the live public selection is still dicos-p9-calibrated-lr1e4:joint:0038. Deliberately not made here; dicos-f-01 may move the number again within a day.",
+    "other_families": "if annealing over the real horizon helps, the same question should be asked of calibrated_lr1e4_halfbatch and calibrated_lr3e5 as a separate declared campaign rather than folded into this one."
+  }
+}

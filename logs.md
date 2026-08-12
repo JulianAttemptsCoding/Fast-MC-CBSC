@@ -9415,3 +9415,172 @@ a change to make while confirming a completed run.
    validation loss is optimization evidence on the pilot bank. C2ST AUROC and
    the zero-response-rate disagreement are not re-measured by this run.
    `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+### 2026-08-12 — campaign figure/metric watcher started
+
+`scripts/watch_campaign_outputs.py` started against campaign `camp-20260812-lr3e4-anneal`, polling every 600s. It keeps figures and metrics current on the workstation for as long as the campaign is training and exits on its own once the campaign reaches a terminal state. It requires the workstation to stay on; nothing about it runs on a pod.
+
+### 2026-08-12 (continued) — the learning rate has been annealing over 6 epochs, not the declared horizon, for the whole project
+
+Owner asked for research into whether the learning rate could be improved,
+then to implement, test, and keep training with an adjusted patience. The
+research produced a specific, checkable defect rather than a tuning opinion.
+
+### The finding
+
+`_runs/calibrated_lr3e4_dicos-e-02/checkpoints/best.pt` carries
+
+    scheduler_state: T_max=6660, eta_min=1e-06, base_lrs=[0.0003],
+                     last_epoch=34410
+    config:          training.epochs=55
+
+At the measured 1110 updates/epoch (26,624 train events, batch 6, drop_last,
+accumulation 4), **T_max=6660 is exactly 6.000 epochs** while the config it
+sits beside declares a 55-epoch horizon. `CosineAnnealingLR` is periodic in
+`2*T_max`, so the schedule is a **12-epoch sawtooth**, not the single anneal
+the horizon implies.
+
+The mechanism is `checkpoint.py:75`, which restores `scheduler_state`
+unconditionally on every resume. `T_max` is part of that state dict, so an
+ancestor's 6-epoch horizon has been inherited by every continuation of this
+family regardless of what each new config asked for. Nothing hand-edited a
+config; the value simply propagated.
+
+This is not inferred from the loss curve — the trainer records the actual
+per-epoch learning rate, and it matches exactly:
+
+    peaks   (3.0e-4) at absolute epochs 28, 40, 52     spacing 12, 12
+    troughs (1.0e-6) at absolute epochs 34, 46         spacing 12
+
+**Validation loss tracks LR phase, not training progress:**
+
+    troughs   e34 4.550331   e45 4.519305   e47 4.512721
+    peaks     e40 4.642563   e51 4.654804   e52 4.633719
+
+Within-cycle swing ≈ **0.14**. Real trough-to-trough gain ≈ **0.04**
+(e22 4.597152 → e34 4.550331 → e47 4.512721). The model is genuinely
+learning, roughly 0.04 per 12-epoch cycle, but each cycle re-heats to the
+full 3e-4 peak and gives most of it back. Every "best" this family has ever
+recorded is simply whichever trough happened to be deepest.
+
+### It also produced a false stop, which is why the last campaign ended
+
+`camp-20260810-lr3e4` ended `campaign_complete` because `dicos-e-02`'s best
+(e47) was 7 epochs behind its last (e54), outside the declared 6-epoch
+improvement window. But epoch 54 sat **mid-descent at lr 2.25e-4**, with the
+next trough due around epoch 58. A window shorter than the learning-rate
+period does not measure convergence, it measures where in the cycle a segment
+happened to stop. The same is true of `early_stopping_patience`: `dicos-p8`
+is recorded as having been stopped at 6 of 24 epochs by a constant patience,
+i.e. before reaching the low-LR end of its own anneal.
+
+This also re-frames a standing note. `CLAUDE.md` says a scheduler restart
+"produced nothing" where continuing produced p9's 0.067. That comparison is
+confounded: the restart run was stopped early by patience and never reached
+the part of the anneal being tested. It is not evidence against restarting
+with patience equal to the horizon.
+
+### The change, declared
+
+`configs/campaigns/campaign_20260812_lr3e4_anneal.json`, campaign
+`camp-20260812-lr3e4-anneal`, run tag prefix `dicos-f`:
+
+- **`restart_scheduler_on_resume: true`** — routes through
+  `trainer._restart_cosine_scheduler`, which rebuilds `CosineAnnealingLR`
+  with `T_max = updates_per_epoch * (epochs - start_epoch)`, i.e. *this
+  segment's own horizon*. One 24-epoch anneal instead of four 6-epoch
+  sawteeth.
+- **`improvement_window: 12`**, not 6 — at least one full former LR period,
+  so the rule can no longer stop a family on phase.
+- **`segment_epochs: 24`, patience 24** — the anneal's low-LR end is the part
+  under test, so patience must not end the run before it.
+
+The learning rate itself (3e-4), batch size, seed, optimizer, gradient
+accumulation, loss weights, geometry, splits and closure tolerances are all
+unchanged. **The schedule's shape is the only moving part.** Recorded as a
+`DECLARED EXPERIMENT`: segments here are not directly comparable to any
+frozen before this change.
+
+**No guard was weakened to permit this.**
+`training.restart_scheduler_on_resume` was already inside
+`ALLOWED_CONFIG_DELTA`; `dicos_campaign.py` merely hardcoded `False`. It is
+now read from the plan with `campaign.get("restart_scheduler_on_resume",
+False)`, so `camp-20260805` and `camp-20260810-lr3e4` mean exactly what they
+meant. Three tests pin this: the omitted key still means `False`, the plan
+may declare `True`, and `restart_scheduler_on_resume` is allowlisted while
+`training.learning_rate` is not — the schedule's *shape* is a continuation
+field, its *peak* is not.
+
+### Launch
+
+Dry-run first. Its `config_delta` moved only allowed fields, and notably
+`training.learning_rate` does **not** appear in it:
+
+    training.restart_scheduler_on_resume  False -> True
+    training.epochs                       55 -> 72
+    training.early_stopping_patience      20 -> 24
+    training.resume_{,best_}from_sha256   -> 43fcf86c… (dicos-e-02 best, e47)
+    project.name, project.run_dir, provenance.*
+
+    frozen_sha256        e0978e724d13e8e2a7141dec36852d89ba86d61a9ea153923b300ff9ff419658
+    template_sha256      89590dae37925b12bed0f3518268a54730a2ba6ef204dd755fad169d61d5a00b
+    parent_frozen_sha256 82d00f25a1d3e4ca4a3f751f5ed9278e423263dd54a98000bba36aa9f2449e0e
+
+Absolute target 72 = 47 + 1 + 24, resuming from `dicos-e-02`'s **best**
+(epoch 47, 4.512721) on both resume slots per the standing convention.
+
+Launched as `camp0812-anneal`, pid 3526, run tag `dicos-f-01`. Verified
+rather than assumed: GPU climbed to **96% / 12057 MiB**,
+`environment.json` records `shard_cache_size: 0`, and a `/proc` scan shows
+exactly **one** diagnostic producer (pid 3658, ppid 3528 = the supervisor) —
+a second pid seen in an earlier scan was a transient child and was gone on
+re-check, so rule 24's one-writer requirement holds.
+
+Watcher restarted on the new plan, pid 34656, 600 s interval, after
+reclaiming the stale lock from the dead pid 24900.
+
+### An operational note
+
+`python scripts/dicos.py exec "LD_LIBRARY_PATH=/usr/lib64 …"` **fails from
+Git Bash on this workstation** and never reaches the pod: MSYS path
+conversion rewrites `/usr/lib64` to `C:/Program Files/Git/usr/lib64`, the
+space splits the argument, and the local shell reports
+`Files/Git/usr/lib64: No such file or directory`. It is not needed for the
+supervisor anyway — `launch()` sets `LD_LIBRARY_PATH` for the trainer
+subprocess itself, and the supervisor is CPU-only. Drop the prefix when
+driving `dicos_campaign.py`; keep it only for a direct one-off
+`.venv/bin/python -c` that genuinely needs CUDA, where the prefix survives
+because the whole command is a single quoted argument.
+
+### Verification
+
+    PYTHONPATH=src python -m compileall -q src scripts tests    exit 0
+    PYTHONPATH=src python -m pytest -q                          338 passed (335 -> 338)
+    dry-run config_delta                                        allowed fields only,
+                                                                  learning_rate absent
+    GPU after launch                                            96%, 12057 MiB
+    producer                                                    exactly one, ppid = supervisor
+    watcher --status                                            pid 34656 ALIVE,
+                                                                  plan camp-20260812-lr3e4-anneal
+
+### What this experiment will and will not show
+
+It tests exactly one thing: whether annealing once over the declared horizon
+reaches a lower validation loss than the sawtooth's 4.512721. It says nothing
+about Geant4 fidelity, three-seed behaviour, or untouched-test performance,
+and the test split remains sealed. `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+Expect the early epochs of `dicos-f-01` to be **worse** than 4.512721: the
+restart re-heats to 3e-4 from a checkpoint annealed to 2.1e-5. That is the
+same jump the sawtooth already performed every 12 epochs; the difference is
+that the descent now has 24 epochs rather than 6. A negative result here is a
+real result and will be reported as one.
+
+### Still open
+
+A publication remains owed from the previous entry — `calibrated_lr3e4`'s
+lowest verified loss changed to 4.512721 while the live public selection is
+still `dicos-p9-calibrated-lr1e4:joint:0038`. It is deliberately not made
+here, and `dicos-f-01` may move the number again within a day.
+
+- campaign status: halted -> training
