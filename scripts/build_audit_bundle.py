@@ -63,6 +63,17 @@ EXTRA_FILES = {
     "CLAUDE.md": "host-specific operating rules (untracked, local to the workstation)",
 }
 
+#: `source -> destination`, both repo-relative. The file is still staged at its
+#: normal tracked path too; this places a second copy at the path
+#: `AUDIT_README.md` promises a reviewer, so `python verify_bundle.py` from the
+#: bundle root actually works. Caught 2026-08-12 by extracting a built archive
+#: into a clean directory and running that exact command -- it failed, because
+#: nothing had ever copied the file there; the README's instruction had been
+#: wrong since the first bundle.
+ROOT_ALIASES = {
+    "scripts/verify_audit_bundle.py": "verify_bundle.py",
+}
+
 #: Sibling repositories that produced the downstream evaluations cited by this
 #: project. Each is pinned to the commit recorded in the corresponding
 #: `exhibition/current/external_metrics/source_data/.../metrics.json`, and the
@@ -88,30 +99,31 @@ EXTERNAL_REPOS = {
 #: `dashboard/public/data/*.json` epoch payloads are gitignored and total about
 #: 870 MB, so they cannot all ship. Four tests resolve the *accepted-best*
 #: payload for each family, and without them the bundle fails its own suite on
-#: arrival. Only those four are included, and the selection is read from the
-#: published snapshot file rather than hardcoded, so it cannot drift.
-PUBLIC_SNAPSHOTS = Path("../Fast-MC-Visual-Tests/config/public_snapshots.json")
-
-
+#: arrival. Only those four are included.
+#:
+#: Sourced from `build_exhibition.resolve_best_files()` -- the CURRENT internal
+#: standings (`exhibition/current/continuation/family_choice.json`) -- not from
+#: `Fast-MC-Visual-Tests/config/public_snapshots.json`. Those two diverge
+#: whenever a family's best has moved since the last publication, which
+#: publication being a deliberate, separate act makes routine rather than rare;
+#: at bundle time 2026-08-12 three of four families had moved. Bundling the
+#: stale published selection instead of current standings both misrepresents
+#: this bundle's own §3 table and fails this repository's own test suite on
+#: arrival (`test_current_best_visualizations_are_resolved_not_hardcoded`,
+#: `test_public_selection_is_derived_from_current_accepted_bests`) -- caught by
+#: actually extracting a built archive and running the suite in it, not
+#: assumed. An audit bundle's job is the true current state; what is or is not
+#: yet published is a separate fact, stated in AUDIT_README.md rather than
+#: encoded into which files ship.
 def accepted_best_payloads() -> list[str]:
-    """Repo-relative dashboard payloads for the currently published bests."""
-    source = (ROOT / PUBLIC_SNAPSHOTS).resolve()
-    if not source.exists():
-        return []
-    payload = json.loads(source.read_text(encoding="utf-8"))
-    names = []
-    for entry in payload.get("snapshots", []):
-        identifier = entry.get("id", "")
-        # `<run>-<family>:<stage>:<epoch>` addresses
-        # `<run>-<family>_<stage>_epoch_<epoch>.json` on disk.
-        parts = identifier.split(":")
-        if len(parts) != 3:
-            continue
-        run_family, stage, epoch = parts
-        names.append(
-            f"dashboard/public/data/{run_family}_{stage}_epoch_{epoch}.json"
-        )
-    return names
+    """Repo-relative dashboard payloads for the current internal bests."""
+    sys.path.insert(0, str(ROOT))
+    from exhibition.build_exhibition import resolve_best_files  # noqa: PLC0415
+
+    return [
+        f"dashboard/public/data/{relative}"
+        for relative in resolve_best_files().values()
+    ]
 
 
 #: Textual patterns that must never appear in a bundled file.
@@ -299,6 +311,14 @@ def main(argv=None) -> int:
             skipped.append(f"{relative}: denylisted")
             continue
         shutil.copy2(source, payload / relative)
+        copied += 1
+
+    for source_relative, dest_relative in ROOT_ALIASES.items():
+        source = payload / source_relative
+        if not source.is_file():
+            skipped.append(f"{dest_relative}: alias source {source_relative} absent")
+            continue
+        shutil.copy2(source, payload / dest_relative)
         copied += 1
 
     payload_count = 0

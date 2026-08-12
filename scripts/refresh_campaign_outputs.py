@@ -316,6 +316,26 @@ def _run_builder(name: str, *args: str) -> subprocess.CompletedProcess:
     )
 
 
+def bound_lineage(tags: list[str], forks: list[tuple[str, str, int]]) -> list[str]:
+    """Append `:fork_epoch` to any tag in `tags` that a later tag forks from.
+
+    `build_diagnostic_trend_figure.py` and `build_all_metric_trends.py` accept
+    `TAG:MAX_EPOCH` precisely for this: dicos-e-02 ran all the way to epoch 54
+    before dicos-f-01 forked from it at epoch 47, so without a bound its files
+    for epochs 48-54 read as live simply because dicos-f-01 has not reached
+    them yet, rather than as the superseded tail the CSV-based standings
+    (correctly, via prune_superseded_rows) already treat them as. Only forks
+    where BOTH tags are in this lineage matter -- a fork pair entirely outside
+    it (a different family, or a segment not part of this trend) is ignored.
+    """
+    bound: dict[str, int] = {}
+    tag_set = set(tags)
+    for parent_tag, child_tag, fork_epoch in forks:
+        if parent_tag in tag_set and child_tag in tag_set:
+            bound[parent_tag] = min(bound.get(parent_tag, fork_epoch), fork_epoch)
+    return [f"{tag}:{bound[tag]}" if tag in bound else tag for tag in tags]
+
+
 def refresh(plan: dict, scratch: Path, *, dry_run: bool = False) -> dict:
     """Run one full refresh pass and return a structured summary.
 
@@ -340,10 +360,16 @@ def refresh(plan: dict, scratch: Path, *, dry_run: bool = False) -> dict:
     if not produced:
         return result
 
+    # Computed once up front (not just before pruning, as before) because the
+    # per-family --lineage argument below needs the same fork-epoch bounds
+    # prune_superseded_rows() uses, not just the history CSV. Pure given
+    # plan+events, already available -- no reason to gate it on dry_run.
+    forks = fork_points(plan, events)
+
     exit_code = 0
     for family, tags in produced.items():
         prefix = plan["families"].get(family, {}).get("diagnostic_lineage", [])
-        lineage = [*prefix, *tags]
+        lineage = bound_lineage([*prefix, *tags], forks.get(family, []))
         newest = tags[-1]
         epoch = latest_epoch(family, newest)
         entry: dict = {
@@ -379,7 +405,6 @@ def refresh(plan: dict, scratch: Path, *, dry_run: bool = False) -> dict:
 
     pruned: list[str] = []
     if not dry_run:
-        forks = fork_points(plan, events)
         pruned = prune_superseded_rows(HISTORY_CSV, forks)
     result["pruned_history_rows"] = pruned
 
@@ -413,7 +438,10 @@ def refresh(plan: dict, scratch: Path, *, dry_run: bool = False) -> dict:
         )
         if champion is not None:
             prefix = plan["families"].get(champion, {}).get("diagnostic_lineage", [])
-            champion_lineage = [*prefix, *result["families"][champion]["tags"]]
+            champion_lineage = bound_lineage(
+                [*prefix, *result["families"][champion]["tags"]],
+                forks.get(champion, []),
+            )
             result["champion_family"] = champion
             result["champion_lineage"] = champion_lineage
 

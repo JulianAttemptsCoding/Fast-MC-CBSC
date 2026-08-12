@@ -9584,3 +9584,98 @@ still `dicos-p9-calibrated-lr1e4:joint:0038`. It is deliberately not made
 here, and `dicos-f-01` may move the number again within a day.
 
 - campaign status: halted -> training
+
+### 2026-08-12 (continued) -- fork-aware diagnostic trends, closing the follow-up flagged two entries ago
+
+The 2026-08-11 entry left `build_diagnostic_trend_figure.py`/
+`build_all_metric_trends.py`'s lineage construction as a documented,
+deferred follow-up: they read per-tag epoch files directly with "later tag
+wins if present," which is only correct when the later tag has actually
+reached the epoch in question. `dicos-f-01` forking from `dicos-e-02` at
+epoch 47 made this a live, recurring problem rather than a theoretical one --
+`dicos-e-02` had already trained all the way to epoch 54 before the fork, so
+every refresh while `dicos-f-01` was still between epochs 48 and 54 showed
+`dicos-e-02`'s now-superseded tail in the aggregate diagnostics, and
+`build_metrics_catalog.py`'s consistency check (comparing the diagnostics
+slot's latest epoch against the CSV-based standings, which
+`prune_superseded_rows()` already gets right) failed every single time --
+not a one-off race, a guaranteed failure for the full ~5-hour duration of
+this anneal segment.
+
+**Fixed with the minimum surface that closes it.** Both builders now accept
+`TAG:MAX_EPOCH` in their run-tag arguments -- a superseded tag's own files are
+capped at its fork point regardless of whether the tag that forked from it
+has produced a replacement yet. `refresh_campaign_outputs.py` gained
+`bound_lineage()`, applying the *same* `fork_points()` data
+`prune_superseded_rows()` already uses, at both call sites that construct a
+lineage (the per-family `--lineage` argument, and the champion-retargeting
+`champion_lineage`). `refresh_continuation_outputs.py`'s lineage validation
+was loosened from a bare-tag-only pattern to accept the optional suffix, and
+its append/parity check (comparing the lineage's last entry to `--run-tag`)
+was confirmed still correct: `bound_lineage()` never bounds the newest tag,
+since it is never anyone's parent within its own lineage.
+
+**A second bug found while fixing the first, in isolation from a live pod.**
+The parser hit a pytest node id (`tests/test_epoch_evidence_pipeline.py::
+test_complete_gallery_references_every_graphic`) during a manual single-test
+run and crashed at import time: `RUN_TAGS = sys.argv[1:]` is pre-existing,
+module-level, and reads whatever argv belongs to whatever process imports
+the file -- pytest included. A loose `partition(":")` + bare `int()` treated
+the node id's `::` as a bound separator and threw `ValueError` trying to
+parse the test name as a number. Tightened to a strict
+`^[a-z0-9][a-z0-9-]*:[0-9]+$` match: anything that does not fit -- argv
+noise included -- falls back to being read as one bare tag, exactly the
+harmless (matches nothing, silently skipped) behaviour this file has always
+had for argv it did not put there itself.
+
+Five new tests: `bound_lineage()`'s real dicos-f-01 case, that it never
+bounds the live/last tag, that an unrelated family's fork does not leak in,
+a tie-break for a (not-expected-in-practice) double fork, and a no-op
+pass-through with no forks recorded; plus the pytest-node-id crash pinned
+directly against `_parse_run_tag()`.
+
+**A separate, real staleness caught while re-verifying: `exhibition/
+manifest.json`'s pin for `family_choice.json` was wrong in the last commit
+itself** (`f201406`), not reintroduced by anything this session did --
+confirmed by comparing the working tree file against `git cat-file -p
+HEAD:...` directly: byte-identical to each other, both disagreeing with the
+manifest's own recorded hash. Not a checkout/CRLF artifact this time; the
+committed manifest was simply never regenerated after whatever produced that
+commit's `family_choice.json`. Fixed the only correct way -- re-ran
+`build_exhibition.py`, not a hand edit.
+
+Chasing a fully clean, self-consistent snapshot while `dicos-f-01` kept
+training in real time (correctly, at ~490s/epoch on this fix's own evidence:
+epochs 48-51 landed across three refresh passes several minutes apart) meant
+racing a moving target more than once. Settled it by stopping the watcher,
+running one refresh, and where the training-loss CSV and the slower 3090
+diagnostics pipeline still disagreed by exactly the epoch or two separating
+their independent pull cadences, reverting the generated `exhibition/`
+output (never the source fixes) to the last state where they agreed, rather
+than continuing to chase.
+
+### Verification
+
+    PYTHONPATH=src python -m compileall -q src scripts exhibition tests   exit 0
+    PYTHONPATH=src python -m pytest -q                                    347 passed (341 -> 347,
+                                                                            +5 bound_lineage, +1 crash guard)
+    exhibition/build_metrics_catalog.py                                   124 graphics, PASS,
+                                                                           all_manifest_hashes_match true,
+                                                                           current_reaches_latest_observed_epoch 54
+    dicos-f-01 diagnostics                                                epochs 48-51 committed,
+                                                                           4 metrics + 4 visualization files
+
+### What is still open
+
+1. A publication remains owed (`calibrated_lr3e4`'s verified best moved;
+   the public site still serves the old `lr1e4` checkpoint) -- unchanged
+   from the prior two entries, still the owner's call.
+2. `dicos-f-01` is still training -- 4 real epochs in past the restart, all
+   at the re-heated end of its 24-epoch anneal as predicted; too early to
+   read anything about whether the correction itself works. Restarted the
+   watcher after this fix landed.
+3. The CSV-vs-3090-diagnostics pull-cadence gap (a few minutes, self-healing
+   on the next refresh) is not a bug, just a real property of two
+   independently-scheduled pull mechanisms; noting it here only so a future
+   "why don't these two files agree" investigation does not restart from
+   zero.

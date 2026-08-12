@@ -20,6 +20,7 @@ import subprocess
 from scripts.refresh_campaign_outputs import (
     _dicos,
     _parent_tag_from_run_dir,
+    bound_lineage,
     fork_points,
     prune_superseded_rows,
     segments_by_family,
@@ -398,3 +399,54 @@ def test_fork_points_and_prune_together_resolve_the_real_incident(tmp_path: Path
     rows = _read_csv(path)
     epochs = [int(r["epoch"]) for r in rows]
     assert len(epochs) == len(set(epochs)), "duplicate-epoch guard must now pass"
+
+
+# --------------------------------------------------------------------------
+# bound_lineage -- capping a superseded tag at its own fork point for the
+# diagnostic-trend builders (2026-08-12)
+# --------------------------------------------------------------------------
+
+
+def test_bound_lineage_caps_a_tag_a_later_lineage_member_forks_from():
+    """The real dicos-f-01 incident: dicos-e-02 ran to epoch 54 in full
+    before dicos-f-01 forked from it at epoch 47. Without a bound,
+    build_diagnostic_trend_figure.py's "later tag wins if present" leaves
+    dicos-e-02's now-superseded 48-54 visible until dicos-f-01 catches up,
+    which can be hours into a live anneal.
+    """
+    forks = [("dicos-e-02", "dicos-f-01", 47)]
+    assert bound_lineage(
+        ["dicos-c-01", "dicos-c-02", "dicos-e-02", "dicos-f-01"], forks
+    ) == ["dicos-c-01", "dicos-c-02", "dicos-e-02:47", "dicos-f-01"]
+
+
+def test_bound_lineage_leaves_the_final_tag_unbounded():
+    """The live/newest tag is never anyone's parent within its own lineage,
+    so it must never come back with a suffix -- refresh_continuation_outputs.py
+    compares the lineage's last entry against the bare --run-tag verbatim.
+    """
+    forks = [("dicos-c-02", "dicos-e-02", 34)]
+    result = bound_lineage(["dicos-c-01", "dicos-c-02", "dicos-e-02"], forks)
+    assert result[-1] == "dicos-e-02"
+
+
+def test_bound_lineage_ignores_a_fork_outside_this_lineage():
+    """A fork pair for a different family, or a segment not part of the
+    lineage being plotted, must not bound anything here."""
+    forks = [("dicos-p7", "dicos-c-03", 21)]  # a different family entirely
+    tags = ["dicos-c-01", "dicos-c-02", "dicos-e-02"]
+    assert bound_lineage(tags, forks) == tags
+
+
+def test_bound_lineage_takes_the_tightest_bound_if_a_tag_forked_twice():
+    """Defensive: if a tag somehow appears as the parent in two recorded
+    forks (not expected in practice, but the function must not silently
+    pick the looser one), the smaller fork_epoch wins."""
+    forks = [("dicos-e-02", "dicos-e-01", 40), ("dicos-e-02", "dicos-f-01", 34)]
+    result = bound_lineage(["dicos-e-02", "dicos-e-01", "dicos-f-01"], forks)
+    assert result[0] == "dicos-e-02:34"
+
+
+def test_bound_lineage_passes_through_a_lineage_with_no_forks():
+    tags = ["dicos-p9", "dicos-p10"]
+    assert bound_lineage(tags, []) == tags

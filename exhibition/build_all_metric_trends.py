@@ -25,7 +25,29 @@ HERE = Path(__file__).resolve().parent
 DATA_ROOT = HERE / "data" / "diagnostics"
 OUT = HERE / "current" / "diagnostics"
 STATUS = HERE / "data" / "continuation_status.json"
-RUN_TAGS = sys.argv[1:] or ["dicos-p9", "dicos-p10"]
+
+
+#: `TAG:MAX_EPOCH` caps what is read from a superseded tag at its own fork
+#: point, independent of whether the tag that forked from it has caught up
+#: yet. See the matching comment in build_diagnostic_trend_figure.py, which
+#: this mirrors -- the two files duplicate this loading pattern rather than
+#: sharing it, including this strict match: RUN_TAGS reads sys.argv[1:] at
+#: import time, so a pytest node id (`path::test_name`) lands here too, and a
+#: loose partition(":") + int() crashed on it rather than falling back to a
+#: harmless bare tag the way argv noise always has.
+_RUN_TAG_BOUND_PATTERN = re.compile(r"^([a-z0-9][a-z0-9-]*):([0-9]+)$")
+
+
+def _parse_run_tag(arg: str) -> tuple[str, int | None]:
+    match = _RUN_TAG_BOUND_PATTERN.fullmatch(arg)
+    return (match.group(1), int(match.group(2))) if match else (arg, None)
+
+
+_PARSED_RUN_TAGS = [_parse_run_tag(arg) for arg in sys.argv[1:]] or [
+    ("dicos-p9", None), ("dicos-p10", None),
+]
+RUN_TAGS = [tag for tag, _bound in _PARSED_RUN_TAGS]
+RUN_TAG_MAX_EPOCH = {tag: bound for tag, bound in _PARSED_RUN_TAGS if bound is not None}
 NAVY = "#0f2a43"
 FAST = "#d2691e"
 TRUTH = "#167c5a"
@@ -49,8 +71,13 @@ def load_rows() -> list[dict]:
     for tag in RUN_TAGS:
         if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", tag):
             raise ValueError(f"unsafe run tag: {tag!r}")
+        max_epoch = RUN_TAG_MAX_EPOCH.get(tag)
         for path in sorted((DATA_ROOT / tag).glob("metrics_epoch_*.json")):
             row = json.loads(path.read_text(encoding="utf-8"))
+            if max_epoch is not None and int(row["epoch"]) > max_epoch:
+                # Superseded by a later tag's fork point, whether or not that
+                # tag has produced a replacement for this epoch yet.
+                continue
             if row.get("split") != "validation" or row.get("qa", {}).get(
                 "test_events_used"
             ) != 0:

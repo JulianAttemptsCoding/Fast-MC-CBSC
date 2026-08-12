@@ -163,3 +163,37 @@ def test_epoch_record_rejects_wrong_expected_epoch() -> None:
             offline=True,
             previous_best=None,
         )
+
+
+# --------------------------------------------------------------------------
+# _parse_run_tag -- must never crash on argv it did not put there itself
+# --------------------------------------------------------------------------
+
+
+def test_parse_run_tag_reads_a_bound_tag() -> None:
+    assert diagnostic._parse_run_tag("dicos-e-02:47") == ("dicos-e-02", 47)
+
+
+def test_parse_run_tag_reads_a_bare_tag() -> None:
+    assert diagnostic._parse_run_tag("dicos-f-01") == ("dicos-f-01", None)
+
+
+def test_parse_run_tag_does_not_crash_on_a_pytest_node_id() -> None:
+    """RUN_TAGS reads sys.argv[1:] at import time, so this module receives
+    whatever argv belongs to whatever imports it -- pytest included. Running
+    `pytest path/to/test.py::test_name` puts that whole node id, colon and
+    all, in sys.argv[1]; a loose partition(":") + int() crashed on it at
+    collection time the first version of this parser was written. It must
+    fall back to reading the entire string as one (harmless, non-matching)
+    bare tag instead.
+    """
+    node_id = "tests/test_epoch_evidence_pipeline.py::test_complete_gallery_references_every_graphic"
+    assert diagnostic._parse_run_tag(node_id) == (node_id, None)
+
+
+def test_parse_run_tag_rejects_a_non_numeric_suffix_as_a_bound() -> None:
+    """Only `lowercase-tag:digits` is a bound; anything else is one bare tag,
+    matching how argv noise has always been handled here."""
+    assert diagnostic._parse_run_tag("dicos-e-02:not-a-number") == (
+        "dicos-e-02:not-a-number", None,
+    )

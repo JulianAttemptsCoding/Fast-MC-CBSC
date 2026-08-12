@@ -54,7 +54,41 @@ STATUS_PATH = HERE / "data" / "continuation_status.json"
 #: figure. Where two tags carry the same epoch, the LATER tag wins: it is on
 #: the live branch, and the earlier one was superseded when the new run
 #: resumed from a best checkpoint rather than a last one.
-RUN_TAGS = sys.argv[1:] or ["dicos-p9", "dicos-p10"]
+#:
+#: "Later tag wins" only resolves overlap where the later tag has actually
+#: reached that epoch. dicos-f-01 (2026-08-12) forked from dicos-e-02 at
+#: epoch 47 and resumed the anneal there, but dicos-e-02 itself had already
+#: run all the way to epoch 54 before the fork -- so for the epochs between
+#: dicos-f-01's fork point and wherever it has trained *to so far*,
+#: dicos-e-02's now-superseded tail was still the only file on disk, and
+#: "later wins if present" silently kept showing it. A tag may therefore be
+#: given as `TAG:MAX_EPOCH` to cap what is read from it at its own fork
+#: point, independent of whether anything downstream has caught up yet.
+#: Bare `TAG` (no colon) is unchanged and reads that tag's full range.
+#:
+#: `RUN_TAGS` reads `sys.argv[1:]` at import time -- pre-existing, not
+#: introduced here -- so this module gets whatever argv belongs to whatever
+#: imports it, pytest included. A pytest node id like
+#: `path::test_name` lands in `sys.argv[1]` and contains a colon; matched
+#: strictly (only `lowercase-tag:digits`) so anything else, argv noise
+#: included, falls back to being read as a single bare tag exactly as before
+#: this feature existed -- one that will not match a real directory and is
+#: silently skipped by the `directory.is_dir()` check in load(), not one that
+#: raises. A loose `partition(":")` + bare `int()` here crashed on exactly
+#: that pytest invocation the first time this was written.
+_RUN_TAG_BOUND_PATTERN = re.compile(r"^([a-z0-9][a-z0-9-]*):([0-9]+)$")
+
+
+def _parse_run_tag(arg: str) -> tuple[str, int | None]:
+    match = _RUN_TAG_BOUND_PATTERN.fullmatch(arg)
+    return (match.group(1), int(match.group(2))) if match else (arg, None)
+
+
+_PARSED_RUN_TAGS = [_parse_run_tag(arg) for arg in sys.argv[1:]] or [
+    ("dicos-p9", None), ("dicos-p10", None),
+]
+RUN_TAGS = [tag for tag, _bound in _PARSED_RUN_TAGS]
+RUN_TAG_MAX_EPOCH = {tag: bound for tag, bound in _PARSED_RUN_TAGS if bound is not None}
 RUN_TAG = "+".join(RUN_TAGS)
 
 NAVY = "#0f2a43"
@@ -192,11 +226,16 @@ def load() -> list[dict]:
         directory = DATA_ROOT / tag
         if not directory.is_dir():
             continue
+        max_epoch = RUN_TAG_MAX_EPOCH.get(tag)
         for path in sorted(directory.glob("metrics_epoch_*.json")):
             match = re.fullmatch(r"metrics_epoch_(\d{4,})\.json", path.name)
             if not match:
                 continue
             expected_epoch = int(match.group(1))
+            if max_epoch is not None and expected_epoch > max_epoch:
+                # Superseded by a later tag's fork point, whether or not that
+                # tag has produced a replacement for this epoch yet.
+                continue
             row = json.loads(path.read_text(encoding="utf-8"))
             _validate_metric(path, row, expected_epoch)
             row["run_tag"] = tag

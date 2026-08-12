@@ -48,6 +48,14 @@ DASHBOARD_DATA = ROOT / "dashboard" / "public" / "data"
 EXTERNAL_STATE = ROOT / "audit" / "current_external_metrics.json"
 FIELDS = ["variant", "epoch", "train_loss", "validation_loss", "run_tag"]
 RUN_TAG_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+#: A --lineage entry may additionally carry `:MAX_EPOCH`, forwarded verbatim
+#: to build_diagnostic_trend_figure.py / build_all_metric_trends.py to cap a
+#: superseded tag at its own fork point (see the matching comment in
+#: refresh_campaign_outputs.py's bound_lineage()). Never applies to the tag
+#: itself elsewhere in this file -- checked below at the same point --run_tag
+#: is compared against, so only an earlier, non-live lineage entry ever
+#: carries one.
+LINEAGE_TAG_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*(:[0-9]+)?$")
 FAMILY_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_]*$")
 METRIC_PATTERN = re.compile(
     r"^([0-9a-f]{64})\s+_diag/([a-z0-9][a-z0-9-]*)/"
@@ -619,7 +627,7 @@ def main(argv=None) -> int:
 
     lineage = list(args.lineage) if args.lineage else [args.run_tag]
     for tag in lineage:
-        if not RUN_TAG_PATTERN.fullmatch(tag):
+        if not LINEAGE_TAG_PATTERN.fullmatch(tag):
             parser.error(f"unsafe lineage run tag: {tag!r}")
     if lineage[-1] != args.run_tag:
         lineage.append(args.run_tag)
