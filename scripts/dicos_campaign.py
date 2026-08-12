@@ -281,7 +281,16 @@ def prepare_segment(plan: SegmentPlan, workdir: Path, paths: dict,
         parent_last_epoch=plan.parent_last_epoch,
         checkpoint_stem=plan.resume_from_stem,
         selected_by=plan.reason,
-        restart_scheduler=False,
+        # Plan-driven, defaulting to False so every campaign frozen before this
+        # was made configurable means exactly what it meant. False continues the
+        # saved cosine, which is correct while T_max still describes the horizon
+        # being annealed. It stopped describing it here: `T_max` is restored
+        # from the parent checkpoint on every resume, so calibrated_lr3e4 has
+        # carried an ancestor's 6-epoch T_max (6660 updates at 1110/epoch)
+        # through every continuation, and the LR has sawtoothed 3e-4 <-> 1e-6 on
+        # a 12-epoch period regardless of the horizon each config declared.
+        # See logs.md 2026-08-12 and the campaign plan's own declaration.
+        restart_scheduler=bool(campaign.get("restart_scheduler_on_resume", False)),
     )
 
     frozen_dir = workdir / "prep" / "configs"

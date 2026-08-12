@@ -272,3 +272,46 @@ def test_the_allowlist_does_not_contain_a_scientific_value():
         "evaluation.share_steps",
     }
     assert not (forbidden & ALLOWED_CONFIG_DELTA)
+
+
+# --------------------------------------------------------------------------
+# plan-driven scheduler restart (declared 2026-08-12)
+# --------------------------------------------------------------------------
+
+
+def _restart_flag(campaign: dict) -> bool:
+    """Exactly the expression `dicos_campaign.prepare_segment` passes through.
+
+    Kept as a one-liner mirror rather than importing the script, because
+    `scripts/dicos_campaign.py` imports torch and yaml at module scope and this
+    contract is about the default, not about the I/O around it.
+    """
+    return bool(campaign.get("restart_scheduler_on_resume", False))
+
+
+def test_a_campaign_that_does_not_mention_the_scheduler_does_not_restart_it():
+    """Every campaign frozen before this was configurable must be unaffected.
+
+    `restart_scheduler_on_resume` used to be hardcoded False in
+    `dicos_campaign.prepare_segment`. Making it plan-driven is only safe if an
+    omitted key still means False, so camp-20260805 and camp-20260810-lr3e4
+    continue to mean exactly what they meant.
+    """
+    assert _restart_flag({}) is False
+    assert _restart_flag({"campaign_id": "camp-20260805"}) is False
+
+
+def test_a_campaign_may_declare_a_scheduler_restart():
+    assert _restart_flag({"restart_scheduler_on_resume": True}) is True
+    assert _restart_flag({"restart_scheduler_on_resume": False}) is False
+
+
+def test_restart_scheduler_is_allowlisted_but_the_learning_rate_is_not():
+    """The schedule's shape is a declared continuation field; its peak is not.
+
+    camp-20260812-lr3e4-anneal changes when the cosine anneals, not how high it
+    starts. That distinction is what keeps the change inside the existing guard
+    instead of requiring the guard to be weakened.
+    """
+    assert "training.restart_scheduler_on_resume" in ALLOWED_CONFIG_DELTA
+    assert "training.learning_rate" not in ALLOWED_CONFIG_DELTA

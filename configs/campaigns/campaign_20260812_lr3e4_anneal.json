@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-training-campaign-plan",
+  "campaign_id": "camp-20260812-lr3e4-anneal",
+  "run_tag_prefix": "dicos-f",
+  "declared_at": "2026-08-12",
+  "scientific_question": "calibrated_lr3e4's learning rate has been sawtoothing between 3e-4 and 1e-6 on a 12-epoch period for the whole project, because CosineAnnealingLR's T_max is restored from the parent checkpoint and has carried an ancestor's 6-epoch horizon (6660 updates at 1110 updates/epoch) into every continuation regardless of the horizon that continuation declared. Does annealing once over the full segment horizon, instead of re-heating to peak every 12 epochs, reach a lower validation loss than the 4.512721 the sawtooth reached at epoch 47?",
+  "declared_by": "project owner, 2026-08-12: research how the learning rate could be improved, implement and test it, and keep training with an adjusted patience.",
+  "boundary": "Optimization evidence on the pilot bank only. Establishes nothing about Geant4 fidelity, three-seed behaviour, or untouched-test performance. The 76,300-event test split stays sealed and is not read by training, diagnostics, or visualization.",
+
+  "declared_change": {
+    "field": "training.restart_scheduler_on_resume",
+    "from": false,
+    "to": true,
+    "status": "DECLARED EXPERIMENT -- results here are not directly comparable to any segment frozen before it",
+    "evidence": [
+      "_runs/calibrated_lr3e4_dicos-e-02/checkpoints/best.pt carries scheduler_state T_max=6660, eta_min=1e-06, base_lrs=[0.0003] while its own config declares training.epochs=55. 6660 updates is 6.000 epochs at the measured 1110 updates/epoch.",
+      "CosineAnnealingLR is periodic in 2*T_max, i.e. 12 epochs. The recorded per-epoch learning_rate column shows peaks at absolute epochs 28, 40, 52 (spacing 12, 12) and troughs at 34, 46 (spacing 12) -- an exact match, not an inference.",
+      "Validation loss tracks that phase, not the horizon: troughs 4.550331 (e34), 4.519305 (e45), 4.512721 (e47); peaks 4.642563 (e40), 4.654804 (e51), 4.633719 (e52). Within-cycle swing is about 0.14 while the real trough-to-trough gain is about 0.04 (e22 4.597152 -> e34 4.550331 -> e47 4.512721).",
+      "checkpoint.py:75 restores scheduler_state unconditionally on every resume, which is the mechanism by which the 6-epoch T_max propagated."
+    ],
+    "mechanism": "restart_scheduler_on_resume=true routes through trainer._restart_cosine_scheduler, which rebuilds CosineAnnealingLR with T_max = updates_per_epoch * (epochs - start_epoch) -- i.e. exactly this segment's horizon -- and resets the peak to training.learning_rate. The learning rate itself (3e-4), batch size, seed, optimizer, loss weights, geometry, splits and closure tolerances are all unchanged, so the schedule shape is the only moving part.",
+    "guard_note": "training.restart_scheduler_on_resume was already inside ALLOWED_CONFIG_DELTA and dicos_campaign.py merely hardcoded False. It is now read from this plan, defaulting to False, so every campaign frozen before this change means exactly what it meant. No guard was weakened to permit this.",
+    "risk": "The restart re-heats to 3e-4 from a checkpoint that was annealed to 2.1e-5, so early epochs of this segment are expected to be worse than 4.512721 before the anneal pays off. That is the same jump the sawtooth already performs every 12 epochs; the difference is that the descent now has 24 epochs instead of 6. A prior restart is recorded as having 'produced nothing' (dicos-p8), but that run was stopped by a constant patience at 6 of 24 epochs, so it never reached the low-LR end of its own anneal and does not test this."
+  },
+
+  "segment_epochs": 24,
+  "improvement_window": 12,
+  "improvement_rule": "after a segment, continue the same family when latest_epoch - best_epoch <= improvement_window, otherwise stop -- there is no next family in this single-family chain",
+  "improvement_window_rationale": "12, not the 6 used by camp-20260805 and camp-20260810-lr3e4. Under the sawtooth the best always landed at a trough and troughs were 12 epochs apart, so a 6-epoch window judged a family by where in the LR cycle its segment happened to end. It ended camp-20260810-lr3e4 on exactly that artifact: dicos-e-02's best was epoch 47 and its last epoch was 54, distance 7 > 6, while epoch 54 sat mid-descent at lr 2.25e-4 with the next trough due around epoch 58. The window must be at least one full learning-rate period or it measures phase, not convergence.",
+  "max_segments": 24,
+  "patience_rule": "early_stopping_patience equals the segment horizon (24). Under a single long anneal the best is expected near the low-LR end, so a patience shorter than the horizon would stop the run before the part that is being tested -- which is exactly what happened to dicos-p8 at 6 of 24.",
+  "scheduler_rule": "restart_scheduler_on_resume is TRUE for this campaign, by declaration above. This is the one field that differs in intent from every prior campaign.",
+  "resume_rule": "resume from the parent BEST checkpoint on both resume slots, hash-verified before a weight is loaded.",
+  "restart_scheduler_on_resume": true,
+  "closure_tolerance_relative": 1e-05,
+  "closure_tolerance_note": "Unchanged. The energy-scaled closure tolerance declared 2026-08-05 is already baked into the parent template this continues from.",
+
+  "chain": [
+    "calibrated_lr3e4"
+  ],
+  "artifacts": {
+    "audit": "prep/train_data_audit_pilot.json",
+    "geometry": "prep/geometry_frozen",
+    "manifest": "prep/data/dataset_manifest.json",
+    "splits": "prep/training_pilot_splits.json"
+  },
+  "families": {
+    "calibrated_lr3e4": {
+      "parent_run_dir": "_runs/calibrated_lr3e4_dicos-e-02",
+      "parent_last_epoch": 47,
+      "parent_validation_loss": 4.512720740207991,
+      "parent_best_sha256": "43fcf86ccd8e967bc4227daa69dc0be76bc261c0aa72963b6a76acaf65d23530",
+      "parent_last_sha256": "82c0f091bbe73765e3720fca65017a872e0e4f224de977f75437c85defabb417",
+      "parent_template": "configs/templates/dicos_p7_20260803/calibrated_lr3e4_dicos-p7.yaml",
+      "parent_frozen": "prep/configs/frozen_calibrated_lr3e4_dicos-e-02.yaml",
+      "note": "parent_last_epoch is dicos-e-02's BEST epoch (47, 4.512721), not its last written epoch (54), per the resume-from-best convention. Absolute epoch target is therefore 47 + 1 + 24 = 72, and the restarted cosine anneals over exactly those 24 epochs.",
+      "diagnostic_lineage": [
+        "dicos-c-01",
+        "dicos-c-02",
+        "dicos-e-02"
+      ],
+      "loss_lineage": [
+        "dicos-p6",
+        "dicos-p7",
+        "dicos-c-02",
+        "dicos-e-02"
+      ]
+    }
+  },
+  "excluded": {
+    "calibrated_lr1e4": "not part of this plan; its dicos-p10 epoch-40 checkpoint is ARTIFACT QUARANTINED and not a valid parent.",
+    "calibrated_lr1e4_halfbatch": "not part of this plan. Left where camp-20260805 left it (dicos-c-03, best epoch 33, 4.619967).",
+    "calibrated_lr3e5": "not part of this plan. Left where camp-20260805 left it (dicos-c-05, best epoch 36, 4.702203)."
+  },
+  "lineage_note": "Scoped to calibrated_lr3e4 only. If the annealing change helps, the same question should be asked of the other three families as a separate declared campaign rather than folded into this one."
+}
