@@ -228,9 +228,32 @@ def prune_superseded_rows(
     # produced zero rows anywhere. Treating that as a supersession pruned
     # dicos-c-02's own genuine epochs 35-42, which were never actually
     # superseded by anything: nothing else ever continued past 34.
+    #
+    # An empty tag can also sit in the *middle* of a chain: dicos-e-02, the
+    # real restart, forked from dicos-c-02 at the same epoch 34 that the
+    # aborted dicos-e-01 did, so fork_points()'s tag-by-tag chain records the
+    # edge as (dicos-e-01, dicos-e-02, 34), not (dicos-c-02, dicos-e-02, 34)
+    # -- dicos-e-01 is next-in-list, not data-bearing. Left alone, that
+    # edge's parent (dicos-e-01) has no rows to prune, and the real
+    # supersession of dicos-c-02 is never expressed at all, leaving a
+    # legitimate future duplicate-epoch collision for the guard in
+    # build_continuation_loss_figures.py to catch instead of resolving it
+    # here. Bridged below: an empty child's outgoing edge is re-parented to
+    # its own last data-bearing ancestor before pruning is evaluated.
     tags_with_data = {row.get("run_tag") for row in rows}
     dropped: list[str] = []
     kept: list[dict] = []
+    bridged_forks: dict[str, list[tuple[str, str, int]]] = {}
+    for family, chain in forks.items():
+        redirect: dict[str, str] = {}
+        bridged: list[tuple[str, str, int]] = []
+        for parent_tag, child_tag, fork_epoch in chain:
+            effective_parent = redirect.get(parent_tag, parent_tag)
+            if child_tag in tags_with_data:
+                bridged.append((effective_parent, child_tag, fork_epoch))
+            else:
+                redirect[child_tag] = effective_parent
+        bridged_forks[family] = bridged
     for row in rows:
         family = row.get("variant")
         tag = row.get("run_tag")
@@ -240,9 +263,7 @@ def prune_superseded_rows(
             kept.append(row)
             continue
         superseded = False
-        for parent_tag, child_tag, fork_epoch in forks.get(family, []):
-            if child_tag not in tags_with_data:
-                continue
+        for parent_tag, child_tag, fork_epoch in bridged_forks.get(family, []):
             if tag == parent_tag and epoch > fork_epoch:
                 dropped.append(
                     f"{family}/{tag} epoch {epoch} dropped from history: off "

@@ -287,6 +287,49 @@ def test_prune_ignores_a_fork_whose_child_wrote_no_real_epoch(tmp_path: Path) ->
     assert epochs == [34, 35, 42]
 
 
+def test_prune_bridges_an_empty_intermediate_tag_to_the_real_restart(tmp_path: Path) -> None:
+    """The other half of the real 2026-08-10 incident: dicos-e-02 (the real
+    restart) forked from dicos-c-02 at the same epoch 34 the aborted
+    dicos-e-01 did, so fork_points()'s tag-by-tag chain records the edge as
+    (dicos-e-01, dicos-e-02, 34) -- dicos-e-01 is next-in-list, not
+    data-bearing, so it has no rows to prune and dicos-c-02's real
+    supersession by dicos-e-02 is never expressed unless the empty hop is
+    bridged.
+    """
+    path = tmp_path / "continuation_history.csv"
+    _write_csv(path, [
+        {"variant": "calibrated_lr3e4", "epoch": "34", "train_loss": "4.6",
+         "validation_loss": "4.550331", "run_tag": "dicos-c-02"},
+        {"variant": "calibrated_lr3e4", "epoch": "35", "train_loss": "4.6",
+         "validation_loss": "4.572274", "run_tag": "dicos-c-02"},
+        {"variant": "calibrated_lr3e4", "epoch": "36", "train_loss": "4.6",
+         "validation_loss": "4.606194", "run_tag": "dicos-c-02"},
+        {"variant": "calibrated_lr3e4", "epoch": "35", "train_loss": "4.6",
+         "validation_loss": "4.565918", "run_tag": "dicos-e-02"},
+        {"variant": "calibrated_lr3e4", "epoch": "36", "train_loss": "4.6",
+         "validation_loss": "4.605922", "run_tag": "dicos-e-02"},
+    ])
+    forks = {
+        "calibrated_lr3e4": [
+            ("dicos-c-02", "dicos-e-01", 34),
+            ("dicos-e-01", "dicos-e-02", 34),
+        ]
+    }
+
+    dropped = prune_superseded_rows(path, forks)
+
+    assert len(dropped) == 2
+    remaining = _read_csv(path)
+    epochs_by_tag = [(r["run_tag"], int(r["epoch"])) for r in remaining]
+    assert ("dicos-c-02", 35) not in epochs_by_tag
+    assert ("dicos-c-02", 36) not in epochs_by_tag
+    assert ("dicos-c-02", 34) in epochs_by_tag       # at-or-before the fork: kept
+    assert ("dicos-e-02", 35) in epochs_by_tag
+    assert ("dicos-e-02", 36) in epochs_by_tag
+    epochs = [e for _tag, e in epochs_by_tag]
+    assert len(epochs) == len(set(epochs))           # no duplicate epoch survives
+
+
 def test_prune_still_drops_when_the_forking_child_has_real_data(tmp_path: Path) -> None:
     """A genuine fork (the child DID write epochs) still prunes correctly --
     the fix above must not blanket-disable pruning, only the zero-data case.

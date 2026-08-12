@@ -9182,3 +9182,95 @@ operator to notice.
     PYTHONPATH=src python -m compileall -q src vertex scripts tests exhibition   exit 0
     PYTHONPATH=src python -m pytest -q                                           334 passed (332 -> 334)
     git status after the full run                                               clean, no stray corruption
+
+### 2026-08-10 — campaign figure/metric watcher started
+
+`scripts/watch_campaign_outputs.py` started against campaign `camp-20260810-lr3e4`, polling every 300s. It keeps figures and metrics current on the workstation for as long as the campaign is training and exits on its own once the campaign reaches a terminal state. It requires the workstation to stay on; nothing about it runs on a pod.
+
+### 2026-08-11 -- fork-bridging fix for the empty-intermediate-tag case, and ASGC unreachable
+
+Extending the 2026-08-10 fork/prune fix. Running a manual refresh with the
+zero-data-child guard in place (see previous entry) surfaced a second,
+related gap in the same incident: `dicos-e-02` (the real restart) forked
+from `dicos-c-02` at the same epoch 34 that the aborted `dicos-e-01` did, so
+`fork_points()`'s tag-by-tag chain records the edge as
+`(dicos-e-01, dicos-e-02, 34)` -- `dicos-e-01` is simply next in the tags
+list, not because it produced anything. With the zero-data guard alone,
+that edge's parent (`dicos-e-01`) has no rows to prune, so `dicos-c-02`'s
+real supersession by `dicos-e-02` was never expressed at all -- reproduced
+directly: `calibrated_lr3e4: duplicate epoch in history [... 35, 35, 36,
+36 ...]`, `build_continuation_loss_figures.py`'s duplicate-epoch guard
+correctly refusing it.
+
+**Fixed by bridging empty intermediate tags.** `prune_superseded_rows()`
+now walks each family's fork chain maintaining a redirect map: when a
+child has no data, its outgoing edge is re-parented to its own last
+data-bearing ancestor instead of being dropped outright. Verified against
+the real recovered data: re-running the refresh correctly dropped
+`dicos-c-02` epochs 35-42 in favor of `dicos-e-02`'s own rows for the same
+epochs, and the duplicate-epoch guard now passes. Two new tests: the exact
+bridging case, and a control case (a real two-tag fork with data on both
+sides) confirming the fix doesn't blanket-disable pruning.
+
+**A fourth, narrower issue found and left open rather than chased further.**
+Re-running the full local rebuild after the bridging fix surfaced a
+*different* consistency failure: `build_metrics_catalog.py`'s check that the
+shared diagnostics slot's latest epoch matches the family standings'
+`latest_observed_epoch` failed, because `build_diagnostic_trend_figure.py`'s
+lineage construction is not fork-aware -- it still includes all of
+`dicos-c-02`'s per-epoch diagnostic *files* (which physically exist for
+epochs 35-42 regardless of CSV pruning) even though the loss-based standings
+now correctly cap `dicos-c-02` at 34. This is the same underlying principle
+(a fork must gate what counts as "current") applied to a different code
+path. Not fixed this pass: reverted the generated intermediate state back to
+the last clean commit (`git checkout HEAD -- exhibition/`) rather than leave
+an inconsistent rebuild sitting in the working tree or hand-patch a third
+consumer of fork data under time pressure. Nothing is lost -- the underlying
+per-epoch diagnostic files for `dicos-e-02` are safely on the pod and
+untouched; this only affects the *aggregated* current-diagnostics view,
+caught loudly by an existing test rather than silently wrong. Follow-up:
+`build_diagnostic_trend_figure.py` (and `build_all_metric_trends.py`, same
+pattern) need the same fork-awareness `prune_superseded_rows()` now has,
+most likely by filtering each tag's included epoch range to
+`[previous_fork_epoch, next_fork_epoch]` rather than concatenating full
+per-tag file lists.
+
+### ASGC unreachable -- ~1 day after launch
+
+Picking this up roughly a day after the L40S launch (per the owner's own
+note). Both pods failed identically with `could not open a kernel channel:
+[WinError 10060]` -- `scale-k8s-master01.twgrid.org` on both the L40S port
+and the 3090 port, tried twice each. `git fetch origin` succeeded
+immediately in between, ruling out a general network outage on this
+workstation: GitHub is reachable, ASGC specifically is not, right now.
+
+Given both pods fail identically rather than one specifically, this reads as
+an ASGC-side network path issue (or a VPN/route needed for that host having
+dropped) rather than either pod having expired on its own -- but that is
+inference, not confirmed; it could also be simultaneous expiry of both, or
+something else on the ASGC side. Not resolvable from here: training itself
+runs as a detached process on the pod, independent of this workstation's
+ability to reach it, so it should be unaffected by this outage whatever its
+cause -- but that too cannot be confirmed until connectivity returns.
+
+Not retried more than twice per pod to avoid noise; this is recorded so the
+next session does not have to re-diagnose it from scratch.
+
+### Verification (local only, no pod access required)
+
+    PYTHONPATH=src python -m compileall -q src vertex scripts tests exhibition   exit 0
+    PYTHONPATH=src python -m pytest -q                                           335 passed
+    git status after the full run                                               clean except this
+                                                                                    session's own edits
+
+### What is still open
+
+1. ASGC unreachable -- retry later; no action possible from here right now.
+2. `build_diagnostic_trend_figure.py`/`build_all_metric_trends.py` need
+   fork-aware lineage construction, same principle as the
+   `prune_superseded_rows()` fix above, applied to a different consumer.
+3. Once ASGC is back: pull this fix to the pod (informational only --
+   nothing on the pod needs it, it is a workstation-side script), restart
+   the watcher pointed at `configs/campaigns/campaign_20260810_lr3e4.json`,
+   and run one refresh pass to catch up on however many epochs landed during
+   the outage.
