@@ -46,6 +46,17 @@ DENY_NAMES = {
 DENY_PARTS = {".git", ".claude", "node_modules", "__pycache__", ".venv",
               ".pytest_cache", ".ruff_cache", ".vinext", ".wrangler", "dist"}
 
+#: `exhibition/data/visualizations/<tag>/epoch_*.json` is the raw 50-condition,
+#: 5-draws-per-condition sample dump behind the structural-invariant QA gate --
+#: ~13.5 MB per epoch, ~1.25 GB total as of 2026-08-12, and it is what a
+#: checkpoint is checked *against*, not evidence about the loss function or
+#: architecture. The figures it produces (exhibition/current/model/*.png,
+#: same_condition_longitudinal_profiles etc.) are derived from it and stay in
+#: the bundle; the raw draws do not. A reviewer who wants them has the full
+#: repository on GitHub (see GIT_PROVENANCE.md). Excluded explicitly, not
+#: silently -- reported in the build summary and in AUDIT_README.md.
+SKIP_PREFIXES = ("exhibition/data/visualizations/",)
+
 #: Untracked files worth including. Each must be justified: a reviewer needs the
 #: host operating rules to understand why the run procedure looks as it does.
 EXTRA_FILES = {
@@ -164,12 +175,16 @@ def tracked_files() -> list[str]:
 
 
 def denied(relative: str) -> str | None:
+    normalized = relative.replace("\\", "/")
     parts = Path(relative).parts
     if Path(relative).name in DENY_NAMES:
         return f"denylisted name {Path(relative).name}"
     for part in parts:
         if part in DENY_PARTS:
             return f"denylisted directory component {part!r}"
+    for prefix in SKIP_PREFIXES:
+        if normalized.startswith(prefix):
+            return f"raw QA data, not analysis material ({prefix})"
     return None
 
 
