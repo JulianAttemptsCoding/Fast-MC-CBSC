@@ -129,10 +129,23 @@ def family_for_run_tags(run_tags: list[str]) -> str:
         from build_continuation_loss_figures import read_history
 
     history, _ = read_history()
-    for family, rows in history.items():
-        if any(str(row.get("run_tag")) in run_tags for row in rows):
-            return family
-    raise ValueError(f"no family found in continuation history for tags {run_tags}")
+    # A run tag is not unique to a family: the dicos-p6 and dicos-p7 waves
+    # trained several families, so `calibrated_lr1e4` and `calibrated_lr3e4`
+    # both hold dicos-p6 rows and "first family containing any tag" returns
+    # whichever happens to iterate first. Score by how much of the lineage each
+    # family actually accounts for, and break a tie on the newest tag, which is
+    # the live segment and belongs to exactly one family.
+    wanted = set(run_tags)
+    scored = [
+        (len({str(row.get("run_tag")) for row in rows} & wanted),
+         str(run_tags[-1]) in {str(row.get("run_tag")) for row in rows},
+         family)
+        for family, rows in history.items()
+    ]
+    overlap, _, family = max(scored, key=lambda item: (item[0], item[1]))
+    if overlap == 0:
+        raise ValueError(f"no family found in continuation history for tags {run_tags}")
+    return family
 
 
 def best_loss_so_far_rows(

@@ -9679,3 +9679,154 @@ than continuing to chase.
    independently-scheduled pull mechanisms; noting it here only so a future
    "why don't these two files agree" investigation does not restart from
    zero.
+
+### 2026-08-12 — campaign figure/metric watcher started
+
+`scripts/watch_campaign_outputs.py` started against campaign `camp-20260812-lr3e4-anneal`, polling every 600s. It keeps figures and metrics current on the workstation for as long as the campaign is training and exits on its own once the campaign reaches a terminal state. It requires the workstation to stay on; nothing about it runs on a pod.
+
+### 2026-08-12 — campaign figure/metric watcher stopped
+
+Exit reason: stop requested.
+
+### 2026-08-12 — campaign figure/metric watcher started
+
+`scripts/watch_campaign_outputs.py` started against campaign `camp-20260812-lr3e4-anneal`, polling every 600s. It keeps figures and metrics current on the workstation for as long as the campaign is training and exits on its own once the campaign reaches a terminal state. It requires the workstation to stay on; nothing about it runs on a pod.
+
+- calibrated_lr3e4/dicos-e-02 epoch 48 dropped from history: off the live lineage, superseded by dicos-f-01 forking from dicos-e-02 at epoch 47
+- calibrated_lr3e4/dicos-e-02 epoch 49 dropped from history: off the live lineage, superseded by dicos-f-01 forking from dicos-e-02 at epoch 47
+- calibrated_lr3e4/dicos-e-02 epoch 50 dropped from history: off the live lineage, superseded by dicos-f-01 forking from dicos-e-02 at epoch 47
+- calibrated_lr3e4/dicos-e-02 epoch 51 dropped from history: off the live lineage, superseded by dicos-f-01 forking from dicos-e-02 at epoch 47
+- calibrated_lr3e4/dicos-e-02 epoch 52 dropped from history: off the live lineage, superseded by dicos-f-01 forking from dicos-e-02 at epoch 47
+- calibrated_lr3e4/dicos-e-02 epoch 53 dropped from history: off the live lineage, superseded by dicos-f-01 forking from dicos-e-02 at epoch 47
+- calibrated_lr3e4/dicos-e-02 epoch 54 dropped from history: off the live lineage, superseded by dicos-f-01 forking from dicos-e-02 at epoch 47
+- calibrated_lr3e4/dicos-f-01 epoch 52 imported, best so far 4.512721 @ e47 (dicos-e-02)
+
+- calibrated_lr3e4/dicos-f-01 epoch 53 imported, best so far 4.512721 @ e47 (dicos-e-02)
+
+- calibrated_lr3e4/dicos-f-01 epoch 54 imported, best so far 4.512721 @ e47 (dicos-e-02)
+
+- calibrated_lr3e4/dicos-f-01 epoch 55 imported, best so far 4.512721 @ e47 (dicos-e-02)
+
+- calibrated_lr3e4/dicos-f-01 epoch 56 imported, best so far 4.512721 @ e47 (dicos-e-02)
+
+- calibrated_lr3e4/dicos-f-01 epoch 57 imported, best so far 4.512721 @ e47 (dicos-e-02)
+
+- calibrated_lr3e4/dicos-f-01 epoch 59 imported, best so far 4.512721 @ e47 (dicos-e-02)
+
+- calibrated_lr3e4/dicos-f-01 epoch 60 imported, best so far 4.512721 @ e47 (dicos-e-02)
+
+- calibrated_lr3e4/dicos-f-01 epoch 61 imported, best so far 4.512721 @ e47 (dicos-e-02)
+
+### 2026-08-13 -- the LR correction's real result, a supervisor defect that
+### wasted a segment, and a handoff pass over the repository
+
+**The corrected anneal worked, and then converged.** `camp-20260812-lr3e4-anneal`
+ran four segments unattended. `calibrated_lr3e4` moved from **4.512721 (e47,
+dicos-e-02)** to **4.483768 (e90, dicos-f-02)**, an improvement of **0.028953**.
+Two further 24-epoch continuations from e90 -- `dicos-f-03` and, accidentally,
+`dicos-f-04` -- both failed to beat it, so the configuration has converged and
+the next gain has to come from somewhere other than the schedule.
+
+Run-to-run nondeterminism was measurable for once, because `dicos-f-04`
+re-ran `dicos-f-03`'s exact epoch range from the same checkpoint (see below).
+Over the two epochs where their learning rates still agree within 2% (91, 92)
+the validation losses differ by **0.000654 mean absolute, 0.001259 max**. The
+0.028953 improvement is 20-40x that. It is real. It is also single-seed;
+three-seed behaviour remains unestablished.
+
+An earlier reading of that same pair gave a much larger 0.013275 mean absolute
+difference and was **withdrawn**: it was confounded by the horizon defect
+below, not a noise floor. Recording the withdrawal because the wrong number is
+the more quotable one.
+
+**A supervisor defect re-ran a whole segment and silently changed its LR
+horizon.** `main()` took the next segment's `parent_last_epoch` from
+`result.best()` -- the lowest-loss row of the segment's own history.csv -- while
+staging `best.pt`. Those two agree only while the segment improves. A segment
+that never beats the best it inherited leaves `best.pt` untouched, so its own
+best row names an epoch no staged artifact corresponds to.
+
+`dicos-f-03` reported best epoch 111 at 4.491971, but every one of its rows was
+above the 4.483768 it inherited, so its `best.pt` was still `dicos-f-02`'s epoch
+90 -- confirmed by hash, `491284c7...` identical across `dicos-f-02/best.pt`,
+`dicos-f-03/best.pt` and the staged `..._dicosf04_best.pt`. `dicos-f-04`
+therefore resumed from epoch 90 and re-ran 91-114.
+
+The cost was not only the 5.8 wasted GPU-hours. `epochs_absolute` was computed
+from 111, giving `training.epochs: 136`, and with `restart_scheduler_on_resume`
+true the cosine was rebuilt over `136 - 90 = 46` epochs instead of the declared
+24. At epoch 114 `dicos-f-04`'s learning rate was **1.35e-4 against
+`dicos-f-03`'s 1.00e-6, a factor of 135**. It is an undeclared variant under
+AGENTS.md 28 and is excluded from the live lineage, retained as evidence.
+
+Fixed by reading the epoch out of the checkpoint actually being staged
+(`checkpoint_epoch(best_path)`). `staged_best_is_inherited()` in
+`src/cbsc_zdc/training/campaign.py` names the condition, and the supervisor now
+journals `segment_kept_inherited_best` when it occurs, so a plateaued segment
+says so in its own evidence instead of being inferred later from an epoch range.
+
+**The loss improved while the physics got worse.** Comparing `dicos-e-02` e54
+with `dicos-f-02` e78: total-response Wasserstein 0.50974 -> 0.70446,
+longitudinal-profile relative L1 0.17992 -> 0.23088, ECAL fraction 0.02624 ->
+0.06300, radial RMS 1.50709 -> 1.99955, hit count 52.359 -> 59.132. Every one
+worse, against a validation loss that fell. This is the sharpest evidence yet
+that the objective is misaligned with fidelity, and it is where the queued
+loss-function work should start.
+
+**Both pods were replaced mid-session.** The RTX 3090 diagnostics pod ended
+between epoch 78 and 79 on 2026-08-12; the L40S kept training to 114. Epochs
+79-114 therefore had loss, LR and structural-invariant evidence but no
+distribution metrics -- including epoch 90, the accepted best. The user supplied
+a new RTX 4090 (primary) and RTX 3090 (diagnostics) on 2026-08-13. The fleet is
+now 4090 + 3090; the L40S is retired.
+
+Every queued checkpoint had survived in `_diag/dicos-f-02/queue` (79-94) and
+`_diag/dicos-f-03/queue` (91-114), so the gap is recoverable rather than
+permanent. A `--watch-root _diag` drain is running on the new 3090 at roughly
+14 min/checkpoint.
+
+**Two mechanisms carry the gap until that replay lands, and both are meant to
+be removed afterwards.** `exhibition/data/diagnostic_gaps.json` declares the
+range, its reason, its consequence and what closes it;
+`build_metrics_catalog.py` still fails on any *undeclared* gap, so declaring
+makes it visible rather than excusing it. `exhibition/data/continuation_status.
+json` marks epochs 79-114 `unmeasured`, which keeps them out of accepted-best
+selection so no published payload can point at an epoch with no diagnostics.
+`unmeasured` is deliberately not `quarantined`; nothing failed.
+
+**Three further defects surfaced while making the record consistent.**
+`family_for_run_tags` returned the first family holding *any* tag, and
+`dicos-p6`/`dicos-p7` trained several families, so the lr3e4 lineage resolved to
+`calibrated_lr1e4`; it now scores by overlap and breaks ties on the newest tag,
+which belongs to exactly one family. `advance_external_metrics` crashed with a
+bare `FileNotFoundError` when the accepted best had no diagnostic record; it now
+reports which epoch is unmeasured and declines to advance.
+`refresh_continuation_outputs.py` gained `--no-diagnostics`, which imports loss
+evidence while the diagnostics pod is down and leaves the 3090-only guard
+intact for pulls that do happen.
+
+**Handoff pass.** `docs/HANDOFF.md` is new and is now the first entry in
+`docs/README.md`: current standings, the learning-rate finding, the
+loss-versus-fidelity disagreement, every defect above, the operations, and the
+traps. The root `README.md` claimed "90 source tests" and "verified epoch-4
+checkpoints"; both were years of work out of date and are corrected.
+
+### Verification
+
+    PYTHONPATH=src python -m compileall -q src vertex scripts tests exhibition   exit 0
+    PYTHONPATH=src python -m pytest -q                                          350 passed
+                                                                                 (347 -> 350: +3
+                                                                                 staged_best_is_inherited)
+    exhibition/build_metrics_catalog.py            124 graphics, PASS,
+                                                    all_manifest_hashes_match true,
+                                                    current_reaches_latest_observed_epoch 78,
+                                                    declared_diagnostic_gap present
+
+### What is still open
+
+1. The diagnostics replay for epochs 79-114. Until epoch 90 is measured, the
+   accepted best is `dicos-f-01` e70 at 4.497629, not the lower 4.483768.
+2. A publication remains owed and is still the owner's call -- the public site
+   serves `dicos-p9` (`calibrated_lr1e4`, 4.635220).
+3. The loss-function work the LR result now motivates. Nothing about it has
+   been started.

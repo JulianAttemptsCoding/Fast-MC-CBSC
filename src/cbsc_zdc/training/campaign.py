@@ -145,6 +145,23 @@ def family_is_still_improving(
     return (latest - best_epoch) <= window
 
 
+def staged_best_is_inherited(staged_epoch: int, result: SegmentResult) -> bool:
+    """True when this segment never beat the best checkpoint it inherited.
+
+    The trainer rewrites `best.pt` only on an improvement, so a segment that
+    plateaued leaves an ancestor's checkpoint in place. Its own lowest-loss row
+    then names an epoch that no staged artifact corresponds to. Continuing from
+    that number rather than the checkpoint's own desynchronises both the epoch
+    accounting and the annealing horizon from the weights being resumed: it
+    re-runs a range already trained, and `absolute_epoch_target` stretches
+    `T_max` over the gap. dicos-f-03 reported best epoch 111 while its `best.pt`
+    was still dicos-f-02's epoch 90, and dicos-f-04 re-ran 91-114 on a 46-epoch
+    anneal instead of the declared 24.
+    """
+    best = result.best()
+    return best is not None and best[0] != staged_epoch
+
+
 def classify(
     result: SegmentResult,
     *,

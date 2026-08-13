@@ -166,6 +166,32 @@ def _family_for_run_tags(run_tags: list[str]) -> str:
     return family_for_run_tags(run_tags)
 
 
+def declared_diagnostic_gap(family: str, diagnostics_latest: int,
+                            observed_latest: int) -> dict | None:
+    """The declaration covering epochs with loss evidence but no diagnostics.
+
+    Training and diagnostics run on separate pods, so a diagnostics pod that
+    ends mid-campaign leaves a permanent hole that no later refresh can fill.
+    The check above still fails on an undeclared hole -- what a declaration
+    buys is that the hole has a written reason, a stated consequence and a
+    condition that closes it, carried into the catalog where a reader meets it.
+    A declaration that does not cover the whole hole does not satisfy it.
+    """
+    path = ROOT / "exhibition" / "data" / "diagnostic_gaps.json"
+    if not path.is_file():
+        return None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != 1:
+        raise ValueError("diagnostic gap declarations must use schema 1")
+    for gap in payload.get("gaps", []):
+        if gap.get("family") != family:
+            continue
+        if (int(gap["first_epoch_without_diagnostics"]) <= diagnostics_latest + 1
+                and int(gap["last_epoch_without_diagnostics"]) >= observed_latest):
+            return gap
+    return None
+
+
 def current_metrics() -> dict:
     loss = read_json(CURRENT / "continuation" / "loss_summary.json")
     choice = read_json(CURRENT / "continuation" / "family_choice.json")
@@ -555,11 +581,16 @@ def build() -> dict:
         metrics["large_validation_diagnostics"]["run_tags"]
     )
     family = metrics["families"][diagnostics_family]
+    declared_gap = None
     if latest_epoch != family["latest_observed_epoch"]:
-        raise ValueError(
-            "current diagnostics do not reach the latest observed epoch "
-            f"for {diagnostics_family}"
+        declared_gap = declared_diagnostic_gap(
+            diagnostics_family, latest_epoch, family["latest_observed_epoch"]
         )
+        if declared_gap is None:
+            raise ValueError(
+                "current diagnostics do not reach the latest observed epoch "
+                f"for {diagnostics_family}"
+            )
     payload = {
         "schema_version": 1,
         "graphics": {
@@ -588,6 +619,7 @@ def build() -> dict:
             "accepted_metric_summaries_agree": True,
             "current_and_archive_galleries_contain_every_graphic": True,
             "current_reaches_latest_observed_epoch": latest_epoch,
+            "declared_diagnostic_gap": declared_gap,
             **layout_qa,
         },
         "comprehensive_gallery": {

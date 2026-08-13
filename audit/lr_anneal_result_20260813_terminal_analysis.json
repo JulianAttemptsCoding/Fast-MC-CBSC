@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-terminal-analysis",
+  "topic": "lr-anneal result, staged-checkpoint epoch defect, diagnostics gap",
+  "date": "2026-08-13",
+  "campaign_id": "camp-20260812-lr3e4-anneal",
+  "result": {
+    "family": "calibrated_lr3e4",
+    "parent_best": {
+      "epoch": 47,
+      "run_tag": "dicos-e-02",
+      "validation_loss": 4.512720740207991
+    },
+    "new_best": {
+      "epoch": 90,
+      "run_tag": "dicos-f-02",
+      "validation_loss": 4.483767619419238
+    },
+    "improvement": 0.028953120788753,
+    "converged": true,
+    "convergence_evidence": "two independent 24-epoch continuations from epoch 90 (dicos-f-03 best 4.491971 at e111, dicos-f-04 best 4.502141 at e100) both failed to improve",
+    "single_seed": true
+  },
+  "segments": [
+    {
+      "run_tag": "dicos-f-01",
+      "epochs": [
+        48,
+        71
+      ],
+      "best_epoch": 70,
+      "best_loss": 4.497629
+    },
+    {
+      "run_tag": "dicos-f-02",
+      "epochs": [
+        71,
+        94
+      ],
+      "best_epoch": 90,
+      "best_loss": 4.483768
+    },
+    {
+      "run_tag": "dicos-f-03",
+      "epochs": [
+        91,
+        114
+      ],
+      "best_epoch": 111,
+      "best_loss": 4.491971
+    },
+    {
+      "run_tag": "dicos-f-04",
+      "epochs": [
+        91,
+        114
+      ],
+      "best_epoch": 100,
+      "best_loss": 4.502141,
+      "status": "undeclared variant, excluded from the live lineage"
+    }
+  ],
+  "nondeterminism": {
+    "method": "dicos-f-03 vs dicos-f-04, same epoch-90 checkpoint, restricted to epochs where the learning rates agree within 2 percent",
+    "epochs_compared": [
+      91,
+      92
+    ],
+    "mean_absolute_difference": 0.000654,
+    "max_absolute_difference": 0.001259,
+    "improvement_over_noise_ratio": "20-40x",
+    "withdrawn_estimate": {
+      "value": 0.013275,
+      "reason": "computed over all 24 shared epochs; confounded by the horizon defect, not a noise floor"
+    }
+  },
+  "staged_checkpoint_defect": {
+    "summary": "parent_last_epoch was taken from the segment's own best history row while best.pt was staged; a segment that never beats its inherited best leaves best.pt untouched, so the two disagree",
+    "shared_checkpoint_sha256": "491284c7423f365230d34b0443f95aa4888ec770bdc673c4c979897bad8acbce",
+    "consequences": [
+      "dicos-f-04 re-ran epochs 91-114 that dicos-f-03 had already trained",
+      "training.epochs became 136 from parent_last_epoch 111, so the restarted cosine annealed over 46 epochs instead of the declared 24",
+      "at epoch 114 dicos-f-04 learning rate 1.3487e-04 vs dicos-f-03 1.0000e-06, a factor of 135"
+    ],
+    "wasted_gpu_hours": 5.8,
+    "fix": "checkpoint_epoch(best_path) is authoritative; staged_best_is_inherited() names the condition; supervisor journals segment_kept_inherited_best"
+  },
+  "loss_versus_fidelity": {
+    "comparison": "dicos-e-02 epoch 54 versus dicos-f-02 epoch 78",
+    "validation_loss_direction": "improved",
+    "distribution_metrics_direction": "all five worse",
+    "metrics": {
+      "total_response_gev_wasserstein": [
+        0.50974,
+        0.70446
+      ],
+      "mean_longitudinal_profile_relative_l1": [
+        0.17992,
+        0.23088
+      ],
+      "ecal_fraction_wasserstein": [
+        0.02624,
+        0.063
+      ],
+      "radial_rms_mm_wasserstein": [
+        1.50709,
+        1.99955
+      ],
+      "hit_count_wasserstein": [
+        52.35871,
+        59.13216
+      ]
+    }
+  },
+  "diagnostics_gap": {
+    "epochs": [
+      79,
+      114
+    ],
+    "cause": "the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training",
+    "recoverable": true,
+    "recovery_evidence": "every queued checkpoint survived in _diag/dicos-f-02/queue (79-94) and _diag/dicos-f-03/queue (91-114)",
+    "carriers_to_remove_after_replay": [
+      "exhibition/data/diagnostic_gaps.json",
+      "unmeasured overrides in exhibition/data/continuation_status.json"
+    ]
+  },
+  "fleet": {
+    "retired": [
+      "L40S",
+      "RTX 3090 (previous pod)"
+    ],
+    "current": {
+      "primary": "RTX 4090",
+      "diagnostics": "RTX 3090"
+    },
+    "date": "2026-08-13"
+  },
+  "other_defects_fixed": [
+    "family_for_run_tags returned the first family holding any tag; dicos-p6/dicos-p7 are shared across families",
+    "advance_external_metrics raised FileNotFoundError when the accepted best had no diagnostic record",
+    "refresh_continuation_outputs.py could not import loss evidence while the diagnostics pod was down"
+  ],
+  "verification": {
+    "compileall": "exit 0",
+    "pytest": "350 passed",
+    "metrics_catalog": {
+      "graphics": 124,
+      "status": "PASS",
+      "current_reaches_latest_observed_epoch": 78
+    }
+  },
+  "open": [
+    "diagnostics replay for epochs 79-114; until epoch 90 is measured the accepted best is dicos-f-01 e70 at 4.497629",
+    "a publication remains owed and is the owner's call",
+    "loss-function work, not started"
+  ]
+}

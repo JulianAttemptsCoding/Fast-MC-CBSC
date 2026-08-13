@@ -8,6 +8,258 @@
       "run_tag": "dicos-p10",
       "status": "quarantined",
       "reason": "required epoch visualization failed the frozen absolute layer-closure tolerance; checkpoint is not accepted for comparison, publication, or reuse pending a corrected diagnostic contract and re-audit"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 79,
+      "run_tag": "dicos-f-02",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 80,
+      "run_tag": "dicos-f-02",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 81,
+      "run_tag": "dicos-f-02",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 82,
+      "run_tag": "dicos-f-02",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 83,
+      "run_tag": "dicos-f-02",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 84,
+      "run_tag": "dicos-f-02",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 85,
+      "run_tag": "dicos-f-02",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 86,
+      "run_tag": "dicos-f-02",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 87,
+      "run_tag": "dicos-f-02",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 88,
+      "run_tag": "dicos-f-02",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 89,
+      "run_tag": "dicos-f-02",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 90,
+      "run_tag": "dicos-f-02",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 91,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 92,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 93,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 94,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 95,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 96,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 97,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 98,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 99,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 100,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 101,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 102,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 103,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 104,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 105,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 106,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 107,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 108,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 109,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 110,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 111,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 112,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 113,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
+    },
+    {
+      "variant": "calibrated_lr3e4",
+      "epoch": 114,
+      "run_tag": "dicos-f-03",
+      "status": "unmeasured",
+      "reason": "validation-loss evidence is complete but the per-epoch distribution diagnostics were never produced: the RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training. Not a failure and not quarantined -- unmeasured. Ineligible to be the accepted or published best until diagnostics are replayed. See exhibition/data/diagnostic_gaps.json"
     }
   ]
 }

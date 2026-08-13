@@ -1,36 +1,14 @@
 {
   "cbsc_test_events_used": 0,
-  "checkpoint_sha256": "96c5207de937fee4ae8ecb42e2bef66a87d46e4c213beddc7ea9d2f866f1473c",
-  "controller": {
-    "action": "started evaluator waiter",
-    "bank_ready": false,
-    "cbsc_test_events_used": 0,
-    "cbsc_training_started": false,
-    "checkpoint_sha256": "96c5207de937fee4ae8ecb42e2bef66a87d46e4c213beddc7ea9d2f866f1473c",
-    "epoch": 33,
-    "evaluate": {
-      "pid": 18199,
-      "state": "running"
-    },
-    "export": {
-      "pid": 18017,
-      "state": "running"
-    },
-    "family": "calibrated_lr1e4_halfbatch",
-    "kind": "cbsc-zdc-external-metric-controller-status",
-    "results_ready": false,
-    "run_tag": "dicos-c-03",
-    "schema_version": 1
-  },
-  "epoch": 33,
-  "family": "calibrated_lr1e4_halfbatch",
+  "checkpoint_sha256": "7c2d869bc6b777e4a173c3da39e7b2a3b7d68704a53554e64f4f670652417e11",
+  "epoch": 70,
+  "family": "calibrated_lr3e4",
   "kind": "cbsc-zdc-current-external-metrics-state",
-  "local_manifest": null,
   "release_pending": true,
-  "run_tag": "dicos-c-03",
+  "run_tag": "dicos-f-01",
   "schema_version": 1,
   "selection_role": "descriptive only; may not select or tune CBSC",
   "source_split": "validation",
-  "status": "running_remote",
-  "validation_loss": 4.619967105273447
+  "status": "pending_offline",
+  "validation_loss": 4.497628535219028
 }

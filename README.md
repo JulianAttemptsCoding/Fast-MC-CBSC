@@ -4,19 +4,27 @@ CLI-first, auditable Fast Monte Carlo research scaffold for 65-layer, 6,790-chan
 
 ## Status
 
+New here, or picking this up after a break? Read
+**[docs/HANDOFF.md](docs/HANDOFF.md)** first — current standings, the defects
+found so far, the operations you will need, and the traps that have already
+cost time.
+
 - active target: raw deposited readout energy;
 - condition: neutron four-momentum only;
 - training support comparison: 0–300 GeV versus 50–250 GeV;
 - primary result domain: 50–250 GeV;
-- software QA: 90 source tests pass in the current environment;
+- software QA: 350 source tests pass in the current environment;
 - production preparation: 764,940 real Geant4 events converted into 187
   content-addressed shards;
-- current optimization evidence: four calibrated joint-training families have
-  verified epoch-4 checkpoints on production-derived train/validation data;
+- current optimization evidence: four calibrated joint-training families train
+  on production-derived train/validation data; the leading family
+  (`calibrated_lr3e4`) reaches validation loss 4.483768 at epoch 90;
 - visual QA: fixed-condition Geant4-versus-Fast-MC comparisons are available
   locally and on the public site;
 - physics status: **optimization and structural execution are established;
-  Geant4 fidelity is not yet established**.
+  Geant4 fidelity is not yet established**. A classifier separates Fast-MC from
+  Geant4 at AUROC 0.77–0.92 at every epoch measured, and the improving loss has
+  not moved it.
 
 ## Start
 

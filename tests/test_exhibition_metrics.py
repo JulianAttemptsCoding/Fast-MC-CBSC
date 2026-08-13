@@ -118,10 +118,22 @@ def test_current_gallery_is_complete_and_reaches_latest_evidence() -> None:
     # same invariant, whatever the current epoch actually is.
     latest = payload["qa"]["current_reaches_latest_observed_epoch"]
     assert isinstance(latest, int) and latest > 0
-    assert any(
-        row.get("latest_observed_epoch") == latest
-        for row in payload["metrics"]["families"].values()
-    )
+    gap = payload["qa"].get("declared_diagnostic_gap")
+    if gap is None:
+        assert any(
+            row.get("latest_observed_epoch") == latest
+            for row in payload["metrics"]["families"].values()
+        )
+    else:
+        # Training and diagnostics run on separate pods, so a diagnostics pod
+        # that ends mid-campaign leaves epochs no later refresh can fill. The
+        # gap is permitted only while it is declared, and the declaration has
+        # to cover the whole distance to its family's latest observed epoch --
+        # an undeclared or partial one still fails, here and in `build()`.
+        family = payload["metrics"]["families"][gap["family"]]
+        assert gap["first_epoch_without_diagnostics"] <= latest + 1
+        assert gap["last_epoch_without_diagnostics"] >= family["latest_observed_epoch"]
+        assert gap["reason"] and gap["closes_when"]
     assert payload["qa"]["all_graphics_under_current_or_archive"] is True
     current_paths = {
         row["path"]

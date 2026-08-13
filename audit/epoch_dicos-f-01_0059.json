@@ -1,0 +1,115 @@
+{
+  "artifacts": [
+    {
+      "bytes": 12515,
+      "path": "exhibition/current/continuation/loss_summary.json",
+      "sha256": "6079408dbb5458da752d3597d7e3db5c26e3c06fce8bef0e74796e79c1ccf65d"
+    },
+    {
+      "bytes": 2141,
+      "path": "exhibition/current/continuation/family_choice.json",
+      "sha256": "f5c148754ed5bcb39acbadeadaf7bac5fb15c28305a203d6570ed2316fb7586c"
+    },
+    {
+      "bytes": 41369,
+      "path": "exhibition/current/diagnostics/diagnostic_summary.json",
+      "sha256": "158525e023468395895c187123a2cac003bcd6bb9f7fac035d69ccad2b55f3f1"
+    },
+    {
+      "bytes": 9036,
+      "path": "exhibition/manifest.json",
+      "sha256": "27b2bf019e8dd88fa4f8c91eaf68d8e871c6e25e88900abeedb4211b44f40d0f"
+    },
+    {
+      "bytes": 51039,
+      "path": "exhibition/metrics_catalog.json",
+      "sha256": "583aad22e86af9b307a49f519c076710b1880c0510d24b90982ec16562983acd"
+    },
+    {
+      "bytes": 21221,
+      "path": "exhibition/current/index.html",
+      "sha256": "450f83d350d3b35f7f6dab1dd23ac6bfb57a4bca235113a9210cdda12a9e1880"
+    }
+  ],
+  "best_after_refresh": {
+    "best_accepted_epoch": 47,
+    "best_accepted_run_tag": "dicos-e-02",
+    "best_accepted_validation_loss": 4.512720740207991,
+    "latest_accepted_epoch": 59,
+    "latest_accepted_validation_loss": 4.549404907366193,
+    "latest_observed_epoch": 59,
+    "latest_observed_status": "accepted",
+    "latest_observed_validation_loss": 4.549404907366193,
+    "quarantined_epochs": [],
+    "slope_final_3_accepted_epochs": -0.030283533811219614
+  },
+  "best_before_refresh": {
+    "best_accepted_epoch": 47,
+    "best_accepted_run_tag": "dicos-e-02",
+    "best_accepted_validation_loss": 4.512720740207991,
+    "latest_accepted_epoch": 58,
+    "latest_accepted_validation_loss": 4.585021249371776,
+    "latest_observed_epoch": 58,
+    "latest_observed_status": "accepted",
+    "latest_observed_validation_loss": 4.585021249371776,
+    "quarantined_epochs": [],
+    "slope_final_3_accepted_epochs": 0.013334670492706228
+  },
+  "best_changed": false,
+  "epoch": 59,
+  "epoch_status": "accepted",
+  "event_generation_started_by_refresh": false,
+  "external_metrics": {
+    "cbsc_test_events_used": 0,
+    "checkpoint_sha256": "96c5207de937fee4ae8ecb42e2bef66a87d46e4c213beddc7ea9d2f866f1473c",
+    "controller": {
+      "action": "started evaluator waiter",
+      "bank_ready": false,
+      "cbsc_test_events_used": 0,
+      "cbsc_training_started": false,
+      "checkpoint_sha256": "96c5207de937fee4ae8ecb42e2bef66a87d46e4c213beddc7ea9d2f866f1473c",
+      "epoch": 33,
+      "evaluate": {
+        "pid": 18199,
+        "state": "running"
+      },
+      "export": {
+        "pid": 18017,
+        "state": "running"
+      },
+      "family": "calibrated_lr1e4_halfbatch",
+      "kind": "cbsc-zdc-external-metric-controller-status",
+      "results_ready": false,
+      "run_tag": "dicos-c-03",
+      "schema_version": 1
+    },
+    "epoch": 33,
+    "family": "calibrated_lr1e4_halfbatch",
+    "kind": "cbsc-zdc-current-external-metrics-state",
+    "local_manifest": null,
+    "release_pending": true,
+    "run_tag": "dicos-c-03",
+    "schema_version": 1,
+    "selection_role": "descriptive only; may not select or tune CBSC",
+    "source_split": "validation",
+    "status": "running_remote",
+    "validation_loss": 4.619967105273447
+  },
+  "family": "calibrated_lr3e4",
+  "kind": "cbsc-zdc-epoch-evidence-refresh",
+  "lineage": [
+    "dicos-c-01",
+    "dicos-c-02",
+    "dicos-e-02:47",
+    "dicos-f-01"
+  ],
+  "mode": "remote-refresh",
+  "public_release_pending_external_metrics": true,
+  "public_release_prepared_and_qa_passed": false,
+  "public_release_required": false,
+  "run_tag": "dicos-f-01",
+  "schema_version": 1,
+  "scientific_status": "optimization and descriptive validation evidence only; Geant4 fidelity is not established",
+  "test_events_used": 0,
+  "training_started": false
+}

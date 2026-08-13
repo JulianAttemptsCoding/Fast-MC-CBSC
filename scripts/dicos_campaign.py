@@ -53,6 +53,7 @@ from cbsc_zdc.training.campaign import (  # noqa: E402
     SegmentResult,
     absolute_epoch_target,
     classify,
+    staged_best_is_inherited,
     verify_config_delta,
 )
 
@@ -550,11 +551,25 @@ def main(argv=None) -> int:
 
         run_dir = f"_runs/{family}_{run_tag}"
         if outcome == "continue_same_family":
-            best_epoch, _ = result.best()
+            # The epoch must come from the checkpoint that will actually be
+            # staged, not from this segment's own best row. A segment that
+            # never beats the best it inherited leaves `best.pt` untouched, so
+            # the two disagree exactly when the segment did not improve.
+            # dicos-f-03's best row was epoch 111 while its best.pt was still
+            # dicos-f-02's epoch 90; dicos-f-04 therefore re-ran 91-114 and,
+            # because `epochs_absolute` was computed from 111, annealed over a
+            # 46-epoch horizon instead of the declared 24.
+            best_path = workdir / run_dir / "checkpoints" / "best.pt"
+            staged_epoch = checkpoint_epoch(best_path)
+            if staged_best_is_inherited(staged_epoch, result):
+                journal.event("segment_kept_inherited_best", run_tag=run_tag,
+                              staged_epoch=staged_epoch,
+                              segment_best_epoch=result.best()[0],
+                              segment_best_loss=result.best()[1])
             parent = {
                 "family": family, "run_dir": run_dir,
-                "last_epoch": best_epoch,
-                "best_sha256": sha256_file(workdir / run_dir / "checkpoints" / "best.pt"),
+                "last_epoch": staged_epoch,
+                "best_sha256": sha256_file(best_path),
                 "last_sha256": sha256_file(workdir / run_dir / "checkpoints" / "last.pt"),
                 "reason": reason,
             }

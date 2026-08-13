@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "purpose": "Epoch ranges that have validation-loss evidence but no per-epoch diagnostics, each with the reason the producer was absent. build_metrics_catalog.py still fails on any gap that is not declared here; a declaration makes the gap visible, it does not excuse it.",
+  "gaps": [
+    {
+      "family": "calibrated_lr3e4",
+      "first_epoch_without_diagnostics": 79,
+      "last_epoch_without_diagnostics": 114,
+      "run_tags": ["dicos-f-02", "dicos-f-03"],
+      "declared_on": "2026-08-13",
+      "reason": "The RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 and was not replaced before the campaign finished. The L40S kept training, so epochs 79-114 have validation loss, learning rate and structural-invariant evidence but no distribution metrics.",
+      "consequence": "The accepted best checkpoint for this family, dicos-f-02 epoch 90, has NO measured distribution metrics. Its physics quality is unmeasured, not merely unreported.",
+      "closes_when": "A diagnostics pod replays epochs 79-114 from the retained checkpoints, or at minimum epoch 90, and the metrics are imported through scripts/refresh_continuation_outputs.py."
+    }
+  ]
+}

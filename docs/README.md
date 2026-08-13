@@ -2,10 +2,12 @@
 
 ## Start here
 
-1. `../AGENTS.md` — operating contract.
-2. `IMPLEMENTATION_GUIDE.md` — complete scientific and implementation guide.
-3. `QA_POLICY.md` — QA is evidence, not progression permission.
-4. `AGENT_PROMPT_CONTINUE_ANY_BACKEND_20260728.md` — self-contained new-chat
+1. `HANDOFF.md` — current standings, known defects, the operations you need,
+   and the traps that have already cost time. Read this first.
+2. `../AGENTS.md` — operating contract.
+3. `IMPLEMENTATION_GUIDE.md` — complete scientific and implementation guide.
+4. `QA_POLICY.md` — QA is evidence, not progression permission.
+5. `AGENT_PROMPT_CONTINUE_ANY_BACKEND_20260728.md` — self-contained new-chat
    and new-CLI handoff.
 
 ## Contracts
@@ -18,6 +20,13 @@
 
 ## Execution
 
+- `DICOS_BACKEND.md` — the ASGC pod backend and its filesystem contract.
+- `TWO_GPU_PIPELINE.md` — training pod and diagnostics pod, and how they meet.
+- `GPU_BENCHMARKS.md` — the single source of truth for throughput and cost;
+  supersedes every figure in `../logs.md`.
+- `FOCUSED_OPERATING_RULES.md` — the short form of the operating rules.
+- `WORKSPACE_LAYOUT.md` — what lives where.
+- `AUDIT_BUNDLE_README.md` — what the external audit bundle contains.
 - `HARDWARE_PORTABILITY_QA.md` — backend-neutral accelerator QA.
 - `VERTEX_AI_RUNBOOK.md` — Google Vertex transport and execution.
 - `VERTEX_QA_CHECKLIST.md` — per-job and per-epoch Vertex checks.

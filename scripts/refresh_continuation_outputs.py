@@ -419,6 +419,15 @@ def advance_external_metrics(
     if not run_tag:
         raise RuntimeError("new accepted best has no run tag for external metrics")
     metric_path = DIAG_LOCAL / run_tag / f"metrics_epoch_{epoch:04d}.json"
+    if not metric_path.is_file():
+        # The external evaluators key off the accepted checkpoint's diagnostic
+        # record, which a training pod that outlived its diagnostics pod never
+        # produced. Refusing to advance is correct; crashing on the missing
+        # file hides which epoch is unmeasured behind a FileNotFoundError.
+        print(f"external metrics NOT advanced: {family} best is {run_tag} "
+              f"e{epoch} but no diagnostics exist for that epoch; see "
+              f"exhibition/data/diagnostic_gaps.json")
+        return prior_state
     metric = validate_metric(metric_path, epoch)
     identity = {
         "family": family,
@@ -600,6 +609,12 @@ def main(argv=None) -> int:
         help="rebuild and verify from local immutable evidence without DiCOS I/O",
     )
     parser.add_argument(
+        "--no-diagnostics", action="store_true",
+        help="import loss evidence from the training pod while the diagnostics "
+             "pod is unavailable; leaves the 3090-only guard intact for any "
+             "pull that does happen, and records the resulting epoch gap",
+    )
+    parser.add_argument(
         "--public-repo",
         type=Path,
         default=ROOT.parent / "Fast-MC-Visual-Tests",
@@ -634,8 +649,12 @@ def main(argv=None) -> int:
 
     previous_best = _read_best(args.family)
     if not args.offline:
-        pulled = pull_diagnostics(args.diag_config, args.run_tag)
-        print(f"diagnostics pulled: {pulled or 'none new'}")
+        if args.no_diagnostics:
+            print("diagnostics pull SKIPPED: producer pod unavailable; "
+                  "loss evidence only, epoch gap recorded")
+        else:
+            pulled = pull_diagnostics(args.diag_config, args.run_tag)
+            print(f"diagnostics pulled: {pulled or 'none new'}")
 
         history = ROOT / ".refresh_history.csv"
         try:

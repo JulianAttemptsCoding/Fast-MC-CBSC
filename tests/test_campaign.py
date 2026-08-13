@@ -18,6 +18,7 @@ from cbsc_zdc.training.campaign import (
     classify,
     config_delta,
     family_is_still_improving,
+    staged_best_is_inherited,
     verify_config_delta,
 )
 
@@ -315,3 +316,29 @@ def test_restart_scheduler_is_allowlisted_but_the_learning_rate_is_not():
     """
     assert "training.restart_scheduler_on_resume" in ALLOWED_CONFIG_DELTA
     assert "training.learning_rate" not in ALLOWED_CONFIG_DELTA
+
+
+# --------------------------------------------------------------------------
+# a plateaued segment leaves an inherited best.pt in place
+# --------------------------------------------------------------------------
+
+
+def test_a_segment_that_improved_owns_the_checkpoint_it_staged():
+    """Its best row and its best.pt describe the same epoch, so nothing moved."""
+    result = SegmentResult(exit_code=0, epochs=_rows([(91, 4.60), (92, 4.40)]))
+    assert staged_best_is_inherited(92, result) is False
+
+
+def test_a_segment_that_never_improved_staged_an_ancestors_checkpoint():
+    """The real dicos-f-03 case.
+
+    Its lowest row was epoch 111, but every row was above the 4.483768 it
+    inherited at epoch 90, so the trainer never rewrote best.pt. Continuing
+    from 111 is what made dicos-f-04 re-run 91-114.
+    """
+    result = SegmentResult(exit_code=0, epochs=_rows([(91, 4.63), (111, 4.4920)]))
+    assert staged_best_is_inherited(90, result) is True
+
+
+def test_a_segment_with_no_rows_cannot_disagree_with_its_checkpoint():
+    assert staged_best_is_inherited(90, SegmentResult(exit_code=0, epochs=[])) is False
