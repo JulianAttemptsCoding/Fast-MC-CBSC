@@ -74,6 +74,22 @@ V3_ONLY_PREFIXES = (
 
 EXPANDED_PREFIXES = ("support.input.", "share.input.")
 
+# Registered buffers holding the frozen detector geometry. They are not learned
+# parameters, but they are in the state dict and must be classified rather than
+# silently skipped. They are copied exactly, and a shape mismatch means the two
+# checkpoints describe different detectors -- which is fatal, not reshapeable.
+GEOMETRY_BUFFERS = (
+    "node_features",
+    "layer_index",
+    "valid_mask",
+    "edge_index",
+    "edge_features",
+    "max_counts",
+    "cell_positions_mm",
+    "generator_vertex_mm",
+    "response_envelope_caps_gev",
+)
+
 AXIS_FEATURE_COLUMNS = 4
 
 
@@ -82,6 +98,8 @@ class MigrationError(ValueError):
 
 
 def classify(key: str) -> str:
+    if key in GEOMETRY_BUFFERS:
+        return "geometry_buffer"
     if key.startswith(EXPANDED_PREFIXES) and key.endswith("weight") and ".0." in key:
         return "expanded"
     if key.startswith(EXACT_COPY_PREFIXES):
@@ -133,6 +151,16 @@ def migrate_state_dict(
             initialized.append(key)
             continue
         destination = target[key]
+        if kind == "geometry_buffer":
+            if destination.shape != tensor.shape:
+                raise MigrationError(
+                    f"{key}: geometry buffer shape differs {tuple(tensor.shape)} -> "
+                    f"{tuple(destination.shape)}; the checkpoints describe different detectors"
+                )
+            # Keep the target's own value: it was built from the frozen geometry
+            # this run will actually use, and it is asserted identical in shape.
+            copied.append({"key": key, "shape": list(tensor.shape), "kind": "geometry_buffer"})
+            continue
         if kind == "exact_copy":
             if destination.shape != tensor.shape:
                 # A shape change under an exact-copy rule means the module
