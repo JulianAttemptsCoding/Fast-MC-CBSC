@@ -49,14 +49,37 @@ def architecture_version(config: dict[str, Any]) -> str:
     return str(config.get("model", {}).get("architecture_version", ARCHITECTURE_V2_2))
 
 
-def expected_loss_weights(version: str) -> set[str]:
+def expected_loss_weights(version: str, model: dict[str, Any] | None = None) -> set[str]:
+    """Loss-weight keys required by this architecture and feature selection.
+
+    Under v3 the added keys are required only when the head that produces them
+    is actually selected.  A screening row that leaves a feature at ``v2`` keeps
+    exactly the v2.2 schema, so its weights cannot silently carry a term that is
+    never computed -- and the full v3 set is only demanded once every head is on.
+    """
     try:
-        return ARCHITECTURE_LOSS_WEIGHTS[version]
+        base = ARCHITECTURE_LOSS_WEIGHTS[version]
     except KeyError:
         raise ValueError(
             f"model.architecture_version must be one of "
             f"{sorted(ARCHITECTURE_LOSS_WEIGHTS)}, got {version!r}"
         ) from None
+    if version != ARCHITECTURE_V3 or model is None:
+        return base
+    required = set(EXPECTED_LOSS_WEIGHTS)
+    if str(model.get("first_layer_mode", "v2")) == "hierarchical":
+        required |= {"ecal_start", "hcal_first"}
+    if str(model.get("activity_head_mode", "v2")) != "v2":
+        required |= {"active_last", "active_gap"}
+    return required
+
+
+ALLOWED_FEATURE_MODES = {
+    "response_mode": {"v2", "spline"},
+    "first_layer_mode": {"v2", "hierarchical"},
+    "count_mode": {"v2", "autoregressive"},
+    "activity_head_mode": {"v2", "span_gaps", "autoregressive"},
+}
 
 
 def _validate_v3_model(model: dict[str, Any]) -> None:
@@ -72,6 +95,17 @@ def _validate_v3_model(model: dict[str, Any]) -> None:
         raise ValueError(
             f"model.activity_mode must be one of {sorted(ALLOWED_ACTIVITY_MODES)}, got {mode!r}"
         )
+    for field, allowed in ALLOWED_FEATURE_MODES.items():
+        value = str(model.get(field, "v2"))
+        if value not in allowed:
+            raise ValueError(f"model.{field} must be one of {sorted(allowed)}, got {value!r}")
+    if str(model.get("response_mode", "v2")) == "spline":
+        caps = model.get("response_envelope_caps_gev")
+        if not caps:
+            raise ValueError(
+                "model.response_mode: spline requires model.response_envelope_caps_gev "
+                "from the train-only envelope"
+            )
 
 
 def validate_config(config: dict[str, Any]) -> None:
@@ -79,9 +113,17 @@ def validate_config(config: dict[str, Any]) -> None:
     if missing:
         raise ValueError(f"configuration missing top-level sections: {sorted(missing)}")
     version = architecture_version(config)
-    required_losses = expected_loss_weights(version)
+    required_losses = expected_loss_weights(version, config.get("model"))
     if version == ARCHITECTURE_V3:
         _validate_v3_model(config["model"])
+    else:
+        stray = [f for f in ALLOWED_FEATURE_MODES
+                 if str(config["model"].get(f, "v2")) != "v2"]
+        if stray:
+            raise ValueError(
+                f"v3 feature modes {sorted(stray)} require "
+                f"model.architecture_version: {ARCHITECTURE_V3}"
+            )
     target_mode = config["data"].get("target_mode")
     if target_mode not in {"raw_deposit", "thresholded_readout"}:
         raise ValueError("data.target_mode must be raw_deposit or thresholded_readout")

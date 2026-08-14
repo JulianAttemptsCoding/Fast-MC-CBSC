@@ -46,8 +46,22 @@ def base() -> dict:
 
 
 def v3_base() -> dict:
+    """A bare v3 declaration: every feature still at its v2.2 default."""
     config = base()
     config["model"]["architecture_version"] = ARCHITECTURE_V3
+    return config
+
+
+def v3_all_features() -> dict:
+    """Every v3 head selected, which is the only case needing the full schema."""
+    config = v3_base()
+    config["model"].update(
+        response_mode="spline",
+        response_envelope_caps_gev=[float(10 + i) for i in range(12)],
+        first_layer_mode="hierarchical",
+        activity_head_mode="span_gaps",
+        count_mode="autoregressive",
+    )
     config["loss_weights"] = {name: 1.0 for name in V3_LOSS_WEIGHTS}
     return config
 
@@ -77,13 +91,55 @@ def test_old_loss_key_set_is_unchanged() -> None:
     validate_config(base())
 
 
-def test_v3_loss_key_set_is_version_selected() -> None:
+def test_v3_loss_key_set_is_feature_selected() -> None:
     assert expected_loss_weights(ARCHITECTURE_V3) == V3_LOSS_WEIGHTS
     # v3 adds heads that v2.2 does not have, and keeps every v2.2 component.
     assert EXPECTED_LOSS_WEIGHTS < V3_LOSS_WEIGHTS
     for added in ("ecal_start", "hcal_first", "active_last", "active_gap"):
         assert added in V3_LOSS_WEIGHTS
-    validate_config(v3_base())
+
+    # A bare v3 declaration requires exactly the v2.2 schema: the added keys
+    # belong to heads it has not selected, and requiring them would force a
+    # screening row to weight a term that is never computed.
+    bare = v3_base()
+    assert expected_loss_weights(ARCHITECTURE_V3, bare["model"]) == EXPECTED_LOSS_WEIGHTS
+    validate_config(bare)
+
+    # Selecting every head requires the full schema.
+    full = v3_all_features()
+    assert expected_loss_weights(ARCHITECTURE_V3, full["model"]) == V3_LOSS_WEIGHTS
+    validate_config(full)
+
+
+def test_each_feature_requires_only_its_own_keys() -> None:
+    first = v3_base()
+    first["model"]["first_layer_mode"] = "hierarchical"
+    first["loss_weights"].update(ecal_start=0.5, hcal_first=0.5)
+    validate_config(first)
+
+    activity = v3_base()
+    activity["model"]["activity_head_mode"] = "span_gaps"
+    activity["loss_weights"].update(active_last=0.5, active_gap=0.5)
+    validate_config(activity)
+
+    # the count head swap adds no key at all
+    counts = v3_base()
+    counts["model"]["count_mode"] = "autoregressive"
+    validate_config(counts)
+
+
+def test_the_response_spline_requires_a_measured_envelope() -> None:
+    config = v3_base()
+    config["model"]["response_mode"] = "spline"
+    with pytest.raises(ValueError, match="response_envelope_caps_gev"):
+        validate_config(config)
+
+
+def test_a_v2_config_may_not_carry_a_v3_feature_mode() -> None:
+    config = base()
+    config["model"]["response_mode"] = "spline"
+    with pytest.raises(ValueError, match="require"):
+        validate_config(config)
 
 
 def test_a_v2_config_carrying_v3_only_loss_keys_is_rejected() -> None:
@@ -93,9 +149,18 @@ def test_a_v2_config_carrying_v3_only_loss_keys_is_rejected() -> None:
         validate_config(config)
 
 
-def test_a_v3_config_missing_a_v3_loss_key_is_rejected() -> None:
-    config = v3_base()
+def test_a_v3_config_missing_a_required_loss_key_is_rejected() -> None:
+    config = v3_all_features()
     del config["loss_weights"]["ecal_start"]
+    with pytest.raises(ValueError, match="loss_weights"):
+        validate_config(config)
+
+
+def test_a_v3_config_carrying_a_key_its_features_do_not_produce_is_rejected() -> None:
+    # A bare v3 row weighting ecal_start would be weighting a term that is never
+    # computed, which is how a dead weight silently enters a frozen config.
+    config = v3_base()
+    config["loss_weights"]["ecal_start"] = 0.5
     with pytest.raises(ValueError, match="loss_weights"):
         validate_config(config)
 
