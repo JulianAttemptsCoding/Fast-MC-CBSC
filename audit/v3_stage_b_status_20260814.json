@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-stage-b-status",
+  "recorded_at": "2026-08-14",
+  "purpose": "fixed-validation evaluation of the existing accepted-best checkpoint, which is the sole outstanding B0 gate item",
+  "target": {
+    "family": "calibrated_lr3e4",
+    "run_tag": "dicos-f-02",
+    "epoch": 90,
+    "validation_loss": 4.483767619419238,
+    "checkpoint_sha256": "643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035"
+  },
+  "state": "IN FLIGHT",
+  "stage": "validation-bank export",
+  "device": "RTX 3090 diagnostics pod",
+  "pid": 2509,
+  "cbsc_training_started": false,
+  "cbsc_test_events_used": 0,
+  "source_split": "validation",
+  "controller": "scripts/dicos_external_metrics_controller.py",
+  "next_command": "PYTHONPATH=src python scripts/dicos_external_metrics_controller.py --family calibrated_lr3e4 --run-tag dicos-f-02 --epoch 90 --validation-loss 4.483767619419238 --checkpoint-sha256 643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035 start",
+  "note": "The controller advances at most one detached stage per call: bank export, then evaluator execution, then immutable pull. Re-issue start until results_ready is true, then pull.",
+  "on_completion": "Re-run the section 3 B0 gate. If external metrics were the only blocker, promote dicos-f-02 epoch 90 to B0 without retraining.",
+  "not_done_in_this_session": [
+    "the full section 9 metric battery (topology, correlation, diversity, memorization, bootstrap) against existing checkpoints; the modules are implemented and unit-tested but are not yet wired to an evaluation CLI that reads the production validation bank"
+  ],
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}
