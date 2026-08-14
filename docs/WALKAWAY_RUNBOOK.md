@@ -11,7 +11,7 @@ Two independent jobs, one per GPU. Neither needs you.
 
 | Job | Pod | What it is | Expected duration |
 |---|---|---|---|
-| `v3s1` | RTX 4090 (training) | **S1-axis**: the first v3 screening row, 24 epochs on the pilot bank | ~5–6 h |
+| `v3s1` | RTX 4090 (training) | **S1-axis**: the first v3 screening row, 24 epochs on the pilot bank | **~11.5 h** |
 | `campdiag` | RTX 3090 (diagnostics) | Draining `_diag/dicos-f-03/queue`, 24 checkpoints, closing the declared 91–114 gap | ~3 h |
 
 Both write only under the permitted project directory. Neither touches the test
@@ -29,12 +29,23 @@ died. If that script is unavailable, the manual equivalents are in §6.
 
 ## 3. What "good" looks like
 
-**S1-axis.** Validation loss starts near B0's **4.483768**, because the migration
-is a verified behavioural no-op — condition, support logits and share velocity
-all matched B0 at exactly `0.000e+00`, and both axis weight blocks are exactly
-zero. So epoch 1 should land close to 4.4838, not somewhere unrelated. A wildly
-different starting loss means something is wrong with the initialization, not
-that axis features are dramatically good or bad.
+**S1-axis.** Epoch 0 came in at **4.665888**, which is the right shape: the run
+starts from B0's weights (4.483768) through a migration verified as a
+behavioural no-op, then trains one epoch at the fresh cosine's peak learning
+rate of 2.99e-4, which moves a converged model away from its optimum before the
+anneal brings it back. For comparison `dicos-f-01`'s equivalent re-heat epoch
+was 4.6115.
+
+This number is the initialization check. The first launch of S1 read **5.204838**
+because `initialize_from` was unset and it trained from random weights; that run
+was discarded. If a future row starts anywhere near 5.2, suspect the
+initialization pointer before believing anything about the feature.
+
+**Measured cost: 1735.8 s/epoch**, so 24 epochs is about 11.6 h. That is roughly
+double the v2.2 rate of 779.6 s/epoch — the axis features add four columns
+across 6,790 nodes on a 107,920-edge graph. The earlier 5.2 h/row figure
+extrapolated the v2.2 rate and is withdrawn; the eleven pilot rows are closer to
+**115 GPU-hours** than 57.
 
 The question S1 answers: *do incident-axis node coordinates lower the validation
 loss?* Anything better than 4.483768 at the end is a candidate improvement;
