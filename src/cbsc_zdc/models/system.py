@@ -32,6 +32,10 @@ class CBSCOutput:
 class CBSCZDC(nn.Module):
     def __init__(self,geometry:dict[str,torch.Tensor],config:dict):
         super().__init__(); m=config['model']; d=config['data']
+        # Absence of the key means v2.2. Nothing below the v3 branches changes
+        # for a configuration that does not declare it.
+        self.architecture_version=str(m.get('architecture_version','cbsc-zdc-v2.2'))
+        self.is_v3=self.architecture_version=='cbsc-zdc-v3'
         self.threshold_gev=float(d.get('threshold_gev',0.0)); self.target_mode=d['target_mode']
         for name in ['node_features','layer_index','valid_mask','edge_index','edge_features']:
             self.register_buffer(name,geometry[name].clone())
@@ -46,6 +50,64 @@ class CBSCZDC(nn.Module):
         self.support=SupportScoreField(**field_args); self.share=ShareFlowField(**field_args)
         self.register_buffer('max_counts',torch.tensor(max_counts,dtype=torch.long))
         self.response_cap_ratio=float(d.get('response_cap_ratio',2.0)); self.response_cap_absolute_gev=float(d.get('response_cap_absolute_gev',500.0))
+        self.support_temperature=float(m.get('support_temperature',1.0))
+        self.activity_mode=str(m.get('activity_mode','span_gaps'))
+        if self.is_v3:
+            # v3 heads live alongside the v2.2 ones rather than replacing them in
+            # place, so a migrated checkpoint can carry both and the v2.2 modules
+            # keep their exact parameter names.
+            from .activity import AutoregressiveActivityHead,SpanGapActivityHead
+            from .counts_ar import AutoregressiveCountHead
+            from .first_layer import HierarchicalFirstLayerHead
+            from .response_v3 import BoundedResponseHead
+            self.response_v3=BoundedResponseHead(cond_dim,int(m.get('response_hidden',192)),int(m.get('response_spline_bins',16)))
+            self.first_layer=HierarchicalFirstLayerHead(cond_dim,self.n_layers,int(m.get('first_layer_hidden',128)))
+            if self.activity_mode=='autoregressive':
+                self.activity=AutoregressiveActivityHead(cond_dim,self.n_layers,int(m.get('activity_hidden',128)))
+            else:
+                self.activity=SpanGapActivityHead(cond_dim,self.n_layers,int(m.get('activity_hidden',128)))
+            self.counts_ar=AutoregressiveCountHead(cond_dim,self.n_layers,max_counts,int(m.get('count_hidden',192)))
+            # The bounded response head needs C(K) from the train-only envelope.
+            # It is registered as a buffer so it is checkpointed with the model
+            # and cannot silently differ between a run and its resume.
+            caps=m.get('response_envelope_caps_gev')
+            if caps is None:
+                # No envelope supplied: fall back to the v2.2 cap rule so the
+                # model is still constructible for smoke and unit tests. A
+                # production v3 run must supply the measured envelope, which
+                # preflight_v3_envelope() below asserts.
+                self.register_buffer('response_envelope_caps_gev',torch.zeros(0))
+            else:
+                self.register_buffer('response_envelope_caps_gev',torch.tensor([float(c) for c in caps],dtype=torch.float32))
+            self.response_envelope_sha256=m.get('response_envelope_sha256')
+
+    def response_cap_for(self,kinetic_gev:torch.Tensor)->torch.Tensor:
+        """C(K) per event from the frozen 25-GeV envelope.
+
+        Falls back to the v2.2 cap rule only when no envelope is installed, which
+        is the unit-test path; ``preflight_v3_envelope`` refuses that for a
+        production run.
+        """
+        caps=getattr(self,'response_envelope_caps_gev',None)
+        if caps is None or caps.numel()==0:
+            return torch.minimum(torch.full_like(kinetic_gev,self.response_cap_absolute_gev),self.response_cap_ratio*kinetic_gev.clamp_min(1.0))
+        index=torch.clamp((kinetic_gev/25.0).floor().long(),0,caps.numel()-1)
+        return caps.to(kinetic_gev.dtype)[index]
+
+    def preflight_v3_envelope(self)->None:
+        """Fail closed if a v3 run has no measured response envelope."""
+        if not self.is_v3:
+            return
+        caps=getattr(self,'response_envelope_caps_gev',None)
+        if caps is None or caps.numel()==0:
+            raise ValueError(
+                'a v3 run requires model.response_envelope_caps_gev from the '
+                'train-only envelope; the v2.2 quantile cap is not spline support'
+            )
+        if not bool(torch.isfinite(caps).all()) or bool((caps<=0).any()):
+            raise ValueError('response envelope caps must be finite and strictly positive')
+        if bool((caps[1:]<caps[:-1]).any()):
+            raise ValueError('response envelope caps must be nondecreasing')
     def encode_condition(self,p4): return self.condition(p4_condition_features(p4))
     def support_logits(self,cond,layer_energy,counts):
         fraction=counts.to(cond.dtype)/self.max_counts[None].clamp_min(1)

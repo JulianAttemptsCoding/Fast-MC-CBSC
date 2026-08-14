@@ -11,7 +11,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from ..config import RunPaths
-from ..contracts import NEUTRON_MASS_GEV
+from ..contracts import NEUTRON_MASS_GEV, kinetic_energy_from_p4
 from ..data.dataset import ShardedSparseDataset,load_geometry
 from ..eval.invariants import closure_tolerances, invariant_report
 from ..eval.visualization import export_epoch_visualization
@@ -39,6 +39,23 @@ STAGE_LOSSES={
  'share':{'share_flow'},
  'joint':{'visible','response','first_layer','active','profile_flow','count','support_bce','support_rank','share_flow'},
 }
+
+# v3 keeps every v2.2 component name and adds the hierarchical first-layer and
+# span/gap activity terms. The added terms are emitted as exact zeros when their
+# mode is not selected, so the loss-weight schema stays fixed for the family and
+# a weight can never silently apply to a term that was not computed.
+V3_STAGE_LOSSES={
+ 'response':{'visible','response'},
+ 'profile':{'first_layer','active','profile_flow','ecal_start','hcal_first','active_last','active_gap'},
+ 'count':{'count'},
+ 'support':{'support_bce','support_rank'},
+ 'share':{'share_flow'},
+ 'joint':{'visible','response','first_layer','active','profile_flow','count','support_bce','support_rank','share_flow','ecal_start','hcal_first','active_last','active_gap'},
+}
+
+
+def stage_losses_for(model)->dict[str,set[str]]:
+    return V3_STAGE_LOSSES if getattr(model,'is_v3',False) else STAGE_LOSSES
 EXPECTED_PREVIOUS_STAGE = {
     "profile": "response",
     "count": "profile",
@@ -51,9 +68,11 @@ def move_batch(batch,device): return {k:v.to(device,non_blocking=True) for k,v i
 
 
 def compute_component_losses(model:CBSCZDC,batch:dict[str,torch.Tensor],stage:str='joint'):
-    if stage not in STAGE_LOSSES:
+    table = stage_losses_for(model)
+    if stage not in table:
         raise ValueError(f"unknown training stage {stage}")
-    requested = STAGE_LOSSES[stage]
+    requested = table[stage]
+    is_v3 = getattr(model, "is_v3", False)
     p4 = batch["p4_total_gev"]
     cell = batch["cell_energy_gev"]
     cond = model.encode_condition(p4)
@@ -61,9 +80,16 @@ def compute_component_losses(model:CBSCZDC,batch:dict[str,torch.Tensor],stage:st
     losses = {}
 
     if requested & {"visible", "response"}:
-        visible_loss, response_loss = model.response.nll(
-            cond, truth["total"], truth["visible"]
-        )
+        if is_v3:
+            kinetic = kinetic_energy_from_p4(p4).to(cond.dtype)
+            cap = model.response_cap_for(kinetic)
+            visible_loss, response_loss = model.response_v3.nll(
+                cond, truth["total"], truth["visible"], cap
+            )
+        else:
+            visible_loss, response_loss = model.response.nll(
+                cond, truth["total"], truth["visible"]
+            )
         losses["visible"] = visible_loss
         losses["response"] = response_loss
 
@@ -102,16 +128,47 @@ def compute_component_losses(model:CBSCZDC,batch:dict[str,torch.Tensor],stage:st
             predicted_profile, profile_velocity, truth["active"]
         )
 
+        if is_v3:
+            zero = cond.new_zeros(())
+            ecal_loss, hcal_loss = model.first_layer.losses(
+                cond, truth["total"], truth["first"], visible
+            )
+            losses["ecal_start"] = ecal_loss
+            losses["hcal_first"] = hcal_loss
+            # Exactly one activity mode contributes; the other is emitted as a
+            # zero so the loss-weight schema is fixed for the family and a weight
+            # can never apply to a term that was not computed.
+            if model.activity_mode == "autoregressive":
+                losses["active_last"] = model.activity.loss(
+                    cond, truth["total"], first_safe, truth["active"], visible
+                )
+                losses["active_gap"] = zero
+            else:
+                last_loss, gap_loss = model.activity.losses(
+                    cond, truth["total"], first_safe, truth["active"], visible
+                )
+                losses["active_last"] = last_loss
+                losses["active_gap"] = gap_loss
+
     if "count" in requested:
-        count_logits = model.counts.logits(
-            cond,
-            truth["layer_energy"],
-            truth["active"],
-            model.threshold_gev,
-        )
-        losses["count"] = count_cross_entropy(
-            count_logits, truth["counts"], truth["active"]
-        )
+        if is_v3:
+            losses["count"] = model.counts_ar.loss(
+                cond,
+                truth["layer_energy"],
+                truth["active"],
+                truth["counts"],
+                model.threshold_gev,
+            )
+        else:
+            count_logits = model.counts.logits(
+                cond,
+                truth["layer_energy"],
+                truth["active"],
+                model.threshold_gev,
+            )
+            losses["count"] = count_cross_entropy(
+                count_logits, truth["counts"], truth["active"]
+            )
 
     if requested & {"support_bce", "support_rank"}:
         support_logits = model.support_logits(
