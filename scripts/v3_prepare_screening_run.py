@@ -92,7 +92,7 @@ def main() -> int:
         "scaler_state": None,
         "epoch": 0,
         "best_metric": None,
-        "config": frozen,
+        "config": template_config,
         "stage": payload.get("stage", "joint"),
         "provenance": {
             **(payload.get("provenance") or {}),
@@ -110,8 +110,8 @@ def main() -> int:
         "critic_update_count": 0,
         "generator_update_count": 0,
         "role_partition_sha256": None,
-        "response_envelope_sha256": frozen.get("model", {}).get("response_envelope_sha256"),
-        "support_temperature": frozen.get("model", {}).get("support_temperature", 1.0),
+        "response_envelope_sha256": template_config.get("model", {}).get("response_envelope_sha256"),
+        "support_temperature": template_config.get("model", {}).get("support_temperature", 1.0),
     }
     args.checkpoint_output.parent.mkdir(parents=True, exist_ok=True)
     torch.save(out, args.checkpoint_output)
@@ -137,8 +137,8 @@ def main() -> int:
         "schema_version": 1,
         "kind": "cbsc-zdc-v3-screening-run-preparation",
         "row": template_config.get("provenance", {}).get("v3_screening_row"),
-        "declared_change": frozen.get("provenance", {}).get("v3_declared_change"),
-        "features_enabled": frozen.get("provenance", {}).get("v3_features_enabled"),
+        "declared_change": template_config.get("provenance", {}).get("v3_declared_change"),
+        "features_enabled": template_config.get("provenance", {}).get("v3_features_enabled"),
         "template": str(args.template).replace("\\", "/"),
         "template_sha256": sha256_file(args.template),
         "frozen_config": str(args.frozen_output).replace("\\", "/"),
