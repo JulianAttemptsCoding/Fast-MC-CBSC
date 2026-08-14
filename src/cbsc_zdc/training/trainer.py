@@ -55,7 +55,26 @@ V3_STAGE_LOSSES={
 
 
 def stage_losses_for(model)->dict[str,set[str]]:
-    return V3_STAGE_LOSSES if getattr(model,'is_v3',False) else STAGE_LOSSES
+    """Loss keys for this model's declared feature set.
+
+    The added v3 keys appear only when the head that produces them is actually
+    selected, so a screening row that leaves a feature at v2 keeps exactly the
+    v2.2 key set for it and its weight schema does not widen.
+    """
+    if not getattr(model,'is_v3',False):
+        return STAGE_LOSSES
+    added:set[str]=set()
+    if getattr(model,'first_layer_mode','v2')=='hierarchical':
+        added |= {'ecal_start','hcal_first'}
+    if getattr(model,'activity_head_mode','v2')!='v2':
+        added |= {'active_last','active_gap'}
+    if not added:
+        return STAGE_LOSSES
+    table={}
+    for stage,keys in STAGE_LOSSES.items():
+        extra=added if stage in ('profile','joint') else set()
+        table[stage]=keys|extra
+    return table
 EXPECTED_PREVIOUS_STAGE = {
     "profile": "response",
     "count": "profile",
@@ -80,7 +99,7 @@ def compute_component_losses(model:CBSCZDC,batch:dict[str,torch.Tensor],stage:st
     losses = {}
 
     if requested & {"visible", "response"}:
-        if is_v3:
+        if getattr(model, "response_mode", "v2") == "spline":
             kinetic = kinetic_energy_from_p4(p4).to(cond.dtype)
             cap = model.response_cap_for(kinetic)
             visible_loss, response_loss = model.response_v3.nll(
@@ -128,30 +147,30 @@ def compute_component_losses(model:CBSCZDC,batch:dict[str,torch.Tensor],stage:st
             predicted_profile, profile_velocity, truth["active"]
         )
 
-        if is_v3:
-            zero = cond.new_zeros(())
+        zero = cond.new_zeros(())
+        if getattr(model, "first_layer_mode", "v2") == "hierarchical":
             ecal_loss, hcal_loss = model.first_layer.losses(
                 cond, truth["total"], truth["first"], visible
             )
             losses["ecal_start"] = ecal_loss
             losses["hcal_first"] = hcal_loss
-            # Exactly one activity mode contributes; the other is emitted as a
-            # zero so the loss-weight schema is fixed for the family and a weight
-            # can never apply to a term that was not computed.
-            if model.activity_mode == "autoregressive":
-                losses["active_last"] = model.activity.loss(
-                    cond, truth["total"], first_safe, truth["active"], visible
-                )
-                losses["active_gap"] = zero
-            else:
-                last_loss, gap_loss = model.activity.losses(
-                    cond, truth["total"], first_safe, truth["active"], visible
-                )
-                losses["active_last"] = last_loss
-                losses["active_gap"] = gap_loss
+        activity_head = getattr(model, "activity_head_mode", "v2")
+        if activity_head == "autoregressive":
+            # Only one activity term is produced by this head; the other is
+            # emitted as an exact zero so the key set stays fixed for the mode.
+            losses["active_last"] = model.activity.loss(
+                cond, truth["total"], first_safe, truth["active"], visible
+            )
+            losses["active_gap"] = zero
+        elif activity_head == "span_gaps":
+            last_loss, gap_loss = model.activity.losses(
+                cond, truth["total"], first_safe, truth["active"], visible
+            )
+            losses["active_last"] = last_loss
+            losses["active_gap"] = gap_loss
 
     if "count" in requested:
-        if is_v3:
+        if getattr(model, "count_mode", "v2") == "autoregressive":
             losses["count"] = model.counts_ar.loss(
                 cond,
                 truth["layer_energy"],
@@ -170,9 +189,11 @@ def compute_component_losses(model:CBSCZDC,batch:dict[str,torch.Tensor],stage:st
                 count_logits, truth["counts"], truth["active"]
             )
 
+    axis = model.axis_for(p4) if getattr(model, "axis_enabled", False) else None
+
     if requested & {"support_bce", "support_rank"}:
         support_logits = model.support_logits(
-            cond, truth["layer_energy"], truth["counts"]
+            cond, truth["layer_energy"], truth["counts"], axis=axis
         )
         losses["support_bce"] = support_bce(
             support_logits, truth["support"], model.valid_mask
@@ -192,6 +213,7 @@ def compute_component_losses(model:CBSCZDC,batch:dict[str,torch.Tensor],stage:st
             truth["layer_energy"],
             truth["counts"],
             truth["support"],
+            axis=axis,
         )
         losses["share_flow"] = masked_mse(
             predicted_share, share_velocity, truth["support"]

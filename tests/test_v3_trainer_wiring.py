@@ -21,6 +21,15 @@ from cbsc_zdc.training.trainer import (
 )
 from cbsc_zdc.training.weights import weighted_total
 
+# Every v3 head turned on at once. Individual rows of the experiment matrix
+# enable exactly one of these; ALL_V3 is what the final composite looks like.
+ALL_V3 = dict(
+    response_mode="spline",
+    first_layer_mode="hierarchical",
+    activity_head_mode="span_gaps",
+    count_mode="autoregressive",
+)
+
 N_LAYERS, PER_LAYER = 4, 4
 N_NODES = N_LAYERS * PER_LAYER
 
@@ -98,9 +107,34 @@ def test_v2_loss_values_are_unchanged_by_the_v3_code_path() -> None:
 
 # --- v3 reaches every declared head ------------------------------------
 
-def test_v3_model_builds_every_new_head() -> None:
+def test_v3_features_default_off_so_each_row_is_attributable() -> None:
+    # A bare v3 declaration must behave exactly like v2.2. The matrix screens one
+    # change per row, so enabling everything on the version switch alone would
+    # make every row after the first unattributable.
     m = model(ARCHITECTURE_V3)
     assert m.is_v3 is True
+    assert (m.response_mode, m.first_layer_mode, m.count_mode, m.activity_head_mode) == (
+        "v2", "v2", "v2", "v2",
+    )
+    for attr in ("response_v3", "first_layer", "activity", "counts_ar"):
+        assert not hasattr(m, attr), attr
+    assert stage_losses_for(m) is STAGE_LOSSES
+    losses, _ = compute_component_losses(m, batch(), "joint")
+    assert set(losses) == STAGE_LOSSES["joint"]
+
+
+def test_v3_feature_modes_require_the_v3_architecture() -> None:
+    with pytest.raises(ValueError, match="require model.architecture_version"):
+        CBSCZDC(geometry(), config(None, response_mode="spline"))
+
+
+def test_an_unknown_feature_mode_is_rejected() -> None:
+    with pytest.raises(ValueError, match="response_mode"):
+        CBSCZDC(geometry(), config(ARCHITECTURE_V3, response_mode="magic"))
+
+
+def test_v3_model_builds_every_new_head_when_all_are_declared() -> None:
+    m = model(ARCHITECTURE_V3, **ALL_V3)
     for attr in ("response_v3", "first_layer", "activity", "counts_ar"):
         assert hasattr(m, attr), attr
     # the v2.2 modules remain so a migrated checkpoint keeps its parameter names
@@ -109,16 +143,29 @@ def test_v3_model_builds_every_new_head() -> None:
 
 
 def test_v3_joint_stage_emits_exactly_the_declared_loss_keys() -> None:
-    m = model(ARCHITECTURE_V3)
-    assert stage_losses_for(m) is V3_STAGE_LOSSES
+    m = model(ARCHITECTURE_V3, **ALL_V3)
     losses, _ = compute_component_losses(m, batch(), "joint")
     assert set(losses) == V3_STAGE_LOSSES["joint"]
     # and the emitted keys are exactly what the config schema weights
     assert set(losses) == V3_LOSS_WEIGHTS
 
 
+def test_enabling_one_feature_adds_only_its_own_keys() -> None:
+    # S3 turns on the hierarchical first layer and nothing else; the activity
+    # keys must not appear, or S4's change would already be in S3's key set.
+    m = model(ARCHITECTURE_V3, first_layer_mode="hierarchical")
+    losses, _ = compute_component_losses(m, batch(), "joint")
+    assert {"ecal_start", "hcal_first"} <= set(losses)
+    assert not {"active_last", "active_gap"} & set(losses)
+
+    # and the count head swap adds no new key at all, it replaces one
+    c = model(ARCHITECTURE_V3, count_mode="autoregressive")
+    closses, _ = compute_component_losses(c, batch(), "joint")
+    assert set(closses) == STAGE_LOSSES["joint"]
+
+
 def test_v3_losses_are_finite_and_weightable() -> None:
-    m = model(ARCHITECTURE_V3)
+    m = model(ARCHITECTURE_V3, **ALL_V3)
     losses, _ = compute_component_losses(m, batch(), "joint")
     for key, value in losses.items():
         assert torch.isfinite(value), key
@@ -127,7 +174,7 @@ def test_v3_losses_are_finite_and_weightable() -> None:
 
 
 def test_v3_backward_reaches_the_new_heads() -> None:
-    m = model(ARCHITECTURE_V3)
+    m = model(ARCHITECTURE_V3, **ALL_V3)
     losses, _ = compute_component_losses(m, batch(), "joint")
     weighted_total(losses, {name: 1.0 for name in V3_LOSS_WEIGHTS}).backward()
     for name in ("response_v3", "first_layer", "activity", "counts_ar"):
@@ -138,23 +185,25 @@ def test_v3_backward_reaches_the_new_heads() -> None:
 
 
 def test_autoregressive_activity_mode_is_selectable_and_zeroes_the_other_term() -> None:
-    m = model(ARCHITECTURE_V3, activity_mode="autoregressive")
+    m = model(ARCHITECTURE_V3, activity_head_mode="autoregressive")
     losses, _ = compute_component_losses(m, batch(), "joint")
-    assert set(losses) == V3_STAGE_LOSSES["joint"]
+    # Only the activity keys are added: this row does not turn on the
+    # hierarchical first layer, so its keys must be absent.
+    assert set(losses) == STAGE_LOSSES["joint"] | {"active_last", "active_gap"}
     # the span/gap term is emitted as an exact zero, not omitted
     assert float(losses["active_gap"]) == 0.0
     assert torch.isfinite(losses["active_last"])
 
 
 def test_span_gap_mode_produces_both_activity_terms() -> None:
-    m = model(ARCHITECTURE_V3, activity_mode="span_gaps")
+    m = model(ARCHITECTURE_V3, activity_head_mode="span_gaps")
     losses, _ = compute_component_losses(m, batch(), "joint")
     assert torch.isfinite(losses["active_last"])
     assert torch.isfinite(losses["active_gap"])
 
 
 def test_every_v3_stage_emits_only_its_declared_subset() -> None:
-    m = model(ARCHITECTURE_V3)
+    m = model(ARCHITECTURE_V3, **ALL_V3)
     for stage, expected in V3_STAGE_LOSSES.items():
         losses, _ = compute_component_losses(m, batch(), stage)
         assert set(losses) == expected, stage
@@ -163,7 +212,7 @@ def test_every_v3_stage_emits_only_its_declared_subset() -> None:
 # --- the response envelope is a hard requirement for production ---------
 
 def test_a_v3_run_without_an_envelope_fails_preflight() -> None:
-    m = model(ARCHITECTURE_V3)
+    m = model(ARCHITECTURE_V3, response_mode="spline")
     with pytest.raises(ValueError, match="response_envelope_caps_gev"):
         m.preflight_v3_envelope()
 
@@ -174,7 +223,7 @@ def test_a_v2_run_needs_no_envelope() -> None:
 
 def test_an_installed_envelope_is_used_and_validated() -> None:
     caps = [float(10 + 5 * i) for i in range(12)]
-    m = model(ARCHITECTURE_V3, response_envelope_caps_gev=caps)
+    m = model(ARCHITECTURE_V3, response_mode="spline", response_envelope_caps_gev=caps)
     m.preflight_v3_envelope()
     kinetic = torch.tensor([0.0, 30.0, 120.0, 299.0])
     got = m.response_cap_for(kinetic)
@@ -184,10 +233,10 @@ def test_an_installed_envelope_is_used_and_validated() -> None:
 
 
 def test_a_nonmonotone_or_nonpositive_envelope_is_rejected() -> None:
-    bad = model(ARCHITECTURE_V3, response_envelope_caps_gev=[10.0, 9.0, 20.0])
+    bad = model(ARCHITECTURE_V3, response_mode="spline", response_envelope_caps_gev=[10.0, 9.0, 20.0])
     with pytest.raises(ValueError, match="nondecreasing"):
         bad.preflight_v3_envelope()
-    worse = model(ARCHITECTURE_V3, response_envelope_caps_gev=[10.0, 0.0, 20.0])
+    worse = model(ARCHITECTURE_V3, response_mode="spline", response_envelope_caps_gev=[10.0, 0.0, 20.0])
     with pytest.raises(ValueError, match="strictly positive"):
         worse.preflight_v3_envelope()
 
@@ -196,7 +245,7 @@ def test_v3_response_loss_uses_the_envelope_cap() -> None:
     # With an envelope installed the response NLL must run through the bounded
     # spline; a target above the cap is fatal rather than clamped.
     caps = [1e-3] * 12  # absurdly tight so every truth response is outside it
-    m = model(ARCHITECTURE_V3, response_envelope_caps_gev=caps)
+    m = model(ARCHITECTURE_V3, response_mode="spline", response_envelope_caps_gev=caps)
     with pytest.raises(ValueError, match="outside its train-built envelope"):
         compute_component_losses(m, batch(), "response")
 
@@ -283,3 +332,30 @@ def test_axis_scales_come_from_geometry_and_are_floored() -> None:
     assert m.axis_r_scale_mm >= 1.0
     # scales are frozen geometry, not per-batch statistics
     assert isinstance(m.axis_s_scale_mm, float)
+
+
+def test_axis_enabled_run_computes_every_loss_and_backpropagates() -> None:
+    # Regression: the support and share losses did not pass axis features, so an
+    # axis-enabled run raised "axis features are declared but were not supplied"
+    # on its very first update while the sampler worked fine.
+    m = axis_model(**ALL_V3, response_envelope_caps_gev=[500.0] * 12)
+    losses, _ = compute_component_losses(m, batch(), "joint")
+    assert set(losses) == V3_STAGE_LOSSES["joint"]
+    for key, value in losses.items():
+        assert torch.isfinite(value), key
+    weighted_total(losses, {name: 1.0 for name in V3_LOSS_WEIGHTS}).backward()
+    # gradients reach the expanded input projections, which is where the axis
+    # columns actually live
+    for field in (m.support, m.share):
+        grad = field.input[0].weight.grad
+        assert grad is not None and grad.abs().sum() > 0
+
+
+def test_axis_columns_receive_gradient_in_the_expanded_projection() -> None:
+    m = axis_model(**ALL_V3, response_envelope_caps_gev=[500.0] * 12)
+    losses, _ = compute_component_losses(m, batch(), "joint")
+    weighted_total(losses, {name: 1.0 for name in V3_LOSS_WEIGHTS}).backward()
+    node_dim = m.node_features.shape[1]
+    for field in (m.support, m.share):
+        axis_block = field.input[0].weight.grad[:, node_dim : node_dim + 4]
+        assert axis_block.abs().sum() > 0, "axis columns received no gradient"

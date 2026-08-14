@@ -69,6 +69,24 @@ class CBSCZDC(nn.Module):
         self.response_cap_ratio=float(d.get('response_cap_ratio',2.0)); self.response_cap_absolute_gev=float(d.get('response_cap_absolute_gev',500.0))
         self.support_temperature=float(m.get('support_temperature',1.0))
         self.activity_mode=str(m.get('activity_mode','span_gaps'))
+        # Per-feature toggles, all defaulting to the v2.2 behaviour even under
+        # v3. The experiment matrix screens one change per row (S2 response, S3
+        # first layer, S4 activity, S5 counts), so turning them all on together
+        # would make every row after the first unattributable.
+        self.response_mode=str(m.get('response_mode','v2'))
+        self.first_layer_mode=str(m.get('first_layer_mode','v2'))
+        self.count_mode=str(m.get('count_mode','v2'))
+        self.activity_head_mode=str(m.get('activity_head_mode','v2'))
+        for name,value,allowed in (
+            ('response_mode',self.response_mode,{'v2','spline'}),
+            ('first_layer_mode',self.first_layer_mode,{'v2','hierarchical'}),
+            ('count_mode',self.count_mode,{'v2','autoregressive'}),
+            ('activity_head_mode',self.activity_head_mode,{'v2','span_gaps','autoregressive'}),
+        ):
+            if value not in allowed:
+                raise ValueError(f'model.{name} must be one of {sorted(allowed)}, got {value!r}')
+        if not self.is_v3 and any(v!='v2' for v in (self.response_mode,self.first_layer_mode,self.count_mode,self.activity_head_mode)):
+            raise ValueError('v3 feature modes require model.architecture_version: cbsc-zdc-v3')
         if self.is_v3:
             # v3 heads live alongside the v2.2 ones rather than replacing them in
             # place, so a migrated checkpoint can carry both and the v2.2 modules
@@ -77,13 +95,16 @@ class CBSCZDC(nn.Module):
             from .counts_ar import AutoregressiveCountHead
             from .first_layer import HierarchicalFirstLayerHead
             from .response_v3 import BoundedResponseHead
-            self.response_v3=BoundedResponseHead(cond_dim,int(m.get('response_hidden',192)),int(m.get('response_spline_bins',16)))
-            self.first_layer=HierarchicalFirstLayerHead(cond_dim,self.n_layers,int(m.get('first_layer_hidden',128)))
-            if self.activity_mode=='autoregressive':
+            if self.response_mode=='spline':
+                self.response_v3=BoundedResponseHead(cond_dim,int(m.get('response_hidden',192)),int(m.get('response_spline_bins',16)))
+            if self.first_layer_mode=='hierarchical':
+                self.first_layer=HierarchicalFirstLayerHead(cond_dim,self.n_layers,int(m.get('first_layer_hidden',128)))
+            if self.activity_head_mode=='autoregressive':
                 self.activity=AutoregressiveActivityHead(cond_dim,self.n_layers,int(m.get('activity_hidden',128)))
-            else:
+            elif self.activity_head_mode=='span_gaps':
                 self.activity=SpanGapActivityHead(cond_dim,self.n_layers,int(m.get('activity_hidden',128)))
-            self.counts_ar=AutoregressiveCountHead(cond_dim,self.n_layers,max_counts,int(m.get('count_hidden',192)))
+            if self.count_mode=='autoregressive':
+                self.counts_ar=AutoregressiveCountHead(cond_dim,self.n_layers,max_counts,int(m.get('count_hidden',192)))
             # The bounded response head needs C(K) from the train-only envelope.
             # It is registered as a buffer so it is checkpointed with the model
             # and cannot silently differ between a run and its resume.
@@ -113,7 +134,7 @@ class CBSCZDC(nn.Module):
 
     def preflight_v3_envelope(self)->None:
         """Fail closed if a v3 run has no measured response envelope."""
-        if not self.is_v3:
+        if not self.is_v3 or self.response_mode!='spline':
             return
         caps=getattr(self,'response_envelope_caps_gev',None)
         if caps is None or caps.numel()==0:
