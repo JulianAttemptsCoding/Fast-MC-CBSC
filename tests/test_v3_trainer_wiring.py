@@ -359,3 +359,38 @@ def test_axis_columns_receive_gradient_in_the_expanded_projection() -> None:
     for field in (m.support, m.share):
         axis_block = field.input[0].weight.grad[:, node_dim : node_dim + 4]
         assert axis_block.abs().sum() > 0, "axis columns received no gradient"
+
+
+def test_axis_features_require_the_frozen_generator_vertex() -> None:
+    # Defaulting to the origin would compute s and rho about the wrong point --
+    # the production vertex sits about 35.5 m downstream in z -- and the features
+    # would be meaningless while still looking perfectly valid.
+    g = geometry_with_positions()
+    del g["generator_vertex_mm"]
+    with pytest.raises(ValueError, match="frozen generator vertex"):
+        CBSCZDC(g, config(ARCHITECTURE_V3, axis_features=True))
+
+
+def test_the_vertex_may_be_supplied_through_the_config() -> None:
+    g = geometry_with_positions()
+    del g["generator_vertex_mm"]
+    m = CBSCZDC(
+        g, config(ARCHITECTURE_V3, axis_features=True,
+                  generator_vertex_mm=[-917.4075317382812, -30.0, 35488.90625])
+    )
+    assert torch.allclose(
+        m.generator_vertex_mm,
+        torch.tensor([-917.4075317382812, -30.0, 35488.90625]),
+        atol=1e-3,
+    )
+
+
+def test_axis_coordinates_are_measured_from_the_declared_vertex() -> None:
+    # Moving the vertex must move the coordinates; if it did not, the vertex
+    # would be decorative and the origin bug would be invisible.
+    g = geometry_with_positions()
+    near = CBSCZDC(g, config(ARCHITECTURE_V3, axis_features=True))
+    far_geometry = dict(g, generator_vertex_mm=torch.tensor([0.0, 0.0, 1000.0]))
+    far = CBSCZDC(far_geometry, config(ARCHITECTURE_V3, axis_features=True))
+    p4 = batch()["p4_total_gev"]
+    assert not torch.allclose(near.axis_for(p4), far.axis_for(p4))

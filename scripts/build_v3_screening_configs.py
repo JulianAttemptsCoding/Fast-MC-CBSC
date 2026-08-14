@@ -70,13 +70,22 @@ ADDED_LOSS_WEIGHTS = {
 }
 
 
-def build_row(parent: dict, row: dict, envelope: dict | None, cumulative: dict, horizon: int) -> dict:
+def build_row(parent: dict, row: dict, envelope: dict | None, cumulative: dict, horizon: int,
+              vertex: list[float] | None) -> dict:
     config = copy.deepcopy(parent)
     model = config.setdefault("model", {})
     model["architecture_version"] = ARCHITECTURE_V3
     # Cumulative: each row keeps the features its predecessors turned on.
     model.update(cumulative)
     model.update(row["model"])
+
+    if model.get("axis_features"):
+        if vertex is None:
+            raise SystemExit(
+                "axis features need the frozen generator vertex; it is recorded as "
+                "fixed_vertex_mm in the dataset manifest"
+            )
+        model["generator_vertex_mm"] = [float(v) for v in vertex]
 
     if model.get("response_mode") == "spline":
         if envelope is None:
@@ -144,6 +153,12 @@ def main() -> int:
             f"empty bins {envelope.get('empty_visible_bins')}"
         )
 
+    # The frozen generator vertex lives in the dataset manifest as
+    # fixed_vertex_mm. Axis coordinates are measured from it, so it travels into
+    # the config rather than being rediscovered at train time.
+    manifest = json.loads(Path(parent["data"]["manifest"]).read_text(encoding="utf-8"))
+    vertex = manifest.get("fixed_vertex_mm")
+
     args.output_dir.mkdir(parents=True, exist_ok=True)
     cumulative: dict = {}
     written = []
@@ -151,7 +166,7 @@ def main() -> int:
         cumulative.update(row["model"])
         if args.only and row["id"] not in args.only:
             continue
-        config = build_row(parent, row, envelope, dict(cumulative), args.horizon)
+        config = build_row(parent, row, envelope, dict(cumulative), args.horizon, vertex)
         path = args.output_dir / f"v3_{row['id'].replace('-', '_')}.yaml"
         path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8", newline="\n")
         written.append({
@@ -169,6 +184,7 @@ def main() -> int:
         "parent": str(args.parent).replace("\\", "/"),
         "parent_sha256": sha256_file(args.parent),
         "envelope_sha256": envelope["envelope_sha256"] if envelope else None,
+        "generator_vertex_mm": vertex,
         "rows": written,
         "note": "templates are unfrozen; freeze through the repository CLI and record both hashes",
     }, indent=2))

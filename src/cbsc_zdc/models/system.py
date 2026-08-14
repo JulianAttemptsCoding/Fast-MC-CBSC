@@ -63,8 +63,21 @@ class CBSCZDC(nn.Module):
                 positions=geometry.get('cell_positions_mm')
             if positions is None:
                 raise ValueError('axis features require geometry["positions_mm"] (or cell_positions_mm)')
+            # The generator vertex must come from the data contract. Defaulting
+            # to the origin would compute s and rho about the wrong point
+            # entirely -- the production vertex sits ~35.5 m downstream in z --
+            # and the features would be meaningless while still looking valid.
             vertex=geometry.get('generator_vertex_mm')
-            vertex=torch.zeros(3,dtype=positions.dtype) if vertex is None else resolve_frozen_vertex(vertex)
+            if vertex is None:
+                vertex=m.get('generator_vertex_mm')
+                if vertex is None:
+                    raise ValueError(
+                        'axis features require the frozen generator vertex; supply it as '
+                        'geometry["generator_vertex_mm"] or model.generator_vertex_mm '
+                        '(the dataset manifest records it as fixed_vertex_mm)'
+                    )
+                vertex=torch.tensor([float(v) for v in vertex],dtype=positions.dtype,device=positions.device)
+            vertex=resolve_frozen_vertex(vertex.to(positions.device))
             self.register_buffer('cell_positions_mm',positions.clone().float())
             self.register_buffer('generator_vertex_mm',vertex.clone().float())
             scales=geometry_scales(self.cell_positions_mm,self.generator_vertex_mm)
