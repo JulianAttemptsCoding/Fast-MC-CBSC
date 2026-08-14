@@ -301,3 +301,51 @@ def test_migration_refuses_a_shape_change_under_an_exact_copy_rule() -> None:
     target["condition.net.0.weight"] = torch.zeros(9, 9)
     with pytest.raises(MigrationError, match="shapes differ"):
         migrate_state_dict(source, target)
+
+
+def test_migration_inserts_the_axis_block_at_the_declared_offset() -> None:
+    # Regression: the axis block sits directly after the static node features,
+    # not at the end of the input vector. Appending the zeros instead shifted
+    # every later column and silently destroyed the parent's behaviour -- the
+    # migrated model's support logits differed from its parent by 14.4.
+    import torch
+
+    from cbsc_zdc.training.migration import migrate_state_dict
+
+    node_dim, rest = 6, 4
+    old = torch.arange(2 * (node_dim + rest), dtype=torch.float32).reshape(2, node_dim + rest)
+    source = {"support.input.0.weight": old}
+    target = {"support.input.0.weight": torch.randn(2, node_dim + 4 + rest)}
+
+    migrated, report = migrate_state_dict(source, target, axis_offset=node_dim)
+    new = migrated["support.input.0.weight"]
+    # node columns unchanged, axis columns zero, the rest shifted into place
+    assert torch.equal(new[:, :node_dim], old[:, :node_dim])
+    assert torch.equal(new[:, node_dim : node_dim + 4], torch.zeros(2, 4))
+    assert torch.equal(new[:, node_dim + 4 :], old[:, node_dim:])
+    assert report["expanded"][0]["inserted_at_column"] == node_dim
+
+
+def test_appending_the_axis_block_is_still_available_but_explicit() -> None:
+    import torch
+
+    from cbsc_zdc.training.migration import migrate_state_dict
+
+    old = torch.arange(2 * 6, dtype=torch.float32).reshape(2, 6)
+    source = {"share.input.0.weight": old}
+    target = {"share.input.0.weight": torch.randn(2, 10)}
+    migrated, _ = migrate_state_dict(source, target)  # axis_offset None appends
+    new = migrated["share.input.0.weight"]
+    assert torch.equal(new[:, :6], old)
+    assert torch.equal(new[:, 6:], torch.zeros(2, 4))
+
+
+def test_an_out_of_range_axis_offset_is_fatal() -> None:
+    import torch
+
+    from cbsc_zdc.training.migration import MigrationError, migrate_state_dict
+
+    source = {"share.input.0.weight": torch.randn(2, 6)}
+    target = {"share.input.0.weight": torch.randn(2, 10)}
+    with pytest.raises(MigrationError, match="outside the parent"):
+        migrate_state_dict(source, target, axis_offset=99)

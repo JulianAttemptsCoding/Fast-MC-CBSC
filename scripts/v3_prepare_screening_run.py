@@ -69,7 +69,15 @@ def main() -> int:
     target_state = target_model.state_dict()
 
     payload = torch.load(args.parent_checkpoint, map_location="cpu", weights_only=False)
-    migrated, report = migrate_state_dict(payload["model_state"], target_state)
+    # The axis block is inserted directly after the static node features, which
+    # is where the field concatenates it. Appending instead would shift the
+    # condition, layer-energy and count-fraction columns and silently destroy
+    # the parent's behaviour.
+    axis_offset = int(target_model.node_features.shape[1]) if target_model.axis_enabled else None
+    migrated, report = migrate_state_dict(
+        payload["model_state"], target_state, axis_offset=axis_offset
+    )
+    report["axis_insertion_offset"] = axis_offset
 
     # The migrated model must load cleanly and still satisfy every invariant.
     target_model.load_state_dict(migrated)

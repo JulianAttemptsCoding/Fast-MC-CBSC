@@ -126,11 +126,19 @@ def migrate_state_dict(
     target: dict[str, torch.Tensor],
     *,
     axis_columns: int = AXIS_FEATURE_COLUMNS,
+    axis_offset: int | None = None,
 ) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
     """Return ``(migrated_state, report)``.
 
     ``target`` supplies the v3 shapes and the fresh initialization for modules
     that are not copied.
+
+    ``axis_offset`` is where the new columns are *inserted*, which must match how
+    the field concatenates its input.  The axis block sits directly after the
+    static node features, not at the end of the vector, so appending the zeros
+    would shift every later column (condition, layer energy, count fraction) by
+    ``axis_columns`` and silently destroy the parent's behaviour.  ``None``
+    appends, which is only correct for a field whose axis block really is last.
     """
     migrated = {k: v.clone() for k, v in target.items()}
     copied: list[dict[str, Any]] = []
@@ -184,8 +192,15 @@ def migrate_state_dict(
                 f"{key}: expected {old_columns + axis_columns} input columns, "
                 f"target has {destination.shape[1]}"
             )
+        insert_at = old_columns if axis_offset is None else int(axis_offset)
+        if not 0 <= insert_at <= old_columns:
+            raise MigrationError(
+                f"{key}: axis insertion offset {insert_at} is outside the parent's "
+                f"{old_columns} input columns"
+            )
         block = torch.zeros_like(destination)
-        block[:, :old_columns] = tensor
+        block[:, :insert_at] = tensor[:, :insert_at]
+        block[:, insert_at + axis_columns :] = tensor[:, insert_at:]
         migrated[key] = block
         expanded.append(
             {
@@ -193,6 +208,7 @@ def migrate_state_dict(
                 "old_columns": old_columns,
                 "new_columns": destination.shape[1],
                 "zero_initialized_columns": axis_columns,
+                "inserted_at_column": insert_at,
             }
         )
 
