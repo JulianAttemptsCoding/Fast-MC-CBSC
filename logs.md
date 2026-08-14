@@ -10084,3 +10084,103 @@ hypothesis and decision registry; the re-costed schedule lives separately in
    and is the last item blocking the B0 freeze.
 
 `PHYSICS VALIDATION NOT ESTABLISHED` -- unchanged, and nothing above changes it.
+
+### 2026-08-14 (later) -- Stage B: the f-chain gets its first AUROC, and B0 freezes
+
+The external-metric transaction for `dicos-f-02` epoch 90 completed on the RTX
+3090 diagnostics pod: validation-bank export `EXIT=0`, downstream evaluators
+`EXIT=0`, results pulled. `cbsc_training_started` false and
+`cbsc_test_events_used` **0** throughout; source split validation.
+
+**This is the first AUROC ever measured on the f-chain**, and therefore the
+first evidence either way on the question left open two entries ago: whether the
+corrected learning-rate anneal moved the classifier at all.
+
+Evaluator corpus 8,000 events (4,000 Fast-MC / 4,000 Geant4), pair-grouped and
+energy-stratified, with a 1,200-event evaluator-internal monitoring holdout and
+three evaluator seeds. Deterministic algorithms on, cuDNN deterministic.
+
+    hybrid C2ST ensemble AUROC   0.843222 +/- 0.011668   (min 0.835292, max 0.856619)
+    high-level GBM control       0.892897
+    condition-only control       0.500000                (sanity: no information)
+    energy relative RMSE         0.210445
+    angular median               9.4417 mrad
+    four-momentum macro RMS      0.281799   (Geant4 reference 0.207799)
+
+**Within-family comparison, `calibrated_lr3e4`**, against the only earlier
+evaluated checkpoint in the same family:
+
+    checkpoint         loss        AUROC     high-level   E_rmse    angular
+    dicos-c-02 e34     4.550331    0.8624    0.8947       0.2156     9.51 mrad
+    dicos-f-02 e90     4.483768    0.8432    0.8929       0.2104     9.44 mrad
+    delta             -0.066563   -0.0192   -0.0018      -0.0052    -0.07 mrad
+
+**All four external metrics moved in the improving direction** as the validation
+loss fell. That is a genuinely new result, and it is a *within-family*
+comparison rather than the earlier cross-family pair, which is what makes it
+readable at all.
+
+**It is not individually significant, and must not be reported as if it were.**
+The AUROC difference of 0.0192 sits at roughly 1.0 sigma of the combined
+three-seed spreads (0.0147 and 0.0117). What carries weight is the direction
+being consistent across four independent measurements, not the magnitude of any
+one of them. Two evaluated checkpoints in a family is still two points.
+
+Context that must travel with the number: **0.843 remains far above the 0.65
+target**, so this does not move the standing scientific boundary. Separately,
+`acceptance_gates.yaml` requires a critic candidate to deliver an absolute AUROC
+reduction of at least **0.02** -- the learning-rate correction alone delivered
+0.0192, which is now the bar an adversarial arm has to beat to justify itself.
+
+**`B0` is FROZEN at 9 of 9 gate items, without retraining.** Item 7 was the only
+outstanding one and Stage B supplied exactly it. The immutable pointer is
+`calibrated_lr3e4` / `dicos-f-02` / epoch 90 / loss 4.483767619419238, checkpoint
+`491284c7...` with queued copy `643819fe...`, frozen config `116bc8c2...`,
+geometry `c6c02f3c...`, splits `8ea9fe7a...`, manifest `688b440c...`, seed
+20260723. Do not retrain it.
+
+**Two latent defects found while integrating the result, both real and both
+fixed at the cause.**
+
+1. `build_external_metric_figures.py` and `build_metrics_catalog.py` each
+   **hardcoded `calibrated_lr1e4`** as the family whose accepted best the newest
+   external transaction must match. That happened to work for as long as the
+   newest transaction belonged to that family; the moment a second family was
+   evaluated, both compared the new transaction against an unrelated family's
+   accepted best and failed for entirely the wrong reason. Both now resolve the
+   family from the transaction itself, and the family is carried through
+   `_headline` into the summary so downstream consumers can do the same. The
+   error messages now name both sides of the comparison instead of asserting a
+   bare mismatch.
+2. My first fix sorted the headline rows but indexed the *unsorted* transaction
+   list, so `rows[-1]` and `transactions[-1]` referred to different
+   transactions. Now sorted as pairs.
+
+The exact-count tripwire in `test_exhibition_metrics.py` moved 71 -> 76 current
+graphics: exactly the five new transaction figures (three AUROC, two
+four-momentum). The counts stay exact, so an unexplained addition still fails.
+
+### Verification
+
+    PYTHONPATH=src python -m compileall -q src scripts tests exhibition   exit 0
+    PYTHONPATH=src python -m pytest -q                                    521 passed
+    scripts/verify_v3_run.py --mode software                              status pass
+    exhibition/build_metrics_catalog.py                                   129 graphics, PASS,
+                                                                           hashes match,
+                                                                           reaches epoch 90
+
+### Still open
+
+1. The v3 heads are not yet wired into `trainer.py`'s epoch loop; that remains
+   the prerequisite for any S-row.
+2. Units 16 and 17 are unimplemented, both triggered-only or disabled.
+3. The full section 9 metric battery (topology, correlation, diversity,
+   memorization with bootstrap intervals) is implemented and unit-tested but not
+   yet wired to a CLI that reads the production validation bank. What ran here
+   is the pre-existing external evaluator path, not the new modules.
+4. The declared diagnostic gap for epochs 91-114 is unchanged.
+5. A publication is still owed and is still the owner's call.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`. An AUROC of 0.843 against a 0.65 target
+does not change that, and nothing in this entry should be read as fidelity
+evidence.

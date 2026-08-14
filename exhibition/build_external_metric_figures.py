@@ -78,6 +78,9 @@ def _headline(payload: dict) -> dict:
     return {
         "epoch": int(payload["epoch"]),
         "run_tag": payload["run_tag"],
+        # Carried through so downstream consumers can resolve the accepted best
+        # of the right family instead of assuming one.
+        "family": payload.get("family"),
         "validation_loss": float(payload["validation_loss"]),
         "checkpoint_sha256": payload["checkpoint_sha256"],
         "auroc_mean": auroc["models"]["hybrid"]["ensemble"]["auroc_mean"],
@@ -183,18 +186,41 @@ def build() -> dict:
     transactions = load_transactions()
     if not transactions:
         raise RuntimeError("no complete accepted-best external metric transaction")
-    rows = [_headline(payload) for _directory, payload in transactions]
-    rows.sort(key=lambda row: (row["epoch"], row["run_tag"]))
-    choice = json.loads(CHOICE.read_text(encoding="utf-8"))["families"][
-        "calibrated_lr1e4"
-    ]
+    # Sort the transactions and their headline rows together; indexing a sorted
+    # row list against the unsorted transaction list points at two different
+    # transactions once more than one family is present.
+    paired = sorted(
+        ((_headline(payload), directory, payload) for directory, payload in transactions),
+        key=lambda item: (item[0]["epoch"], item[0]["run_tag"]),
+    )
+    rows = [row for row, _directory, _payload in paired]
+    transactions = [(directory, payload) for _row, directory, payload in paired]
     current = rows[-1]
+    # The family must come from the transaction itself. A hardcoded family only
+    # happens to work while the newest transaction belongs to it; once a second
+    # family is evaluated the check compares the newest transaction against an
+    # unrelated family's accepted best and fails for the wrong reason.
+    current_family = transactions[-1][1].get("family")
+    if not current_family:
+        raise ValueError(
+            f"external metric transaction for {current['run_tag']} epoch "
+            f"{current['epoch']} does not record its family"
+        )
+    families = json.loads(CHOICE.read_text(encoding="utf-8"))["families"]
+    if current_family not in families:
+        raise ValueError(f"unknown family in external metric transaction: {current_family}")
+    choice = families[current_family]
     if (
         current["epoch"] != int(choice["best_accepted_epoch"])
         or current["run_tag"] != choice["best_accepted_run_tag"]
         or current["validation_loss"] != float(choice["best_accepted_validation_loss"])
     ):
-        raise ValueError("latest external metric transaction is not the current accepted best")
+        raise ValueError(
+            f"latest external metric transaction ({current['run_tag']} epoch "
+            f"{current['epoch']}, loss {current['validation_loss']}) is not the current "
+            f"accepted best for {current_family} ({choice['best_accepted_run_tag']} epoch "
+            f"{choice['best_accepted_epoch']}, loss {choice['best_accepted_validation_loss']})"
+        )
 
     produced = [trend_figure(rows), current_figure(current)]
     current_directory, current_payload = transactions[-1]

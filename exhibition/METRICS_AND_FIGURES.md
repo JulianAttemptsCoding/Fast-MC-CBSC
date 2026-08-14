@@ -16,14 +16,14 @@ remain visible as negative evidence.
 
 ## Graphics inventory
 
-Validated graphics: **124**.
-Current: **71**. Archive: **53**.
+Validated graphics: **129**.
+Current: **76**. Archive: **53**.
 
 | Category | PNG/SVG files |
 |---|---:|
 | `current_accepted_best_external_metrics` | 9 |
 | `current_continuation_and_standings` | 6 |
-| `current_external_metric_source_evidence` | 10 |
+| `current_external_metric_source_evidence` | 15 |
 | `current_model_and_contract` | 11 |
 | `current_presentations` | 1 |
 | `current_validation_diagnostics` | 34 |
@@ -40,9 +40,9 @@ All **348** numeric diagnostic leaves are present at every epoch and are stored 
 
 ## Current accepted-best external monitors
 
-- Accepted checkpoint: `dicos-p9` epoch 38 (`4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e`).
-- Low-level validation C2ST AUROC: 0.872656 ± 0.011687 across evaluator seeds.
-- Fast-MC macro RMS relative four-vector error: 0.346645.
+- Accepted checkpoint: `dicos-f-02` epoch 90 (`643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035`).
+- Low-level validation C2ST AUROC: 0.843222 ± 0.011668 across evaluator seeds.
+- Fast-MC macro RMS relative four-vector error: 0.281799.
 - These validation monitors cannot select or tune the generator.
 
 The current gallery, training decisions, and validation diagnostics use zero

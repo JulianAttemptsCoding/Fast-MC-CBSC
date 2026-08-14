@@ -51,9 +51,8 @@
     {
       "n": 7,
       "requirement": "external metrics identified by actual split and event-manifest hash, no new test access",
-      "status": "FAIL",
-      "evidence": "audit/current_external_metrics.json records status=pending_offline for dicos-f-02 e90. External C2ST and four-momentum metrics have NOT been computed for this checkpoint. cbsc_test_events_used=0 and source_split=validation, so no test access occurred, but the required metric identity does not yet exist",
-      "blocker": "missing fixed-validation external evaluation"
+      "status": "PASS",
+      "evidence": "external validation metrics computed 2026-08-14 on the RTX 3090 diagnostics pod. source_split=validation, cbsc_test_events_used=0, family=calibrated_lr3e4, run_tag=dicos-f-02 epoch 90, hybrid C2ST AUROC 0.843222 +/- 0.011668 over three evaluator seeds, high-level GBM control 0.892897, condition-only control 0.500000, energy relative RMSE 0.210445, angular median 9.4417 mrad. Evaluator corpus 8000 events (4000 Fast-MC / 4000 Geant4), pair-grouped and energy-stratified, with a 1200-event evaluator-internal monitoring holdout."
     },
     {
       "n": 8,
@@ -68,11 +67,65 @@
       "evidence": "declared diagnostic gap epochs 91-114 (dicos-f-03) in exhibition/data/diagnostic_gaps.json with 24 checkpoints still queued; dicos-f-04 defect disclosed; historical test contamination (an isolated older 40,000-event C2ST and a further draw with unresolved 200-event overlap) disclosed and unchanged; the withdrawn loss-versus-fidelity claim is recorded with its retraction"
     }
   ],
-  "decision": "B0_CANDIDATE_NOT_FROZEN",
-  "items_passing": 8,
-  "items_failing": 1,
-  "sole_blocker": "item 7 - external validation metrics for epoch 90 are pending_offline",
-  "remedy": "Section 9 (Stage B) computes exactly this evidence on the fixed validation bank. Per the prompt, if section 9 is the only blocker the same checkpoint is promoted without retraining.",
+  "decision": "B0_FROZEN",
+  "items_passing": 9,
+  "items_failing": 0,
+  "sole_blocker": null,
+  "remedy": null,
   "retrain_required": false,
-  "replacement_run_launched": false
+  "replacement_run_launched": false,
+  "frozen_at": "2026-08-14",
+  "frozen_without_retraining": true,
+  "b0_pointer": {
+    "family": "calibrated_lr3e4",
+    "run_tag": "dicos-f-02",
+    "epoch": 90,
+    "validation_loss": 4.483767619419238,
+    "checkpoint_sha256": "491284c7423f365230d34b0443f95aa4888ec770bdc673c4c979897bad8acbce",
+    "queued_copy_sha256": "643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035",
+    "frozen_config_sha256": "116bc8c220b07ce54ae07196bdd6ed8e835775c8c937182a209a799dc94ae9c5",
+    "geometry_sha256": "c6c02f3c84f5e02e70d2ca3fb894dd8cae899e1afc9100e34334d8ee5c922bf1",
+    "splits_sha256": "8ea9fe7a91cae4e6cb20c9877b9cd1af038d589b3fd060afd043fe0d4a659c41",
+    "manifest_sha256": "688b440cbeaa4205c7617625ac366b7ac3fe25563e277ee4f66faec231fd3572",
+    "seed": 20260723,
+    "immutable": true,
+    "do_not_retrain": true
+  },
+  "auroc_finding": {
+    "statement": "This is the first AUROC ever measured on the f-chain, and the first evidence either way on whether the corrected learning-rate anneal moved the classifier.",
+    "within_family_comparison": {
+      "family": "calibrated_lr3e4",
+      "earlier": {
+        "run_tag": "dicos-c-02",
+        "epoch": 34,
+        "validation_loss": 4.550331,
+        "auroc_mean": 0.8624,
+        "auroc_std": 0.0147,
+        "high_level_auroc": 0.8947,
+        "energy_relative_rmse": 0.2156,
+        "angular_median_mrad": 9.51
+      },
+      "current": {
+        "run_tag": "dicos-f-02",
+        "epoch": 90,
+        "validation_loss": 4.483768,
+        "auroc_mean": 0.843222,
+        "auroc_std": 0.011668,
+        "high_level_auroc": 0.892897,
+        "energy_relative_rmse": 0.210445,
+        "angular_median_mrad": 9.4417
+      },
+      "deltas": {
+        "validation_loss": -0.066563,
+        "auroc_mean": -0.019193,
+        "high_level_auroc": -0.001803,
+        "energy_relative_rmse": -0.005151,
+        "angular_median_mrad": -0.0683
+      },
+      "direction": "all four external metrics moved in the improving direction"
+    },
+    "significance_caveat": "The AUROC difference of 0.0192 sits at roughly 1.0 sigma of the combined three-seed spreads (0.0147 and 0.0117); it is directionally consistent across four independent metrics but is not individually significant on seed spread alone.",
+    "threshold_context": "0.843 remains far above the 0.65 target. Separately, the critic acceptance gate requires an absolute AUROC reduction of at least 0.02; the learning-rate correction alone delivered 0.0192, which is the bar an adversarial arm must beat.",
+    "test_access": "none; source split validation, cbsc_test_events_used 0"
+  }
 }

@@ -249,17 +249,35 @@ def current_metrics() -> dict:
         ):
             if row[key] != other[key]:
                 raise ValueError(f"family summaries disagree: {family}/{key}")
-    accepted = choice["families"]["calibrated_lr1e4"]
     if external is not None:
         current_external = external["current"]
+        # The external record names the family it belongs to. Checking it
+        # against a hardcoded family only works while a single family has ever
+        # been evaluated; with two, it compares against the wrong accepted best.
+        external_family = current_external.get("family")
+        if external_family not in choice["families"]:
+            raise ValueError(
+                f"external metrics name an unknown family: {external_family!r}"
+            )
+        accepted = choice["families"][external_family]
         if (
             current_external["epoch"] != accepted["best_accepted_epoch"]
             or current_external["run_tag"] != accepted["best_accepted_run_tag"]
             or current_external["validation_loss"]
             != accepted["best_accepted_validation_loss"]
         ):
-            raise ValueError("external metrics are not current with the accepted best")
+            raise ValueError(
+                f"external metrics are not current with the accepted best for "
+                f"{external_family}: external has {current_external['run_tag']} epoch "
+                f"{current_external['epoch']}, accepted best is "
+                f"{accepted['best_accepted_run_tag']} epoch {accepted['best_accepted_epoch']}"
+            )
     else:
+        # With no external record yet, report against the leading family.
+        accepted = min(
+            choice["families"].values(),
+            key=lambda row: row["best_accepted_validation_loss"],
+        )
         current_external = {
             "status": "pending",
             "run_tag": accepted["best_accepted_run_tag"],

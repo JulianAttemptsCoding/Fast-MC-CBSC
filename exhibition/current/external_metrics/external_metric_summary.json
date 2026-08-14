@@ -1,17 +1,18 @@
 {
   "current": {
-    "angular_median_mrad": 15.559848215446166,
-    "auroc_mean": 0.8726555555555556,
-    "auroc_std": 0.011687150998288242,
-    "checkpoint_sha256": "4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e",
+    "angular_median_mrad": 9.441684802996434,
+    "auroc_mean": 0.8432222222222223,
+    "auroc_std": 0.011667555852358357,
+    "checkpoint_sha256": "643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035",
     "condition_only_auroc": 0.5,
-    "energy_relative_rmse": 0.24941970758526708,
-    "epoch": 38,
-    "four_momentum_macro_rms": 0.3466445061663238,
+    "energy_relative_rmse": 0.21044534633637782,
+    "epoch": 90,
+    "family": "calibrated_lr3e4",
+    "four_momentum_macro_rms": 0.28179879966516636,
     "geant4_reference_macro_rms": 0.20779912872768125,
-    "high_level_auroc": 0.9290972222222222,
-    "run_tag": "dicos-p9",
-    "validation_loss": 4.635219681489869
+    "high_level_auroc": 0.8928972222222222,
+    "run_tag": "dicos-f-02",
+    "validation_loss": 4.483767619419238
   },
   "external_metrics_may_select_or_tune_cbsc": false,
   "figures": [
@@ -38,6 +39,7 @@
       "condition_only_auroc": 0.5,
       "energy_relative_rmse": 0.21564963981328203,
       "epoch": 34,
+      "family": "calibrated_lr3e4",
       "four_momentum_macro_rms": 0.29417091469738127,
       "geant4_reference_macro_rms": 0.20779912872768125,
       "high_level_auroc": 0.8947305555555556,
@@ -52,11 +54,27 @@
       "condition_only_auroc": 0.5,
       "energy_relative_rmse": 0.24941970758526708,
       "epoch": 38,
+      "family": "calibrated_lr1e4",
       "four_momentum_macro_rms": 0.3466445061663238,
       "geant4_reference_macro_rms": 0.20779912872768125,
       "high_level_auroc": 0.9290972222222222,
       "run_tag": "dicos-p9",
       "validation_loss": 4.635219681489869
+    },
+    {
+      "angular_median_mrad": 9.441684802996434,
+      "auroc_mean": 0.8432222222222223,
+      "auroc_std": 0.011667555852358357,
+      "checkpoint_sha256": "643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035",
+      "condition_only_auroc": 0.5,
+      "energy_relative_rmse": 0.21044534633637782,
+      "epoch": 90,
+      "family": "calibrated_lr3e4",
+      "four_momentum_macro_rms": 0.28179879966516636,
+      "geant4_reference_macro_rms": 0.20779912872768125,
+      "high_level_auroc": 0.8928972222222222,
+      "run_tag": "dicos-f-02",
+      "validation_loss": 4.483767619419238
     }
   ]
 }

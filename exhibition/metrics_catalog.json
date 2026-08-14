@@ -2,13 +2,13 @@
   "comprehensive_gallery": {
     "bytes": 1421,
     "path": "index.html",
-    "sha256": "60685eda4b21d9299b5e5915e8711727c3c976cdb2faf3b24ae72e62d3eff6c2"
+    "sha256": "0de64fe70564823d304f8c7372737f32f327e640328f839340721ae122726239"
   },
   "graphics": {
     "count_by_category": {
       "current_accepted_best_external_metrics": 9,
       "current_continuation_and_standings": 6,
-      "current_external_metric_source_evidence": 10,
+      "current_external_metric_source_evidence": 15,
       "current_model_and_contract": 11,
       "current_presentations": 1,
       "current_validation_diagnostics": 34,
@@ -19,7 +19,7 @@
     },
     "count_by_scope": {
       "archive": 53,
-      "current": 71
+      "current": 76
     },
     "files": [
       {
@@ -663,7 +663,7 @@
         "format": "svg",
         "path": "current/diagnostics/energy_bin_moments_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "af2dcf86aac6af814b674f4209903934d204047cfa436e5cb8c28a94a5b98e57"
+        "sha256": "3411a15dc8819d9d0257a2498ba2f8a4f2d9cb43ce270588fb173b6ce0d0895e"
       },
       {
         "bytes": 415579,
@@ -681,7 +681,7 @@
         "format": "svg",
         "path": "current/diagnostics/energy_bin_moments_vs_epoch.svg",
         "scope": "current",
-        "sha256": "92595b3e26403dca2d6a45028d39ac9391165d50c8c699a8443b83b3c9f8548f"
+        "sha256": "91febafdf1ff2dd599a6ed064f9e1f5181d1b467465853f044a915c15780a299"
       },
       {
         "bytes": 192825,
@@ -735,7 +735,7 @@
         "format": "svg",
         "path": "current/diagnostics/feature_moments_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "81de4dd6c30d9bbbf20a7088bdab650e5a2f00ced3b3f2f36b3b4bf61e0571f3"
+        "sha256": "8c6f0c02b665c21a09dfc571261bac5fcbc9abb3bdd50ef4f7e7483df16872f3"
       },
       {
         "bytes": 371491,
@@ -753,7 +753,7 @@
         "format": "svg",
         "path": "current/diagnostics/feature_moments_vs_epoch.svg",
         "scope": "current",
-        "sha256": "6447a8cf2fc845f37b9f6a54fd455a2f52dfd83b2749c2bf57cf36f741a8d0de"
+        "sha256": "2693c9f15a519a05bf07f391b5a5d3f5da1303b526743e5b3756c0849391b040"
       },
       {
         "bytes": 183678,
@@ -771,7 +771,7 @@
         "format": "svg",
         "path": "current/diagnostics/feature_resolutions_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "240dd811e411ed6c234290d710fcd17cdf920d48f3b1462b711fb0e1f780a2a0"
+        "sha256": "673e644dada95cf804236c06673b90074c2492a3cfdc765d26089862d7906d21"
       },
       {
         "bytes": 370287,
@@ -789,7 +789,7 @@
         "format": "svg",
         "path": "current/diagnostics/feature_resolutions_vs_epoch.svg",
         "scope": "current",
-        "sha256": "887564a7770f5979cb8f17afe062ce1fa4ff51f6fc6378c3950c3fde00a1689b"
+        "sha256": "f2733bed21ec41f21bfff730ad2270fbb39e0b07e9ffaf635271f7eaaa7bec78"
       },
       {
         "bytes": 204237,
@@ -843,7 +843,7 @@
         "format": "svg",
         "path": "current/diagnostics/profiles_and_qa_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "dd10cb77e38d07bde158174a7eeb9e7936cddc764d47a44cb04d49b07e4371c8"
+        "sha256": "c03ea58315aaa7f36cddfb8e7428c5187c88d8d330e713c5f5301b6febf8a749"
       },
       {
         "bytes": 294995,
@@ -861,7 +861,7 @@
         "format": "svg",
         "path": "current/diagnostics/profiles_and_qa_vs_epoch.svg",
         "scope": "current",
-        "sha256": "90cf8027b65f57a33e7c1cea0f9dc3130c78fa83118c6b721b9e0baf6582dd02"
+        "sha256": "927c208496998cf864bce38769cb790f4b4f9f390f8af050402b07038129a910"
       },
       {
         "bytes": 273620,
@@ -900,90 +900,90 @@
         "sha256": "538eb5e9819cf7acd5c4f48fbe810a0c2f56f9078dfbaa8ae93e0d0a1d522f5e"
       },
       {
-        "bytes": 92933,
+        "bytes": 91373,
         "category": "current_accepted_best_external_metrics",
         "format": "png",
         "height": 768,
         "path": "current/external_metrics/current_accepted_best_external_metrics.png",
         "scope": "current",
-        "sha256": "d39ae5fd897aa08963e279ad217e241fe34a939bb268e0351f8e64e9e85f6a51",
+        "sha256": "40626f580f1c53e9d716d0c516296e0c63aa14ca9cfcbd4a5c7af0cbdc3fa16e",
         "width": 2133
       },
       {
-        "bytes": 75046,
+        "bytes": 73207,
         "category": "current_accepted_best_external_metrics",
         "format": "svg",
         "path": "current/external_metrics/current_accepted_best_external_metrics.svg",
         "scope": "current",
-        "sha256": "ef7cde11fa558d9dde434472d395db5c56de5b11aec5c7d226e4d2d55ad71a5b"
+        "sha256": "c9bfd26d0f7b9e05fa9a9475d5b408de047b308a14ec4e3aef47a4f8b78bfff9"
       },
       {
-        "bytes": 159771,
+        "bytes": 130880,
         "category": "current_accepted_best_external_metrics",
         "format": "png",
         "height": 880,
         "path": "current/external_metrics/current_auroc_evaluator_training.png",
         "scope": "current",
-        "sha256": "3f34705ef52c47afbb00a6f9660b4b16709984ed1576462f0034de8e7469d291",
+        "sha256": "d9f03a141f46c0f28000d433f20153fbb0ae3a890f7edb45528204f260b2446e",
         "width": 1680
       },
       {
-        "bytes": 49839,
+        "bytes": 49863,
         "category": "current_accepted_best_external_metrics",
         "format": "png",
         "height": 832,
         "path": "current/external_metrics/current_auroc_seed_spread.png",
         "scope": "current",
-        "sha256": "bdf0a49697b46d91878fe61008c711b988b0af748c20469d7df08b131db71661",
+        "sha256": "4b189cdb51166a7acea1d15b5c33c6e641a5bbebfde0a9481b0b6ac5fd255898",
         "width": 1440
       },
       {
-        "bytes": 56123,
+        "bytes": 54893,
         "category": "current_accepted_best_external_metrics",
         "format": "png",
         "height": 880,
         "path": "current/external_metrics/current_auroc_vs_energy.png",
         "scope": "current",
-        "sha256": "298ee90306274ef4d30f6fd6b32728356e46c20e62249dc43f9a64bb51953473",
+        "sha256": "33809f9717c9aeb73ef91844ae00b4c8f0f0f97b58419a23fa04fdc8a32bd9cf",
         "width": 1680
       },
       {
-        "bytes": 93082,
+        "bytes": 108979,
         "category": "current_accepted_best_external_metrics",
         "format": "png",
         "height": 1200,
         "path": "current/external_metrics/current_four_momentum_accuracy.png",
         "scope": "current",
-        "sha256": "d1a667220fd7e2515a7edba95027e78b5c5474f2ab030cd41c05ceca9c09bb65",
+        "sha256": "4c929f7a4618f3f05eecfe54c2fbeef4e8c2b8b75f501f5ed88110367c67ddfa",
         "width": 1920
       },
       {
-        "bytes": 80223,
+        "bytes": 78604,
         "category": "current_accepted_best_external_metrics",
         "format": "png",
         "height": 880,
         "path": "current/external_metrics/current_four_momentum_vs_energy.png",
         "scope": "current",
-        "sha256": "4256ce5c11ae3a01fd42323946b5cfafe62b86a467d7914b09d70ad3ad32f6a5",
+        "sha256": "59557ae676e77e6614d73d1a85e933e6bd4d8b017fe55d040432c6106859fafa",
         "width": 1680
       },
       {
-        "bytes": 142522,
+        "bytes": 159271,
         "category": "current_accepted_best_external_metrics",
         "format": "png",
         "height": 1200,
         "path": "current/external_metrics/external_metrics_at_new_accepted_bests.png",
         "scope": "current",
-        "sha256": "0240ebae039d9875bddf6c520a97ccb28817ded5526433e36f4a87fe1d80bc00",
+        "sha256": "a40ad1d0fb15db9854242c99a4d6cff6bbccc7b660d33d16e537a08beb840ef7",
         "width": 2133
       },
       {
-        "bytes": 103733,
+        "bytes": 92258,
         "category": "current_accepted_best_external_metrics",
         "format": "svg",
         "path": "current/external_metrics/external_metrics_at_new_accepted_bests.svg",
         "scope": "current",
-        "sha256": "a2b7c96065af32ba074f83e4f1c0d9f1d5e549f5d081a378bea1eea1b0821cd3"
+        "sha256": "7be98e064cf50aacc9c7f49d8c6dbd52b3e13288993c12fcde65ba4b283aef4c"
       },
       {
         "bytes": 130250,
@@ -1033,6 +1033,56 @@
         "path": "current/external_metrics/source_data/dicos-c-02/epoch_0034/four_momentum/figures/four_momentum_vs_energy.png",
         "scope": "current",
         "sha256": "405cf6475b221704a6da06a3cfcd96249e78bdeacb67be0a25e1588beb45f645",
+        "width": 1680
+      },
+      {
+        "bytes": 130880,
+        "category": "current_external_metric_source_evidence",
+        "format": "png",
+        "height": 880,
+        "path": "current/external_metrics/source_data/dicos-f-02/epoch_0090/auroc/figures/auroc_evaluator_training.png",
+        "scope": "current",
+        "sha256": "d9f03a141f46c0f28000d433f20153fbb0ae3a890f7edb45528204f260b2446e",
+        "width": 1680
+      },
+      {
+        "bytes": 49863,
+        "category": "current_external_metric_source_evidence",
+        "format": "png",
+        "height": 832,
+        "path": "current/external_metrics/source_data/dicos-f-02/epoch_0090/auroc/figures/auroc_seed_spread.png",
+        "scope": "current",
+        "sha256": "4b189cdb51166a7acea1d15b5c33c6e641a5bbebfde0a9481b0b6ac5fd255898",
+        "width": 1440
+      },
+      {
+        "bytes": 54893,
+        "category": "current_external_metric_source_evidence",
+        "format": "png",
+        "height": 880,
+        "path": "current/external_metrics/source_data/dicos-f-02/epoch_0090/auroc/figures/auroc_vs_energy.png",
+        "scope": "current",
+        "sha256": "33809f9717c9aeb73ef91844ae00b4c8f0f0f97b58419a23fa04fdc8a32bd9cf",
+        "width": 1680
+      },
+      {
+        "bytes": 108979,
+        "category": "current_external_metric_source_evidence",
+        "format": "png",
+        "height": 1200,
+        "path": "current/external_metrics/source_data/dicos-f-02/epoch_0090/four_momentum/figures/four_momentum_accuracy.png",
+        "scope": "current",
+        "sha256": "4c929f7a4618f3f05eecfe54c2fbeef4e8c2b8b75f501f5ed88110367c67ddfa",
+        "width": 1920
+      },
+      {
+        "bytes": 78604,
+        "category": "current_external_metric_source_evidence",
+        "format": "png",
+        "height": 880,
+        "path": "current/external_metrics/source_data/dicos-f-02/epoch_0090/four_momentum/figures/four_momentum_vs_energy.png",
+        "scope": "current",
+        "sha256": "59557ae676e77e6614d73d1a85e933e6bd4d8b017fe55d040432c6106859fafa",
         "width": 1680
       },
       {
@@ -1195,22 +1245,23 @@
         "slides": 17
       }
     ],
-    "total": 124
+    "total": 129
   },
   "metrics": {
     "accepted_best_external_metrics": {
-      "angular_median_mrad": 15.559848215446166,
-      "auroc_mean": 0.8726555555555556,
-      "auroc_std": 0.011687150998288242,
-      "checkpoint_sha256": "4c967cfc325953afe789d11994d88a0dfc64808908c5617e430608826242e71e",
+      "angular_median_mrad": 9.441684802996434,
+      "auroc_mean": 0.8432222222222223,
+      "auroc_std": 0.011667555852358357,
+      "checkpoint_sha256": "643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035",
       "condition_only_auroc": 0.5,
-      "energy_relative_rmse": 0.24941970758526708,
-      "epoch": 38,
-      "four_momentum_macro_rms": 0.3466445061663238,
+      "energy_relative_rmse": 0.21044534633637782,
+      "epoch": 90,
+      "family": "calibrated_lr3e4",
+      "four_momentum_macro_rms": 0.28179879966516636,
       "geant4_reference_macro_rms": 0.20779912872768125,
-      "high_level_auroc": 0.9290972222222222,
-      "run_tag": "dicos-p9",
-      "validation_loss": 4.635219681489869
+      "high_level_auroc": 0.8928972222222222,
+      "run_tag": "dicos-f-02",
+      "validation_loss": 4.483767619419238
     },
     "all_numeric_diagnostic_metrics": {
       "complete_every_epoch": true,
@@ -1467,9 +1518,9 @@
       "sha256": "5f92818132921e8dd05f7985eba5aa8cc48f6c41b1da374b2d57dc71d39099ad"
     },
     "current": {
-      "bytes": 21221,
+      "bytes": 23574,
       "path": "current/index.html",
-      "sha256": "450f83d350d3b35f7f6dab1dd23ac6bfb57a4bca235113a9210cdda12a9e1880"
+      "sha256": "0390c97d1344ca429ff16972c2af974ebdc4416f844401ad8704047d004d8cfc"
     }
   },
   "test_split_accounting": {

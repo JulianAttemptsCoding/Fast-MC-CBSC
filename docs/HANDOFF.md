@@ -13,14 +13,15 @@ project real time. It does not replace the binding contracts — `AGENTS.md`,
 
 Four calibrated families train a hierarchical stochastic generative model of
 ZDC showers. The validation objective improves and structural invariants hold.
-**Geant4 fidelity is not established.** A classifier separates Fast-MC from
-Geant4 at AUROC 0.8624 and 0.8727 (seed-mean) on the only two checkpoints ever
-evaluated — per-energy-bin values span the 0.77–0.92 quoted elsewhere — against
-a 0.65 target never approached, and nothing in the current leading chain has
-been evaluated at all. The model is **measurably overfitting** (§4), while
-the per-epoch distribution metrics are too noisy at their current sample size
-to say whether fidelity is improving or degrading. Treat every loss improvement
-below as evidence about optimization, not about physics.
+**Geant4 fidelity is not established.** A classifier still separates Fast-MC
+from Geant4 at **AUROC 0.8432 ± 0.0117** on the accepted best (`dicos-f-02`
+e90, evaluated 2026-08-14) — per-energy-bin values span the 0.77–0.92 quoted
+elsewhere — against a 0.65 target never approached. The model is **measurably
+overfitting** (§4). The per-epoch distribution metrics remain too noisy at
+their current sample size to say whether fidelity is improving or degrading,
+though the external metrics now give one within-family data point where a
+falling loss carried all four in the improving direction (§4). Treat every loss
+improvement below as evidence about optimization, not about physics.
 
 ## 2. Current standings
 
@@ -119,19 +120,34 @@ beats the lineage median on four of the five metrics (total response 0.524 vs
 0.545, longitudinal L1 0.196 vs 0.205, radial RMS 4.384 vs 4.496, hit count
 61.3 vs 70.5) and loses only on ECAL fraction (0.054 vs 0.049).
 
-### AUROC has never been measured on any of this
+### AUROC: measured on the f-chain 2026-08-14, and it moved the right way
 
-The classifier two-sample test exists for exactly two checkpoints, both epoch
-≤38, and **nothing in the f-chain (48–114) has been evaluated**:
-
-| Checkpoint | Validation loss | AUROC | high-level AUROC | energy rel. RMSE | angular median |
+| Checkpoint | Validation loss | AUROC | high-level | energy rel. RMSE | angular median |
 |---|---|---|---|---|---|
 | `dicos-c-02` e34 (lr3e4) | 4.550331 | 0.8624 ± 0.0147 | 0.8947 | 0.2156 | 9.51 mrad |
+| **`dicos-f-02` e90 (lr3e4)** | **4.483768** | **0.8432 ± 0.0117** | **0.8929** | **0.2104** | **9.44 mrad** |
 | `dicos-p9` e38 (lr1e4) | 4.635220 | 0.8727 ± 0.0117 | 0.9291 | 0.2494 | 15.56 mrad |
 
-Within that pair the better loss carried the better AUROC, but they are
-different families and two points prove nothing. Whether the 4.550 → 4.484
-improvement moved AUROC is **unmeasured**. Both sit far above the 0.65 target.
+Comparing the two `calibrated_lr3e4` checkpoints — a *within-family* comparison,
+unlike the earlier cross-family pair — the loss fell 0.0666 and **all four
+external metrics moved in the improving direction**: AUROC −0.0192, high-level
+−0.0018, energy RMSE −0.0052, angular −0.07 mrad.
+
+**Do not overstate this.** The AUROC difference sits at roughly **1.0 σ** of the
+combined three-seed spreads. What carries weight is four independent metrics
+agreeing on direction, not the size of any one. Two evaluated checkpoints in a
+family is still two points.
+
+Evaluator corpus: 8,000 events (4,000 Fast-MC / 4,000 Geant4), pair-grouped,
+energy-stratified, 1,200-event monitoring holdout, three seeds, deterministic
+algorithms. Condition-only control returns exactly 0.5000, as it must.
+**Zero test events used.**
+
+**0.843 is still far above the 0.65 target**, so this does not move the standing
+boundary. Note also that `acceptance_gates.yaml` asks a critic candidate for an
+absolute AUROC reduction of **≥0.02** — the learning-rate correction alone
+delivered 0.0192, which is the bar an adversarial arm must beat to earn its
+place.
 
 ### What this means for loss-function work
 
@@ -415,8 +431,26 @@ pilot S-rows at 57 h total are cheaper still and are the natural first spend.
    implemented — both are triggered-only or disabled by default.
 3. D1 was measured with critic batch 4 for the generator as well; a generator
    batch of 6 alongside a D1 critic is unmeasured.
-4. `B0` is `B0_CANDIDATE_NOT_FROZEN` at 8 of 9 gate items. The only blocker is
-   external validation metrics for `dicos-f-02` e90, which Stage B supplies.
+4. The full section 9 metric battery (topology, correlation, diversity,
+   memorization with bootstrap intervals) is implemented and unit-tested but is
+   not yet wired to a CLI that reads the production validation bank. Stage B ran
+   the pre-existing external evaluator path, not the new modules.
+
+### `B0` is FROZEN
+
+`B0` reached **9 of 9** gate items on 2026-08-14 and is frozen **without
+retraining**. Stage B supplied the one outstanding item.
+
+| field | value |
+|---|---|
+| family / run tag / epoch | `calibrated_lr3e4` / `dicos-f-02` / 90 |
+| validation loss | 4.483767619419238 |
+| checkpoint | `491284c7…` (queued copy `643819fe…`) |
+| frozen config | `116bc8c2…` |
+| geometry / splits / manifest | `c6c02f3c…` / `8ea9fe7a…` / `688b440c…` |
+| seed | 20260723 |
+
+It is immutable. Do not retrain it.
 
 No training campaign was launched, no paid compute was used, and the test split
 was not opened. `PHYSICS VALIDATION NOT ESTABLISHED`.

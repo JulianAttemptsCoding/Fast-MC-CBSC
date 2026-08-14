@@ -103,11 +103,17 @@ def test_current_gallery_is_complete_and_reaches_latest_evidence() -> None:
     # below was fixed: the "*_of_best_loss_so_far" companion figures and the
     # external-metric transaction figures had been silently empty for every
     # family except calibrated_lr1e4 (see test_manifests_and_accepted_metric_
-    # summaries_agree), so fixing it legitimately produced new graphics. The
-    # counts stay exact so an unnoticed addition still fails.
+    # summaries_agree), so fixing it legitimately produced new graphics.
+    #
+    # current 71 -> 76 on 2026-08-14: the first external evaluation of the
+    # f-chain (dicos-f-02 epoch 90) added its five transaction figures -- three
+    # AUROC and two four-momentum. A new evaluated checkpoint is exactly what
+    # this inventory is supposed to grow by.
+    #
+    # The counts stay exact so an unnoticed addition still fails.
     assert payload["graphics"]["count_by_scope"] == {
         "archive": 53,
-        "current": 71,
+        "current": 76,
     }
     # This tracks whichever family is the campaign's current overall champion
     # and moves with every completed epoch -- pinning a specific number here
