@@ -10184,3 +10184,99 @@ four-momentum). The counts stay exact, so an unexplained addition still fails.
 `PHYSICS VALIDATION NOT ESTABLISHED`. An AUROC of 0.843 against a 0.65 target
 does not change that, and nothing in this entry should be read as fidelity
 evidence.
+
+### 2026-08-14 (later) -- v3 wired into the trainer, S1-axis launched, four real defects found on the way
+
+The owner asked for training set up to run unattended for a few days. The pilot
+screening rows cost about 5.2 GPU-hours each on measured numbers, so the eleven
+of them fit that window; the D1 and D2 critic arms at 446.6 h and 141.5 h do
+not, and remain unlaunched pending their own budget decision.
+
+**The v3 heads were unit-tested but unreachable.** Nothing in `trainer.py`
+called them, so a head could have been perfectly correct and never run. They are
+now wired behind the architecture switch, and `stage_losses_for()` derives the
+loss key set from the selected heads.
+
+**Per-feature toggles, because the matrix screens one change per row.** The
+first wiring turned on every v3 head whenever the version was `cbsc-zdc-v3`,
+which would have made S3's result silently contain S2's and S4's changes. Four
+independent modes now select each head -- `response_mode`, `first_layer_mode`,
+`count_mode`, `activity_head_mode` -- all defaulting to the v2.2 behaviour even
+under a v3 declaration. A bare v3 config therefore behaves exactly like v2.2 and
+emits exactly the v2.2 loss keys.
+
+**Four defects, each caught by a check that existed for that purpose.**
+
+1. `compute_component_losses` never passed axis features to the support and
+   share losses. An axis-enabled run would have raised on its first update,
+   while the exact sampler -- which did pass them -- worked fine.
+2. `validate_config` demanded the full v3 loss-weight set for any v3
+   declaration, so freezing S1 failed: S1 turns on only axis features and
+   correctly carries the v2.2 keys. Requiring the added keys there would force a
+   row to weight a term that is never computed.
+3. **The migration appended the axis block at the end of the input vector
+   instead of inserting it after the static node features.** Every later column
+   -- condition, layer energy, count fraction -- was shifted by four, so the
+   migrated model was a scrambled version of its parent. Caught by verifying the
+   behavioural no-op: the condition encoder matched at exactly 0.0 while the
+   support logits differed by **14.37**. Without that check S1 would have
+   trained from a silently broken checkpoint and the result would have been
+   attributed to the axis features. Only surfaced against the real 6-column
+   production geometry.
+4. **The generator vertex silently defaulted to the origin.** The production
+   vertex is recorded in the dataset manifest as `fixed_vertex_mm =
+   [-917.4075317382812, -30.0, 35488.90625]`, about 35.5 m downstream in z, so
+   the default computed the longitudinal and radial coordinates about entirely
+   the wrong point. The features would have been physically meaningless while
+   looking perfectly valid. Now required and fatal if absent, and the builder
+   carries it into the frozen config. A companion defect: the fallback built a
+   CPU tensor while `load_geometry` had already moved positions to CUDA, which
+   killed the first real launch and could not be caught locally.
+
+**After the fixes the migration is a verified behavioural no-op.** Against the
+production geometry and validation data:
+
+    condition encoder   max abs diff  0.000e+00
+    support logits      max abs diff  0.000e+00
+    share velocity      max abs diff  0.000e+00
+    axis weight blocks  exactly zero in both support and share
+
+That is the property that lets S1's result be attributed to training rather than
+to the migration. 191 tensors copied, 2 expanded, 17 initialized, 0 unclassified.
+
+**The train-only response envelope is built from the full pilot bank**: 26,624
+events, all twelve 25-GeV bins populated, monotone caps 9.392 -> 63.2215 GeV,
+zero training exceedances, sha256 `722e5acf...`. It is not used by S1, which
+leaves the response head at v2, but S2 requires it.
+
+### Running now
+
+    v3s1      RTX 4090   S1-axis, 24 epochs on the pilot bank    ~5-6 h
+    campdiag  RTX 3090   draining _diag/dicos-f-03, 24 checkpoints  ~3 h
+
+The second closes the declared 91-114 diagnostics gap. Neither touches the test
+split; no paid compute is involved.
+
+`docs/WALKAWAY_RUNBOOK.md` is the come-back-later page, and
+`scripts/v3_status.py` prints both pods, live writers, newest epochs and queue
+depth in one read-only command.
+
+### What S1 is asking
+
+Do incident-axis node coordinates lower the validation loss below B0's
+**4.483768**? Because the migration is a no-op, epoch 1 should start close to
+that number; a wildly different starting loss would indicate an initialization
+problem rather than a dramatic effect. A worse final loss is a real negative
+result and is to be reported as one -- the promotion rule retains the simpler
+parent when an improvement is statistically unresolved.
+
+### Also recorded
+
+The production graph carries **107,920 edges** against the 40,740 the synthetic
+resource preflight used, so the measured D1 peak of 14.85 GiB is an
+**underestimate** for the real geometry and must be re-measured before any D1
+run is planned.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`. A classifier still separates Fast-MC from
+Geant4 at AUROC 0.843 against a 0.65 target, and nothing launched here changes
+that.
