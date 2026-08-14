@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-resource-preflight",
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 4090",
+  "torch": "2.6.0+cu124",
+  "generator_batch": 6,
+  "critic_batch": 4,
+  "channels": 6790,
+  "layers": 65,
+  "edges": 40740,
+  "probes": [
+    {
+      "probe": "v3_supervised_generator",
+      "status": "ok",
+      "repeats": 3,
+      "seconds_per_update_median": 0.017719546258449556,
+      "seconds_per_update_min": 0.01724125761538744,
+      "seconds_per_update_max": 0.017875801157206297,
+      "peak_allocated_gib": 0.07485294342041016,
+      "peak_reserved_gib": 0.08203125,
+      "device_total_gib": 23.5184326171875,
+      "updates_measured_each": 100,
+      "warmup_updates": 20
+    },
+    {
+      "probe": "d1_critic_update",
+      "status": "ok",
+      "repeats": 3,
+      "seconds_per_update_median": 0.15236914116889239,
+      "seconds_per_update_min": 0.15222391318529843,
+      "seconds_per_update_max": 0.15270018411800265,
+      "peak_allocated_gib": 14.846585750579834,
+      "peak_reserved_gib": 15.123046875,
+      "device_total_gib": 23.5184326171875,
+      "updates_measured_each": 100,
+      "warmup_updates": 20
+    },
+    {
+      "probe": "d1_generator_through_frozen_critic",
+      "status": "ok",
+      "repeats": 3,
+      "seconds_per_update_median": 0.21659309681504965,
+      "seconds_per_update_min": 0.2158376103080809,
+      "seconds_per_update_max": 0.21685211040079594,
+      "peak_allocated_gib": 13.271602153778076,
+      "peak_reserved_gib": 13.580078125,
+      "device_total_gib": 23.5184326171875,
+      "updates_measured_each": 100,
+      "warmup_updates": 20
+    },
+    {
+      "probe": "d2_critic_update",
+      "status": "ok",
+      "repeats": 3,
+      "seconds_per_update_median": 0.015401413608342409,
+      "seconds_per_update_min": 0.015205319356173277,
+      "seconds_per_update_max": 0.01565243098884821,
+      "peak_allocated_gib": 0.09826374053955078,
+      "peak_reserved_gib": 0.109375,
+      "device_total_gib": 23.5184326171875,
+      "updates_measured_each": 100,
+      "warmup_updates": 20
+    },
+    {
+      "probe": "d2_generator_through_frozen_critic",
+      "status": "ok",
+      "repeats": 3,
+      "seconds_per_update_median": 0.021447016634047033,
+      "seconds_per_update_min": 0.02035268984735012,
+      "seconds_per_update_max": 0.021531291771680117,
+      "peak_allocated_gib": 0.0917048454284668,
+      "peak_reserved_gib": 0.10546875,
+      "device_total_gib": 23.5184326171875,
+      "updates_measured_each": 100,
+      "warmup_updates": 20
+    }
+  ],
+  "authorization": "measurement only; this does not authorize a training campaign",
+  "declared_values_not_adjusted": [
+    "critic batch size 4",
+    "replay capacity 65536",
+    "R1 gamma 1.0",
+    "spectral normalization",
+    "65 detector layers"
+  ]
+}
