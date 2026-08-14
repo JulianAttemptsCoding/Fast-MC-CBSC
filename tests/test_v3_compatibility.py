@@ -133,3 +133,106 @@ def test_v2_config_ignores_v3_only_model_keys_for_schema_selection() -> None:
     config["model"]["support_temperature"] = 0.25
     assert architecture_version(config) == ARCHITECTURE_V2_2
     validate_config(config)
+
+
+# --- v2 -> v3 migration -------------------------------------------------
+
+def _v2_state() -> dict:
+    import torch
+
+    return {
+        "condition.net.0.weight": torch.randn(4, 5),
+        "response.visible.0.weight": torch.randn(3, 4),
+        "response.mixture.0.weight": torch.randn(6, 4),
+        "support.input.0.weight": torch.randn(8, 10),
+        "share.input.0.weight": torch.randn(8, 11),
+        "support.blocks.0.message.0.weight": torch.randn(4, 4),
+    }
+
+
+def _v3_target(source: dict) -> dict:
+    import torch
+
+    target = {k: torch.zeros_like(v) for k, v in source.items()}
+    # the expanded projections gain four axis columns
+    target["support.input.0.weight"] = torch.randn(8, 14)
+    target["share.input.0.weight"] = torch.randn(8, 15)
+    # a v3-only module the source does not have
+    target["first_layer.ecal.0.weight"] = torch.randn(4, 5)
+    return target
+
+
+def test_migration_rejects_every_unclassified_state_key() -> None:
+    from cbsc_zdc.training.migration import MigrationError, migrate_state_dict
+
+    source = _v2_state()
+    source["something.unknown.weight"] = __import__("torch").randn(2, 2)
+    target = _v3_target(source)
+    with pytest.raises(MigrationError, match="could not be classified"):
+        migrate_state_dict(source, target)
+
+
+def test_migration_zero_axis_columns_preserve_node_logits() -> None:
+    import torch
+
+    from cbsc_zdc.training.migration import migrate_state_dict
+
+    source = _v2_state()
+    target = _v3_target(source)
+    migrated, report = migrate_state_dict(source, target)
+
+    for key in ("support.input.0.weight", "share.input.0.weight"):
+        old = source[key]
+        new = migrated[key]
+        assert new.shape[1] == old.shape[1] + 4
+        # old columns copied exactly
+        assert torch.equal(new[:, : old.shape[1]], old)
+        # the four axis columns are exactly zero, so a migrated model reproduces
+        # its v2 parent before fine-tuning
+        assert torch.equal(new[:, old.shape[1] :], torch.zeros(new.shape[0], 4))
+
+    # a zero axis block means the projection output is unchanged for any input
+    # whose axis features are appended
+    old_w = source["support.input.0.weight"]
+    new_w = migrated["support.input.0.weight"]
+    x_old = torch.randn(3, old_w.shape[1])
+    x_new = torch.cat([x_old, torch.randn(3, 4)], dim=1)
+    assert torch.allclose(x_old @ old_w.T, x_new @ new_w.T, atol=1e-6)
+
+    assert report["counts"]["expanded"] == 2
+    assert report["counts"]["unexpected"] == 0
+
+
+def test_migration_reinitializes_superseded_modules() -> None:
+    from cbsc_zdc.training.migration import migrate_state_dict
+
+    source = _v2_state()
+    target = _v3_target(source)
+    migrated, report = migrate_state_dict(source, target)
+    # the v2 mixture head is superseded by the bounded spline
+    assert "response.mixture.0.weight" in report["initialized"]
+    # a v3-only module is reported as initialized too
+    assert "first_layer.ecal.0.weight" in report["initialized"]
+
+
+def test_migration_copies_shared_modules_exactly() -> None:
+    import torch
+
+    from cbsc_zdc.training.migration import migrate_state_dict
+
+    source = _v2_state()
+    migrated, report = migrate_state_dict(source, _v3_target(source))
+    assert torch.equal(migrated["condition.net.0.weight"], source["condition.net.0.weight"])
+    assert any(c["key"] == "condition.net.0.weight" for c in report["copied"])
+
+
+def test_migration_refuses_a_shape_change_under_an_exact_copy_rule() -> None:
+    import torch
+
+    from cbsc_zdc.training.migration import MigrationError, migrate_state_dict
+
+    source = _v2_state()
+    target = _v3_target(source)
+    target["condition.net.0.weight"] = torch.zeros(9, 9)
+    with pytest.raises(MigrationError, match="shapes differ"):
+        migrate_state_dict(source, target)
