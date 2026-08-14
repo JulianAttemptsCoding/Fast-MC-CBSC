@@ -13,11 +13,14 @@ project real time. It does not replace the binding contracts — `AGENTS.md`,
 
 Four calibrated families train a hierarchical stochastic generative model of
 ZDC showers. The validation objective improves and structural invariants hold.
-**Geant4 fidelity is not established, and the distribution metrics have not
-followed the loss down.** A classifier still separates Fast-MC from Geant4 at
-AUROC 0.77–0.92 at every epoch ever measured, against a 0.65 target it has
-never approached. Treat every loss improvement below as evidence about
-optimization, not about physics.
+**Geant4 fidelity is not established.** A classifier separates Fast-MC from
+Geant4 at AUROC 0.8624 and 0.8727 (seed-mean) on the only two checkpoints ever
+evaluated — per-energy-bin values span the 0.77–0.92 quoted elsewhere — against
+a 0.65 target never approached, and nothing in the current leading chain has
+been evaluated at all. The model is **measurably overfitting** (§4), while
+the per-epoch distribution metrics are too noisy at their current sample size
+to say whether fidelity is improving or degrading. Treat every loss improvement
+below as evidence about optimization, not about physics.
 
 ## 2. Current standings
 
@@ -67,26 +70,72 @@ single-seed — three-seed behaviour remains unestablished.
 both failed to beat it. Do not expect more from this configuration; the next
 gain has to come from elsewhere.
 
-## 4. The loss does not track fidelity — read this before touching the loss
+## 4. It is overfitting; whether fidelity degrades is NOT established
 
-Comparing `dicos-e-02` epoch 54 against `dicos-f-02` epoch 78, the validation
-loss improved while the physics got worse:
+### The training set is being fitted ~6x faster than the model generalizes
 
-| Metric (Wasserstein unless noted) | e-02 e54 | f-02 e78 |
-|---|---|---|
-| total response (GeV) | 0.510 | 0.704 |
-| longitudinal profile (relative L1) | 0.180 | 0.231 |
-| ECAL fraction | 0.026 | 0.063 |
-| radial RMS (mm) | 1.507 | 2.000 |
-| hit count | 52.4 | 59.1 |
+Over the live lineage, epochs 48–114, n=67:
 
-This is the strongest available argument that the objective is misaligned with
-fidelity, and it is the natural starting point for loss-function work. Two
-standing rules constrain that work: checkpoint selection follows the validation
-loss **as declared** and does not switch to whichever metric flatters a run,
-and any changed loss is a **new declared experiment** (`AGENTS.md` 28). Never
-wrap an NLL component in `abs`/L2 to force nonnegativity — a negative NLL is
-legitimate and more negative is better.
+| Series | Pearson r vs epoch | t | Verdict |
+|---|---|---|---|
+| train loss | −0.805 | 10.93 | falling, p<0.001 |
+| validation loss | −0.358 | 3.09 | falling, p<0.05 |
+| **train↔val gap** | **+0.560** | **5.46** | **widening, p<0.001** |
+
+Train loss improved **0.13436**, validation only **0.02324** — a **5.8x** ratio.
+The gap drifted **+0.04131** between halves: early epochs sit at −0.037 mean
+(validation below train), later at +0.004 (validation above). That is the
+overfitting signature, and it is statistically strong.
+
+For scale: the total validation gain across all 67 epochs (0.023) is *smaller*
+than the one-off gain from fixing the learning-rate schedule (0.029).
+
+### A retracted claim, kept here so it is not re-derived
+
+An earlier version of this document, `logs.md`, and
+`audit/lr_anneal_result_20260813_terminal_analysis.*` stated that "the loss
+improved while the physics got worse", from `dicos-e-02` e54 against
+`dicos-f-02` e78. **That is withdrawn.** It was two points out of a series whose
+adjacent epochs swing 0.36–0.75 on the same metric. Tested across epochs 48–86,
+n=39:
+
+| Metric | r vs epoch | t | significant? | r vs validation loss |
+|---|---|---|---|---|
+| total response | −0.019 | 0.11 | no | +0.347 (aligned) |
+| longitudinal L1 | +0.265 | 1.67 | no | +0.013 |
+| ECAL fraction | +0.315 | 2.02 | borderline | −0.400 (misaligned) |
+| radial RMS | +0.258 | 1.63 | no | −0.110 |
+| hit count | −0.061 | 0.37 | no | +0.001 |
+
+No metric shows a significant trend with epoch. Correlation with the loss is
+mixed — two aligned, two misaligned, one neutral — and the per-epoch scatter is
+16–45%. At 4,000 events per epoch these diagnostics **cannot resolve a fidelity
+trend in either direction.** Raising the event count is the prerequisite for
+answering the question at all.
+
+### AUROC has never been measured on any of this
+
+The classifier two-sample test exists for exactly two checkpoints, both epoch
+≤38, and **nothing in the f-chain (48–114) has been evaluated**:
+
+| Checkpoint | Validation loss | AUROC | high-level AUROC | energy rel. RMSE | angular median |
+|---|---|---|---|---|---|
+| `dicos-c-02` e34 (lr3e4) | 4.550331 | 0.8624 ± 0.0147 | 0.8947 | 0.2156 | 9.51 mrad |
+| `dicos-p9` e38 (lr1e4) | 4.635220 | 0.8727 ± 0.0117 | 0.9291 | 0.2494 | 15.56 mrad |
+
+Within that pair the better loss carried the better AUROC, but they are
+different families and two points prove nothing. Whether the 4.550 → 4.484
+improvement moved AUROC is **unmeasured**. Both sit far above the 0.65 target.
+
+### What this means for loss-function work
+
+The honest statement is *overfitting is established, misalignment is not*.
+Do not start from "the loss is wrong" — start from measuring whether it is.
+Two standing rules constrain the work: checkpoint selection follows the
+validation loss **as declared** and does not switch to whichever metric
+flatters a run, and any changed loss is a **new declared experiment**
+(`AGENTS.md` 28). Never wrap an NLL component in `abs`/L2 to force
+nonnegativity — a negative NLL is legitimate and more negative is better.
 
 ## 5. Defects found, and their status
 

@@ -648,22 +648,22 @@
         "sha256": "ad116aa7b019c89e52de6db46d32299951cb5a22cef102e34a3b57681f8ed1b0"
       },
       {
-        "bytes": 183358,
+        "bytes": 189992,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1808,
         "path": "current/diagnostics/energy_bin_moments_of_best_loss_so_far.png",
         "scope": "current",
-        "sha256": "e29e22a0296e12ab7569f72c2a72db8045cc19a35b85e997a8e5fbe3377b1261",
+        "sha256": "59f92fcf558a47faba47ee1cfcc60ac2c5832f9d4dd2f3c36ea4140825ec83f8",
         "width": 2133
       },
       {
-        "bytes": 210136,
+        "bytes": 250478,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/energy_bin_moments_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "35f3eafe28be5beef74467a61acd8720dde52480282f937191a173c8b14d12ad"
+        "sha256": "c919fe64232667d0de1e7d473609c8167baa16ce2dc2574cb2bd7dbe6bdd1e3e"
       },
       {
         "bytes": 399827,
@@ -681,7 +681,7 @@
         "format": "svg",
         "path": "current/diagnostics/energy_bin_moments_vs_epoch.svg",
         "scope": "current",
-        "sha256": "4864d9808140b65596f082fbaf42566bff6ef947971b0fa7323ed08c1450e246"
+        "sha256": "07919f5e372f5347a3f8ec3dfbfe3dd5e79928b0c9511e42258bb1b5289eccef"
       },
       {
         "bytes": 181401,
@@ -720,22 +720,22 @@
         "sha256": "f4d4e5b6cb20e684cd8e2dc0f1e8e3f7c40e9d30866abc69d632f7fa3851bc31"
       },
       {
-        "bytes": 192581,
+        "bytes": 198734,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1504,
         "path": "current/diagnostics/feature_moments_of_best_loss_so_far.png",
         "scope": "current",
-        "sha256": "1c86ec1a0ba4f6690aa963682d74b286be9eb1a60f7bdc04f826d88598ecb23a",
+        "sha256": "dd7488f5fcc342caf40d43cd11b0600be1f1933be1c0bc647f984ad6d25f9448",
         "width": 2133
       },
       {
-        "bytes": 223132,
+        "bytes": 263549,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/feature_moments_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "8456e95109a5d67a91f6f5d2eca5042d213525ec26dddf0eca9d8a6c3f32d820"
+        "sha256": "6136800314d93a04430dfe5e8db24d7ffbc5150489104d9e4a5a8d1c0f99dd0f"
       },
       {
         "bytes": 359526,
@@ -753,25 +753,25 @@
         "format": "svg",
         "path": "current/diagnostics/feature_moments_vs_epoch.svg",
         "scope": "current",
-        "sha256": "1944573aa89eb38282db3c8534d99d34e008e0a4687c56f1c97bbc7ce2e47cdb"
+        "sha256": "c060654a64e1546478b84afac15a4bf9558cdc4014254885836562061ca86aff"
       },
       {
-        "bytes": 181814,
+        "bytes": 182054,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1504,
         "path": "current/diagnostics/feature_resolutions_of_best_loss_so_far.png",
         "scope": "current",
-        "sha256": "c5d48134f922c126f6fc9e6e80bfc80ede8c2e4e6ad2fb34e0ceb2c99c5b0476",
+        "sha256": "0aed40d47609e7f1cd291cf4b63c062d541f35de2ad218531a645f3b1460b565",
         "width": 2133
       },
       {
-        "bytes": 217733,
+        "bytes": 253482,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/feature_resolutions_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "0ebea3a4040de98abd375231353b3ce4dc05217ef2bc42ccc9b6e503e168705f"
+        "sha256": "5978144e2e1d302656760cca58ba467a6b03fc8e9bfea6cb96d0daae6a94bca2"
       },
       {
         "bytes": 354912,
@@ -789,7 +789,7 @@
         "format": "svg",
         "path": "current/diagnostics/feature_resolutions_vs_epoch.svg",
         "scope": "current",
-        "sha256": "73e8a223ca4dad6c237751a78a190d051a1b43e6ad39b96f26fb846dd4900d83"
+        "sha256": "3e78f32b2ea7d627649df0e7b45f6ca14da80ff8d84cc6bcc8607b89f64177f9"
       },
       {
         "bytes": 195334,
@@ -828,22 +828,22 @@
         "sha256": "037efa820a28b9bff3e8609a3261154423392c315a9ca2095bfa2d8841946519"
       },
       {
-        "bytes": 205200,
+        "bytes": 204524,
         "category": "current_validation_diagnostics",
         "format": "png",
         "height": 1296,
         "path": "current/diagnostics/profiles_and_qa_of_best_loss_so_far.png",
         "scope": "current",
-        "sha256": "d216db501df04cb34908e64a4cf16f07ed7bbfc946cd604eb84f74a972094145",
+        "sha256": "5c520e93205e4b1d9ced07bd2fe897d70fb5773163c4aef66f0461aaae4df299",
         "width": 2133
       },
       {
-        "bytes": 173214,
+        "bytes": 183173,
         "category": "current_validation_diagnostics",
         "format": "svg",
         "path": "current/diagnostics/profiles_and_qa_of_best_loss_so_far.svg",
         "scope": "current",
-        "sha256": "917915ddfefaefd5927c8c3db98fb59619ad4cbea0ac49222e080dcd0726f50e"
+        "sha256": "a21e9066a8291e20a15551181b6feabf6464d9f091f7330d803a60110b50215e"
       },
       {
         "bytes": 283936,
@@ -861,7 +861,7 @@
         "format": "svg",
         "path": "current/diagnostics/profiles_and_qa_vs_epoch.svg",
         "scope": "current",
-        "sha256": "fe7d8ed0c82acfd2dcf8cfaeaaa1643fe8f910e990b1678ef8a35f1b7bc1c17c"
+        "sha256": "3e1ddb7ddd82e501d2a620d8b464c40a7c7cb22af3ce2ae2a9494b0ab7369029"
       },
       {
         "bytes": 267596,

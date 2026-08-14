@@ -86,30 +86,55 @@
     "fix": "checkpoint_epoch(best_path) is authoritative; staged_best_is_inherited() names the condition; supervisor journals segment_kept_inherited_best"
   },
   "loss_versus_fidelity": {
-    "comparison": "dicos-e-02 epoch 54 versus dicos-f-02 epoch 78",
-    "validation_loss_direction": "improved",
-    "distribution_metrics_direction": "all five worse",
-    "metrics": {
-      "total_response_gev_wasserstein": [
-        0.50974,
-        0.70446
+    "status": "WITHDRAWN 2026-08-13",
+    "withdrawn_claim": "the loss improved while the physics got worse, from dicos-e-02 e54 versus dicos-f-02 e78",
+    "why_withdrawn": "two points out of a series whose adjacent epochs swing 0.36-0.75 on the same metric; no significant trend survives when the whole lineage is tested",
+    "replacement_test": {
+      "epochs": [
+        48,
+        86
       ],
-      "mean_longitudinal_profile_relative_l1": [
-        0.17992,
-        0.23088
+      "n": 39,
+      "family": "calibrated_lr3e4",
+      "lineage": [
+        "dicos-f-01",
+        "dicos-f-02"
       ],
-      "ecal_fraction_wasserstein": [
-        0.02624,
-        0.063
-      ],
-      "radial_rms_mm_wasserstein": [
-        1.50709,
-        1.99955
-      ],
-      "hit_count_wasserstein": [
-        52.35871,
-        59.13216
-      ]
+      "significance_threshold": "t>2.02 is p<0.05 at n=39",
+      "metrics": {
+        "total_response_gev_wasserstein": {
+          "r_vs_epoch": -0.019,
+          "t": 0.11,
+          "significant": false,
+          "r_vs_validation_loss": 0.347
+        },
+        "mean_longitudinal_profile_relative_l1": {
+          "r_vs_epoch": 0.265,
+          "t": 1.67,
+          "significant": false,
+          "r_vs_validation_loss": 0.013
+        },
+        "ecal_fraction_wasserstein": {
+          "r_vs_epoch": 0.315,
+          "t": 2.02,
+          "significant": "borderline",
+          "r_vs_validation_loss": -0.4
+        },
+        "radial_rms_mm_wasserstein": {
+          "r_vs_epoch": 0.258,
+          "t": 1.63,
+          "significant": false,
+          "r_vs_validation_loss": -0.11
+        },
+        "hit_count_wasserstein": {
+          "r_vs_epoch": -0.061,
+          "t": 0.37,
+          "significant": false,
+          "r_vs_validation_loss": 0.001
+        }
+      },
+      "per_epoch_scatter_coefficient_of_variation": "16-45 percent",
+      "conclusion": "at 4000 events per epoch these diagnostics cannot resolve a fidelity trend in either direction; misalignment is neither shown nor excluded"
     }
   },
   "diagnostics_gap": {
@@ -154,5 +179,71 @@
     "diagnostics replay for epochs 79-114; until epoch 90 is measured the accepted best is dicos-f-01 e70 at 4.497629",
     "a publication remains owed and is the owner's call",
     "loss-function work, not started"
-  ]
+  ],
+  "overfitting": {
+    "status": "ESTABLISHED",
+    "epochs": [
+      48,
+      114
+    ],
+    "n": 67,
+    "lineage": [
+      "dicos-f-01<=70",
+      "dicos-f-02 71-90",
+      "dicos-f-03 >=91"
+    ],
+    "train_loss_vs_epoch": {
+      "r": -0.805,
+      "t": 10.93,
+      "p": "<0.001"
+    },
+    "validation_loss_vs_epoch": {
+      "r": -0.358,
+      "t": 3.09,
+      "p": "<0.05"
+    },
+    "gap_vs_epoch": {
+      "r": 0.56,
+      "t": 5.46,
+      "p": "<0.001",
+      "definition": "validation minus train"
+    },
+    "train_total_improvement": 0.13436,
+    "validation_total_improvement": 0.02324,
+    "ratio": 5.8,
+    "gap_drift_between_halves": 0.04131,
+    "gap_mean_first_half": -0.03729,
+    "gap_mean_second_half": 0.00402,
+    "note": "the total validation gain across all 67 epochs is smaller than the one-off gain from correcting the learning-rate schedule"
+  },
+  "auroc": {
+    "status": "never measured on the f-chain",
+    "measured_checkpoints": [
+      {
+        "run_tag": "dicos-c-02",
+        "epoch": 34,
+        "family": "calibrated_lr3e4",
+        "validation_loss": 4.5503306071196254,
+        "auroc_mean": 0.8624148148148149,
+        "auroc_std": 0.014731988462305359,
+        "high_level_auroc": 0.8947305555555556,
+        "energy_relative_rmse": 0.21564963981328203,
+        "angular_median_mrad": 9.511374118176608
+      },
+      {
+        "run_tag": "dicos-p9",
+        "epoch": 38,
+        "family": "calibrated_lr1e4",
+        "validation_loss": 4.635219681489869,
+        "auroc_mean": 0.8726555555555556,
+        "auroc_std": 0.011687150998288242,
+        "high_level_auroc": 0.9290972222222222,
+        "energy_relative_rmse": 0.24941970758526708,
+        "angular_median_mrad": 15.559848215446166
+      }
+    ],
+    "caveat": "different families, two points; whether the 4.550->4.484 improvement moved AUROC is unmeasured",
+    "threshold": 0.65,
+    "both_far_above_threshold": true
+  }
 }

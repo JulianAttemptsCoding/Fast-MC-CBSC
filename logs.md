@@ -9830,3 +9830,61 @@ checkpoints"; both were years of work out of date and are corrected.
    serves `dicos-p9` (`calibrated_lr1e4`, 4.635220).
 3. The loss-function work the LR result now motivates. Nothing about it has
    been started.
+
+### 2026-08-13 (later) -- a claim withdrawn, and overfitting established in its place
+
+**The "loss improved while the physics got worse" claim from the entry above is
+WITHDRAWN.** It rested on `dicos-e-02` e54 against `dicos-f-02` e78 -- two
+points -- and the series they came from swings 0.36 to 0.75 on total-response
+Wasserstein between *adjacent* epochs. Picking two endpoints out of that is the
+inverse of the rule this project already has about not cherry-picking a
+favourable epoch, and it produced a confident statement the evidence does not
+support. Corrected in `docs/HANDOFF.md` section 4 and in
+`audit/lr_anneal_result_20260813_terminal_analysis.{json,md}`, with the
+withdrawal kept visible in all three so it is not re-derived from the same two
+numbers later.
+
+Tested properly across the live lineage, epochs 48-86, n=39, where t>2.02 is
+p<0.05:
+
+    metric            r vs epoch    t      significant   r vs val loss
+    total response      -0.019     0.11        no          +0.347 aligned
+    longitudinal L1     +0.265     1.67        no          +0.013
+    ECAL fraction       +0.315     2.02      borderline    -0.400 misaligned
+    radial RMS          +0.258     1.63        no          -0.110
+    hit count           -0.061     0.37        no          +0.001
+
+No distribution metric shows a significant trend with epoch. Correlation with
+the validation loss is mixed -- two aligned, two misaligned, one neutral -- and
+per-epoch scatter runs 16-45%. **At 4,000 events per epoch these diagnostics
+cannot resolve a fidelity trend in either direction.** Misalignment is neither
+shown nor excluded, and raising the event count is the prerequisite for asking
+the question at all.
+
+**What the evidence does support is overfitting.** Live lineage, epochs 48-114,
+n=67:
+
+    series                       r vs epoch     t       verdict
+    train loss                     -0.805     10.93     falling, p<0.001
+    validation loss                -0.358      3.09     falling, p<0.05
+    train-to-validation gap        +0.560      5.46     widening, p<0.001
+
+Train loss improved **0.13436**; validation improved **0.02324**; ratio
+**5.8x**. The gap drifted **+0.04131** between halves, from -0.03729 mean
+(validation below train, the normal regularised picture) to +0.00402
+(validation above). For scale, the total validation gain across all 67 epochs
+is *smaller* than the single-shot 0.028953 from correcting the learning-rate
+schedule.
+
+**AUROC cannot be compared, because it was never measured on any of this.** The
+classifier two-sample test exists for `dicos-c-02` e34 (lr3e4, loss 4.550331,
+AUROC 0.8624 +/- 0.0147, high-level 0.8947) and `dicos-p9` e38 (lr1e4, loss
+4.635220, AUROC 0.8727 +/- 0.0117, high-level 0.9291). Different families, two
+points. Nothing in the f-chain, where the loss went 4.550 -> 4.484, has been
+evaluated. Both measured points sit far above the 0.65 target.
+
+Recording this because the shape of the question changed: the useful next
+experiment is not "the loss is misaligned, replace it" but "the model is
+overfitting and the fidelity instrument is too noisy to adjudicate" -- which
+implies more events per diagnostic and a regularisation or data-scale lever
+before a loss redesign.

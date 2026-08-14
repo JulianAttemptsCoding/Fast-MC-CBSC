@@ -34,17 +34,53 @@ declared 24. At epoch 114 its learning rate was 1.3487e-04 against
 `dicos-f-03`'s 1.0000e-06, a factor of 135. Undeclared variant under AGENTS.md
 28; excluded from the live lineage, retained as evidence. Cost 5.8 GPU-hours.
 
-## The loss does not track fidelity
+## Overfitting — established
 
-`dicos-e-02` e54 versus `dicos-f-02` e78, validation loss improving:
+Live lineage, epochs 48-114, n=67:
 
-| metric | e54 | e78 |
-|---|---|---|
-| total response GeV (Wasserstein) | 0.50974 | 0.70446 |
-| longitudinal profile (relative L1) | 0.17992 | 0.23088 |
-| ECAL fraction (Wasserstein) | 0.02624 | 0.06300 |
-| radial RMS mm (Wasserstein) | 1.50709 | 1.99955 |
-| hit count (Wasserstein) | 52.35871 | 59.13216 |
+| series | r vs epoch | t | verdict |
+|---|---|---|---|
+| train loss | -0.805 | 10.93 | falling, p<0.001 |
+| validation loss | -0.358 | 3.09 | falling, p<0.05 |
+| train-to-validation gap | +0.560 | 5.46 | widening, p<0.001 |
+
+Train improved 0.13436 against validation's 0.02324, a ratio of 5.8. The gap
+drifted +0.04131 between halves, from -0.03729 mean (validation below train) to
++0.00402 (validation above). The total validation gain across all 67 epochs is
+smaller than the one-off gain from correcting the learning-rate schedule.
+
+## The fidelity claim is WITHDRAWN
+
+An earlier version of this file stated that the loss improved while the physics
+got worse, from `dicos-e-02` e54 against `dicos-f-02` e78. **Withdrawn**: two
+points out of a series whose adjacent epochs swing 0.36-0.75 on the same metric.
+
+Tested across epochs 48-86, n=39, where t>2.02 is p<0.05:
+
+| metric | r vs epoch | t | significant | r vs validation loss |
+|---|---|---|---|---|
+| total response | -0.019 | 0.11 | no | +0.347 aligned |
+| longitudinal L1 | +0.265 | 1.67 | no | +0.013 |
+| ECAL fraction | +0.315 | 2.02 | borderline | -0.400 misaligned |
+| radial RMS | +0.258 | 1.63 | no | -0.110 |
+| hit count | -0.061 | 0.37 | no | +0.001 |
+
+No significant trend, mixed correlation with the loss, per-epoch scatter 16-45%.
+At 4,000 events per epoch these diagnostics cannot resolve a fidelity trend in
+either direction. Misalignment is neither shown nor excluded.
+
+## AUROC
+
+Measured on two checkpoints only, both epoch <=38; nothing in the f-chain
+(48-114) has been evaluated.
+
+| checkpoint | validation loss | AUROC | high-level AUROC |
+|---|---|---|---|
+| `dicos-c-02` e34, lr3e4 | 4.550331 | 0.8624 +/- 0.0147 | 0.8947 |
+| `dicos-p9` e38, lr1e4 | 4.635220 | 0.8727 +/- 0.0117 | 0.9291 |
+
+Different families, two points. Whether the 4.550 -> 4.484 improvement moved
+AUROC is unmeasured. Both sit far above the 0.65 target.
 
 ## Diagnostics gap
 
