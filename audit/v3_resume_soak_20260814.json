@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-resume-soak",
+  "device": "NVIDIA GeForce RTX 4090",
+  "updates": 32,
+  "stopped_after": 16,
+  "batch": 4,
+  "max_abs_generator_parameter_difference": 0.0,
+  "gate_max_abs_difference": 1e-06,
+  "generator_parameters_match": true,
+  "critic_update_count_restored": 16,
+  "generator_update_count_restored": 16,
+  "contract_hash_verified": true,
+  "replay_manifest_verified": true,
+  "replay_content_matches_after_resume": true,
+  "controller_lambda_restored": 1.0,
+  "status": "pass",
+  "note": "a nondeterministic backend does not waive this gate"
+}

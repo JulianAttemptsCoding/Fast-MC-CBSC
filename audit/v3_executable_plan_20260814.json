@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-executable-plan",
+  "source_matrix": "specs/improvement_v3/experiment_matrix.csv",
+  "source_matrix_sha256": "ecbdf76baa5340615a9976041670255481335a958be743f71a82156396e579a2",
+  "source_matrix_unmodified": true,
+  "plan_path": "specs/improvement_v3/executable_plan_20260814.csv",
+  "plan_sha256": "a84a0d8826d435b2f3b37eaf40ecb1d7cd1d38904e5c4b0df14bd689dd5dfdfd",
+  "preflight_evidence_sha256": "a18a63173beda3405a703286db4cc7a16a573a755a2e5db29b65ee8967a6653f",
+  "device_total_gib": 23.5184326171875,
+  "measured": {
+    "critic_batch": 4,
+    "supervised_seconds_per_batch": 0.11713,
+    "d1_added_seconds_per_batch": 0.36896,
+    "d2_added_seconds_per_batch": 0.03685,
+    "d1_peak_gib": 14.85,
+    "d2_peak_gib": 0.1
+  },
+  "rows": 28,
+  "eligibility_counts": {
+    "completed_existing_evidence": 1,
+    "deferred_budget": 13,
+    "conditional_predecessor": 13,
+    "conditional_metric_trigger": 1
+  },
+  "total_projected_gpu_hours_central": 6038.6,
+  "authorization": "no row is launched by this builder"
+}
