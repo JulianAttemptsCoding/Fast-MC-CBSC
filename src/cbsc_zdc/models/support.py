@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 import torch
 
 
@@ -12,13 +13,31 @@ class DecodeOutput:
     layer_closure_error: torch.Tensor
 
 
-def exact_k_mask(logits:torch.Tensor,k:torch.Tensor,stochastic:bool=True)->torch.Tensor:
+SUPPORT_TEMPERATURE_DEFAULT = 1.0
+
+
+def exact_k_mask(logits:torch.Tensor,k:torch.Tensor,stochastic:bool=True,temperature:float=SUPPORT_TEMPERATURE_DEFAULT)->torch.Tensor:
+    """Select exactly ``k`` channels per row by perturbed top-k.
+
+    ``temperature`` divides the logits before the Gumbel noise is added, so a
+    lower value lets the learned logits dominate the draw and a higher value
+    lets the noise dominate.  It is a frozen sampling constant, not a learned
+    parameter, and it cannot change the deterministic ordering: with
+    ``stochastic=False`` a positive scale leaves the argsort untouched.
+
+    The forward output is an exact hard boolean mask.  No relaxation is
+    introduced here; a structured estimator is a separate, triggered piece of
+    work (D3) with its own estimator QA.
+    """
     b,n=logits.shape
     if k.shape!=(b,): raise ValueError('k shape mismatch')
     if (k<0).any() or (k>n).any(): raise ValueError('infeasible k')
-    scores=logits
+    temperature=float(temperature)
+    if not math.isfinite(temperature) or temperature<=0:
+        raise ValueError(f'support temperature must be finite and strictly positive, got {temperature!r}')
+    scores=logits/temperature
     if stochastic:
-        u=torch.rand_like(logits).clamp_(1e-7,1-1e-7); scores=logits-torch.log(-torch.log(u))
+        u=torch.rand_like(logits).clamp_(1e-7,1-1e-7); scores=scores-torch.log(-torch.log(u))
     order=scores.argsort(dim=-1,descending=True); rank=torch.empty_like(order); rank.scatter_(1,order,torch.arange(n,device=logits.device)[None].expand(b,-1))
     return rank<k[:,None]
 
