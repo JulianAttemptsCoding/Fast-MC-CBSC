@@ -11,6 +11,7 @@ from .counts import LayerCountHead
 from .node_fields import ShareFlowField,SupportScoreField
 from .profile import LongitudinalProfileModel
 from .response import ResponseHead
+from .axis_features import AXIS_FEATURE_DIM, axis_features, geometry_scales, resolve_frozen_vertex
 from .support import decode_exact_support
 
 
@@ -46,8 +47,24 @@ class CBSCZDC(nn.Module):
         self.response=ResponseHead(cond_dim,int(m.get('response_hidden',192)),int(m.get('response_components',4)),float(m.get('response_scale_gev',10.0)))
         self.profile=LongitudinalProfileModel(cond_dim,self.n_layers,int(m.get('profile_hidden',128)),mode)
         self.counts=LayerCountHead(cond_dim,self.n_layers,max_counts,int(m.get('count_hidden',192)))
-        field_args=dict(node_dim=self.node_features.shape[1],edge_dim=self.edge_features.shape[1],cond_dim=cond_dim,n_layers=self.n_layers,hidden=hidden,blocks=int(m.get('graph_blocks',3)),heads=int(m.get('attention_heads',4)),context_layers=int(m.get('attention_layers',2)),mode=mode)
+        # Incident-axis features are opt-in, and default OFF even under v3. The
+        # experiment matrix screens them as their own row (S1-axis), so a v3
+        # baseline must be able to run without them; turning them on by default
+        # would fold S1's change into every later row and make it unattributable.
+        self.axis_enabled=bool(self.is_v3 and m.get('axis_features',False))
+        axis_dim=AXIS_FEATURE_DIM if self.axis_enabled else 0
+        field_args=dict(node_dim=self.node_features.shape[1],edge_dim=self.edge_features.shape[1],cond_dim=cond_dim,n_layers=self.n_layers,hidden=hidden,blocks=int(m.get('graph_blocks',3)),heads=int(m.get('attention_heads',4)),context_layers=int(m.get('attention_layers',2)),mode=mode,axis_dim=axis_dim)
         self.support=SupportScoreField(**field_args); self.share=ShareFlowField(**field_args)
+        if self.axis_enabled:
+            positions=geometry.get('cell_positions_mm')
+            if positions is None:
+                raise ValueError('axis features require geometry["cell_positions_mm"]')
+            vertex=geometry.get('generator_vertex_mm')
+            vertex=torch.zeros(3,dtype=positions.dtype) if vertex is None else resolve_frozen_vertex(vertex)
+            self.register_buffer('cell_positions_mm',positions.clone().float())
+            self.register_buffer('generator_vertex_mm',vertex.clone().float())
+            scales=geometry_scales(self.cell_positions_mm,self.generator_vertex_mm)
+            self.axis_s_scale_mm=scales['s_scale_mm']; self.axis_r_scale_mm=scales['r_scale_mm']
         self.register_buffer('max_counts',torch.tensor(max_counts,dtype=torch.long))
         self.response_cap_ratio=float(d.get('response_cap_ratio',2.0)); self.response_cap_absolute_gev=float(d.get('response_cap_absolute_gev',500.0))
         self.support_temperature=float(m.get('support_temperature',1.0))
@@ -109,13 +126,20 @@ class CBSCZDC(nn.Module):
         if bool((caps[1:]<caps[:-1]).any()):
             raise ValueError('response envelope caps must be nondecreasing')
     def encode_condition(self,p4): return self.condition(p4_condition_features(p4))
-    def support_logits(self,cond,layer_energy,counts):
+    def axis_for(self,p4_total_gev):
+        """Per-event incident-axis node coordinates, or None when disabled."""
+        if not self.axis_enabled:
+            return None
+        direction=p4_total_gev[:,1:4]
+        return axis_features(self.cell_positions_mm,self.generator_vertex_mm,direction,
+                             {'s_scale_mm':self.axis_s_scale_mm,'r_scale_mm':self.axis_r_scale_mm}).to(p4_total_gev.dtype)
+    def support_logits(self,cond,layer_energy,counts,axis=None):
         fraction=counts.to(cond.dtype)/self.max_counts[None].clamp_min(1)
-        logits=self.support(self.node_features,self.edge_index,self.edge_features,self.layer_index,cond,layer_energy,fraction)
+        logits=self.support(self.node_features,self.edge_index,self.edge_features,self.layer_index,cond,layer_energy,fraction,axis=axis)
         return logits.masked_fill(~self.valid_mask[None],torch.finfo(logits.dtype).min)
-    def share_velocity(self,state,t,cond,layer_energy,counts,support_mask):
+    def share_velocity(self,state,t,cond,layer_energy,counts,support_mask,axis=None):
         fraction=counts.to(cond.dtype)/self.max_counts[None].clamp_min(1)
-        return self.share(self.node_features,self.edge_index,self.edge_features,self.layer_index,cond,layer_energy,fraction,state,t,support_mask)
+        return self.share(self.node_features,self.edge_index,self.edge_features,self.layer_index,cond,layer_energy,fraction,state,t,support_mask,axis=axis)
     @torch.no_grad()
     def sample(self,p4_total_gev,profile_steps:int=8,share_steps:int=8,seed:int|None=None,stochastic:bool=True):
         devices=[p4_total_gev.device] if p4_total_gev.is_cuda else []
@@ -125,7 +149,8 @@ class CBSCZDC(nn.Module):
             visible,total=self.response.sample(cond,kinetic,self.response_cap_ratio,self.response_cap_absolute_gev,stochastic)
             profile=self.profile.sample(cond,total,visible,profile_steps,stochastic)
             counts,_=self.counts.sample(cond,profile.layer_energy,profile.active_layers,self.threshold_gev,stochastic)
-            support_logits=self.support_logits(cond,profile.layer_energy,counts)
+            axis=self.axis_for(p4_total_gev)
+            support_logits=self.support_logits(cond,profile.layer_energy,counts,axis=axis)
             # Draw the support once; share flow is deterministic conditional on its source noise and selected mask.
             from .support import exact_k_mask
             support_mask=torch.zeros_like(support_logits,dtype=torch.bool)
@@ -136,6 +161,6 @@ class CBSCZDC(nn.Module):
             state*=support_mask.to(state.dtype); dt=1/share_steps
             for step in range(share_steps):
                 t=torch.full((cond.shape[0],1),(step+0.5)/share_steps,device=cond.device,dtype=cond.dtype)
-                state=(state+dt*self.share_velocity(state,t,cond,profile.layer_energy,counts,support_mask))*support_mask.to(state.dtype)
+                state=(state+dt*self.share_velocity(state,t,cond,profile.layer_energy,counts,support_mask,axis=axis))*support_mask.to(state.dtype)
             decoded=decode_exact_support(support_logits,state,profile.layer_energy,counts,self.layer_index,self.valid_mask,self.threshold_gev,False,preselected_support_mask=support_mask)
             return CBSCOutput(decoded.cell_energy,visible,total,profile.first_positive_layer,profile.active_layers,profile.layer_energy,counts,decoded.realized_counts,decoded.support_mask,support_logits,state)

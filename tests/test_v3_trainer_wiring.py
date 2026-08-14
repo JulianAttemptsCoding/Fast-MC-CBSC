@@ -199,3 +199,87 @@ def test_v3_response_loss_uses_the_envelope_cap() -> None:
     m = model(ARCHITECTURE_V3, response_envelope_caps_gev=caps)
     with pytest.raises(ValueError, match="outside its train-built envelope"):
         compute_component_losses(m, batch(), "response")
+
+
+# --- incident-axis features are opt-in and actually reach the fields ----
+
+def geometry_with_positions() -> dict[str, torch.Tensor]:
+    g = geometry()
+    # a simple layered detector: layers advance in z, cells spread in xy
+    layer = g["layer_index"].float()
+    within = torch.arange(N_NODES).float() % PER_LAYER
+    g["cell_positions_mm"] = torch.stack(
+        [(within - 1.5) * 20.0, (within % 2) * 15.0, layer * 40.0], dim=1
+    )
+    g["generator_vertex_mm"] = torch.zeros(3)
+    return g
+
+
+def axis_model(**extra) -> CBSCZDC:
+    torch.manual_seed(0)
+    return CBSCZDC(geometry_with_positions(), config(ARCHITECTURE_V3, axis_features=True, **extra))
+
+
+def test_axis_features_are_off_by_default_even_under_v3() -> None:
+    m = model(ARCHITECTURE_V3)
+    assert m.axis_enabled is False
+    assert m.support.axis_dim == 0
+    # and the model runs without any position geometry at all
+    compute_component_losses(m, batch(), "joint")
+
+
+def test_axis_features_enable_only_when_declared() -> None:
+    m = axis_model()
+    assert m.axis_enabled is True
+    assert m.support.axis_dim == 4
+    assert m.share.axis_dim == 4
+
+
+def test_enabling_axis_without_positions_fails_closed() -> None:
+    with pytest.raises(ValueError, match="cell_positions_mm"):
+        CBSCZDC(geometry(), config(ARCHITECTURE_V3, axis_features=True))
+
+
+def test_axis_features_reach_the_support_and_share_fields() -> None:
+    m = axis_model()
+    b = batch()
+    axis = m.axis_for(b["p4_total_gev"])
+    assert axis is not None
+    assert axis.shape == (b["p4_total_gev"].shape[0], N_NODES, 4)
+    assert torch.isfinite(axis).all()
+    # the field must refuse to run without them once declared
+    cond = m.encode_condition(b["p4_total_gev"])
+    counts = torch.ones(b["p4_total_gev"].shape[0], N_LAYERS, dtype=torch.long)
+    energy = torch.ones(b["p4_total_gev"].shape[0], N_LAYERS)
+    with pytest.raises(ValueError, match="axis features are declared"):
+        m.support_logits(cond, energy, counts, axis=None)
+    logits = m.support_logits(cond, energy, counts, axis=axis)
+    assert torch.isfinite(logits[:, m.valid_mask]).all()
+
+
+def test_a_field_without_axis_rejects_supplied_axis() -> None:
+    m = model(ARCHITECTURE_V3)
+    b = batch()
+    cond = m.encode_condition(b["p4_total_gev"])
+    counts = torch.ones(b["p4_total_gev"].shape[0], N_LAYERS, dtype=torch.long)
+    energy = torch.ones(b["p4_total_gev"].shape[0], N_LAYERS)
+    stray = torch.zeros(b["p4_total_gev"].shape[0], N_NODES, 4)
+    with pytest.raises(ValueError, match="does not declare them"):
+        m.support_logits(cond, energy, counts, axis=stray)
+
+
+def test_axis_model_samples_and_holds_every_invariant() -> None:
+    from cbsc_zdc.eval.invariants import invariant_report
+
+    m = axis_model().eval()
+    out = m.sample(batch()["p4_total_gev"], profile_steps=2, share_steps=2, seed=5)
+    report = invariant_report(out, m.layer_index, m.valid_mask, m.threshold_gev)
+    assert report["pass"], report
+
+
+def test_axis_scales_come_from_geometry_and_are_floored() -> None:
+    m = axis_model()
+    assert m.axis_s_scale_mm >= 1.0
+    assert m.axis_r_scale_mm >= 1.0
+    # scales are frozen geometry, not per-batch statistics
+    assert isinstance(m.axis_s_scale_mm, float)
