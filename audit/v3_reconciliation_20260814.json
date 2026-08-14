@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-reconciliation",
+  "recorded_at_utc": "2026-08-14T06:45:00Z",
+  "prompt": "CBSC-ZDC v3 revised follow-up execution prompt",
+  "authorization": {
+    "stage_a_software": "AUTHORIZED",
+    "training_campaign": "NOT AUTHORIZED",
+    "paid_cloud": "NOT AUTHORIZED",
+    "test_split_opening": "NOT AUTHORIZED",
+    "permitted": [
+      "compilation",
+      "tests",
+      "synthetic and production-shaped smoke updates",
+      "inference on existing checkpoints",
+      "bounded timing/memory/resume measurement"
+    ]
+  },
+  "repository": {
+    "root": "C:/Users/Julia/Desktop/coding/ASIoP/Fast MC CBSC",
+    "starting_commit": "6b97d7f599f62a00ae173519fdf0ca7af6b0bd81",
+    "branch": "main",
+    "remote": "https://github.com/JulianAttemptsCoding/Fast-MC-CBSC.git",
+    "divergence_origin_vs_head": "0\t0",
+    "dirty_state_disposition": "untracked only: both v3 zips, V3_PLAN_ASSESSMENT.md, and the installed overlay paths. No tracked file modified. Nothing discarded."
+  },
+  "overlay_install": {
+    "overlay_zip": "CBSC_ZDC_v3_REPO_ROOT_OVERLAY.zip",
+    "overlay_sha256": "fa329a9ead7c7d7d4b3aac65cbefcfcaee1450caef57b13e7d4611c92192b0e4",
+    "overlay_sha256_expected_match": true,
+    "complete_handoff_zip": "CBSC_ZDC_v3_COMPLETE_HANDOFF.zip",
+    "complete_handoff_sha256": "5a66de8c14ab649212e90972226ada92506110c839f229b3ce379d3a8d156060",
+    "complete_handoff_sha256_expected_match": true,
+    "member_safety_scan": "CLEAN: 21 entries, no absolute paths, no traversal, no duplicates, no symlinks, no executables",
+    "staged_first": true,
+    "destinations_absent": 16,
+    "destinations_identical_skipped": 0,
+    "destinations_reconciled": 0,
+    "overwrites": 0,
+    "verifier_status": "pass",
+    "manifest_entries": 15,
+    "missing": 0,
+    "changed": 0,
+    "base_matches_all": true
+  },
+  "audited_base_reconciliation": {
+    "files_checked": 11,
+    "match": 11,
+    "differ": 0,
+    "missing": 0,
+    "note": "all 11 audited base-file hashes match live exactly; archive content provenance is verified"
+  },
+  "canonical_archive_provenance": {
+    "canonical_zip": "CBSC_ZDC_audit_bundle_20260812.zip",
+    "canonical_sha256": "ec4f044695401d438d47019012b9d0a1bedda59da5d5d211a97f34e91b5a0432",
+    "canonical_total_files": 1513,
+    "canonical_manifest_entries": 1512,
+    "locally_rehashable": false,
+    "statement": "The canonical container bytes are not locally rehashable; the file is absent on this host. Live content reconciliation therefore uses the 11 audited base-file hashes, all of which match. The separately rebuilt container ad28d284cbddfec41e0495f5d35e14b4511f775334c371e76eb2e1faa90a253c is a distinct container and does not replace canonical provenance.",
+    "resolved": true
+  },
+  "process_state": {
+    "live_writers_training_pod": 0,
+    "live_writers_diagnostics_pod": 0,
+    "probe": "self-match-safe /proc scan excluding own pid and parent"
+  },
+  "checkpoint_hash_reconciliation": {
+    "finding": "external-metric and per-epoch diagnostic records carry checkpoint_sha256 643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035 while the run's best.pt hashes to 491284c7423f365230d34b0443f95aa4888ec770bdc673c4c979897bad8acbce",
+    "explanation": "two distinct container files holding the same epoch-90 weights: _runs/calibrated_lr3e4_dicos-f-02/checkpoints/best.pt and the producer's queued copy _diag/dicos-f-02/queue/done/ckpt_epoch_0090.pt",
+    "proof": "all 207 model_state tensors compared elementwise: 207 identical, 0 differing, max absolute difference 0.000e+00",
+    "resolution": "CONSISTENT - not a defect. Both hashes must be retained and interpreted by role."
+  },
+  "documentation_conflicts": [
+    {
+      "conflict": "CLAUDE.md and the v3 archive baseline both state the training card is an NVIDIA L40S and the RTX 4090 was retired 2026-08-10",
+      "live_observation": "training pod is an RTX 4090, 24564 MiB, host jupyterlabgpurtx4090-julianjuan",
+      "resolution": "archive-time and CLAUDE.md statements preserved as dated history; a dated current-state addendum records the 4090. Binding topology principle is synchronous same-device critic+generator, not the model name."
+    },
+    {
+      "conflict": "ORIGINAL_ARCHIVE_BASELINE.md records dicos-f-01 as still in flight and 4.512721 as best",
+      "live_observation": "campaign reached campaign_complete; accepted best is dicos-f-02 epoch 90 at 4.483767619419238",
+      "resolution": "archive baseline left unmodified as archive-time truth; reconciliation recorded here and in current-state docs only."
+    }
+  ]
+}

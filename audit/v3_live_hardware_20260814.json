@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-live-hardware",
+  "observed_at": "2026-08-14T06:44:50Z",
+  "time_zone": "UTC",
+  "observation_method": "nvidia-smi and torch probe executed on each pod through scripts/dicos.py exec",
+  "note": "Hardware is time-varying live state. This record is a dated observation, not a permanent fleet claim. It does not overwrite the archive-time L40S observation.",
+  "devices": [
+    {
+      "role": "primary_training",
+      "config": "~/.dicos/config.json",
+      "host": "jupyterlabgpurtx4090-julianjuan",
+      "gpu_index": 0,
+      "name": "NVIDIA GeForce RTX 4090",
+      "uuid": "GPU-9fbcf9a9-8457-2177-cc19-8177274f7e35",
+      "memory_total_mib": 24564,
+      "memory_free_mib": 24083,
+      "driver_version": "595.58.03",
+      "torch": "2.6.0+cu124",
+      "cuda_runtime": "12.4",
+      "cuda_available": true,
+      "active_gpu_processes": [],
+      "venv": ".venv"
+    },
+    {
+      "role": "diagnostics",
+      "config": "~/.dicos/config_3090.json",
+      "host": "jupyterlabtf24gpu3090-julianjuan",
+      "gpu_index": 0,
+      "name": "NVIDIA GeForce RTX 3090",
+      "uuid": "GPU-beccd6d8-09f7-3703-fa70-a9766fdb9813",
+      "memory_total_mib": 24576,
+      "memory_free_mib": 24123,
+      "driver_version": "610.43.02",
+      "torch": "2.6.0+cu124",
+      "cuda_runtime": "12.4",
+      "active_gpu_processes": [],
+      "venv": ".venv_3090"
+    }
+  ],
+  "delta_versus_archive_time": {
+    "archive_time_primary": "NVIDIA L40S (48 GiB class)",
+    "live_primary": "NVIDIA GeForce RTX 4090 (24564 MiB)",
+    "memory_reduction": "roughly half the archive-time primary device memory",
+    "consequence": "critic memory feasibility must be measured on this device before any D1/D2 planning; it may not be assumed from the L40S figure",
+    "topology_principle_unchanged": "live critic and generator remain synchronous, single-process, same CUDA device"
+  },
+  "precision_mode": "float32 training with the declared AMP policy; float64 reserved for spline forward/inverse/Jacobian tests",
+  "command_exits": {
+    "nvidia-smi": 0,
+    "torch_probe": 0,
+    "process_scan": 0
+  },
+  "live_writers": {
+    "training_pod": 0,
+    "diagnostics_pod": 0
+  }
+}

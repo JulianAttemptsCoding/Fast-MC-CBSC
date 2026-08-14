@@ -1,0 +1,158 @@
+schema_version: 1
+contract_id: cbsc-zdc-v3-improvement-20260813
+status: proposed_unrun
+base:
+  archive_name: CBSC_ZDC_audit_bundle_20260812.zip
+  archive_sha256: ec4f044695401d438d47019012b9d0a1bedda59da5d5d211a97f34e91b5a0432
+  architecture_default_if_missing: cbsc-zdc-v2.2
+  package_version: 0.3.0
+data_contract:
+  particle_pdg: 2112
+  neutron_mass_gev: 0.93956542052
+  target_mode: raw_deposit
+  threshold_gev: 0.0
+  train_kinetic_gev: [0.0, 300.0]
+  primary_kinetic_gev: [50.0, 250.0]
+  channels: 6790
+  layers: 65
+  ecal_channels: 400
+  hcal_channels: 6390
+  canonical_counts:
+    train: 612482
+    validation: 76158
+    test: 76300
+architecture:
+  version: cbsc-zdc-v3
+  condition_dim: 128
+  preserve_exact_decoder: true
+  axis_features:
+    enabled: true
+    dimensions: [longitudinal_s, transverse_x, transverse_y, transverse_radius]
+    origin_source: frozen_generator_vertex
+    parallel_switch_abs_uz: 0.9
+  response:
+    type: hurdle_bounded_conditional_rqs
+    bins: 16
+    epsilon: 1.0e-6
+    min_bin_width: 1.0e-3
+    min_bin_height: 1.0e-3
+    min_derivative: 1.0e-3
+    hidden: 192
+    envelope:
+      bin_width_gev: 25.0
+      max_margin_factor: 1.10
+      additive_margin_gev: 1.0e-6
+      monotone_cumulative_max: true
+      source_split: train_only
+  first_layer:
+    type: hierarchical_ecal_then_hcal
+    ecal_hidden: 128
+    hcal_hidden: 128
+    class_weighting: none
+  activity:
+    modes: [span_gaps, autoregressive]
+    selection:
+      compact_fraction_threshold: 0.99
+      max_gap_count: 2
+      max_gap_length: 2
+    autoregressive:
+      cell: GRU
+      layers: 1
+      hidden: 128
+  counts:
+    type: autoregressive
+    cell: GRU
+    layers: 1
+    hidden: 192
+    inactive_loss_weight: 0.2
+    preserve_feasibility_masks: true
+  profile_flow:
+    default_coupling: independent_linear
+    ot_cfm_ablation_only: true
+  support:
+    exact_forward_top_k: true
+    temperature_default: 1.0
+    temperature_grid: [0.25, 0.5, 1.0, 2.0]
+    structured_gradient_default: none
+  share_flow:
+    preserve_existing_field: true
+critics:
+  stages_required: [D1_share, D2_profile]
+  stage_D3_support_triggered_only: true
+  conditioning: projection
+  critic_optimizer:
+    type: Adam
+    learning_rate: 1.0e-4
+    betas: [0.0, 0.99]
+  updates_per_generator_update: 1
+  batch_size: 4
+  gradient_clip_norm: 5.0
+  spectral_normalization: true
+  r1:
+    gamma: 1.0
+    interval: 16
+    lazy_interval_multiplier: true
+  generator_objectives: [direct_non_saturating, feature_matching]
+  never_combine_objectives_in_first_screen: true
+  gradient_ratio:
+    targets: [0.05, 0.10, 0.20]
+    default: 0.10
+    measure_interval_updates: 16
+    ema_decay: 0.9
+    lambda_min: 1.0e-5
+    lambda_max: 10.0
+    observed_abort_threshold: 0.25
+role_partition:
+  digest_prefix: "cbsc-v3-critic-20260813:"
+  sort: [sha256_digest, event_id]
+  counts:
+    generator_train: 551234
+    critic_real_train: 30624
+    critic_monitor_holdout: 30624
+  allowed_parent_split: train
+replay:
+  pilot_capacity_events: 8192
+  final_capacity_events: 65536
+  dense_storage_limit_bytes: 1073741824
+  over_limit_storage: sparse_csr
+  fake_batch_mixture:
+    fresh: 0.50
+    recent_fifo: 0.25
+    anchor: 0.25
+  anchor_checkpoint: corrected_supervised_baseline
+  forbid_splits: [validation, test]
+hardware:
+  first_critic_topology: single_process_L40S
+  external_diagnostics: RTX_3090
+  asynchronous_critic: later_ablation_only
+  paid_cloud_requires_new_user_budget: true
+checkpoint:
+  format_version: 4
+  required_new_fields:
+    - architecture_version
+    - experiment_contract_sha256
+    - critic_state
+    - critic_optimizer_state
+    - critic_scheduler_state
+    - gradient_ratio_controller_state
+    - replay_state_manifest
+    - critic_update_count
+    - generator_update_count
+    - role_partition_sha256
+    - response_envelope_sha256
+    - support_temperature
+test_policy:
+  development_splits: [train, validation]
+  test_access: once_after_protocol_freeze
+  external_c2st_evaluator_seeds: 3
+  final_generator_seeds: [20260723, 20260724, 20260725]
+non_goals:
+  - full_critic_through_current_sample
+  - remove_exact_decoder
+  - reset_critic_every_20_epochs
+  - dominant_classifier_loss
+  - external_c2st_used_for_backprop
+  - p4_predictor_trained_on_generated_events
+  - automatic_multiloss_balancing_default
+  - paid_cloud_without_new_budget
+

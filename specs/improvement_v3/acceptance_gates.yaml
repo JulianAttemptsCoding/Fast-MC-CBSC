@@ -1,0 +1,58 @@
+schema_version: 1
+status: proposed_validation_selection_rules
+bootstrap:
+  replicates: 1000
+  confidence: 0.95
+  stratify_by_energy_bin: true
+structural:
+  nonfinite: 0
+  negative: 0
+  outside_valid_support: 0
+  support_mask_mismatch: 0
+  count_mismatch_max: 0
+  requested_realized_mismatch_max: 0
+  dust_cells_raw_mode: 0
+  closure_rule: existing_absolute_relative_rule
+paired_candidate:
+  targeted_distance_delta_ci_upper_lt: 0.0
+  guard_worsening_margin:
+    relative_to_control: 0.10
+    minimum: truth_half_floor
+  c2st_auc_max_increase: 0.01
+  max_sampling_time_increase_fraction: 0.20
+critic_candidate:
+  external_c2st_auc_min_absolute_reduction: 0.02
+  external_c2st_delta_ci_upper_lt: 0.0
+  intended_generator_modules_only: true
+  critic_parameter_generator_gradients: 0
+  replay_nontrain_ids: 0
+  repeated_condition_diversity_not_below_truth_ci: true
+  memorization_not_above_truth_truth_floor: true
+  max_observed_adversarial_gradient_ratio: 0.25
+response:
+  training_envelope_exceedances: 0
+  visible_sample_min_response_strict_gt_gev: 0.0
+  invisible_sample_response_exact_gev: 0.0
+  spline_float64_roundtrip_abs_error_max: 1.0e-8
+  spline_float32_roundtrip_abs_error_max: 1.0e-5
+role_partition:
+  generator_train: 551234
+  critic_real_train: 30624
+  critic_monitor_holdout: 30624
+  validation_ids: 0
+  test_ids: 0
+resume:
+  next_update_parameter_max_abs_difference: 1.0e-6
+  optimizer_state_match: exact
+  critic_state_match: exact
+  replay_manifest_match: exact
+existing_primary_diagnostics_do_not_modify_silently:
+  min_total_evaluation_events: 10000
+  min_events_per_energy_bin: 500
+  max_abs_mean_bias_fraction: 0.05
+  max_abs_resolution_difference_fraction: 0.10
+  max_zero_fraction_absolute_difference: 0.01
+  max_response_wasserstein_normalized: 0.15
+  max_hit_count_wasserstein_normalized: 0.15
+  max_high_level_c2st_auc: 0.65
+

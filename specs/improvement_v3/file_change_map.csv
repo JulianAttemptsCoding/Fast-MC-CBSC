@@ -1,0 +1,29 @@
+path,action,required_change
+src/cbsc_zdc/models/axis_features.py,add,incident-axis basis and normalized dynamic node features
+src/cbsc_zdc/models/splines.py,add,bounded conditional rational-quadratic spline forward inverse and log-Jacobian
+src/cbsc_zdc/models/critics.py,add,D1 share and D2 profile projection critics
+src/cbsc_zdc/training/adversarial.py,add,critic losses update order gradient ratio controller and isolation checks
+src/cbsc_zdc/training/replay.py,add,bounded stratified fresh recent anchor replay and checkpoint state
+src/cbsc_zdc/training/role_partition.py,add,exact deterministic 90/5/5 train-only assignment
+src/cbsc_zdc/eval/topology.py,add,co-occupancy components distances eccentricity and local density
+src/cbsc_zdc/eval/correlations.py,add,layer covariance correlation transitions and truth-half floors
+src/cbsc_zdc/eval/diversity.py,add,repeated-condition diversity and support Jaccard
+src/cbsc_zdc/eval/memorization.py,add,train-nearest-neighbor versus truth-truth floor
+src/cbsc_zdc/models/system.py,modify,versioned v3 construction exact and differentiable stage samplers axis features
+src/cbsc_zdc/models/response.py,modify,versioned hurdle bounded spline with no second zero atom
+src/cbsc_zdc/models/profile.py,modify,hierarchical first layer span-gap and AR activity options
+src/cbsc_zdc/models/counts.py,modify,versioned autoregressive feasible counts
+src/cbsc_zdc/models/support.py,modify,frozen support temperature while retaining exact hard top-k
+src/cbsc_zdc/models/node_fields.py,modify,accept dynamic incident-axis node features
+src/cbsc_zdc/training/trainer.py,modify,v3 stages live critic update gradient control replay logging and exact resume
+src/cbsc_zdc/training/losses.py,modify,versioned v3 losses while retaining v2 keys
+src/cbsc_zdc/training/checkpoint.py,modify,format v4 critic replay and controller state
+src/cbsc_zdc/config.py,modify,architecture-version schemas and fail-closed v3 validation
+src/cbsc_zdc/cli.py,modify,response-envelope role-partition migration and v3 verify commands
+src/cbsc_zdc/data/audit.py,modify,full training response envelope and longitudinal diagnostic outputs
+src/cbsc_zdc/eval/evaluator.py,modify,new metrics provenance and bootstrap reports
+src/cbsc_zdc/eval/metrics.py,modify,response calibration topology correlation and C2ST inputs
+src/cbsc_zdc/preflight.py,modify,v3 contract role envelope replay and checkpoint hash checks
+scripts/build_v3_experiment_matrix.py,add,generate unique unfrozen templates then freeze through CLI
+scripts/verify_v3_run.py,add,complete v3 artifact and evidence verifier
+

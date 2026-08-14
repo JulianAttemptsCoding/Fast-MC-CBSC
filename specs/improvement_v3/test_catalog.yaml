@@ -1,0 +1,143 @@
+schema_version: 1
+tests:
+  - file: tests/test_v3_compatibility.py
+    cases:
+      - old_config_without_architecture_version_selects_v2_2
+      - old_loss_key_set_is_unchanged
+      - v3_loss_key_set_is_version_selected
+      - fixed_seed_v2_sample_matches_prechange_reference
+      - migration_rejects_every_unclassified_state_key
+      - migration_zero_axis_columns_preserve_node_logits
+  - file: tests/test_axis_features.py
+    cases:
+      - basis_is_orthonormal_for_random_mass_shell_directions
+      - basis_is_finite_for_parallel_z_and_y_directions
+      - longitudinal_and_radius_match_direct_geometry
+      - joint_rigid_rotation_preserves_axis_coordinates_under_basis_convention
+      - nonfixed_vertex_contract_fails_closed
+  - file: tests/test_response_envelope.py
+    cases:
+      - assignment_uses_train_ids_only
+      - bins_are_25gev_and_include_300_in_last_bin
+      - caps_are_cumulative_nondecreasing
+      - every_visible_training_response_is_strictly_below_cap
+      - empty_production_bin_is_fatal
+      - validation_out_of_support_is_reported_not_clipped
+  - file: tests/test_response_spline.py
+    cases:
+      - widths_heights_and_derivatives_respect_minima
+      - float64_forward_inverse_roundtrip_max_abs_lt_1e_8
+      - float32_forward_inverse_roundtrip_max_abs_lt_1e_5
+      - analytic_log_jacobian_matches_central_finite_difference
+      - visible_samples_are_strictly_positive_and_below_cap
+      - invisible_samples_are_exact_zero
+      - positive_branch_never_changes_visibility
+      - nll_and_parameter_gradients_are_finite
+      - torch_gradcheck_passes_for_interior_points
+  - file: tests/test_hierarchical_first_layer.py
+    cases:
+      - invisible_event_returns_minus_one_and_no_active_layer
+      - ecal_branch_returns_exact_layer_zero
+      - hcal_branch_returns_only_layers_one_through_64
+      - hcal_loss_excludes_ecal_and_invisible_events
+      - ecal_loss_uses_visible_events_only
+      - sampled_first_layer_is_forced_active
+  - file: tests/test_longitudinal_activity.py
+    cases:
+      - compact_fraction_definition_matches_hand_fixture
+      - compact_rule_selects_span_at_or_above_0_99
+      - span_mode_enforces_first_and_last_active
+      - span_mode_masks_outside_span
+      - ar_mode_masks_before_first_and_forces_first
+      - ar_teacher_forcing_and_free_running_use_declared_previous_token
+      - invisible_event_has_no_active_layers
+  - file: tests/test_autoregressive_counts.py
+    cases:
+      - inactive_layer_has_only_zero_feasible
+      - active_raw_layer_has_only_one_to_geometry_max_feasible
+      - threshold_mode_enforces_k_tau_le_budget
+      - teacher_forcing_uses_truth_previous_count
+      - exact_sampling_uses_sampled_previous_count
+      - output_counts_respect_all_layer_geometry_sizes
+  - file: tests/test_support_temperature.py
+    cases:
+      - selected_count_equals_k_for_every_layer_and_temperature
+      - invalid_nodes_are_never_selected
+      - deterministic_topk_order_is_temperature_invariant
+      - fixed_noise_lower_temperature_increases_logit_dominance
+      - temperature_must_be_finite_and_strictly_positive
+      - support_draw_occurs_exactly_once_before_share_integration
+  - file: tests/test_differentiable_stage_sampling.py
+    cases:
+      - share_loss_sampler_has_no_no_grad_context
+      - share_output_has_nonzero_gradient_to_share_only
+      - profile_output_has_nonzero_gradient_to_profile_flow_only
+      - truth_forced_discrete_tensors_receive_no_gradient
+      - exact_sample_retains_no_grad_and_structural_semantics
+      - explicit_noise_makes_stage_sampler_repeatable
+  - file: tests/test_conditional_critics.py
+    cases:
+      - projection_logit_has_batch_shape
+      - condition_shuffle_changes_projection_score
+      - all_declared_linear_projections_have_spectral_parametrization
+      - critic_logistic_loss_matches_hand_calculation
+      - lazy_r1_multiplier_preserves_declared_expected_coefficient
+      - critic_monitor_state_is_not_shared_with_live_critic
+  - file: tests/test_adversarial_gradient_isolation.py
+    cases:
+      - critic_update_detaches_fake_and_changes_only_critic
+      - generator_update_freezes_critic_parameters_without_no_grad
+      - d1_generator_update_changes_only_share_flow
+      - d2_generator_update_changes_only_profile_flow
+      - direct_loss_has_nonzero_input_gradient
+      - feature_loss_has_nonzero_input_gradient
+      - gradient_ratio_formula_matches_hand_fixture
+      - ratio_controller_ema_and_clamps_are_exact
+      - observed_ratio_above_0_25_is_reported_as_failure
+  - file: tests/test_replay_buffer.py
+    cases:
+      - pilot_and_final_capacity_are_enforced
+      - batch4_composition_is_two_fresh_one_recent_one_anchor
+      - warmup_replaces_missing_history_with_fresh_and_logs_it
+      - recent_fifo_excludes_anchor_pool
+      - no_validation_or_test_ids_can_be_inserted
+      - strata_and_checkpoint_hash_are_retained
+      - dense_over_1gib_selects_sparse_csr_without_capacity_change
+      - serialize_restore_preserves_content_rng_and_next_sample
+  - file: tests/test_critic_role_partition.py
+    cases:
+      - exact_counts_are_551234_30624_30624
+      - assignment_is_digest_then_event_id_deterministic
+      - roles_are_disjoint_and_exhaustive_over_train
+      - zero_validation_and_test_ids
+      - changed_split_hash_invalidates_manifest
+  - file: tests/test_v3_checkpoint_resume.py
+    cases:
+      - format4_contains_every_required_field
+      - mismatched_generator_critic_contract_hash_is_fatal
+      - mismatched_replay_manifest_is_fatal
+      - resumed_next_update_matches_uninterrupted_with_max_abs_lt_1e_6
+      - old_format_checkpoint_still_loads_on_v2_path
+  - file: tests/test_topology_metrics.py
+    cases:
+      - edge_cooccupancy_matches_hand_graph
+      - connected_components_match_hand_graph
+      - pair_and_nearest_neighbor_distances_match_fixture
+      - eccentricity_is_rotation_invariant
+      - empty_and_single_hit_layers_have_defined_outputs
+  - file: tests/test_correlation_metrics.py
+    cases:
+      - covariance_and_correlation_match_numpy_fixture
+      - zero_variance_layer_is_handled_and_flagged
+      - activity_and_count_transitions_match_fixture
+      - truth_half_split_is_deterministic_and_disjoint
+      - bootstrap_preserves_energy_strata
+  - file: tests/test_v3_end_to_end_smoke.py
+    cases:
+      - synthetic_v3_supervised_forward_and_backward_are_finite
+      - synthetic_exact_sample_passes_every_invariant
+      - one_d1_critic_and_generator_update_passes_isolation
+      - one_d2_critic_and_generator_update_passes_isolation
+      - checkpoint_resume_reproduces_next_update
+      - no_test_split_loader_is_constructed
+

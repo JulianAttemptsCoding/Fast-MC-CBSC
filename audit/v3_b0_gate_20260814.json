@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-b0-terminal-evidence-gate",
+  "evaluated_at": "2026-08-14T06:45:00Z",
+  "candidate": {
+    "family": "calibrated_lr3e4",
+    "run_tag": "dicos-f-02",
+    "epoch": 90,
+    "validation_loss": 4.483767619419238,
+    "checkpoint_sha256": "491284c7423f365230d34b0443f95aa4888ec770bdc673c4c979897bad8acbce",
+    "queued_copy_sha256": "643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035",
+    "seed": 20260723
+  },
+  "items": [
+    {
+      "n": 1,
+      "requirement": "terminal campaign_complete state, no live writer",
+      "status": "PASS",
+      "evidence": "_campaign/camp-20260812-lr3e4-anneal/state.json status=campaign_complete, updated 2026-08-13T05:35:26Z; self-match-safe /proc scan on both pods returns 0 writers"
+    },
+    {
+      "n": 2,
+      "requirement": "parent lineage and unique frozen configuration recorded",
+      "status": "PASS",
+      "evidence": "lineage dicos-p6 -> dicos-p7 -> dicos-c-02 -> dicos-e-02(:47) -> dicos-f-01(:70) -> dicos-f-02; frozen config prep/configs/frozen_calibrated_lr3e4_dicos-f-02.yaml sha256 116bc8c220b07ce54ae07196bdd6ed8e835775c8c937182a209a799dc94ae9c5; segment_frozen event records the full field-level delta"
+    },
+    {
+      "n": 3,
+      "requirement": "corrected scheduler is one-way with no sawtooth recurrence",
+      "status": "PASS",
+      "evidence": "43 epochs of the live lineage (48-90) contain 0 within-segment learning-rate increases; LR falls 2.987210e-04 -> 2.102920e-05. The single rise at the 70->71 segment boundary (2.278993e-06 -> 2.987210e-04) is the declared restart_scheduler_on_resume re-heat, not a sawtooth"
+    },
+    {
+      "n": 4,
+      "requirement": "epoch 90 is the accepted checkpoint under the predeclared rule, loss reproduced from the authoritative artifact",
+      "status": "PASS",
+      "evidence": "torch.load of _runs/calibrated_lr3e4_dicos-f-02/checkpoints/best.pt yields epoch=90 and best_metric=4.483767619419238, read from the checkpoint rather than prose; family_choice.json best_accepted agrees"
+    },
+    {
+      "n": 5,
+      "requirement": "checkpoint, config, split, geometry, data, environment and terminal artifact hashes available and mutually consistent",
+      "status": "PASS",
+      "evidence": "provenance in-checkpoint: geometry_sha256 c6c02f3c84f5e02e70d2ca3fb894dd8cae899e1afc9100e34334d8ee5c922bf1, splits_sha256 8ea9fe7a91cae4e6cb20c9877b9cd1af038d589b3fd060afd043fe0d4a659c41, manifest_sha256 688b440cbeaa4205c7617625ac366b7ac3fe25563e277ee4f66faec231fd3572, seed 20260723. The apparent checkpoint_sha256 conflict was reconciled: best.pt and the producer's queued epoch-90 copy are distinct containers of identical weights, proved by elementwise comparison of all 207 model_state tensors (max abs diff 0.000e+00)"
+    },
+    {
+      "n": 6,
+      "requirement": "structural invariants pass",
+      "status": "PASS",
+      "evidence": "reports/invariant_epoch_0090.json pass=true; negative 0, nonfinite 0, outside_valid_support 0, support_mask_mismatch 0, count_mismatch_max 0, requested_realized_mismatch_max 0, dust_cells 0; event closure 4.768e-07 and layer closure 2.384e-07 against an effective tolerance of 5.129e-05"
+    },
+    {
+      "n": 7,
+      "requirement": "external metrics identified by actual split and event-manifest hash, no new test access",
+      "status": "FAIL",
+      "evidence": "audit/current_external_metrics.json records status=pending_offline for dicos-f-02 e90. External C2ST and four-momentum metrics have NOT been computed for this checkpoint. cbsc_test_events_used=0 and source_split=validation, so no test access occurred, but the required metric identity does not yet exist",
+      "blocker": "missing fixed-validation external evaluation"
+    },
+    {
+      "n": 8,
+      "requirement": "dicos-f-04 explicitly excluded as an undeclared variant",
+      "status": "PASS",
+      "evidence": "dicos-f-04 recomputed epochs_absolute from 111 and annealed over 46 epochs instead of the declared 24, reaching LR 1.3487e-04 at epoch 114 against dicos-f-03's 1.0000e-06. Excluded from the live lineage, retained as evidence, recorded in logs.md and the audit twin"
+    },
+    {
+      "n": 9,
+      "requirement": "every failure, gap and historical test contamination disclosed",
+      "status": "PASS",
+      "evidence": "declared diagnostic gap epochs 91-114 (dicos-f-03) in exhibition/data/diagnostic_gaps.json with 24 checkpoints still queued; dicos-f-04 defect disclosed; historical test contamination (an isolated older 40,000-event C2ST and a further draw with unresolved 200-event overlap) disclosed and unchanged; the withdrawn loss-versus-fidelity claim is recorded with its retraction"
+    }
+  ],
+  "decision": "B0_CANDIDATE_NOT_FROZEN",
+  "items_passing": 8,
+  "items_failing": 1,
+  "sole_blocker": "item 7 - external validation metrics for epoch 90 are pending_offline",
+  "remedy": "Section 9 (Stage B) computes exactly this evidence on the fixed validation bank. Per the prompt, if section 9 is the only blocker the same checkpoint is promoted without retraining.",
+  "retrain_required": false,
+  "replacement_run_launched": false
+}

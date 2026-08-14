@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-derived-contract",
+  "parent_contract": "specs/improvement_v3/contract.yaml",
+  "parent_contract_sha256": "c97f11eb061e604189708324c66ab7ef3b706c59673e56370b489136213601bd",
+  "derived_contract": "specs/improvement_v3/contract_live_20260814.yaml",
+  "derived_contract_sha256": "0b1ea2cda3c00e8723c68cee370c3dc77ad65a19115a23d39054a6bbb17c4104",
+  "observed_at": "2026-08-14T06:44:50Z",
+  "gpu_uuid": "GPU-9fbcf9a9-8457-2177-cc19-8177274f7e35",
+  "gpu_name": "NVIDIA GeForce RTX 4090",
+  "gpu_memory_total_mib": 24564,
+  "resource_preflight_status": "pending",
+  "field_level_diff": [
+    {
+      "path": "contract_id",
+      "parent": "cbsc-zdc-v3-improvement-20260813",
+      "derived": "cbsc-zdc-v3-improvement-live-20260814"
+    },
+    {
+      "path": "derived_at",
+      "parent": "<absent>",
+      "derived": "2026-08-14T06:44:50Z"
+    },
+    {
+      "path": "derived_from.parent_contract_id",
+      "parent": "<absent>",
+      "derived": "cbsc-zdc-v3-improvement-20260813"
+    },
+    {
+      "path": "derived_from.parent_sha256",
+      "parent": "<absent>",
+      "derived": "c97f11eb061e604189708324c66ab7ef3b706c59673e56370b489136213601bd"
+    },
+    {
+      "path": "derived_from.reason",
+      "parent": "<absent>",
+      "derived": "archive-time hardware observation (L40S) does not match the live primary training device; only hardware observation and topology expression fields are replaced"
+    },
+    {
+      "path": "hardware.archive_time_primary_device",
+      "parent": "<absent>",
+      "derived": "NVIDIA L40S"
+    },
+    {
+      "path": "hardware.campaign_authorization",
+      "parent": "<absent>",
+      "derived": "none; this contract authorizes compilation, tests, smoke updates, inference on existing checkpoints, and bounded resource measurement only"
+    },
+    {
+      "path": "hardware.first_critic_topology",
+      "parent": "single_process_L40S",
+      "derived": "single_process_same_device_synchronous"
+    },
+    {
+      "path": "hardware.observed_at",
+      "parent": "<absent>",
+      "derived": "2026-08-14T06:44:50Z"
+    },
+    {
+      "path": "hardware.observed_primary_device",
+      "parent": "<absent>",
+      "derived": "NVIDIA GeForce RTX 4090"
+    },
+    {
+      "path": "hardware.observed_primary_device_uuid",
+      "parent": "<absent>",
+      "derived": "GPU-9fbcf9a9-8457-2177-cc19-8177274f7e35"
+    },
+    {
+      "path": "hardware.observed_primary_memory_mib",
+      "parent": "<absent>",
+      "derived": 24564
+    },
+    {
+      "path": "hardware.resource_preflight_status",
+      "parent": "<absent>",
+      "derived": "pending"
+    },
+    {
+      "path": "hardware.topology_principle",
+      "parent": "<absent>",
+      "derived": "The live critic and generator are synchronous, single-process, and on the same CUDA device. The diagnostics GPU cannot carry generator autograd across a filesystem. Asynchronous critic operation remains a separately declared staleness ablation. The binding constraint is the topology, not the device model name."
+    },
+    {
+      "path": "status",
+      "parent": "proposed_unrun",
+      "derived": "derived_live_execution_contract"
+    }
+  ],
+  "retained_constraints": [
+    "live critic and generator synchronous, single-process, same device",
+    "diagnostics GPU cannot carry generator autograd through a filesystem",
+    "asynchronous critic remains a separately declared staleness ablation",
+    "no paid cloud work without a new owner budget",
+    "critic batch_size 4 remains the first-screen hypothesis until measured evidence supports a separately versioned change"
+  ],
+  "parent_unmodified": true
+}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from pathlib import Path
 import re
 from typing import Any
@@ -9,18 +10,78 @@ from .utils import load_yaml, sha256_file
 
 
 REQUIRED_TOP_LEVEL = {"project", "data", "geometry", "model", "training", "loss_weights", "evaluation"}
+
+# The v2.2 loss schema is frozen.  Every historical frozen configuration is
+# validated against exactly this set; widening it would silently change what
+# those configs mean.
 EXPECTED_LOSS_WEIGHTS = {
     "visible", "response", "first_layer", "active", "profile_flow",
     "count", "support_bce", "support_rank", "share_flow",
 }
+
+ARCHITECTURE_V2_2 = "cbsc-zdc-v2.2"
+ARCHITECTURE_V3 = "cbsc-zdc-v3"
+
+# v3 keeps every v2.2 component and adds the hierarchical first-layer and
+# span/gap activity heads.  ``first_layer`` and ``active`` remain because the
+# autoregressive activity mode and the v2 first-layer categorical still use
+# them; the added keys are inert when their mode is not selected.
+V3_LOSS_WEIGHTS = EXPECTED_LOSS_WEIGHTS | {
+    "ecal_start", "hcal_first", "active_last", "active_gap",
+}
+
+ARCHITECTURE_LOSS_WEIGHTS = {
+    ARCHITECTURE_V2_2: EXPECTED_LOSS_WEIGHTS,
+    ARCHITECTURE_V3: V3_LOSS_WEIGHTS,
+}
+
+ALLOWED_ACTIVITY_MODES = {"span_gaps", "autoregressive"}
 ALLOWED_STAGES = {"response", "profile", "count", "support", "share", "joint"}
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+
+
+def architecture_version(config: dict[str, Any]) -> str:
+    """Return the declared architecture version.
+
+    Absence of ``model.architecture_version`` means ``cbsc-zdc-v2.2``.  No
+    existing frozen YAML is reinterpreted.
+    """
+    return str(config.get("model", {}).get("architecture_version", ARCHITECTURE_V2_2))
+
+
+def expected_loss_weights(version: str) -> set[str]:
+    try:
+        return ARCHITECTURE_LOSS_WEIGHTS[version]
+    except KeyError:
+        raise ValueError(
+            f"model.architecture_version must be one of "
+            f"{sorted(ARCHITECTURE_LOSS_WEIGHTS)}, got {version!r}"
+        ) from None
+
+
+def _validate_v3_model(model: dict[str, Any]) -> None:
+    temperature = model.get("support_temperature", 1.0)
+    try:
+        temperature = float(temperature)
+    except (TypeError, ValueError):
+        raise ValueError("model.support_temperature must be a finite positive float") from None
+    if not math.isfinite(temperature) or temperature <= 0:
+        raise ValueError("model.support_temperature must be a finite positive float")
+    mode = str(model.get("activity_mode", "span_gaps"))
+    if mode not in ALLOWED_ACTIVITY_MODES:
+        raise ValueError(
+            f"model.activity_mode must be one of {sorted(ALLOWED_ACTIVITY_MODES)}, got {mode!r}"
+        )
 
 
 def validate_config(config: dict[str, Any]) -> None:
     missing = REQUIRED_TOP_LEVEL - set(config)
     if missing:
         raise ValueError(f"configuration missing top-level sections: {sorted(missing)}")
+    version = architecture_version(config)
+    required_losses = expected_loss_weights(version)
+    if version == ARCHITECTURE_V3:
+        _validate_v3_model(config["model"])
     target_mode = config["data"].get("target_mode")
     if target_mode not in {"raw_deposit", "thresholded_readout"}:
         raise ValueError("data.target_mode must be raw_deposit or thresholded_readout")
@@ -45,10 +106,12 @@ def validate_config(config: dict[str, Any]) -> None:
         if not isinstance(value, list) or len(value) != 2 or float(value[0]) > float(value[1]):
             raise ValueError(f"data.{name} must be [low, high] with low <= high")
     loss_names = set(config["loss_weights"])
-    if loss_names != EXPECTED_LOSS_WEIGHTS:
-        missing = sorted(EXPECTED_LOSS_WEIGHTS - loss_names)
-        extra = sorted(loss_names - EXPECTED_LOSS_WEIGHTS)
-        raise ValueError(f"loss_weights keys mismatch: missing={missing}, extra={extra}")
+    if loss_names != required_losses:
+        missing = sorted(required_losses - loss_names)
+        extra = sorted(loss_names - required_losses)
+        raise ValueError(
+            f"loss_weights keys mismatch for {version}: missing={missing}, extra={extra}"
+        )
     for name, value in config["loss_weights"].items():
         if float(value) < 0:
             raise ValueError(f"loss weight {name} must be nonnegative")
