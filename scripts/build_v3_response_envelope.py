@@ -26,23 +26,32 @@ from cbsc_zdc.utils import load_yaml
 
 
 def rows_from_split(config: dict, split: str, limit: int | None):
+    """Yield ``(kinetic_gev, total_response_gev, visible)`` for one split.
+
+    ``split`` is passed to the dataset, so the training assignment is enforced by
+    the same loader training uses rather than by a filter written here.
+    """
+    if split != "train":
+        raise SystemExit(f"the response envelope is train-only; refusing split {split!r}")
     geometry = load_geometry(config["geometry"]["path"])
+    n_nodes = int(geometry["node_features"].shape[0])
     dataset = ShardedSparseDataset(
-        config["data"]["manifest"], split=split, geometry=geometry,
-        train_kinetic_gev=tuple(config["data"]["train_kinetic_gev"]),
+        config["data"]["manifest"],
+        split_manifest_path=config["data"]["splits"],
+        split=split,
+        kinetic_range_gev=tuple(config["data"]["train_kinetic_gev"]),
+        n_nodes=n_nodes,
     )
     threshold = float(config["data"].get("threshold_gev", 0.0))
-    seen = 0
-    for index in range(len(dataset)):
-        if limit is not None and seen >= limit:
-            break
+    total_events = len(dataset)
+    stop = total_events if limit is None else min(limit, total_events)
+    for index in range(stop):
         item = dataset[index]
         p4 = item["p4_total_gev"].reshape(1, 4)
         kinetic = float(kinetic_energy_from_p4(p4)[0])
         cell = item["cell_energy_gev"]
         total = float(cell[cell > threshold].sum())
         yield kinetic, total, total > 0.0
-        seen += 1
 
 
 def main() -> int:
