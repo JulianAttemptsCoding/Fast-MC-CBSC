@@ -56,9 +56,13 @@ class CBSCZDC(nn.Module):
         field_args=dict(node_dim=self.node_features.shape[1],edge_dim=self.edge_features.shape[1],cond_dim=cond_dim,n_layers=self.n_layers,hidden=hidden,blocks=int(m.get('graph_blocks',3)),heads=int(m.get('attention_heads',4)),context_layers=int(m.get('attention_layers',2)),mode=mode,axis_dim=axis_dim)
         self.support=SupportScoreField(**field_args); self.share=ShareFlowField(**field_args)
         if self.axis_enabled:
-            positions=geometry.get('cell_positions_mm')
+            # The frozen geometry names this `positions_mm`; `cell_positions_mm`
+            # is accepted as an alias so synthetic fixtures can use either.
+            positions=geometry.get('positions_mm')
             if positions is None:
-                raise ValueError('axis features require geometry["cell_positions_mm"]')
+                positions=geometry.get('cell_positions_mm')
+            if positions is None:
+                raise ValueError('axis features require geometry["positions_mm"] (or cell_positions_mm)')
             vertex=geometry.get('generator_vertex_mm')
             vertex=torch.zeros(3,dtype=positions.dtype) if vertex is None else resolve_frozen_vertex(vertex)
             self.register_buffer('cell_positions_mm',positions.clone().float())
