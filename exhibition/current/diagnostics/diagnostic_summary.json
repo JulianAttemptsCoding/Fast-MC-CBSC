@@ -5,453 +5,491 @@
       24,
       25,
       26,
-      27,
-      28,
-      29,
-      30,
-      31,
-      32,
-      33,
-      34,
-      35,
-      36,
-      37,
-      38,
-      39,
-      40,
-      41,
-      42,
-      43,
-      44,
-      45,
-      46,
-      47,
-      48,
-      49,
-      50,
-      51,
-      52,
-      53,
-      54,
-      55,
-      56,
-      57,
-      58,
-      59,
-      60,
-      61,
-      62,
-      63,
-      64,
-      65,
-      66,
-      67,
-      68,
-      69,
-      70,
-      71,
-      72,
-      73,
-      74,
-      75,
-      76,
-      77,
-      78
+      27
     ],
-    "figures": [],
+    "figures": [
+      "bias_of_best_loss_so_far.png",
+      "wasserstein_of_best_loss_so_far.png",
+      "headline_of_best_loss_so_far.png",
+      "energy_bins_of_best_loss_so_far.png"
+    ],
     "selection_quantity": "accepted validation loss only",
     "selection_trace": [
       {
-        "best_checkpoint_epoch": 15,
-        "best_checkpoint_run_tag": "dicos-p6",
-        "best_validation_loss": 4.702457625555259,
+        "best_checkpoint_epoch": 22,
+        "best_checkpoint_run_tag": "dicos-p7",
+        "best_validation_loss": 4.597151546143159,
         "completed_epoch": 23,
         "metric_available_from_3090": false
       },
       {
-        "best_checkpoint_epoch": 24,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.688147352869304,
+        "best_checkpoint_epoch": 22,
+        "best_checkpoint_run_tag": "dicos-p7",
+        "best_validation_loss": 4.597151546143159,
         "completed_epoch": 24,
         "metric_available_from_3090": false
       },
       {
-        "best_checkpoint_epoch": 24,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.688147352869304,
+        "best_checkpoint_epoch": 22,
+        "best_checkpoint_run_tag": "dicos-p7",
+        "best_validation_loss": 4.597151546143159,
         "completed_epoch": 25,
         "metric_available_from_3090": false
       },
       {
-        "best_checkpoint_epoch": 26,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.68379883570692,
+        "best_checkpoint_epoch": 22,
+        "best_checkpoint_run_tag": "dicos-p7",
+        "best_validation_loss": 4.597151546143159,
         "completed_epoch": 26,
         "metric_available_from_3090": false
       },
       {
-        "best_checkpoint_epoch": 27,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.67064517029557,
+        "best_checkpoint_epoch": 22,
+        "best_checkpoint_run_tag": "dicos-p7",
+        "best_validation_loss": 4.597151546143159,
         "completed_epoch": 27,
         "metric_available_from_3090": false
       },
       {
-        "best_checkpoint_epoch": 27,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.67064517029557,
+        "best_checkpoint_epoch": 28,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.589875928828517,
         "completed_epoch": 28,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 29,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.64058522075022,
+        "best_checkpoint_epoch": 28,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.589875928828517,
         "completed_epoch": 29,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 29,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.64058522075022,
+        "best_checkpoint_epoch": 28,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.589875928828517,
         "completed_epoch": 30,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 29,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.64058522075022,
+        "best_checkpoint_epoch": 28,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.589875928828517,
         "completed_epoch": 31,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 29,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.64058522075022,
+        "best_checkpoint_epoch": 28,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.589875928828517,
         "completed_epoch": 32,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 29,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.64058522075022,
+        "best_checkpoint_epoch": 33,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.577270117895146,
         "completed_epoch": 33,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 29,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.64058522075022,
+        "best_checkpoint_epoch": 34,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.5503306071196254,
         "completed_epoch": 34,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 29,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.64058522075022,
+        "best_checkpoint_epoch": 34,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.5503306071196254,
         "completed_epoch": 35,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 29,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.64058522075022,
+        "best_checkpoint_epoch": 34,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.5503306071196254,
         "completed_epoch": 36,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 29,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.64058522075022,
+        "best_checkpoint_epoch": 34,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.5503306071196254,
         "completed_epoch": 37,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 34,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.5503306071196254,
         "completed_epoch": 38,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 34,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.5503306071196254,
         "completed_epoch": 39,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 34,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.5503306071196254,
         "completed_epoch": 40,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 34,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.5503306071196254,
         "completed_epoch": 41,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 34,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.5503306071196254,
         "completed_epoch": 42,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 34,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.5503306071196254,
         "completed_epoch": 43,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 34,
+        "best_checkpoint_run_tag": "dicos-c-02",
+        "best_validation_loss": 4.5503306071196254,
         "completed_epoch": 44,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 45,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.519304749208174,
         "completed_epoch": 45,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 45,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.519304749208174,
         "completed_epoch": 46,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 47,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 48,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 49,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 50,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 51,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 52,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 53,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 54,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 55,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 56,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 57,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 58,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 59,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 60,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 61,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 62,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 63,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 64,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 65,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 66,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 67,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 68,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 47,
+        "best_checkpoint_run_tag": "dicos-e-02",
+        "best_validation_loss": 4.512720740207991,
         "completed_epoch": 69,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
         "completed_epoch": 70,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
         "completed_epoch": 71,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
         "completed_epoch": 72,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
         "completed_epoch": 73,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
         "completed_epoch": 74,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
         "completed_epoch": 75,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
         "completed_epoch": 76,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
         "completed_epoch": 77,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
       },
       {
-        "best_checkpoint_epoch": 38,
-        "best_checkpoint_run_tag": "dicos-p9",
-        "best_validation_loss": 4.635219681489869,
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
         "completed_epoch": 78,
-        "metric_available_from_3090": false
+        "metric_available_from_3090": true
+      },
+      {
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
+        "completed_epoch": 79,
+        "metric_available_from_3090": true
+      },
+      {
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
+        "completed_epoch": 80,
+        "metric_available_from_3090": true
+      },
+      {
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
+        "completed_epoch": 81,
+        "metric_available_from_3090": true
+      },
+      {
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
+        "completed_epoch": 82,
+        "metric_available_from_3090": true
+      },
+      {
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
+        "completed_epoch": 83,
+        "metric_available_from_3090": true
+      },
+      {
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
+        "completed_epoch": 84,
+        "metric_available_from_3090": true
+      },
+      {
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
+        "completed_epoch": 85,
+        "metric_available_from_3090": true
+      },
+      {
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
+        "completed_epoch": 86,
+        "metric_available_from_3090": true
+      },
+      {
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
+        "completed_epoch": 87,
+        "metric_available_from_3090": true
+      },
+      {
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
+        "completed_epoch": 88,
+        "metric_available_from_3090": true
+      },
+      {
+        "best_checkpoint_epoch": 70,
+        "best_checkpoint_run_tag": "dicos-f-01",
+        "best_validation_loss": 4.497628535219028,
+        "completed_epoch": 89,
+        "metric_available_from_3090": true
+      },
+      {
+        "best_checkpoint_epoch": 90,
+        "best_checkpoint_run_tag": "dicos-f-02",
+        "best_validation_loss": 4.483767619419238,
+        "completed_epoch": 90,
+        "metric_available_from_3090": true
       }
     ]
   },
@@ -511,7 +549,19 @@
     75,
     76,
     77,
-    78
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90
   ],
   "epochs_by_run_tag": {
     "dicos-c-02": [
@@ -576,9 +626,20 @@
       75,
       76,
       77,
-      78
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90
     ],
-    "dicos-f-03": [],
     "dicos-p6": [],
     "dicos-p7": []
   },
@@ -639,7 +700,19 @@
       -0.015435017533343441,
       0.020635174714883044,
       -0.010242134941086369,
-      -0.09466068339272735
+      -0.09466068339272735,
+      -0.09298092906711422,
+      0.13474360264200277,
+      -0.09479041502099692,
+      -0.10145092615698167,
+      -0.06461762905783322,
+      0.008930355923696495,
+      -0.05674995566175756,
+      -0.07685459686422146,
+      -0.028963229450868922,
+      -0.03685557470950491,
+      0.013678324795770847,
+      -0.037873306091125575
     ],
     "ecal_fraction": [
       0.19076931948006645,
@@ -697,7 +770,19 @@
       0.14839498917678717,
       0.145661318839122,
       0.22248506700383963,
-      0.2897816544211982
+      0.2897816544211982,
+      0.38105796728051844,
+      0.09195589303317812,
+      0.15999914280239247,
+      0.42284603951865735,
+      0.32094243319717103,
+      0.22109258109912192,
+      0.23588448723911448,
+      0.2891001986611771,
+      0.2898872669665071,
+      0.2642048898830885,
+      0.1808915480941487,
+      0.25029636495077123
     ],
     "hit_count": [
       -0.013820040116677385,
@@ -755,7 +840,19 @@
       -0.019118540218372657,
       0.002176763345318689,
       -0.04122568038164016,
-      0.02421255221385815
+      0.02421255221385815,
+      -0.046548800600417294,
+      -0.008277220636550831,
+      -0.03789333969379172,
+      -0.0037563712393752246,
+      -0.026201920400495668,
+      -0.0438324332877156,
+      -0.014021548718272105,
+      -0.003537769690252331,
+      -0.028347947803469983,
+      -0.017156144389302738,
+      -0.027840804754787625,
+      -0.017941479079408355
     ],
     "late_fraction": [
       -0.14140352349356985,
@@ -813,7 +910,19 @@
       0.10645592729469787,
       0.07307708923395194,
       0.1618374972758002,
-      -0.11873525531890498
+      -0.11873525531890498,
+      -0.23071350992185075,
+      0.4206124891558434,
+      -0.31520403028974897,
+      -0.15990596381773028,
+      0.07217417927901812,
+      0.22224831785441726,
+      0.05804425107941276,
+      -0.1574572710677107,
+      0.31667457508505387,
+      0.2159194337197897,
+      0.2661447905664824,
+      0.1239086755805489
     ],
     "radial_rms_mm": [
       -0.038369100522305855,
@@ -871,7 +980,19 @@
       -0.04499009604391367,
       0.0011031205030450192,
       -0.07148948248078796,
-      0.023050757959401952
+      0.023050757959401952,
+      -0.044326028841436674,
+      -0.04447490637389982,
+      -0.11413873383089136,
+      -0.048044874049007376,
+      -0.04901077091096881,
+      -0.06536778757579921,
+      -0.05732201486688398,
+      -0.06966251916101966,
+      -0.06830755750686553,
+      -0.041135332143532065,
+      -0.05818567330555689,
+      -0.04885028970398729
     ],
     "top1_fraction": [
       0.025960057812455892,
@@ -929,7 +1050,19 @@
       0.1331319711304102,
       0.0345765318806334,
       0.1967045497817581,
-      0.004227509573774081
+      0.004227509573774081,
+      0.14832653956571135,
+      0.1278185037211137,
+      0.14160539495039762,
+      0.2923486731335013,
+      0.18703561251615752,
+      0.17048631879925652,
+      0.17618085981990494,
+      0.2550074943154634,
+      0.22143571534673234,
+      0.20009447983415032,
+      0.18675494793720485,
+      0.19386840376338713
     ],
     "total_response_gev": [
       0.12338165317800891,
@@ -987,7 +1120,19 @@
       0.12587505537509827,
       0.13972022018220223,
       0.13030502209853592,
-      0.17497213275758403
+      0.17497213275758403,
+      0.13486624271240888,
+      0.15351315983697406,
+      0.11233925040059045,
+      0.1509721775870998,
+      0.11049577557800132,
+      0.11627690776842527,
+      0.11681783543847452,
+      0.15170913358594723,
+      0.18209933410513435,
+      0.12677448282913648,
+      0.12269358205133124,
+      0.12986155161195925
     ],
     "x_centroid_mm": [
       -0.0004885052178441983,
@@ -1045,7 +1190,19 @@
       0.008944010210083595,
       0.002061583462980445,
       0.004697499869656408,
-      -0.002483859342533047
+      -0.002483859342533047,
+      0.006491503675315256,
+      0.0026132920127611503,
+      0.0068437294441830365,
+      0.004453736350124354,
+      0.009740730782626543,
+      -3.9427999430149534e-05,
+      0.0034533890572364056,
+      0.005077149506973598,
+      0.003783158009037352,
+      0.002840420854234982,
+      0.0021214982301152136,
+      0.004211697862546255
     ],
     "y_centroid_mm": [
       0.0005911746662491499,
@@ -1103,14 +1260,30 @@
       -0.1807694925510251,
       0.07663162382571612,
       0.04992335273577148,
-      0.035543691474985054
+      0.035543691474985054,
+      -0.004986783847330963,
+      0.17043712332044145,
+      0.04319774025490898,
+      0.037397189961773505,
+      0.11252728097351929,
+      0.025552836354002875,
+      0.10354752950735466,
+      0.10456670336991701,
+      0.058869151596838504,
+      0.0894271414933964,
+      0.05598034996642897,
+      0.05492419601431297
     ]
   },
   "figures": [
     "bias_vs_epoch.png",
     "wasserstein_vs_epoch.png",
     "headline_vs_epoch.png",
-    "energy_bins_vs_epoch.png"
+    "energy_bins_vs_epoch.png",
+    "bias_of_best_loss_so_far.png",
+    "wasserstein_of_best_loss_so_far.png",
+    "headline_of_best_loss_so_far.png",
+    "energy_bins_of_best_loss_so_far.png"
   ],
   "high_level_c2st_auc": [
     0.7569069444444444,
@@ -1168,7 +1341,19 @@
     0.7352364583333334,
     0.71380625,
     0.7713934027777778,
-    0.764453125
+    0.764453125,
+    0.7789961805555556,
+    0.7793927083333334,
+    0.8422725694444444,
+    0.8136347222222222,
+    0.7868666666666666,
+    0.7734659722222222,
+    0.7711020833333333,
+    0.7939194444444444,
+    0.7582673611111111,
+    0.7585496527777777,
+    0.747261111111111,
+    0.7551340277777777
   ],
   "kinetic_range_gev": [
     50.0,
@@ -1903,18 +2088,173 @@
       },
       "status": "accepted",
       "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "d38e45247a295c998f7905e999931942b3cc6e8d926316d1d7d69943dcf669fd",
+      "epoch": 79,
+      "qa_pass": true,
+      "run_tag": "dicos-f-02",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "3fcfdd5624cfcaffb490054d375e73664898df88fa23cdc2242e72f6ac10f317",
+      "epoch": 80,
+      "qa_pass": true,
+      "run_tag": "dicos-f-02",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "52f85b0497c273ef416d3f69a046607cfbb53ad0dfb944a61f0136fabf96ec58",
+      "epoch": 81,
+      "qa_pass": true,
+      "run_tag": "dicos-f-02",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "5b3ff60e48a50ec88007d09ecc638c10b53caab874c90879382e130d407b48f0",
+      "epoch": 82,
+      "qa_pass": true,
+      "run_tag": "dicos-f-02",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "dec3669b25c9d600e59896fe944d21c29fe14bdea1d8ceccdd7f149e18f8a2a7",
+      "epoch": 83,
+      "qa_pass": true,
+      "run_tag": "dicos-f-02",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "fd3afc85c2cadd5051e637b3b9e244762c4b983ea1c6846c4b9905ebc288ffcc",
+      "epoch": 84,
+      "qa_pass": true,
+      "run_tag": "dicos-f-02",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "daed014cf3a0cd6430f7e5a9021e34d5f2b6f6af71030c2ff8557b2505a4418f",
+      "epoch": 85,
+      "qa_pass": true,
+      "run_tag": "dicos-f-02",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "ac7364ff48d1f29af1d87f7cbe771811813198237a0a63a293637dc96d176d1b",
+      "epoch": 86,
+      "qa_pass": true,
+      "run_tag": "dicos-f-02",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "c43e8d2881dcb99c98f69f6fe930f85743daef0a94b27eba23f1a38eabb0ae57",
+      "epoch": 87,
+      "qa_pass": true,
+      "run_tag": "dicos-f-02",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "4e89ce72aa1c6c44eb98d5fd7f788727bb06c48b8fd9f1b9356aa34fa93b31e0",
+      "epoch": 88,
+      "qa_pass": true,
+      "run_tag": "dicos-f-02",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "d24ff08be2744e4d4deac9099a880df24a04930b75049b8de646c316e4a8a51c",
+      "epoch": 89,
+      "qa_pass": true,
+      "run_tag": "dicos-f-02",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
+    },
+    {
+      "checkpoint_sha256": "643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035",
+      "epoch": 90,
+      "qa_pass": true,
+      "run_tag": "dicos-f-02",
+      "split_counts": {
+        "test": 0,
+        "train": 0,
+        "validation": 4000
+      },
+      "status": "accepted",
+      "status_reason": null
     }
   ],
   "quarantined_epochs": [],
-  "run_tag": "dicos-p6+dicos-p7+dicos-c-02+dicos-e-02+dicos-f-01+dicos-f-02+dicos-f-03",
+  "run_tag": "dicos-p6+dicos-p7+dicos-c-02+dicos-e-02+dicos-f-01+dicos-f-02",
   "run_tags": [
     "dicos-p6",
     "dicos-p7",
     "dicos-c-02",
     "dicos-e-02",
     "dicos-f-01",
-    "dicos-f-02",
-    "dicos-f-03"
+    "dicos-f-02"
   ],
   "schema_version": 2,
   "scientific_status": "descriptive validation diagnostics; not a fidelity gate and not Geant4 validation",
@@ -1977,7 +2317,19 @@
       1563.7455,
       1597.695,
       1528.50175,
-      1632.825
+      1632.825,
+      1520.0155,
+      1581.029,
+      1533.81425,
+      1588.23625,
+      1552.453,
+      1524.346,
+      1571.87125,
+      1588.58475,
+      1549.03175,
+      1566.874,
+      1549.84025,
+      1565.622
     ],
     "generated_response_mean_gev": [
       4.53194522857666,
@@ -2035,7 +2387,19 @@
       4.542004108428955,
       4.59785795211792,
       4.55987548828125,
-      4.7400712966918945
+      4.7400712966918945,
+      4.57827615737915,
+      4.653501987457275,
+      4.48739767074585,
+      4.643250942230225,
+      4.479960918426514,
+      4.5032830238342285,
+      4.505465030670166,
+      4.646223545074463,
+      4.768823146820068,
+      4.545632362365723,
+      4.529169082641602,
+      4.558085918426514
     ],
     "hit_count_bias_fraction": [
       -0.013820040116677385,
@@ -2093,7 +2457,19 @@
       -0.019118540218372657,
       0.002176763345318689,
       -0.04122568038164016,
-      0.02421255221385815
+      0.02421255221385815,
+      -0.046548800600417294,
+      -0.008277220636550831,
+      -0.03789333969379172,
+      -0.0037563712393752246,
+      -0.026201920400495668,
+      -0.0438324332877156,
+      -0.014021548718272105,
+      -0.003537769690252331,
+      -0.028347947803469983,
+      -0.017156144389302738,
+      -0.027840804754787625,
+      -0.017941479079408355
     ],
     "mean_longitudinal_profile_relative_l1": [
       0.1869327232954131,
@@ -2151,7 +2527,19 @@
       0.16452436983311575,
       0.20708811102024025,
       0.21732949923866493,
-      0.230881772917089
+      0.230881772917089,
+      0.27479481604815365,
+      0.2917256421521841,
+      0.2001803039211965,
+      0.24556946376412003,
+      0.2243043890391145,
+      0.20185173992661318,
+      0.1859440654035453,
+      0.2205014329925111,
+      0.2584247544419958,
+      0.19013801316356574,
+      0.17923167284446945,
+      0.19629037910502448
     ],
     "response_bias_fraction": [
       0.12338174122799968,
@@ -2209,9 +2597,33 @@
       0.1258751433750559,
       0.13972023306897793,
       0.13030511346605,
-      0.17497217601965315
+      0.17497217601965315,
+      0.1348662841440663,
+      0.1535133153229993,
+      0.1123392615510888,
+      0.15097227908894312,
+      0.11049583420406396,
+      0.1162769339439322,
+      0.11681781131889922,
+      0.15170912995335406,
+      0.18209920466440543,
+      0.12677451748915644,
+      0.1226935882391321,
+      0.12986151364344267
     ],
     "truth_hit_count_mean": [
+      1594.22475,
+      1594.22475,
+      1594.22475,
+      1594.22475,
+      1594.22475,
+      1594.22475,
+      1594.22475,
+      1594.22475,
+      1594.22475,
+      1594.22475,
+      1594.22475,
+      1594.22475,
       1594.22475,
       1594.22475,
       1594.22475,
@@ -2270,6 +2682,18 @@
       1594.22475
     ],
     "truth_response_mean_gev": [
+      4.034198760986328,
+      4.034198760986328,
+      4.034198760986328,
+      4.034198760986328,
+      4.034198760986328,
+      4.034198760986328,
+      4.034198760986328,
+      4.034198760986328,
+      4.034198760986328,
+      4.034198760986328,
+      4.034198760986328,
+      4.034198760986328,
       4.034198760986328,
       4.034198760986328,
       4.034198760986328,

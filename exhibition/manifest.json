@@ -7,7 +7,7 @@
   "best_payloads": {
     "calibrated_lr3e5": "dicos-c-05-calibrated-lr3e5_joint_epoch_0036.json",
     "calibrated_lr1e4": "dicos-p9-calibrated-lr1e4_joint_epoch_0038.json",
-    "calibrated_lr3e4": "dicos-f-01-calibrated-lr3e4_joint_epoch_0070.json",
+    "calibrated_lr3e4": "dicos-f-02-calibrated-lr3e4_joint_epoch_0090.json",
     "calibrated_lr1e4_halfbatch": "dicos-c-03-calibrated-lr1e4-halfbatch_joint_epoch_0033.json"
   },
   "source_files": [
@@ -23,8 +23,8 @@
     },
     {
       "path": "dashboard/public/data/manifest.json",
-      "bytes": 157479,
-      "sha256": "e10a35d65bde7b17323fb11fca901ea9dd34c188f601dc944d55f5f1739896bd"
+      "bytes": 167065,
+      "sha256": "cf3f198159227febfa3e561519763ccf159356cbc3d5354a6ede43684546fa03"
     },
     {
       "path": "dashboard/public/data/geometry.json",
@@ -34,7 +34,7 @@
     {
       "path": "exhibition/current/continuation/family_choice.json",
       "bytes": 2143,
-      "sha256": "411e63b0691bfff874973860467a056017a4a4fae99474a649559221b22777e8"
+      "sha256": "d0aa022e6fe3e6b9e213c572279f6fb9f134264c07cb0cab4f010526cbdcea91"
     },
     {
       "path": "dashboard/public/data/dicos-c-05-calibrated-lr3e5_joint_epoch_0036.json",
@@ -47,9 +47,9 @@
       "sha256": "5410b5cdae509698592a0d4e04e875d3a3fee8a0847ddada22eb6aee47cef9a1"
     },
     {
-      "path": "dashboard/public/data/dicos-f-01-calibrated-lr3e4_joint_epoch_0070.json",
-      "bytes": 13690301,
-      "sha256": "09e26fb99dd2719f5b5ec9e1209e92bac3d5cd2f5bf89e57af9327ad2974e109"
+      "path": "dashboard/public/data/dicos-f-02-calibrated-lr3e4_joint_epoch_0090.json",
+      "bytes": 13709520,
+      "sha256": "337bf9bbb1c3c1dc4b19fd12c693cabe520ba12954d3e4f29b8b22090b44dfb9"
     },
     {
       "path": "dashboard/public/data/dicos-c-03-calibrated-lr1e4-halfbatch_joint_epoch_0033.json",
@@ -169,32 +169,32 @@
     {
       "path": "current/model/10_same_condition_longitudinal_profiles.png",
       "scope": "current",
-      "bytes": 456065,
-      "sha256": "7af86bdc9ee56856decee418775fa1b99921470de01c130e6201a4b76756ecbf"
+      "bytes": 459215,
+      "sha256": "132760f16fc542c33694b9dbd8e9de66439fa39f52b1959ce42e43c9007cb993"
     },
     {
       "path": "current/model/10_same_condition_longitudinal_profiles.svg",
       "scope": "current",
-      "bytes": 100640,
-      "sha256": "e2cd958239712bbc3e9b12e4cc5756e30852352c9797fb3f2356ac459a8a8236"
+      "bytes": 100633,
+      "sha256": "ae42a45069414b58019a7a86e8163db7bdfe576553d5255a90471b0d6214b467"
     },
     {
       "path": "current/model/11_best_model_sample_distributions.png",
       "scope": "current",
-      "bytes": 181066,
-      "sha256": "720763c3dc4d4497168927951ce81327c5728cb2cea80a20fd3f1c70ec7c07f4"
+      "bytes": 178882,
+      "sha256": "6fc2a7fbc432483b6a1d20ab9a4e86a2706ada8a68ce1ad7518dfa8dd03adf65"
     },
     {
       "path": "current/model/11_best_model_sample_distributions.svg",
       "scope": "current",
-      "bytes": 66611,
-      "sha256": "9e876b6adefc16bf7d8495b0b9773536c8d00fba6a337e20ef8ec1c5f95cd2b2"
+      "bytes": 65762,
+      "sha256": "2e96f1543120b434526c0d32b921729ab65f16ac1c39224b61e90d9420e84a67"
     },
     {
       "path": "current/model/12_same_condition_3d_energy_deposits.png",
       "scope": "current",
-      "bytes": 904253,
-      "sha256": "e53e307e1422153b1ee53b94e8f759f5b9b51ceaedd0ac0b41dafc0b59aa392f"
+      "bytes": 935691,
+      "sha256": "95a72945164a15daadcf7c1c9884a6b8fa88f6a1049abac9bbf43bf7f5e6b2cd"
     }
   ],
   "gallery": {

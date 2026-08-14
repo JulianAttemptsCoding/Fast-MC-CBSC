@@ -1,14 +1,14 @@
 {
   "cbsc_test_events_used": 0,
-  "checkpoint_sha256": "7c2d869bc6b777e4a173c3da39e7b2a3b7d68704a53554e64f4f670652417e11",
-  "epoch": 70,
+  "checkpoint_sha256": "643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035",
+  "epoch": 90,
   "family": "calibrated_lr3e4",
   "kind": "cbsc-zdc-current-external-metrics-state",
   "release_pending": true,
-  "run_tag": "dicos-f-01",
+  "run_tag": "dicos-f-02",
   "schema_version": 1,
   "selection_role": "descriptive only; may not select or tune CBSC",
   "source_split": "validation",
   "status": "pending_offline",
-  "validation_loss": 4.497628535219028
+  "validation_loss": 4.483767619419238
 }

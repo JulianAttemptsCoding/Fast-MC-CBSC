@@ -4,13 +4,13 @@
   "gaps": [
     {
       "family": "calibrated_lr3e4",
-      "first_epoch_without_diagnostics": 79,
+      "first_epoch_without_diagnostics": 91,
       "last_epoch_without_diagnostics": 114,
-      "run_tags": ["dicos-f-02", "dicos-f-03"],
+      "run_tags": ["dicos-f-03"],
       "declared_on": "2026-08-13",
-      "reason": "The RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 and was not replaced before the campaign finished. The L40S kept training, so epochs 79-114 have validation loss, learning rate and structural-invariant evidence but no distribution metrics.",
-      "consequence": "The accepted best checkpoint for this family, dicos-f-02 epoch 90, has NO measured distribution metrics. Its physics quality is unmeasured, not merely unreported.",
-      "closes_when": "A diagnostics pod replays epochs 79-114 from the retained checkpoints, or at minimum epoch 90, and the metrics are imported through scripts/refresh_continuation_outputs.py."
+      "reason": "The RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training to 114. A replacement 3090 replayed dicos-f-02's retained queue on 2026-08-13, closing epochs 79-90 and measuring the accepted best. The replay was stopped before dicos-f-03's queue because those epochs did not improve on epoch 90 and the owner asked for compute to stop.",
+      "consequence": "The accepted best, dicos-f-02 epoch 90, IS measured; this gap no longer touches checkpoint selection. What remains unmeasured is the tail that failed to improve on it, so the distribution-metric trend cannot be extended past epoch 90.",
+      "closes_when": "A diagnostics pod drains _diag/dicos-f-03/queue, which still holds all 24 checkpoints, and the metrics are imported through scripts/refresh_continuation_outputs.py."
     }
   ]
 }

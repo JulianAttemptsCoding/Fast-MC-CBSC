@@ -9888,3 +9888,69 @@ experiment is not "the loss is misaligned, replace it" but "the model is
 overfitting and the fidelity instrument is too noisy to adjudicate" -- which
 implies more events per diagnostic and a regularisation or data-scale lever
 before a loss redesign.
+
+### 2026-08-13 (final) -- epoch 90 measured, the accepted best moves, compute stopped
+
+The replacement 3090 drained `_diag/dicos-f-02/queue` in full: 16 checkpoints,
+epochs 79-94, at roughly 7.5 min each. **Epoch 90 -- the accepted best -- is now
+measured**, and diagnostics are continuous from epoch 23 to 90.
+
+`calibrated_lr3e4`'s accepted best therefore moves from `dicos-f-01` e70
+(4.497629) to **`dicos-f-02` e90 (4.483768)**, fully evidenced. The catalog
+reports 124 graphics, status PASS, `current_reaches_latest_observed_epoch` 90,
+all manifest hashes matching.
+
+**The consumer was stopped before `dicos-f-03`'s queue**, on the owner's
+instruction to stop compute. Those 24 checkpoints (epochs 91-114) remain queued
+and replayable. The remaining declared gap is exactly 91-114, and because none
+of those epochs improved on epoch 90 it does not touch checkpoint selection --
+it only stops the distribution-metric trend being extended past 90. The
+`unmeasured` overrides shrank from 36 rows to 24 accordingly.
+
+`dicos.py stop campdiag` killed the wrapper (pid 372) but left its children
+alive -- the `sh -c` at 373 reparented to init, and the real consumer at 374
+under it. Both needed an explicit SIGTERM, sent through the pod's own venv
+interpreter with a probe that excludes its own pid and parent. **Worth
+remembering: `stop` is not sufficient on its own; verify with a `/proc` scan
+afterwards.** The GPU showed 100% and 2600 MiB for a further 25 s after `stop`
+returned, which is what prompted the check.
+
+**Re-tested the fidelity question on the now-complete lineage, epochs 48-90,
+n=43.** With four more epochs than the earlier pass, ECAL fraction moves to
+t=2.13 -- across the uncorrected p<0.05 line at t>2.02, but one marginal hit out
+of five simultaneous tests is what chance produces about a quarter of the time,
+and a Bonferroni correction needs t~2.70, which nothing reaches. The other four
+metrics remain flat (t = 0.02, 1.40, 1.68, 0.26). The withdrawal stands: at
+4,000 events per epoch the instrument cannot resolve a fidelity trend either
+way.
+
+Epoch 90 is also **not** a bad-direction outlier -- it beats the lineage median
+on four of five metrics (total response 0.52432 vs 0.54496, longitudinal L1
+0.19629 vs 0.20493, radial RMS 4.38365 vs 4.49567, hit count 61.32583 vs
+70.47862) and loses only on ECAL fraction (0.05448 vs 0.04943).
+
+**AUROC for epoch 90 is staged, not computed:** the external-metric state
+records `dicos-f-02 e90 status=pending_offline`. That is the single
+highest-value outstanding measurement, because the two existing AUROC points
+(`dicos-c-02` e34 and `dicos-p9` e38) are both at epoch <=38 and in different
+families, so nothing yet says whether the 4.550 -> 4.484 improvement moved the
+classifier.
+
+### Verification
+
+    PYTHONPATH=src python -m pytest -q                 350 passed
+    exhibition/build_metrics_catalog.py                124 graphics, PASS,
+                                                        reaches epoch 90,
+                                                        hashes match,
+                                                        declared gap 91-114
+    accepted best calibrated_lr3e4                     4.483768 e90 dicos-f-02
+
+### State at handoff
+
+- Both pods idle. 4090 primary, 3090 diagnostics, nothing training or draining.
+- `docs/HANDOFF.md` current through this entry.
+- A publication remains owed and is still the owner's call; the public site
+  serves `dicos-p9` (`calibrated_lr1e4`, 4.635220).
+- Next measurements, in value order: AUROC on e90; drain `dicos-f-03`'s queue;
+  then the overfitting lever (regularisation or data scale) before any loss
+  redesign.

@@ -28,8 +28,8 @@ Validation loss, lower is better. `calibrated_lr3e4` is the leading family.
 
 | Family | Lowest observed | Epoch | Run tag | Evidence state |
 |---|---|---|---|---|
-| `calibrated_lr3e4` | **4.483768** | 90 | `dicos-f-02` | loss only until the 2026-08-13 diagnostics replay lands |
-| `calibrated_lr3e4` | 4.497629 | 70 | `dicos-f-01` | fully evidenced |
+| `calibrated_lr3e4` | **4.483768** | 90 | `dicos-f-02` | fully evidenced (diagnostics replayed 2026-08-13) |
+| `calibrated_lr3e4` | 4.497629 | 70 | `dicos-f-01` | superseded by e90 |
 | `calibrated_lr1e4_halfbatch` | 4.619967 | 33 | `dicos-c-03` | fully evidenced |
 | `calibrated_lr1e4` | 4.635220 | 38 | `dicos-p9` | fully evidenced; this is what the public site serves |
 | `calibrated_lr3e5` | 4.702203 | 36 | `dicos-c-05` | fully evidenced |
@@ -96,22 +96,28 @@ An earlier version of this document, `logs.md`, and
 `audit/lr_anneal_result_20260813_terminal_analysis.*` stated that "the loss
 improved while the physics got worse", from `dicos-e-02` e54 against
 `dicos-f-02` e78. **That is withdrawn.** It was two points out of a series whose
-adjacent epochs swing 0.36–0.75 on the same metric. Tested across epochs 48–86,
-n=39:
+adjacent epochs swing 0.36–0.75 on the same metric. Tested across the complete
+diagnosed lineage, epochs 48–90, n=43, where t>2.02 is uncorrected p<0.05:
 
 | Metric | r vs epoch | t | significant? | r vs validation loss |
 |---|---|---|---|---|
-| total response | −0.019 | 0.11 | no | +0.347 (aligned) |
-| longitudinal L1 | +0.265 | 1.67 | no | +0.013 |
-| ECAL fraction | +0.315 | 2.02 | borderline | −0.400 (misaligned) |
-| radial RMS | +0.258 | 1.63 | no | −0.110 |
-| hit count | −0.061 | 0.37 | no | +0.001 |
+| total response | −0.003 | 0.02 | no | +0.262 (aligned) |
+| longitudinal L1 | +0.213 | 1.40 | no | −0.003 |
+| ECAL fraction | +0.316 | **2.13** | marginal | −0.376 (misaligned) |
+| radial RMS | +0.253 | 1.68 | no | −0.125 |
+| hit count | −0.041 | 0.26 | no | +0.018 |
 
-No metric shows a significant trend with epoch. Correlation with the loss is
-mixed — two aligned, two misaligned, one neutral — and the per-epoch scatter is
-16–45%. At 4,000 events per epoch these diagnostics **cannot resolve a fidelity
-trend in either direction.** Raising the event count is the prerequisite for
-answering the question at all.
+One metric of five crosses the uncorrected threshold, barely. That is what five
+simultaneous tests at p<0.05 produce by chance about a quarter of the time, and
+a Bonferroni correction for five comparisons needs t≈2.70 — which nothing
+reaches. Per-epoch scatter is 16–43%. At 4,000 events per epoch these
+diagnostics **cannot resolve a fidelity trend in either direction.** Raising the
+event count is the prerequisite for answering the question at all.
+
+The accepted best is not a fidelity outlier in the bad direction: at epoch 90 it
+beats the lineage median on four of the five metrics (total response 0.524 vs
+0.545, longitudinal L1 0.196 vs 0.205, radial RMS 4.384 vs 4.496, hit count
+61.3 vs 70.5) and loses only on ECAL fraction (0.054 vs 0.049).
 
 ### AUROC has never been measured on any of this
 
@@ -163,28 +169,39 @@ condition and the supervisor journals `segment_kept_inherited_best` when it
 happens. `dicos-f-04` is excluded from the live lineage as an undeclared
 variant and retained as evidence.
 
-## 6. Known evidence gap
+## 6. Known evidence gap — mostly closed
 
 Training and diagnostics run on **separate pods**. The RTX 3090 diagnostics pod
 ended between epochs 78 and 79 on 2026-08-12 while the L40S kept training to
-114, so epochs 79–114 have loss, LR and structural-invariant evidence but no
-distribution metrics — including **epoch 90, the accepted best**.
+114, so epochs 79–114 had loss, LR and structural-invariant evidence but no
+distribution metrics — including epoch 90, the accepted best.
 
-Every queued checkpoint survived in `_diag/dicos-f-02/queue` and
-`_diag/dicos-f-03/queue`, so the gap is recoverable rather than permanent, and
-a replay was started on a new 3090 on 2026-08-13.
+Every queued checkpoint survived. On 2026-08-13 a replacement 3090 replayed
+`_diag/dicos-f-02/queue`, which **closed epochs 79–90 and measured the accepted
+best**. Diagnostics are now continuous from epoch 23 to 90.
 
-Two mechanisms carry this state, and both should be **removed once the replay
-lands**:
+**What remains:** epochs 91–114 (`dicos-f-03`). Its 24 checkpoints are still
+queued in `_diag/dicos-f-03/queue`. The replay was stopped there because those
+epochs did not improve on epoch 90 and the owner asked for compute to stop, so
+the remaining gap does not touch checkpoint selection — it only prevents the
+distribution-metric trend being extended past 90.
+
+Two mechanisms carry that remainder, and both should be **removed once
+`dicos-f-03`'s queue is drained**:
 
 - `exhibition/data/diagnostic_gaps.json` — declares the range and its reason.
   `build_metrics_catalog.py` still fails on any *undeclared* gap; a declaration
   makes it visible, it does not excuse it.
-- `exhibition/data/continuation_status.json` — marks epochs 79–114
+- `exhibition/data/continuation_status.json` — marks epochs 91–114
   `unmeasured`, which keeps them out of accepted-best selection so the
   published payload can never point at an epoch with no diagnostics.
   `unmeasured` means exactly that; it is not `quarantined`, which means a
   failure.
+
+**AUROC for epoch 90 is staged but not computed.** The external-metric state
+records `dicos-f-02 e90 status=pending_offline`. Running it is the single
+highest-value next measurement, because it is the only way to learn whether the
+4.550 → 4.484 improvement moved the classifier at all.
 
 ## 7. Operations
 
