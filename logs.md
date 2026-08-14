@@ -9954,3 +9954,133 @@ classifier.
 - Next measurements, in value order: AUROC on e90; drain `dicos-f-03`'s queue;
   then the overfitting lever (regularisation or data scale) before any loss
   redesign.
+
+### 2026-08-14 -- CBSC-ZDC v3 Stage A: handoff installed, software implemented, resources measured
+
+Owner authorized Stage A only: software, tests, validation-only evaluation of
+existing checkpoints, and bounded resource preflight. **No training campaign was
+launched, no paid compute was used, and the test split was not opened.**
+
+**Handoff install.** Both archives matched their declared SHA-256 exactly
+(overlay `fa329a9e...`, complete handoff `5a66de8c...`). The member scan found no
+absolute paths, traversal, duplicates, symlinks or executables. Staged to a
+temporary directory first; all 16 destinations were absent, so nothing was
+overwritten. `verify_improvement_v3_handoff.py` reports status=pass with
+`base_matches_all` true -- **all 11 audited base-file hashes match the live
+repository exactly**, which is what establishes that this handoff was written
+against this codebase rather than a description of it.
+
+**Two live-state reconciliations, recorded rather than silently applied.**
+
+1. The training pod is an **RTX 4090, 24564 MiB, host
+   `jupyterlabgpurtx4090-julianjuan`** -- not the archive-time L40S that both
+   `CLAUDE.md` and the v3 baseline assert. The archive-time observation is left
+   intact as history; a dated current-state record was added and a *derived*
+   contract (`specs/improvement_v3/contract_live_20260814.yaml`, sha
+   `0b1ea2cd...`, parent `c97f11eb...` unmodified) replaces only the hardware
+   observation fields. The binding principle is unchanged and re-asserted:
+   synchronous single-process critic and generator on the same CUDA device. The
+   builder refuses any diff outside a permitted allowlist, and caught its own
+   first attempt doing so.
+2. `checkpoint_sha256` appeared to conflict: `best.pt` hashes to `491284c7...`
+   while the diagnostics and external-metric records carry `643819fe...`. These
+   are **two containers of the same weights** -- the run's `best.pt` and the
+   producer's queued `ckpt_epoch_0090.pt`. Proved by comparing all 207
+   `model_state` tensors elementwise: 207 identical, 0 differing, max absolute
+   difference **0.000e+00**. Both hashes are retained and interpreted by role.
+
+**B0 gate: `B0_CANDIDATE_NOT_FROZEN`, 8 of 9 items passing.** `dicos-f-02`
+epoch 90 reproduces `best_metric = 4.483767619419238` **read from the checkpoint
+itself**, not from prose. Terminal `campaign_complete` with zero live writers on
+both pods. The corrected scheduler is confirmed one-way: **0 within-segment
+learning-rate increases across all 43 epochs** of the live lineage, the single
+rise at the 70->71 boundary being the declared restart. Structural invariants
+pass with every counter zero. The sole failing item is that external validation
+metrics for e90 are `pending_offline`; that is exactly what Stage B supplies, so
+no replacement run was launched.
+
+**Software implemented, test-first, 350 -> 521 tests.** Units 1-15 of the
+dependency order. The two that matter most:
+
+- The **bounded response spline** removes the second zero atom. v2.2 sampled a
+  continuous variable, exponentiated, clamped at zero, and then had to clear `V`
+  afterwards -- so zero-response mass was a function of the mixture tail rather
+  than the learned visibility. v3 makes visibility the only source of zeros and
+  the positive branch strictly inside `(0, C(K))` with no clamp anywhere.
+  `gradcheck` passes; the float64 round-trip is below 1e-8.
+- The **differentiable stage samplers** do not relax the discrete operations,
+  they avoid crossing them. `sample_exact` keeps its `no_grad` decorator and its
+  semantics; D1 truth-forces `V,T,f,A,D,k,S` and trains only the share flow, D2
+  truth-forces `V,T,A` and trains only the profile flow. Tests prove a D1 update
+  moves only share parameters and a D2 update only profile, and that generator
+  updates never move critic parameters.
+
+**Four defects found by the tests, all fixed at the cause.**
+
+1. Infeasible count classes are masked with `finfo.min`, not `-inf` -- the v2.2
+   convention that keeps a fully masked softmax from producing NaN. A test
+   wrongly expected `isinf`.
+2. A plain `.sum()` objective is **degenerate** for both stage samplers: the
+   decoder closes each layer onto its budget and the profile onto the total, so
+   the summed energy is constant and its analytic gradient is exactly zero. The
+   share test had been passing only on float32 rounding noise. Both now use a
+   shape-sensitive objective, and the closure property is pinned by its own test.
+3. The migration skipped v3-only modules present in the target but absent from
+   the source, reporting an incomplete key classification.
+4. The memorization test's "not copying" case used an independent draw from the
+   same distribution, which at n=10 in 8 dimensions lands either side of the
+   floor by chance.
+
+**Measured resources on the live 4090 at production shape** (6,790 channels, 65
+layers, 40,740 edges), declared critic batch 4, 20 warm-up plus 100 synchronized
+updates, three repeats:
+
+    v3_supervised_generator              0.01772 s/update    0.07 GiB
+    d1_critic_update                     0.15237 s/update   14.85 GiB
+    d1_generator_through_frozen_critic   0.21659 s/update   13.27 GiB
+    d2_critic_update                     0.01540 s/update    0.10 GiB
+    d2_generator_through_frozen_critic   0.02145 s/update    0.09 GiB
+
+**D1 fits the 24 GiB card at the declared batch size**, using 63% of it. Nothing
+was reduced to obtain that -- batch size, replay capacity, R1 and spectral norm
+all remain at their declared values, and a failure would have been reported as
+`RESOURCE PREFLIGHT FAIL` rather than tuned away.
+
+**Resume soak passes bit-exactly**: 32 updates, checkpointed at 16 and resumed,
+maximum absolute generator-parameter difference **0.0** against a 1e-6 gate, with
+critic, optimizer, controller and replay state and both hashes verified. The
+first attempt failed at 1.84e-3 and was **diagnosed rather than waived**:
+`load_checkpoint` defaults to `restore_rng=False` while the critic loss draws a
+real sample every update, so a resumed run restarting the RNG stream diverges
+immediately. The checkpoint already carried `rng_state`; the harness was not
+asking for it.
+
+**The cost estimate is revised upward by measurement.** The prior
+assumption-based figure of 2,930.88 GPU-hours was a correct calculation under
+its stated assumptions, but it extrapolated pilot *supervised* throughput to the
+critic paths. Measured, D1 costs 0.48609 s per 4-event update against the
+supervised 0.11713:
+
+    S1-S7 pilot rows      5.2 h each   -- about 57 h for all eleven
+    V3-SUP, C0          107.6 h each   -- the required no-critic control
+    D2 arms             141.5 h each
+    D1 arms             446.6 h each   -- 2.9x a D2 arm
+    full matrix       6,038.6 h        -- about 252 days on one card
+
+`specs/improvement_v3/experiment_matrix.csv` is **unmodified** and remains the
+hypothesis and decision registry; the re-costed schedule lives separately in
+`specs/improvement_v3/executable_plan_20260814.csv`. No row was launched.
+
+### What is still open
+
+1. The new heads are unit-tested but **not yet wired into `trainer.py`'s epoch
+   loop**; that wiring is required before any S-row can run.
+2. Units 16 (D3 tiny-geometry estimator QA) and 17 (optional p4 interface) are
+   not implemented. Both are triggered-only or disabled-by-default.
+3. D1 was measured with critic batch 4 for the generator as well; a generator
+   batch of 6 alongside a D1 critic is unmeasured.
+4. Stage B (fixed-validation evaluation of existing checkpoints) is in flight:
+   the external-metric transaction for `dicos-f-02` e90 was started on the 3090
+   and is the last item blocking the B0 freeze.
+
+`PHYSICS VALIDATION NOT ESTABLISHED` -- unchanged, and nothing above changes it.

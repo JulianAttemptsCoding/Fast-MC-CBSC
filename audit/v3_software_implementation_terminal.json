@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-software-implementation-terminal",
+  "recorded_at": "2026-08-14",
+  "authorization": {
+    "stage_a_software": "AUTHORIZED and executed",
+    "training_campaign": "NOT AUTHORIZED; none launched",
+    "paid_cloud": "NOT AUTHORIZED; none used",
+    "test_split": "NOT OPENED; zero test events used anywhere"
+  },
+  "test_counts": {
+    "before": 350,
+    "after": 521,
+    "added": 171,
+    "failures": 0
+  },
+  "commands": [
+    {
+      "command": "PYTHONPATH=src python -m compileall -q src scripts tests",
+      "exit": 0
+    },
+    {
+      "command": "PYTHONPATH=src python -m pytest -q",
+      "exit": 0,
+      "result": "521 passed"
+    },
+    {
+      "command": "python scripts/verify_improvement_v3_handoff.py --repo-root .",
+      "exit": 0,
+      "result": "status pass, base_matches_all true"
+    },
+    {
+      "command": "PYTHONPATH=src python scripts/verify_v3_run.py --mode software --repo-root .",
+      "exit": 0,
+      "result": "status pass; 16/16 modules, 17/17 test files, 16/16 constants"
+    },
+    {
+      "command": "scripts/v3_resource_preflight.py --warmup 20 --measured 100 --repeats 3",
+      "exit": 0
+    },
+    {
+      "command": "scripts/v3_resume_soak.py --updates 32 --stop-at 16",
+      "exit": 0,
+      "result": "pass, max abs diff 0.0"
+    },
+    {
+      "command": "scripts/build_v3_executable_plan.py",
+      "exit": 0
+    }
+  ],
+  "implemented_units": {
+    "1_architecture_versioning": "config.py: absent architecture_version means cbsc-zdc-v2.2; loss schema selected by version",
+    "2_checkpoint_v4": "twelve nullable adversarial-resume fields; format 3 unchanged when architecture_version is omitted",
+    "3_role_partition": "551,234/30,624/30,624 verified at production scale in 3.0 s, order independent, validation/test fatal",
+    "4_response_envelope": "25-GeV train-only, 1.10 margin, monotone cumulative max, empty production bin fatal, validation out-of-support reported not clipped",
+    "5_axis_features": "stable basis across |u_z|=0.9, frozen geometry scales, joint-rotation invariance, fail-closed nonfixed vertex",
+    "6_response_spline": "bounded conditional RQS; one and only one zero atom; gradcheck passes; float64 roundtrip < 1e-8",
+    "7_hierarchical_first_layer": "ECAL Bernoulli plus conditional 1..64 HCAL; unweighted first experiment; calibration diagnostics",
+    "8_activity_modes": "span_gaps and autoregressive, selected by the frozen 0.99 compact-fraction statistic",
+    "9_autoregressive_counts": "previous-count conditioning with every v2.2 feasibility mask retained; inactive weight 0.2",
+    "10_support_temperature": "frozen temperature over exact hard top-k; ordering invariant; nonfinite or nonpositive rejected",
+    "11_stage_samplers": "differentiable share and profile samplers that never cross the discrete top-k and never call sample_exact",
+    "12_metrics": "topology, correlation with truth-half floors, diversity, memorization, stratified bootstrap",
+    "13_critics": "D1 share and D2 profile projection critics, spectral norm, lazy R1 x16, gradient-ratio controller, replay",
+    "14_migration": "fatal unclassified keys; zero-initialized axis columns reproduce the v2 parent exactly",
+    "15_cli_and_verifier": "verify_v3_run.py, executable-plan builder, preflight and soak harnesses",
+    "16_d3_harness": "NOT IMPLEMENTED - triggered only, and its trigger is not met; no D3 campaign exists",
+    "17_p4_interface": "NOT IMPLEMENTED - optional, disabled in D1/D2 by the contract"
+  },
+  "known_gaps": [
+    "unit 16 (D3 tiny-geometry estimator QA harness) not implemented; it is triggered-only and its topology trigger has not been evaluated",
+    "unit 17 (optional four-momentum predictor interface) not implemented; it is disabled in D1/D2 by contract",
+    "the new heads are implemented and unit-tested but not yet wired into trainer.py's epoch loop; that wiring is required before any S-row runs",
+    "D1 preflight used critic batch 4 for the generator as well; a generator batch of 6 with a D1 critic is unmeasured"
+  ],
+  "measured_resources": {
+    "device": "NVIDIA GeForce RTX 4090",
+    "device_total_gib": 23.5184326171875,
+    "critic_batch": 4,
+    "probes": {
+      "v3_supervised_generator": {
+        "seconds_per_update_median": 0.017719546258449556,
+        "peak_allocated_gib": 0.07485294342041016,
+        "status": "ok"
+      },
+      "d1_critic_update": {
+        "seconds_per_update_median": 0.15236914116889239,
+        "peak_allocated_gib": 14.846585750579834,
+        "status": "ok"
+      },
+      "d1_generator_through_frozen_critic": {
+        "seconds_per_update_median": 0.21659309681504965,
+        "peak_allocated_gib": 13.271602153778076,
+        "status": "ok"
+      },
+      "d2_critic_update": {
+        "seconds_per_update_median": 0.015401413608342409,
+        "peak_allocated_gib": 0.09826374053955078,
+        "status": "ok"
+      },
+      "d2_generator_through_frozen_critic": {
+        "seconds_per_update_median": 0.021447016634047033,
+        "peak_allocated_gib": 0.0917048454284668,
+        "status": "ok"
+      }
+    },
+    "d1_fits_declared_batch": true,
+    "d1_peak_fraction_of_device": 0.631
+  },
+  "resume_soak": {
+    "max_abs_generator_parameter_difference": 0.0,
+    "gate": 1e-06,
+    "status": "pass",
+    "first_attempt_failure": "1.84e-3, caused by not restoring the RNG stream; diagnosed and fixed, not waived"
+  },
+  "cost_revision": {
+    "prior_assumption_based_gpu_hours": 2930.88,
+    "measured_gpu_hours": 6038.6,
+    "ratio": 2.06,
+    "reason": "the prior figure extrapolated pilot supervised throughput to the critic paths; D1 measures 0.48609 s per 4-event update against 0.11713 supervised"
+  },
+  "statement": "Software QA is not physics validation. No training campaign was launched, no paid compute was used, and the test split was not opened.",
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

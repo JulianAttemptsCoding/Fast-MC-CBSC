@@ -337,3 +337,86 @@ visualization.
    and cost; it supersedes every figure in `logs.md`.
 5. Append to `logs.md` as you go, with an `audit/NAME.{json,md}` twin. A run
    whose evidence was never written down is a run that did not happen.
+
+## 11. CBSC-ZDC v3 — Stage A is implemented, no campaign is authorized
+
+Added 2026-08-14. The v3 handoff (`docs/improvement_v3/`,
+`specs/improvement_v3/`) is installed and verified: both archives matched their
+declared SHA-256, the member scan was clean, nothing was overwritten, and
+**all 11 audited base-file hashes match this repository exactly**.
+
+### What exists now
+
+Units 1–15 of the specification are implemented and unit-tested; the suite went
+from 350 to 521 tests. `scripts/verify_v3_run.py --mode software` reports
+`status: pass` — 16 modules importable, 17 test files present, 16 declared
+constants at their contract values, the v2.2 loss schema unchanged, and the
+exact sampler still carrying its `no_grad` decorator.
+
+Two pieces carry most of the value:
+
+- **The bounded response spline removes the second zero atom.** Visibility is
+  now the only source of zeros; the positive branch is strictly inside
+  `(0, C(K))` with no clamp, so it can never clear a visible event the way the
+  v2.2 mixture-plus-clamp did.
+- **The stage samplers avoid the discrete bottleneck rather than relaxing it.**
+  `sample_exact` is untouched. D1 truth-forces `V,T,f,A,D,k,S` and trains only
+  the share flow; D2 truth-forces `V,T,A` and trains only the profile flow.
+
+### What is measured
+
+On the live **RTX 4090 (23.52 GiB)** at production shape, declared critic batch
+4, 20 warm-up plus 100 synchronized updates, three repeats:
+
+| path | s/update | peak GiB |
+|---|---:|---:|
+| v3 supervised generator | 0.01772 | 0.07 |
+| D1 critic update | 0.15237 | **14.85** |
+| D1 generator through frozen critic | 0.21659 | 13.27 |
+| D2 critic update | 0.01540 | 0.10 |
+| D2 generator through frozen critic | 0.02145 | 0.09 |
+
+**D1 fits at the declared batch size**, using 63% of the card. Nothing was
+reduced to achieve that.
+
+**Resume is bit-exact**: 32 updates, checkpointed at 16 and resumed, maximum
+absolute generator-parameter difference **0.0** against a 1e-6 gate, with
+critic, optimizer, controller and replay state and both hashes verified.
+
+### What it would cost
+
+Re-costed from measurement in
+`specs/improvement_v3/executable_plan_20260814.csv`. The supplied
+`experiment_matrix.csv` is unmodified.
+
+| row family | each | note |
+|---|---:|---|
+| S1–S7 pilot | 5.2 h | all eleven for about 57 h — genuinely affordable |
+| `V3-SUP`, `C0` | 107.6 h | `C0` is the required no-critic control |
+| D2 arms | 141.5 h | |
+| D1 arms | 446.6 h | 2.9× a D2 arm |
+| **full matrix** | **6,038.6 h** | about 252 days on one card |
+
+This **supersedes the 2,930.88 h figure** in `V3_PLAN_ASSESSMENT.md`, which was
+arithmetically correct but extrapolated pilot supervised throughput to the
+critic paths.
+
+### The cheapest causally interpretable tranche
+
+`C0` plus one D2 arm is **249 h (~10.4 days)** and yields a controlled result,
+because `C0` is trained on the identical 551,234-event partition. The eleven
+pilot S-rows at 57 h total are cheaper still and are the natural first spend.
+
+### What is NOT done
+
+1. The new heads are unit-tested but **not wired into `trainer.py`'s epoch
+   loop**. That wiring is required before any S-row can run.
+2. Units 16 (D3 estimator-QA harness) and 17 (optional p4 interface) are not
+   implemented — both are triggered-only or disabled by default.
+3. D1 was measured with critic batch 4 for the generator as well; a generator
+   batch of 6 alongside a D1 critic is unmeasured.
+4. `B0` is `B0_CANDIDATE_NOT_FROZEN` at 8 of 9 gate items. The only blocker is
+   external validation metrics for `dicos-f-02` e90, which Stage B supplies.
+
+No training campaign was launched, no paid compute was used, and the test split
+was not opened. `PHYSICS VALIDATION NOT ESTABLISHED`.
