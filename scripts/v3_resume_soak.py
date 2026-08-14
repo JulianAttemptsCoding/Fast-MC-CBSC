@@ -111,6 +111,7 @@ def main() -> int:
     state_a = build(device)
     run_updates(state_a, device, noises, 0, args.updates, args.batch)
     final_a = {k: v.detach().cpu().clone() for k, v in state_a[0].named_parameters()}
+    replay_a_sha = state_a[5].manifest()["content_sha256"]
 
     # --- path B: stop at `stop_at`, checkpoint, rebuild, resume
     state_b = build(device)
@@ -135,6 +136,10 @@ def main() -> int:
         expected_contract_sha256="a" * 64,
         expected_replay_sha256=manifest_before["content_sha256"],
         map_location=str(device),
+        # Exact resume requires the RNG stream too. The critic loss draws a real
+        # sample every update, so a resumed run that restarts the stream diverges
+        # immediately even with identical parameters and identical stage noise.
+        restore_rng=True,
     )
     controller_r.load_state_dict(payload["gradient_ratio_controller_state"])
     replay_r.load_state_dict(replay_b.state_dict())
@@ -142,7 +147,9 @@ def main() -> int:
     final_b = {k: v.detach().cpu().clone() for k, v in model_r.named_parameters()}
 
     worst = max((final_a[k] - final_b[k]).abs().max().item() for k in final_a)
-    replay_match = replay_r.manifest()["content_sha256"] == replay_b.manifest()["content_sha256"]
+    # Compare against path A's *final* replay, not path B's mid-run snapshot:
+    # both paths must end with the same 32 recorded items.
+    replay_match = replay_r.manifest()["content_sha256"] == replay_a_sha
 
     result = {
         "schema_version": 1,
