@@ -70,7 +70,7 @@ ADDED_LOSS_WEIGHTS = {
 }
 
 
-def build_row(parent: dict, row: dict, envelope: dict | None, cumulative: dict) -> dict:
+def build_row(parent: dict, row: dict, envelope: dict | None, cumulative: dict, horizon: int) -> dict:
     config = copy.deepcopy(parent)
     model = config.setdefault("model", {})
     model["architecture_version"] = ARCHITECTURE_V3
@@ -96,6 +96,24 @@ def build_row(parent: dict, row: dict, envelope: dict | None, cumulative: dict) 
         raise SystemExit(f"{row['id']} produced unknown loss weights: {sorted(unknown)}")
     config["loss_weights"] = weights
 
+    # A screening row starts from a migrated checkpoint; it does not continue its
+    # parent's schedule. Carrying the parent's resume pointers would resume a
+    # v2.2 run under a v3 config, and carrying its absolute epoch target would
+    # make the horizon depend on how long the parent happened to train.
+    training = config.setdefault("training", {})
+    for field in (
+        "resume_from", "resume_from_relative", "resume_from_sha256",
+        "resume_best_from", "resume_best_from_relative", "resume_best_from_sha256",
+        "resume_progress_from", "resume_progress_from_relative", "resume_progress_from_sha256",
+        "initialize_from", "initialize_from_relative", "initialize_from_sha256",
+    ):
+        training.pop(field, None)
+    training["epochs"] = int(horizon)
+    training["early_stopping_patience"] = int(horizon)
+    # Fresh cosine over this row's own horizon. The sawtooth defect came from a
+    # restored T_max, and there is no parent schedule to continue here.
+    training["restart_scheduler_on_resume"] = False
+
     provenance = config.setdefault("provenance", {})
     provenance.update({
         "v3_screening_row": row["id"],
@@ -114,6 +132,8 @@ def main() -> int:
     parser.add_argument("--envelope", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--only", nargs="*", help="restrict to these row ids")
+    parser.add_argument("--horizon", type=int, default=24,
+                        help="epochs and early-stopping patience for each screening row")
     args = parser.parse_args()
 
     parent = yaml.safe_load(args.parent.read_text(encoding="utf-8"))
@@ -131,7 +151,7 @@ def main() -> int:
         cumulative.update(row["model"])
         if args.only and row["id"] not in args.only:
             continue
-        config = build_row(parent, row, envelope, dict(cumulative))
+        config = build_row(parent, row, envelope, dict(cumulative), args.horizon)
         path = args.output_dir / f"v3_{row['id'].replace('-', '_')}.yaml"
         path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8", newline="\n")
         written.append({
@@ -141,6 +161,8 @@ def main() -> int:
             "declared_change": row["change"],
             "features": config["provenance"]["v3_features_enabled"],
             "loss_weight_keys": sorted(config["loss_weights"]),
+            "epochs": config["training"]["epochs"],
+            "early_stopping_patience": config["training"]["early_stopping_patience"],
         })
 
     print(json.dumps({
