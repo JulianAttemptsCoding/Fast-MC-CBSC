@@ -71,7 +71,8 @@ ADDED_LOSS_WEIGHTS = {
 
 
 def build_row(parent: dict, row: dict, envelope: dict | None, cumulative: dict, horizon: int,
-              vertex: list[float] | None) -> dict:
+              vertex: list[float] | None, initialize_from: str | None = None,
+              initialize_sha256: str | None = None) -> dict:
     config = copy.deepcopy(parent)
     model = config.setdefault("model", {})
     model["architecture_version"] = ARCHITECTURE_V3
@@ -122,6 +123,15 @@ def build_row(parent: dict, row: dict, envelope: dict | None, cumulative: dict, 
     # Fresh cosine over this row's own horizon. The sawtooth defect came from a
     # restored T_max, and there is no parent schedule to continue here.
     training["restart_scheduler_on_resume"] = False
+    # The row starts from its parent's weights through the migrated checkpoint.
+    # Leaving this unset trains from random initialization, which answers a
+    # different question entirely: the row would no longer be "does this feature
+    # help, starting from the parent" but "can 24 epochs from scratch beat a
+    # converged model", and the migration would be dead work.
+    if initialize_from is not None:
+        training["initialize_from_relative"] = str(initialize_from)
+        if initialize_sha256:
+            training["initialize_from_sha256"] = str(initialize_sha256)
 
     provenance = config.setdefault("provenance", {})
     provenance.update({

@@ -52,6 +52,8 @@ def main() -> int:
     parser.add_argument("--checkpoint-output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--audit", type=Path, help="train data audit path override")
+    parser.add_argument("--checkpoint-relative",
+                        help="path recorded in the config, relative to the run root")
     args = parser.parse_args()
 
     template_config = yaml.safe_load(args.template.read_text(encoding="utf-8"))
@@ -59,12 +61,12 @@ def main() -> int:
         template_config.setdefault("data", {})["audit"] = str(args.audit)
         args.template.write_text(yaml.safe_dump(template_config, sort_keys=False), encoding="utf-8", newline="\n")
 
-    freeze(args.template, template_config, args.frozen_output)
-    frozen = yaml.safe_load(args.frozen_output.read_text(encoding="utf-8"))
-
-    # Build the v3 target to learn its shapes, then migrate the parent into it.
-    geometry = load_geometry(frozen["geometry"]["path"])
-    target_model = CBSCZDC(geometry, frozen)
+    # Migrate BEFORE freezing. The frozen config must carry
+    # training.initialize_from_sha256, which cannot exist until the checkpoint
+    # does; and the model shapes come from the template, since freezing only
+    # adds provenance hashes.
+    geometry = load_geometry(template_config["geometry"]["path"])
+    target_model = CBSCZDC(geometry, template_config)
     target_model.preflight_v3_envelope()
     target_state = target_model.state_dict()
 
@@ -96,7 +98,7 @@ def main() -> int:
             **(payload.get("provenance") or {}),
             "migrated_from": str(args.parent_checkpoint).replace("\\", "/"),
             "migration": "v2->v3",
-            "v3_screening_row": frozen.get("provenance", {}).get("v3_screening_row"),
+            "v3_screening_row": template_config.get("provenance", {}).get("v3_screening_row"),
         },
         "architecture_version": "cbsc-zdc-v3",
         "experiment_contract_sha256": None,
@@ -114,10 +116,27 @@ def main() -> int:
     args.checkpoint_output.parent.mkdir(parents=True, exist_ok=True)
     torch.save(out, args.checkpoint_output)
 
+    # Now the checkpoint exists, point the template at it and freeze. Without
+    # this the row trains from random initialization and the migration is dead
+    # work -- the run would answer "can 24 epochs from scratch beat a converged
+    # model" instead of "does this feature help, starting from the parent".
+    relative = args.checkpoint_relative or args.checkpoint_output.name
+    template_config.setdefault("training", {})["initialize_from_relative"] = str(relative)
+    template_config["training"]["initialize_from_sha256"] = sha256_file(args.checkpoint_output)
+    args.template.write_text(
+        yaml.safe_dump(template_config, sort_keys=False), encoding="utf-8", newline="\n"
+    )
+    freeze(args.template, template_config, args.frozen_output)
+    frozen = yaml.safe_load(args.frozen_output.read_text(encoding="utf-8"))
+    if not frozen.get("training", {}).get("initialize_from_relative"):
+        raise SystemExit("the frozen config lost its initialize_from pointer")
+    out["config"] = frozen
+    torch.save(out, args.checkpoint_output)
+
     report.update({
         "schema_version": 1,
         "kind": "cbsc-zdc-v3-screening-run-preparation",
-        "row": frozen.get("provenance", {}).get("v3_screening_row"),
+        "row": template_config.get("provenance", {}).get("v3_screening_row"),
         "declared_change": frozen.get("provenance", {}).get("v3_declared_change"),
         "features_enabled": frozen.get("provenance", {}).get("v3_features_enabled"),
         "template": str(args.template).replace("\\", "/"),
@@ -130,6 +149,8 @@ def main() -> int:
         "initial_checkpoint_sha256": sha256_file(args.checkpoint_output),
         "loss_weights": frozen.get("loss_weights"),
         "migrated_state_loads_cleanly": True,
+        "initialize_from_relative": frozen["training"]["initialize_from_relative"],
+        "initialize_from_sha256": frozen["training"]["initialize_from_sha256"],
     })
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
