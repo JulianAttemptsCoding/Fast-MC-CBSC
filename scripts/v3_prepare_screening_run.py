@@ -130,8 +130,15 @@ def main() -> int:
     frozen = yaml.safe_load(args.frozen_output.read_text(encoding="utf-8"))
     if not frozen.get("training", {}).get("initialize_from_relative"):
         raise SystemExit("the frozen config lost its initialize_from pointer")
-    out["config"] = frozen
-    torch.save(out, args.checkpoint_output)
+    # The checkpoint is deliberately NOT rewritten here. Re-saving it would
+    # change its bytes after its hash had already been stamped into the config,
+    # so preflight would reject the very file the config points at.
+    recorded = frozen["training"]["initialize_from_sha256"]
+    actual = sha256_file(args.checkpoint_output)
+    if recorded != actual:
+        raise SystemExit(
+            f"initialize_from_sha256 {recorded} does not match the checkpoint on disk {actual}"
+        )
 
     report.update({
         "schema_version": 1,
