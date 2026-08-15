@@ -11,16 +11,26 @@ Three jobs across two cards. None of them needs you.
 
 | Job | Pod | What it is | Expected |
 |---|---|---|---|
-| `v3m0` | RTX 4090 | **M0-fresh**, 24 epochs — the zero-axis control that closes S1's causal question | ~7–12 h |
-| `chain` | RTX 4090 | Waits for M0, verifies it finished its full horizon, then starts **S2-response** | +~6–12 h |
-| `battery3` | RTX 3090 | The v3 validation battery on B0, `dicos-f-03` e111 and S1 e19 | ~1–4 h |
+| `queue2` | RTX 4090 | **S2-response** running, **S3-first** queued behind it | ~12 h each |
+| `battery5` | RTX 3090 | Validation battery on B0, `dicos-f-03` e111 and S1 e19 | ~3–4 h |
+| `watch_v3_outputs` | workstation | Imports epochs and rebuilds figures every 15 min | continuous |
+
+**M0-fresh is complete.** Best 4.513572 at epoch 19. It resolved the S1 causal
+question: the axis feature is neutral, and S1's shortfall was the fresh
+optimizer. See `docs/V3_FULL_REPORT.md`.
 
 Everything writes only under the permitted project directory. Nothing touches
 the test split. No paid cloud compute is involved.
 
-**The chain refuses to start S2 unless M0 completed all 24 epochs and reached
-postflight.** A tranche that silently continues past a failed row produces
-results nobody can attribute.
+**The queue refuses to continue past a row that stopped short of its horizon or
+never reached postflight.** A tranche that silently continues past a failed row
+produces results nobody can attribute. It also skips rows already complete, so
+it is safe to re-issue after a pod restart.
+
+**Read every screening row against M0-fresh at 4.513572, not against B0 at
+4.483768.** Every row uses `initialize_from`, which transfers weights but not
+optimizer state, and that fresh Adam costs a measured **0.021601**. Comparing a
+row to B0 charges its feature for the optimizer restart.
 
 ## 2. The single command to check on things
 
@@ -28,16 +38,22 @@ results nobody can attribute.
 python scripts/v3_status.py
 ```
 
+Figures and metrics update themselves while the watcher runs:
+
+```bash
+python scripts/watch_v3_outputs.py --status
+```
+
 Manual equivalents, if that script is unavailable:
 
 ```bash
 python scripts/dicos.py jobs
 python scripts/dicos.py exec "tail -3 '_runs/v3_M0_fresh/logs/history.csv'"
-python scripts/dicos.py logs chain
+python scripts/dicos.py logs queue2
 ```
 
 ```bash
-MSYS_NO_PATHCONV=1 DICOS_CONFIG="C:/Users/Julia/.dicos/config_3090.json" python scripts/dicos.py logs battery3
+MSYS_NO_PATHCONV=1 DICOS_CONFIG="C:/Users/Julia/.dicos/config_3090.json" python scripts/dicos.py logs battery5
 ```
 
 ## 3. What "good" looks like
@@ -147,8 +163,8 @@ first epoch and can take several minutes with no output at all. Normal.
 **`dicos.py stop` returned but the GPU is still busy.** Known: `stop` kills the
 wrapper and leaves its children. Scan `/proc` and SIGTERM them explicitly.
 
-**Stopping a chained script needs the shell killed FIRST.** `battery3` and
-`chain` run several steps in sequence. Killing only the current child lets the
+**Stopping a chained script needs the shell killed FIRST.** `battery5` and
+`queue2` run several steps in sequence. Killing only the current child lets the
 shell start the next one, which on 2026-08-15 left two evaluations running that
 would have collided on one output path. Kill the parent shell, then its current
 child, then confirm nothing matching remains.
