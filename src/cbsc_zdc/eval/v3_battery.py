@@ -176,6 +176,24 @@ class BatteryRequest:
                 raise BatteryContractError(f"declared input does not exist: {path}")
 
 
+def _selection_metadata(dataset: ShardedSparseDataset):
+    """Yield (event_id, kinetic_energy_gev) per dataset row, shard by shard.
+
+    Reads only the two scalar columns the selection needs.  `__getitem__` would
+    scatter a dense 6,790-channel target for each of tens of thousands of
+    candidates just to read them, which is pure waste when the bank is being
+    frozen rather than evaluated.  Order matches `dataset[i]` exactly, so the
+    recorded `dataset_index` stays valid.
+    """
+    for position in range(len(dataset)):
+        global_index = int(dataset.indices[position])
+        shard_index, local_index = dataset._locate(global_index)
+        shard = dataset._load_shard(shard_index)
+        yield int(shard["event_id"][local_index]), float(
+            shard["kinetic_energy_gev"][local_index]
+        )
+
+
 def _digest(*parts: Any) -> str:
     return hashlib.sha256(":".join(str(p) for p in parts).encode("utf-8")).hexdigest()
 
@@ -217,17 +235,17 @@ def build_validation_manifest(
     dataset = ShardedSparseDataset(
         data_manifest, splits, EVALUATION_SPLIT, kinetic_range_gev, n_nodes
     )
+    # Selection needs only event_id and kinetic energy. Going through
+    # __getitem__ would materialize a dense 6,790-channel target for every
+    # candidate -- tens of thousands of them -- purely to read two scalars.
     candidates = []
-    for index in range(len(dataset)):
-        event = dataset[index]
-        event_id = int(event["event_id"])
-        kinetic = float(event["kinetic_energy_gev"])
+    for index, (event_id, kinetic) in enumerate(_selection_metadata(dataset)):
         candidates.append({
             "index": index,
-            "event_id": event_id,
-            "kinetic_energy_gev": kinetic,
-            "bin": _bin_label(kinetic, energy_bin_edges_gev),
-            "digest": _digest(salt, event_id),
+            "event_id": int(event_id),
+            "kinetic_energy_gev": float(kinetic),
+            "bin": _bin_label(float(kinetic), energy_bin_edges_gev),
+            "digest": _digest(salt, int(event_id)),
         })
 
     by_bin: dict[str, list[dict]] = {}
