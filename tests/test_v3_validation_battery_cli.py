@@ -564,6 +564,38 @@ def test_the_structural_families_default_to_the_whole_bank():
 def test_c2st_and_bootstrap_never_use_the_subsample():
     """The frozen event minimum governs these families; they take every pair."""
     source = MODULE.read_text(encoding="utf-8")
-    c2st_block = source[source.index('c2st = {'):source.index('response_wasserstein = ')]
+    c2st_block = source[source.index('c2st = stage('):source.index('response_wasserstein = stage(')]
     assert "index" not in c2st_block
     assert "picks" not in c2st_block
+
+
+# --------------------------------------------------------------------------
+# observability and device handling
+# --------------------------------------------------------------------------
+
+def test_stage_timer_records_and_reraises():
+    timer = battery.StageTimer(verbose=False)
+    assert timer("ok", lambda: 42) == 42
+    assert timer.seconds["ok"] >= 0.0
+    # A failing stage must still be timed, or the record loses the very stage
+    # that mattered.
+    with pytest.raises(ValueError):
+        timer("boom", lambda: (_ for _ in ()).throw(ValueError("x")))
+    assert "boom" in timer.seconds
+
+
+def test_the_battery_coerces_edge_index_to_cpu():
+    """A CUDA edge_index against CPU support killed three full evaluations.
+
+    Every structural input is built from numpy and lives on the CPU, while
+    model.edge_index is on whatever device the model was loaded to.
+    connected_components indexes one with the other, so the mismatch raised
+    after an hour of completed work per checkpoint.
+    """
+    source = MODULE.read_text(encoding="utf-8")
+    assert "edge_index = edge_index.detach().cpu()" in source
+
+
+def test_stage_timings_reach_the_report():
+    source = MODULE.read_text(encoding="utf-8")
+    assert '"stage_seconds": stage.seconds' in source

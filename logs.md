@@ -10874,3 +10874,13 @@ graphics, PASS**.
 `PHYSICS VALIDATION NOT ESTABLISHED`.
 - M0-fresh e16: val 4.523105 best @ e11, 17/24 epochs, invariants 17/17 pass
   new best for this row: 4.523105 (parent 4.483768, delta +0.039337)
+- M0-fresh e17: val 4.523105 best @ e11, 18/24 epochs, invariants 18/18 pass
+- M0-fresh e18: val 4.523105 best @ e11, 19/24 epochs, invariants 19/19 pass
+- M0-fresh e19: val 4.513572 best @ e19, 20/24 epochs, invariants 20/20 pass
+  new best for this row: 4.513572 (parent 4.483768, delta +0.029804)
+- M0-fresh e20: val 4.513572 best @ e19, 21/24 epochs, invariants 21/21 pass
+- M0-fresh e21: val 4.513572 best @ e19, 22/24 epochs, invariants 22/22 pass
+- M0-fresh e22: val 4.513572 best @ e19, 23/24 epochs, invariants 23/23 pass
+- M0-fresh e23: val 4.513572 best @ e19, 24/24 epochs, invariants 24/24 pass
+
+**M0-fresh reached its full 24-epoch horizon.** Best validation loss 4.513572 at epoch 19, against parent 4.483768 (+0.029804). Set its `status` to `complete` and record a `disposition` in exhibition/data/v3_screening_rows.json; a negative result is a result, and the promotion rule retains the simpler parent when an improvement is unresolved.

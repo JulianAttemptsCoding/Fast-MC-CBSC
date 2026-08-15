@@ -516,19 +516,23 @@ def battery_report(
     train_reference: np.ndarray | None = None,
     structural_events: int = STRUCTURAL_SUBSAMPLE_EVENTS,
     timing: dict | None = None,
+    verbose: bool = True,
 ) -> dict:
     """Assemble every metric family over an already-generated paired sample."""
+    stage = StageTimer(verbose)
     truth_total = truth.sum(axis=1)
     generated_total = generated.sum(axis=1)
-    truth_layers = layer_sums(truth, layer_index)
-    generated_layers = layer_sums(generated, layer_index)
+    truth_layers = stage("layer_sums truth", lambda: layer_sums(truth, layer_index))
+    generated_layers = stage("layer_sums generated", lambda: layer_sums(generated, layer_index))
     edges = np.array(request.energy_bin_edges_gev)
 
     # C2ST, reported per family and never merged. The frozen 0.65 diagnostic is
     # named max_high_level_c2st_auc and applies to the high-level family alone.
-    truth_high = high_level_features(truth, layer_index, positions)
-    generated_high = high_level_features(generated, layer_index, positions)
-    c2st = {
+    truth_high = stage("high_level_features truth",
+                       lambda: high_level_features(truth, layer_index, positions))
+    generated_high = stage("high_level_features generated",
+                           lambda: high_level_features(generated, layer_index, positions))
+    c2st = stage("c2st all families", lambda: {
         "high_level": {
             "auroc_per_seed": [
                 float(c2st_auc(truth_high, generated_high, seed))
@@ -562,26 +566,28 @@ def battery_report(
             "gate": None,
             "note": "sanity control; must sit at chance",
         },
-    }
+    })
     for family in c2st.values():
         values = family["auroc_per_seed"]
         family["auroc_mean"] = float(np.mean(values))
         family["auroc_std"] = float(np.std(values, ddof=1)) if len(values) > 1 else 0.0
 
-    response_wasserstein = wasserstein_1d(truth_total, generated_total)
+    response_wasserstein = stage("response wasserstein",
+                                 lambda: wasserstein_1d(truth_total, generated_total))
     hits_truth = (truth > 0).sum(axis=1).astype(float)
     hits_generated = (generated > 0).sum(axis=1).astype(float)
 
     # Paired, energy-stratified bootstrap over the declared replicate count.
-    draws = stratified_bootstrap_indices(
+    draws = stage("bootstrap draws", lambda: stratified_bootstrap_indices(
         strata, request.bootstrap_replicates, seed=request.generator_seed
-    )
+    ))
     bootstrapped: dict[str, list[float]] = {
         "response_wasserstein_gev": [],
         "hit_count_wasserstein": [],
         "energy_mean_bias_fraction": [],
         "zero_fraction_difference": [],
     }
+    bootstrap_start = __import__("time").perf_counter()
     for draw in draws:
         picks = np.array(draw)
         bootstrapped["response_wasserstein_gev"].append(
@@ -597,6 +603,12 @@ def battery_report(
         bootstrapped["zero_fraction_difference"].append(
             float(np.mean(generated_total[picks] <= 0) - np.mean(truth_total[picks] <= 0))
         )
+    stage.seconds["bootstrap replicates"] = (
+        __import__("time").perf_counter() - bootstrap_start
+    )
+    if verbose:
+        print(f"[battery] {'bootstrap replicates':34s} "
+              f"{stage.seconds['bootstrap replicates']:8.1f} s", flush=True)
     intervals = {
         name: bootstrap_interval(values, request.bootstrap_confidence)
         for name, values in bootstrapped.items()
@@ -664,9 +676,9 @@ def battery_report(
             torch.from_numpy(truth_layers).float(),
             **_truth_half_tensors(truth_layers, event_ids),
         ),
-        "distribution_metrics": distribution_metrics(
+        "distribution_metrics": stage("distribution_metrics", lambda: distribution_metrics(
             truth, generated, layer_index, positions, request.generator_seed
-        ),
+        )),
         "c2st": c2st,
         "reconstruction": _reconstruction_report(
             kinetic, truth_total, generated_total
@@ -691,7 +703,7 @@ def battery_report(
                 "distinguishable from sampling noise"
             ),
         },
-        "timing": timing or {},
+        "timing": {**(timing or {}), "stage_seconds": stage.seconds},
         "selection_role": (
             "descriptive validation evidence"
             if request.evaluation_role == "diagnostic"
@@ -703,17 +715,24 @@ def battery_report(
         picks = structural_subsample(len(truth), structural_events)
         index = np.array(picks)
         position_tensor = torch.from_numpy(positions).float()
+        # Every structural input here is built from numpy and therefore lives on
+        # the CPU, while `model.edge_index` is on whatever device the model was
+        # loaded to. `connected_components` indexes one with the other, so a
+        # CUDA edge_index raises "indices should be either on cpu or on the same
+        # device as the indexed tensor" and kills the run after an hour of
+        # completed work. Coerce once, here, rather than at each call site.
+        edge_index = edge_index.detach().cpu()
         # topology_report takes one support set, so truth and generated are
         # measured separately and compared here. The truth column IS the floor
         # for this family: these are structural counts, not distances, so a
         # deterministic truth-truth split would not bound them.
         report["topology"] = {
-            "generated": topology_report(
+            "generated": stage("topology generated", lambda: topology_report(
                 torch.from_numpy(generated[index] > 0), position_tensor, edge_index
-            ),
-            "truth": topology_report(
+            )),
+            "truth": stage("topology truth", lambda: topology_report(
                 torch.from_numpy(truth[index] > 0), position_tensor, edge_index
-            ),
+            )),
             "subsample_events": len(picks),
             "subsample_rule": (
                 "evenly spaced stride over the frozen bank, preserving its energy "
@@ -732,10 +751,10 @@ def battery_report(
         # different question entirely -- that is reconstruction accuracy, which
         # this battery already reports separately.
         picks = structural_subsample(len(generated), structural_events)
-        memorization = memorization_report(
+        memorization = stage("memorization", lambda: memorization_report(
             torch.from_numpy(generated[np.array(picks)]).float(),
             torch.from_numpy(train_reference).float(),
-        )
+        ))
         memorization["subsample_events"] = len(picks)
         memorization["train_reference_events"] = int(train_reference.shape[0])
         report["memorization"] = memorization
@@ -750,6 +769,31 @@ def battery_report(
             ),
         }
     return report
+
+
+class StageTimer:
+    """Record how long each metric family takes, and say so as it goes.
+
+    The battery ran for over an hour per checkpoint with no output, and finding
+    out where required guessing three times. Every family is now timed, the
+    timings are written into the report, and each one prints as it completes so
+    a live run is observable rather than opaque.
+    """
+
+    def __init__(self, verbose: bool = True) -> None:
+        self.verbose = verbose
+        self.seconds: dict[str, float] = {}
+
+    def __call__(self, name: str, fn):
+        import time as _time
+        start = _time.perf_counter()
+        try:
+            return fn()
+        finally:
+            elapsed = _time.perf_counter() - start
+            self.seconds[name] = elapsed
+            if self.verbose:
+                print(f"[battery] {name:34s} {elapsed:8.1f} s", flush=True)
 
 
 def structural_subsample(total: int, count: int) -> list[int]:
@@ -820,6 +864,7 @@ __all__ = [
     "REQUIRED_PAIRS",
     "REQUIRED_PAIRS_PER_BIN",
     "SELECTION_SALT",
+    "StageTimer",
     "STRUCTURAL_SUBSAMPLE_EVENTS",
     "battery_report",
     "build_model",
