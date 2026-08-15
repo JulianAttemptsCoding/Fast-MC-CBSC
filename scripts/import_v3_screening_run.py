@@ -93,6 +93,21 @@ def load_registry() -> dict:
     return payload
 
 
+def loss_measure_offset(record: dict) -> float:
+    """Offset from a reported total loss to the common GeV-density measure."""
+    measure = record.get("loss_measure") or {}
+    if "total_validation_loss_offset" not in measure:
+        raise ValueError("every compared loss must declare its loss measure offset")
+    offset = float(measure["total_validation_loss_offset"])
+    if not math.isfinite(offset):
+        raise ValueError("loss measure offset must be finite")
+    return offset
+
+
+def common_loss(value: float, record: dict) -> float:
+    return float(value) + loss_measure_offset(record)
+
+
 def select_row(registry: dict, row_id: str) -> dict:
     for row in registry["rows"]:
         if row["row_id"] == row_id:
@@ -375,9 +390,22 @@ def import_row(row: dict, *, offline: bool) -> dict:
     written = rewrite_aggregate(history_rows, row["variant"], row["run_tag"])
 
     best = min(history_rows, key=lambda r: (r["validation_loss"], r["epoch"]))
-    parent_loss = float(row["parent"]["validation_loss"])
+    raw_best_loss = float(best["validation_loss"])
+    best_loss = common_loss(raw_best_loss, row)
+    raw_parent_loss = float(row["parent"]["validation_loss"])
+    parent_loss = common_loss(raw_parent_loss, row["parent"])
     control = row.get("control") or {}
-    control_loss = control.get("best_validation_loss")
+    raw_control_loss = control.get("best_validation_loss")
+    control_loss = (
+        common_loss(float(raw_control_loss), control)
+        if raw_control_loss is not None else None
+    )
+    comparator = row.get("comparator") or {}
+    raw_comparator_loss = comparator.get("validation_loss")
+    comparator_loss = (
+        common_loss(float(raw_comparator_loss), comparator)
+        if raw_comparator_loss is not None else None
+    )
 
     return {
         "row_id": row["row_id"],
@@ -394,20 +422,39 @@ def import_row(row: dict, *, offline: bool) -> dict:
         "invariant_reports_all_pass": True,
         "visualization_payloads": len(visual_epochs),
         "best_epoch": best["epoch"],
-        "best_validation_loss": best["validation_loss"],
-        "first_epoch_validation_loss": history_rows[0]["validation_loss"],
+        "raw_best_validation_loss": raw_best_loss,
+        "best_validation_loss": best_loss,
+        "raw_first_epoch_validation_loss": history_rows[0]["validation_loss"],
+        "first_epoch_validation_loss": common_loss(
+            history_rows[0]["validation_loss"], row
+        ),
+        "loss_measure": row["loss_measure"],
+        "raw_parent_validation_loss": raw_parent_loss,
         "parent_validation_loss": parent_loss,
-        "delta_vs_parent": best["validation_loss"] - parent_loss,
+        "delta_vs_parent": best_loss - parent_loss,
         "control_run_tag": control.get("run_tag"),
+        "raw_control_validation_loss": raw_control_loss,
         "control_validation_loss": control_loss,
         "delta_vs_control": (
-            best["validation_loss"] - float(control_loss)
+            best_loss - float(control_loss)
             if control_loss is not None else None
         ),
-        "beats_parent": best["validation_loss"] < parent_loss,
+        "comparator_row_id": comparator.get("row_id"),
+        "comparator_run_tag": comparator.get("run_tag"),
+        "raw_comparator_validation_loss": raw_comparator_loss,
+        "comparator_validation_loss": comparator_loss,
+        "delta_vs_comparator": (
+            best_loss - float(comparator_loss)
+            if comparator_loss is not None else None
+        ),
+        "beats_parent": best_loss < parent_loss,
         "beats_control": (
-            best["validation_loss"] < float(control_loss)
+            best_loss < float(control_loss)
             if control_loss is not None else None
+        ),
+        "beats_comparator": (
+            best_loss < float(comparator_loss)
+            if comparator_loss is not None else None
         ),
         "distribution_diagnostics_present": bool(row["evidence"]["distribution_diagnostics"]),
         "test_events_used": 0,

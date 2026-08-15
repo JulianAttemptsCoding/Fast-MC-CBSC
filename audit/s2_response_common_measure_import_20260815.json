@@ -1,0 +1,50 @@
+{
+  "aggregate_rows": 7,
+  "beats_comparator": false,
+  "beats_control": null,
+  "beats_parent": false,
+  "best_epoch": 6,
+  "best_validation_loss": 4.978104135477002,
+  "comparator_row_id": "M0-fresh",
+  "comparator_run_tag": "v3-m0-fresh",
+  "comparator_validation_loss": 4.935508412921843,
+  "control_run_tag": null,
+  "control_validation_loss": null,
+  "declared_identity": null,
+  "declared_identity_verified": false,
+  "delta_vs_comparator": 0.0425957225551592,
+  "delta_vs_control": null,
+  "delta_vs_parent": 0.0724001617367982,
+  "distribution_diagnostics_present": false,
+  "epoch_range": [
+    0,
+    6
+  ],
+  "epochs_imported": 7,
+  "fetched": {
+    "history": false,
+    "invariants": [],
+    "visualizations": []
+  },
+  "first_epoch_validation_loss": 5.064650232585946,
+  "invariant_reports": 7,
+  "invariant_reports_all_pass": true,
+  "loss_measure": {
+    "common": "deposited_energy_gev_response_density",
+    "reported": "deposited_energy_gev_response_density",
+    "total_validation_loss_offset": 0.0
+  },
+  "mode": "offline-verify",
+  "parent_validation_loss": 4.905703973740204,
+  "raw_best_validation_loss": 4.978104135477002,
+  "raw_comparator_validation_loss": 4.513572058600877,
+  "raw_control_validation_loss": null,
+  "raw_first_epoch_validation_loss": 5.064650232585946,
+  "raw_parent_validation_loss": 4.483767619419238,
+  "row_id": "S2-response",
+  "run_tag": "v3-s2-response",
+  "test_events_used": 0,
+  "training_started_by_import": false,
+  "variant": "v3_s2_response",
+  "visualization_payloads": 7
+}

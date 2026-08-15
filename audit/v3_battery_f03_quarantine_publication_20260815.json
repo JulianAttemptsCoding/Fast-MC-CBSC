@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "kind": "repository-publication-audit",
+  "timestamp_utc": "2026-08-15T23:32:00Z",
+  "commit": "29acf43",
+  "subject": "fix(eval): verify battery checkpoint identity",
+  "push": "e067cb5..29acf43 main -> main",
+  "verification_before_publication": {
+    "focused_tests": "166 passed, 1 known PyTorch warning",
+    "full_tests": "772 passed, 64 known PyTorch warnings",
+    "compileall": "exit 0",
+    "metrics_catalog": "131 graphics, PASS",
+    "git_diff_check": "exit 0"
+  },
+  "included_live_evidence": "S2-response epoch 5; 6/6 invariants pass; accepted row best remains epoch 4 validation loss 4.988013",
+  "test_events_used": 0,
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

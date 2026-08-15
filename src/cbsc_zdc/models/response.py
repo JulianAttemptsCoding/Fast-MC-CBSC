@@ -14,7 +14,14 @@ class ResponseDistribution:
 
 
 class ResponseHead(nn.Module):
-    """Zero-inflated mixture density for log1p(total response / response_scale)."""
+    """Zero-inflated response mixture with NLL reported in deposited-energy GeV.
+
+    The mixture is parameterized in ``y = log1p(T / response_scale_gev)`` for
+    numerical convenience.  Its likelihood is converted back to a density in
+    ``T`` before reduction, so it is dimensionally comparable with the bounded
+    spline response head.  The target-only Jacobian changes reported loss
+    values but has no model-parameter gradient.
+    """
     def __init__(self,cond_dim:int=128,hidden:int=192,components:int=4,response_scale_gev:float=10.0):
         super().__init__(); self.components=components; self.response_scale_gev=float(response_scale_gev)
         self.visible=nn.Sequential(nn.Linear(cond_dim,hidden),nn.SiLU(),nn.Linear(hidden,1))
@@ -29,8 +36,16 @@ class ResponseHead(nn.Module):
         if not mask.any(): return bce,cond.new_zeros(())
         y=torch.log1p(total_gev[mask]/self.response_scale_gev)
         normal=torch.distributions.Normal(dist.loc[mask],dist.scale[mask])
-        log_prob=torch.log_softmax(dist.mixture_logits[mask],dim=-1)+normal.log_prob(y[:,None])
-        return bce,-torch.logsumexp(log_prob,dim=-1).mean()
+        log_prob_y=torch.log_softmax(dist.mixture_logits[mask],dim=-1)+normal.log_prob(y[:,None])
+        nll_y=-torch.logsumexp(log_prob_y,dim=-1)
+        # dy/dT = 1 / (response_scale_gev + T), hence
+        # -log p(T) = -log p(y) + log(response_scale_gev + T).
+        # Do not omit this term: without it v2 and spline response losses are
+        # expressed against different base measures and their totals cannot be
+        # compared.  It depends only on the frozen target, so gradients and the
+        # selected epoch within a fixed run are unchanged.
+        nll_gev=nll_y+torch.log(total_gev[mask]+self.response_scale_gev)
+        return bce,nll_gev.mean()
     @torch.no_grad()
     def sample(self,cond,kinetic_gev,cap_ratio:float,cap_absolute_gev:float,stochastic:bool=True):
         dist=self.distribution(cond)

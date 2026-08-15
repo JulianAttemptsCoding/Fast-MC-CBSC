@@ -7945,6 +7945,7 @@ selection rule are untouched. This establishes nothing about Geant4 fidelity.
 `PHYSICS VALIDATION NOT ESTABLISHED`.
 
 
+
 `dicos-p10` epoch 40 **remains `ARTIFACT QUARANTINED`.** It was quarantined
 under the old rule, and re-auditing it under the new one is a separate declared
 act that has not been performed. It is not a valid parent.
@@ -11124,5 +11125,76 @@ Verification: focused QA **166 passed**; full QA **772 passed** with 64 known
 PyTorch warnings; `compileall` exit 0; `git diff --check` exit 0 with
 line-ending notices only; metrics catalog **131 graphics, PASS**. Audit twins:
 `audit/v3_battery_f03_quarantine_20260815.{json,md}`.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.
+
+
+### 2026-08-15 (publication) — battery identity fix pushed
+
+Committed the checkpoint-identity assertion, hash recording, f-03 quarantine,
+operator-document corrections, audit twins, and watcher-imported S2 epoch-5
+evidence as `29acf43` (`fix(eval): verify battery checkpoint identity`). Push to
+`origin/main` succeeded: `e067cb5..29acf43 main -> main`.
+
+Audit twins:
+`audit/v3_battery_f03_quarantine_publication_20260815.{json,md}`. Test events
+used: 0. No training or evaluation process was launched, restarted, or stopped.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.
+- S2-response e6: val 4.978104 best @ e6, 7/24 epochs, invariants 7/7 pass
+  new best for this row: 4.978104 (parent 4.905704, delta +0.072400)
+
+
+### 2026-08-15 (loss QA) — response likelihoods placed on one measure
+
+QA found that the legacy mixture logged response NLL in
+`y=log1p(T/response_scale)` density units while the bounded spline logs density
+in deposited-energy GeV. Raw M0/S2 total validation losses were therefore not
+dimensionally comparable. The exact identity is
+`NLL_T = NLL_y + log(response_scale_gev + T)`.
+
+A validation-only audit reproduced the trainer's exact mean-of-batches
+reduction: 4,096 validation events, 4,046 visible, 683 batches, no empty-visible
+batches, batch-mean Jacobian 2.622334464228, fixed response weight
+0.160901044499, and total offset **+0.421936354321**. Test events used: 0.
+This moves historical B0 4.483768 → 4.905704, M0 4.513572 → 4.935508, and S1
+4.514053 → 4.935990 on the common measure. S2 is already in GeV units; its new
+epoch-6 best 4.978104 is +0.042596 against fair comparator M0, not the invalid
+raw cross-mode gap.
+
+The target-only Jacobian has zero model-parameter gradient and cannot change a
+fixed run's selected epoch. It is now mandatory in the legacy head for future
+processes. Source SHA-256 `0bee892c…` was deployed to DiCOS
+`repo/src/cbsc_zdc/models/response.py` before queued S3 launched; the actual
+pre-change source (`d02727c5…`) is retained in `_v3/code_archive/`. The live S2
+process was not restarted or altered. Remote response QA passed 3 tests.
+
+Raw history remains immutable. Importers, summaries, figures, registry, watcher
+messages, and active operator documents now carry raw and common values and
+forbid raw cross-response-mode comparison. Focused local QA passed 90 tests;
+both corrected figures were visually inspected. Full repository QA remains
+pending. Audit twins:
+`audit/response_loss_measure_correction_20260815.{json,md}`.
+
+The workstation watcher was then restarted once to load the corrected
+long-lived logic. Old PID 17320 was stopped while sleeping, the stale stop flag
+was removed, and new PID 28344 acquired the lock at 23:53:18Z. A runtime-built
+process-token probe found exactly one matching Python writer (PID 28344, parent
+29192). Its status now shows M0 raw 4.513572/common 4.935508 and S2 e6 common
+4.978104, +0.042596 against declared M0.
+
+Failed attempts are retained in the audit: missing local `PYTHONPATH`, an
+overbroad gradient test, two duplicate remote audit readers terminated by exact
+PID while the original was retained, an unused root-`src` deployment removed
+after the staged `repo/src` layout was identified, an unsupported PowerShell
+timestamp flag, and one mojibake-sensitive patch context failure.
+
+Final gate: full suite **782 passed** with 64 known PyTorch warnings;
+`compileall` exit 0; metrics catalog **131 graphics, PASS**; `git diff --check`
+exit 0 with line-ending notices only. Loss-measure correction status: **PASS**.
+An offline importer replay then confirmed S2 epochs 0–6, 7/7 invariant reports,
+7 visualization payloads, test events 0, and common-measure delta vs M0
++0.042595722555. Audit twins:
+`audit/s2_response_common_measure_import_20260815.{json,md}`.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.

@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-response-loss-measure-correction",
+  "timestamp_utc": "2026-08-15T23:51:06.3944324Z",
+  "source_commit": "29acf43",
+  "status": "PASS; implementation, automation restart, and repository QA complete",
+  "finding": {
+    "legacy_v2_reported_measure": "negative log density in y=log1p(T/response_scale_gev)",
+    "bounded_spline_reported_measure": "negative log density in deposited-energy GeV",
+    "failure": "raw total validation losses across those response modes were dimensionally incomparable",
+    "identity": "NLL_T = NLL_y + log(response_scale_gev + T)",
+    "gradient_effect": "none; the Jacobian depends only on frozen targets",
+    "within_run_checkpoint_selection_effect": "none; the validation loader and correction are fixed"
+  },
+  "validation_only_audit": {
+    "artifact": "audit/response_loss_measure_M0_20260815.json",
+    "artifact_sha256": "01cc54dfb33021ee5bb8921f6c09cf85639bdf3a19765ca34a5ac7e16786df24",
+    "config_sha256": "e49bf383ccf050e300e309162a297497abac9f9de835699a7d86890dd74ea740",
+    "manifest_sha256": "688b440cbeaa4205c7617625ac366b7ac3fe25563e277ee4f66faec231fd3572",
+    "splits_sha256": "8ea9fe7a91cae4e6cb20c9877b9cd1af038d589b3fd060afd043fe0d4a659c41",
+    "validation_events": 4096,
+    "visible_validation_events": 4046,
+    "validation_batches": 683,
+    "empty_visible_batches": 0,
+    "batch_mean_log_jacobian": 2.6223344642281705,
+    "response_loss_weight": 0.16090104449935363,
+    "total_validation_loss_offset": 0.42193635432096555,
+    "test_events_used": 0
+  },
+  "common_measure_values": {
+    "b0_raw": 4.483767619419238,
+    "b0_common": 4.905703973740204,
+    "m0_raw": 4.513572058600877,
+    "m0_common": 4.935508412921843,
+    "s1_raw": 4.514053317498672,
+    "s1_common": 4.935989671819637,
+    "s2_best_through_epoch_6": 4.978104135477002,
+    "s2_delta_vs_common_m0": 0.0425957225551592
+  },
+  "implementation": {
+    "local_response_sha256": "0bee892ca06dc7789a146dca202721e0dd90a98d9651f361830b8ff1ce7f3a79",
+    "audit_script_sha256": "43e01becb3b87fa4d4b54e8ef1cb23cf403f85e81fb6b21fe19bd247fc793d4e",
+    "remote_prechange_response_sha256": "d02727c5ba2ad74431f0e45dab4a9e641bf6eee08b5332af762b0605c773c1cc",
+    "remote_prechange_copy": "_v3/code_archive/response_before_gev_measure_20260815.py",
+    "remote_deployed_path": "repo/src/cbsc_zdc/models/response.py",
+    "remote_deployed_sha256": "0bee892ca06dc7789a146dca202721e0dd90a98d9651f361830b8ff1ce7f3a79",
+    "deployment_scope": "future processes only; live S2 spline process remained loaded and untouched",
+    "s3_status_at_deployment": "queued; not launched",
+    "remote_unit_test": "3 passed in 2.54s"
+  },
+  "automation": {
+    "raw_history_preserved": true,
+    "common_measure_import_and_plotting": true,
+    "cross_measure_raw_comparison_allowed": false,
+    "declared_s2_comparator": "M0-fresh common-measure validation loss 4.935508412921843",
+    "watcher_pid_before_restart": 17320,
+    "watcher_pid_after_restart": 28344,
+    "watcher_restart_pending": false,
+    "watcher_process_tree_proof": "exactly one python command matched runtime-built watch_v3_outputs.py token: PID 28344, parent 29192",
+    "watcher_status": "S2 e6 common best 4.978104; delta vs declared M0 reference +0.042596; M0 raw/common shown explicitly"
+  },
+  "verification": {
+    "focused_tests": "90 passed",
+    "remote_response_tests": "3 passed",
+    "visual_qa": "two corrected screening figures inspected; labels and footnotes legible",
+    "full_tests": "782 passed, 64 known PyTorch warnings",
+    "compileall": "exit 0",
+    "metrics_catalog": "131 graphics, PASS",
+    "git_diff_check": "exit 0; line-ending notices only",
+    "offline_s2_import": "7 epochs; 7/7 invariants; 7 visualizations; test_events_used 0; common delta vs M0 +0.0425957225551592"
+  },
+  "failed_attempts": [
+    "The first local focused pytest invocation omitted PYTHONPATH=src and failed collection; the corrected invocation exposed no source defect.",
+    "The first gradient-invariance test included visibility-head parameters that the response NLL does not use; it was narrowed to the mixture parameters and then passed.",
+    "Two extra remote audit readers were launched after a 30-second exec yield was mistaken for completion; exact PIDs 16367/16365 and 16458 were terminated, while the original reader 16308 and its four workers were retained.",
+    "The first remote source deployment targeted an unused worktree-root src path; the actual staged code lives under repo/src. The exact mistargeted file was removed, the actual pre-change file was archived, and the corrected path was hash-verified and tested.",
+    "One Get-Date -AsUTC probe failed because this PowerShell lacks that parameter; [DateTime]::UtcNow was used instead.",
+    "The first large figure-builder patch did not apply because console mojibake prevented exact context matching; smaller UTF-8-safe patches were applied and visually verified."
+  ],
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

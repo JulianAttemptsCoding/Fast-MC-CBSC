@@ -18,9 +18,13 @@ because two of its results change how the rest of this document must be read.
 
 **1. The comparator rule.** Every v3 screening row uses `initialize_from`, which
 transfers weights but **not** optimizer state. That fresh Adam costs a measured
-**0.021601**. So the correct yardstick for any screening row is **M0-fresh at
-4.513572**, not B0 at 4.483768. Comparing a row to B0 charges its feature for
-the optimizer restart.
+**0.021601**. The historical v2 head logged response density in transformed
+`log1p` space; the spline logs density in deposited-energy GeV. The audited
+target-Jacobian correction is **+0.421936354321** on total validation loss, so
+the correct cross-mode yardstick is **M0-fresh at 4.935508 on the common GeV
+measure**, not raw M0 at 4.513572 and not B0 at 4.483768. Comparing raw losses
+across response modes is forbidden. The correction has zero parameter gradient
+and does not change any historical run's selected epoch.
 
 **2. The 0.65 gate names high-level C2ST.** B0's value for that gate is
 **0.892897**, not the hybrid 0.843222 quoted in §1 below. Both numbers are real

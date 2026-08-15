@@ -173,7 +173,9 @@ During final evaluation, the model runs freely using its own generated total, pr
 ## 7. What each loss teaches
 
 - visible BCE: correct zero/nonzero event rate;
-- response NLL: distribution of total response;
+- response NLL: distribution of total response, always reported as a density
+  in deposited-energy GeV (the log-energy mixture includes its target
+  change-of-variables Jacobian);
 - first-layer CE: shower-start distribution;
 - active BCE: layer occupancy pattern;
 - profile flow MSE: continuous longitudinal shape;

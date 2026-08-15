@@ -1,10 +1,10 @@
 """Figures and summary for the v3 architecture screening rows.
 
 A screening row asks one question: does exactly one architectural change lower
-the validation loss relative to the parent it was initialized from?  Each row is
-plotted against two horizontal references -- the parent's accepted validation
-loss, and the matched control's best where one exists -- because a row that
-merely beats its own first epoch has shown nothing.
+the validation loss relative to its declared comparator? Historical v2 response
+losses were logged in transformed log-energy space, while the spline loss is a
+density in GeV. This builder preserves the raw values but applies the audited,
+target-only v2 Jacobian offset before plotting or comparing any row.
 
 These rows are deliberately absent from
 ``exhibition/current/continuation/``.  That view is the four v2.2 learning-rate
@@ -51,6 +51,21 @@ ROW_COLORS = ["#0f7fbf", "#00a06d", "#c1121f", "#b5179e", "#4f772d", "#bc6c25"]
 #: It is a reproducibility reference, NOT a standard error, and it does not
 #: license a significance claim in either direction.
 RUN_TO_RUN_REFERENCE = 0.001259
+
+
+def loss_measure_offset(record: dict) -> float:
+    """Target-only offset from a record's reported loss to the common measure."""
+    measure = record.get("loss_measure") or {}
+    if "total_validation_loss_offset" not in measure:
+        raise ValueError("every compared loss must declare its loss measure offset")
+    value = float(measure["total_validation_loss_offset"])
+    if not (-100.0 < value < 100.0):
+        raise ValueError("loss measure offset is nonfinite or implausible")
+    return value
+
+
+def common_loss(value: float, record: dict) -> float:
+    return float(value) + loss_measure_offset(record)
 
 
 def style() -> None:
@@ -104,10 +119,34 @@ def classify(delta: float) -> str:
 
 
 def summarize(registry: dict, series: dict[str, list[dict]]) -> dict:
-    baseline = registry["baseline"]
+    baseline = dict(registry["baseline"])
+    baseline["raw_validation_loss"] = float(baseline["validation_loss"])
+    baseline["common_measure_validation_loss"] = common_loss(
+        baseline["validation_loss"], baseline
+    )
     rows = []
     for index, row in enumerate(registry["rows"]):
         history = series.get(row["variant"], [])
+        offset = loss_measure_offset(row)
+        local_run = DATA / "v3_screening" / row["run_tag"]
+        invariant_count = len(list((local_run / "invariants").glob("invariant_epoch_*.json")))
+        visualization_count = len(list((local_run / "visualization").glob("epoch_*.json")))
+        observed_evidence = dict(row["evidence"])
+        if history:
+            observed_evidence.update({
+                "validation_loss_per_epoch": True,
+                "structural_invariants_per_epoch": invariant_count >= len(history),
+                "fixed_condition_visualizations": visualization_count >= len(history),
+            })
+        evidence_gap = row.get("evidence_gap")
+        if history and row["status"] == "running":
+            evidence_gap = (
+                f"in progress: {len(history)}/{row['horizon_epochs']} loss epochs, "
+                f"{invariant_count}/{len(history)} invariant reports, "
+                f"{visualization_count}/{len(history)} visualization payloads; "
+                "distribution diagnostics and the fixed-bank battery wait for the "
+                "selected completed checkpoint"
+            )
         record = {
             "row_id": row["row_id"],
             "variant": row["variant"],
@@ -121,44 +160,75 @@ def summarize(registry: dict, series: dict[str, list[dict]]) -> dict:
             "epochs_observed": len(history),
             "horizon_epochs": row["horizon_epochs"],
             "optimizer_state_transferred": row["initialization"]["optimizer_state_transferred"],
-            "evidence": row["evidence"],
-            "evidence_gap": row.get("evidence_gap"),
+            "declared_evidence_at_last_manual_disposition": row["evidence"],
+            "evidence": observed_evidence,
+            "evidence_gap": evidence_gap,
+            "invariant_reports_observed": invariant_count,
+            "visualization_payloads_observed": visualization_count,
+            "loss_measure": row["loss_measure"],
+            "loss_measure_offset": offset,
         }
         if history:
             best = min(history, key=lambda r: (r["validation_loss"], r["epoch"]))
-            parent_loss = float(row["parent"]["validation_loss"])
+            raw_best = float(best["validation_loss"])
+            best_loss = common_loss(raw_best, row)
+            raw_parent_loss = float(row["parent"]["validation_loss"])
+            parent_loss = common_loss(raw_parent_loss, row["parent"])
             record.update({
-                "first_epoch_validation_loss": history[0]["validation_loss"],
+                "raw_first_epoch_validation_loss": history[0]["validation_loss"],
+                "first_epoch_validation_loss": common_loss(
+                    history[0]["validation_loss"], row
+                ),
                 "best_epoch": best["epoch"],
-                "best_validation_loss": best["validation_loss"],
+                "raw_best_validation_loss": raw_best,
+                "best_validation_loss": best_loss,
                 "final_epoch": history[-1]["epoch"],
-                "final_validation_loss": history[-1]["validation_loss"],
+                "raw_final_validation_loss": history[-1]["validation_loss"],
+                "final_validation_loss": common_loss(
+                    history[-1]["validation_loss"], row
+                ),
                 "final_train_loss": history[-1]["train_loss"],
                 # The gap is the overfitting signal, and it is reported per row
                 # because a row that lowers train while raising validation has
                 # not improved the model even if its train curve looks good.
-                "final_generalization_gap": (
+                "raw_reported_final_generalization_gap": (
                     history[-1]["validation_loss"] - history[-1]["train_loss"]
                 ),
+                "raw_parent_validation_loss": raw_parent_loss,
                 "parent_validation_loss": parent_loss,
-                "delta_vs_parent": best["validation_loss"] - parent_loss,
-                "direction_vs_parent": classify(best["validation_loss"] - parent_loss),
+                "delta_vs_parent": best_loss - parent_loss,
+                "direction_vs_parent": classify(best_loss - parent_loss),
             })
             control = row.get("control") or {}
             if control.get("best_validation_loss") is not None:
-                control_loss = float(control["best_validation_loss"])
+                raw_control_loss = float(control["best_validation_loss"])
+                control_loss = common_loss(raw_control_loss, control)
                 record.update({
                     "control_run_tag": control.get("run_tag"),
+                    "raw_control_validation_loss": raw_control_loss,
                     "control_validation_loss": control_loss,
-                    "delta_vs_control": best["validation_loss"] - control_loss,
-                    "direction_vs_control": classify(best["validation_loss"] - control_loss),
+                    "delta_vs_control": best_loss - control_loss,
+                    "direction_vs_control": classify(best_loss - control_loss),
                     "control_mismatch": control.get("mismatch"),
+                })
+            comparator = row.get("comparator") or {}
+            if comparator.get("validation_loss") is not None:
+                raw_comparator_loss = float(comparator["validation_loss"])
+                comparator_loss = common_loss(raw_comparator_loss, comparator)
+                record.update({
+                    "comparator_row_id": comparator.get("row_id"),
+                    "comparator_run_tag": comparator.get("run_tag"),
+                    "raw_comparator_validation_loss": raw_comparator_loss,
+                    "comparator_validation_loss": comparator_loss,
+                    "delta_vs_comparator": best_loss - comparator_loss,
+                    "direction_vs_comparator": classify(best_loss - comparator_loss),
                 })
         rows.append(record)
     return {
         "schema_version": 1,
         "kind": "cbsc-zdc-v3-screening-summary",
         "baseline": baseline,
+        "loss_measure_contract": registry["loss_measure_contract"],
         "promotion_rule": registry["promotion_rule"],
         "run_to_run_reference": RUN_TO_RUN_REFERENCE,
         "run_to_run_reference_meaning": (
@@ -180,9 +250,10 @@ def trajectory_figure(summary: dict, series: dict[str, list[dict]], output: Path
     baseline = summary["baseline"]
 
     axes.axhline(
-        baseline["validation_loss"], color=PARENT, linewidth=1.6, linestyle="--",
+        baseline["common_measure_validation_loss"],
+        color=PARENT, linewidth=1.6, linestyle="--",
         label=f"{baseline['label']} parent · {baseline['run_tag']} e{baseline['epoch']} "
-              f"· {baseline['validation_loss']:.6f}",
+              f"· {baseline['common_measure_validation_loss']:.6f} common",
     )
     seen_control: set[str] = set()
     for record in summary["rows"]:
@@ -190,7 +261,11 @@ def trajectory_figure(summary: dict, series: dict[str, list[dict]], output: Path
         if not history:
             continue
         axes.plot(
-            [r["epoch"] for r in history], [r["validation_loss"] for r in history],
+            [r["epoch"] for r in history],
+            [
+                r["validation_loss"] + record["loss_measure_offset"]
+                for r in history
+            ],
             color=record["color"], linewidth=1.9, marker="o", markersize=3.2,
             label=f"{record['row_id']} · best {record['best_validation_loss']:.6f} "
                   f"@ e{record['best_epoch']}",
@@ -200,17 +275,19 @@ def trajectory_figure(summary: dict, series: dict[str, list[dict]], output: Path
             marker="*", markersize=13, color=record["color"],
             markeredgecolor="white", markeredgewidth=0.8, zorder=5,
         )
-        control_loss = record.get("control_validation_loss")
-        tag = record.get("control_run_tag")
+        control_loss = record.get(
+            "comparator_validation_loss", record.get("control_validation_loss")
+        )
+        tag = record.get("comparator_run_tag", record.get("control_run_tag"))
         if control_loss is not None and tag not in seen_control:
             seen_control.add(tag)
             axes.axhline(
                 control_loss, color=CONTROL, linewidth=1.4, linestyle=":",
-                label=f"matched control · {tag} · {control_loss:.6f}",
+                label=f"declared comparator/control · {tag} · {control_loss:.6f}",
             )
 
     axes.set_xlabel("Row-local epoch")
-    axes.set_ylabel("Validation loss")
+    axes.set_ylabel("Common-measure validation loss")
     axes.set_title(
         "v3 architecture screening — one declared change per row",
         color=NAVY, fontsize=13, pad=12,
@@ -220,12 +297,12 @@ def trajectory_figure(summary: dict, series: dict[str, list[dict]], output: Path
     axes.legend(frameon=False, fontsize=8.5, loc="upper right")
     figure.text(
         0.01, 0.015,
-        "Screening rows are initialized from the parent, not resumed from it, so epoch numbering "
-        "restarts at 0.\nA row is promoted only when its declared target improves and every declared "
-        "guard passes. PHYSICS VALIDATION NOT ESTABLISHED.",
+        "Screening rows are initialized from the parent, not resumed from it; row epochs restart at 0.\n"
+        "Promotion requires target improvement and every declared guard. Historical v2 totals "
+        "include the audited target-Jacobian offset.\nPHYSICS VALIDATION NOT ESTABLISHED.",
         fontsize=7.4, color=MUTED,
     )
-    figure.tight_layout(rect=(0, 0.055, 1, 1))
+    figure.tight_layout(rect=(0, 0.095, 1, 1))
     output.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(output)
     plt.close(figure)
@@ -245,7 +322,9 @@ def delta_figure(summary: dict, output: Path) -> Path:
         for record in rows:
             labels.append(record["row_id"])
             parent_deltas.append(record["delta_vs_parent"])
-            control_deltas.append(record.get("delta_vs_control"))
+            control_deltas.append(
+                record.get("delta_vs_comparator", record.get("delta_vs_control"))
+            )
             colors.append(record["color"])
         positions = range(len(labels))
         width = 0.36
@@ -255,27 +334,27 @@ def delta_figure(summary: dict, output: Path) -> Path:
         if present:
             axes.bar([p + width / 2 for p, _ in present], [d for _, d in present], width,
                      color="white", edgecolor=CONTROL, linewidth=1.4, hatch="///",
-                     label="vs matched control")
+                     label="vs declared comparator/control")
         axes.axhline(0, color=NAVY, linewidth=1.0)
         axes.axhspan(-RUN_TO_RUN_REFERENCE, RUN_TO_RUN_REFERENCE,
                      color=MUTED, alpha=0.18,
                      label=f"run-to-run reference ±{RUN_TO_RUN_REFERENCE:g}")
         axes.set_xticks(list(positions))
         axes.set_xticklabels(labels)
-        axes.set_ylabel("Δ validation loss  (negative is better)")
+        axes.set_ylabel("Δ common-measure validation loss\n(negative is better)")
         axes.grid(True, axis="y", color=GRID, linewidth=0.8, alpha=0.9)
         axes.set_axisbelow(True)
         axes.legend(frameon=False, fontsize=8.5)
-    axes.set_title("Screening rows against parent and matched control",
+    axes.set_title("Screening rows against parent and declared comparator",
                    color=NAVY, fontsize=13, pad=12)
     figure.text(
         0.01, 0.02,
-        "The shaded band is a reproducibility reference measured between two runs from the same "
-        "checkpoint at matched learning rates.\nIt is not a standard error and supports no "
-        "significance claim.",
+        "The shaded band is a reproducibility reference from two runs sharing a checkpoint at "
+        "matched learning rates.\nIt is not a standard error and supports no significance claim. "
+        "All deltas use the common GeV response-density measure.",
         fontsize=7.4, color=MUTED,
     )
-    figure.tight_layout(rect=(0, 0.07, 1, 1))
+    figure.tight_layout(rect=(0.02, 0.095, 1, 1))
     output.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(output)
     plt.close(figure)

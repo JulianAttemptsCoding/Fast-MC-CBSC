@@ -67,6 +67,21 @@ skew/tails, and energy/direction dependence. It is distributional likelihood,
 not only mean-squared response error. The bounded spline makes the visibility
 hurdle the only zero mechanism.
 
+**Density-measure contract.** Every response NLL used in a total loss is
+reported as a density in deposited-energy GeV. The legacy mixture is
+parameterized in `y=log1p(T/s)` but must include its target Jacobian:
+
+```text
+L_response,GeV = L_response,y + log(s+T).
+```
+
+The added term depends only on the frozen target, so it does not change
+gradients. It is nevertheless mandatory for dimensional consistency and for
+any validation-loss comparison with the bounded spline. Historical v2 totals
+that predate this correction remain immutable and receive the separately
+audited batch-reduction-equivalent offset in comparison tooling; raw values are
+retained beside the corrected values.
+
 ## 3. Shower-start and longitudinal-support losses
 
 ### 3.1 ECAL-start: `L_ecal_start`
@@ -359,4 +374,3 @@ damaging another. Therefore edge, correlation, Laplacian, support-critic, and
 four-momentum terms are dormant code paths or later ablations. A term becomes
 active only when its matching validation diagnostic identifies a residual and
 the continuation plan’s paired comparison is declared.
-

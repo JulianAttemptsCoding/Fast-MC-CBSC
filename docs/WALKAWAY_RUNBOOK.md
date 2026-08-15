@@ -27,8 +27,10 @@ never reached postflight.** A tranche that silently continues past a failed row
 produces results nobody can attribute. It also skips rows already complete, so
 it is safe to re-issue after a pod restart.
 
-**Read every screening row against M0-fresh at 4.513572, not against B0 at
-4.483768.** Every row uses `initialize_from`, which transfers weights but not
+**Read every screening row against M0-fresh at 4.935508 on the common GeV-
+density measure, not against raw M0 at 4.513572 or B0 at 4.483768.** Historical
+v2 totals receive the audited +0.421936354321 target-Jacobian offset before a
+cross-response-mode comparison. Every row uses `initialize_from`, which transfers weights but not
 optimizer state, and that fresh Adam costs a measured **0.021601**. Comparing a
 row to B0 charges its feature for the optimizer restart.
 

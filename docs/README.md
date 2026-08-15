@@ -90,7 +90,10 @@ root looking authoritative.
 
 ## Two facts that are easy to get wrong
 
-**Compare a v3 screening row to M0-fresh (4.513572), never to B0 (4.483768).**
+**Compare a v3 screening row to M0-fresh (4.935508 on the common deposited-
+energy-GeV response-density measure), never to B0 (4.483768) or raw M0
+(4.513572).** The common value includes the audited, target-only historical-v2
+Jacobian correction; it changes neither gradients nor the selected epoch.
 Every screening row uses `initialize_from`, which transfers weights but not
 optimizer state, and that fresh Adam costs a measured 0.021601.
 

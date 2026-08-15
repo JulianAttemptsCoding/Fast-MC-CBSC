@@ -448,11 +448,37 @@ def test_summary_deltas_match_the_registry_and_history(builder):
         if not history:
             continue
         best = min(history, key=lambda r: (r["validation_loss"], r["epoch"]))
-        assert record["best_validation_loss"] == best["validation_loss"]
+        offset = builder.loss_measure_offset(
+            next(r for r in registry["rows"] if r["row_id"] == record["row_id"])
+        )
+        assert record["raw_best_validation_loss"] == best["validation_loss"]
+        assert record["best_validation_loss"] == pytest.approx(
+            best["validation_loss"] + offset
+        )
         assert record["best_epoch"] == best["epoch"]
         assert record["delta_vs_parent"] == pytest.approx(
-            best["validation_loss"] - record["parent_validation_loss"]
+            record["best_validation_loss"] - record["parent_validation_loss"]
         )
+
+
+def test_cross_response_mode_comparison_uses_common_measure(builder):
+    registry = builder.load_registry()
+    summary = builder.summarize(registry, builder.load_history())
+    s2 = next(r for r in summary["rows"] if r["row_id"] == "S2-response")
+    assert s2["raw_best_validation_loss"] == s2["best_validation_loss"]
+    assert s2["comparator_validation_loss"] == pytest.approx(4.935508412921843)
+    assert s2["delta_vs_comparator"] == pytest.approx(
+        s2["best_validation_loss"] - 4.935508412921843
+    )
+    assert registry["comparator_rule"]["cross_measure_raw_comparison_allowed"] is False
+
+
+def test_historical_values_are_preserved_beside_common_measure(builder):
+    summary = builder.summarize(builder.load_registry(), builder.load_history())
+    m0 = next(r for r in summary["rows"] if r["row_id"] == "M0-fresh")
+    assert m0["raw_best_validation_loss"] == pytest.approx(4.513572058600877)
+    assert m0["best_validation_loss"] == pytest.approx(4.935508412921843)
+    assert m0["loss_measure_offset"] == pytest.approx(0.42193635432096555)
 
 
 def test_a_row_worse_than_its_parent_is_not_promoted(builder):

@@ -6,6 +6,18 @@
   "derived_outputs": "exhibition/current/v3_screening/, written by exhibition/build_v3_screening_figure.py",
   "promotion_rule": "Retain the simpler parent when an improvement is statistically unresolved. A screening row is promoted only when its declared target improves AND every declared guard passes.",
   "selection_role": "Screening rows are development evidence. They do not select or tune any published checkpoint and they never touch the test split.",
+  "loss_measure_contract": {
+    "common_response_nll_measure": "negative log density in deposited-energy GeV",
+    "historical_v2_reported_measure": "negative log density in y=log1p(T/response_scale_gev)",
+    "identity": "NLL_T = NLL_y + log(response_scale_gev + T)",
+    "validation_reduction": "mean of per-batch scalars, exactly matching the trainer including the final partial batch",
+    "historical_v2_total_validation_loss_offset": 0.42193635432096555,
+    "audit": "audit/response_loss_measure_M0_20260815.json",
+    "audit_sha256": "01cc54dfb33021ee5bb8921f6c09cf85639bdf3a19765ca34a5ac7e16786df24",
+    "gradient_effect": "none; the Jacobian is target-only",
+    "within_run_checkpoint_selection_effect": "none; the offset is fixed for this validation loader",
+    "test_events_used": 0
+  },
   "baseline": {
     "label": "B0",
     "family": "calibrated_lr3e4",
@@ -16,6 +28,12 @@
     "queued_copy_sha256": "643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035",
     "frozen_config_sha256": "116bc8c220b07ce54ae07196bdd6ed8e835775c8c937182a209a799dc94ae9c5",
     "architecture_version": "cbsc-zdc-v2.2",
+    "loss_measure": {
+      "reported": "legacy_log1p_response_density",
+      "common": "deposited_energy_gev_response_density",
+      "total_validation_loss_offset": 0.42193635432096555,
+      "common_measure_validation_loss": 4.905703973740204
+    },
     "seed": 20260723,
     "immutable": true,
     "do_not_retrain": true,
@@ -41,11 +59,22 @@
         "activity_head_mode": "v2"
       },
       "loss_weight_schema": "v2.2 keys only; this row adds no loss term",
+      "loss_measure": {
+        "reported": "legacy_log1p_response_density",
+        "common": "deposited_energy_gev_response_density",
+        "total_validation_loss_offset": 0.42193635432096555,
+        "historical_raw_best_validation_loss": 4.513572058600877,
+        "common_measure_best_validation_loss": 4.935508412921843
+      },
       "parent": {
         "label": "B0",
         "run_tag": "dicos-f-02",
         "epoch": 90,
-        "validation_loss": 4.483767619419238
+        "validation_loss": 4.483767619419238,
+        "loss_measure": {
+          "reported": "legacy_log1p_response_density",
+          "total_validation_loss_offset": 0.42193635432096555
+        }
       },
       "initialization": {
         "mode": "initialize_from",
@@ -64,12 +93,20 @@
       "control": {
         "run_tag": "v3-s1-axis",
         "best_validation_loss": 4.514053317498672,
+        "loss_measure": {
+          "reported": "legacy_log1p_response_density",
+          "total_validation_loss_offset": 0.42193635432096555
+        },
         "match": "identical architecture, parameter count, input width, seed, data order, bank, batch, accumulation, schedule, solver steps, update count and stopping rule",
         "mismatch": "S1 feeds computed incident-axis values where this row feeds zeros"
       },
       "second_control": {
         "run_tag": "dicos-f-03",
         "best_validation_loss": 4.491971,
+        "loss_measure": {
+          "reported": "legacy_log1p_response_density",
+          "total_validation_loss_offset": 0.42193635432096555
+        },
         "match": "no axis information, same parent, same horizon",
         "mismatch": "dicos-f-03 resumed optimizer state; this row starts fresh"
       },
@@ -143,11 +180,22 @@
         "activity_head_mode": "v2"
       },
       "loss_weight_schema": "v2.2 keys only; this row adds no loss term",
+      "loss_measure": {
+        "reported": "legacy_log1p_response_density",
+        "common": "deposited_energy_gev_response_density",
+        "total_validation_loss_offset": 0.42193635432096555,
+        "historical_raw_best_validation_loss": 4.514053317498672,
+        "common_measure_best_validation_loss": 4.935989671819637
+      },
       "parent": {
         "label": "B0",
         "run_tag": "dicos-f-02",
         "epoch": 90,
-        "validation_loss": 4.483767619419238
+        "validation_loss": 4.483767619419238,
+        "loss_measure": {
+          "reported": "legacy_log1p_response_density",
+          "total_validation_loss_offset": 0.42193635432096555
+        }
       },
       "initialization": {
         "mode": "initialize_from",
@@ -163,6 +211,10 @@
         "family": "calibrated_lr3e4",
         "best_epoch": 111,
         "best_validation_loss": 4.491971,
+        "loss_measure": {
+          "reported": "legacy_log1p_response_density",
+          "total_validation_loss_offset": 0.42193635432096555
+        },
         "match": "same parent checkpoint (dicos-f-02 e90), same 24-epoch horizon, same re-heat peak learning rate",
         "mismatch": "resumed optimizer state; no axis features"
       },
@@ -223,11 +275,31 @@
       "inherited_features": [],
       "inheritance_note": "S2 does NOT inherit S1's axis features. S1 was not promoted, and the original matrix's cumulative chain assumed every row promotes. Inheritance is now opt-in and must name promoted rows.",
       "loss_weight_schema": "v2.2 keys only; the spline replaces the response head rather than adding a term",
+      "loss_measure": {
+        "reported": "deposited_energy_gev_response_density",
+        "common": "deposited_energy_gev_response_density",
+        "total_validation_loss_offset": 0.0
+      },
       "parent": {
         "label": "B0",
         "run_tag": "dicos-f-02",
         "epoch": 90,
-        "validation_loss": 4.483767619419238
+        "validation_loss": 4.483767619419238,
+        "loss_measure": {
+          "reported": "legacy_log1p_response_density",
+          "total_validation_loss_offset": 0.42193635432096555
+        }
+      },
+      "comparator": {
+        "row_id": "M0-fresh",
+        "run_tag": "v3-m0-fresh",
+        "validation_loss": 4.513572058600877,
+        "loss_measure": {
+          "reported": "legacy_log1p_response_density",
+          "total_validation_loss_offset": 0.42193635432096555,
+          "common_measure_validation_loss": 4.935508412921843
+        },
+        "why": "M0 is the fresh-optimizer control. Its historical raw loss is converted to the same deposited-energy-GeV response-density measure as S2 before comparison."
       },
       "initialization": {
         "mode": "initialize_from",
@@ -297,16 +369,36 @@
       "inherited_features": [],
       "inheritance_note": "S3 forks from B0 in isolation, not from S2. Stacking a promoted feature is a separate declared experiment and a judgment call on the evidence, which a queue script is not allowed to make. This row measures the hierarchical first layer alone.",
       "loss_weight_schema": "v2.2 keys plus ecal_start and hcal_first at 0.5 each. Those two terms have never trained before this row, and 0.5 is a deliberate unweighted-first placeholder, not a tuned value.",
+      "loss_measure": {
+        "reported": "deposited_energy_gev_response_density",
+        "common": "deposited_energy_gev_response_density",
+        "total_validation_loss_offset": 0.0,
+        "implementation": "repo/src/cbsc_zdc/models/response.py target Jacobian correction; deployed before launch",
+        "implementation_sha256": "0bee892ca06dc7789a146dca202721e0dd90a98d9651f361830b8ff1ce7f3a79",
+        "superseded_implementation_sha256": "d02727c5ba2ad74431f0e45dab4a9e641bf6eee08b5332af762b0605c773c1cc",
+        "superseded_copy": "_v3/code_archive/response_before_gev_measure_20260815.py",
+        "remote_unit_test": "3 passed in 2.54s"
+      },
       "parent": {
         "label": "B0",
         "run_tag": "dicos-f-02",
         "epoch": 90,
-        "validation_loss": 4.483767619419238
+        "validation_loss": 4.483767619419238,
+        "loss_measure": {
+          "reported": "legacy_log1p_response_density",
+          "total_validation_loss_offset": 0.42193635432096555
+        }
       },
       "comparator": {
         "row_id": "M0-fresh",
+        "run_tag": "v3-m0-fresh",
         "validation_loss": 4.513572058600877,
-        "why": "M0 is the fresh-optimizer control; every screening row pays the same measured 0.021601 optimizer restart, so M0 is the fair yardstick."
+        "loss_measure": {
+          "reported": "legacy_log1p_response_density",
+          "total_validation_loss_offset": 0.42193635432096555,
+          "common_measure_validation_loss": 4.935508412921843
+        },
+        "why": "M0 is the fresh-optimizer control; every screening row pays the same measured 0.021601 optimizer restart, so M0 is the fair yardstick. Its historical raw loss is converted to the common GeV-density measure before comparison."
       },
       "initialization": {
         "mode": "initialize_from",
@@ -346,9 +438,12 @@
     }
   ],
   "comparator_rule": {
-    "statement": "The correct comparator for any screening row is M0-fresh at 4.513572058600877, NOT B0 at 4.483767619419238.",
-    "why": "Every screening row uses initialize_from, which transfers weights but not optimizer state, so every row starts a fresh Adam. M0 measures what that costs on this bank and horizon: 0.021601 against dicos-f-03, which resumed its optimizer and is otherwise identical. Comparing a screening row directly against B0 or f-03 charges the feature for the optimizer restart. Screening rows are mutually comparable because all of them pay it.",
+    "statement": "The correct comparator for any screening row is M0-fresh at 4.935508412921843 on the common deposited-energy-GeV response-density measure, NOT B0; raw M0 at 4.513572058600877 and raw B0 at 4.483767619419238 are retained provenance, not cross-mode comparators.",
+    "why": "Every screening row uses initialize_from, which transfers weights but not optimizer state, so every row starts a fresh Adam. M0 measures what that costs on this bank and horizon. Historical v2-head totals receive the audited +0.421936354321 target-Jacobian offset before any comparison with the bounded spline. Comparing raw losses across response modes is forbidden because they use different base measures.",
     "measured_fresh_optimizer_cost": 0.021601058600877,
+    "historical_raw_m0_validation_loss": 4.513572058600877,
+    "common_measure_m0_validation_loss": 4.935508412921843,
+    "cross_measure_raw_comparison_allowed": false,
     "established_by": "M0-fresh, 2026-08-15"
   }
 }

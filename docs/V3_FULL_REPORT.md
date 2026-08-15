@@ -51,14 +51,22 @@ silently contain S2's and S4's changes.
 
 ### 3.1 The numbers
 
-| Run | What it is | Best val | Epoch |
-|---|---|---|---|
-| **B0** `dicos-f-02` | v2.2 baseline, frozen | **4.483768** | 90 |
-| `dicos-f-03` | v2.2, 24-ep re-heat, **resumed** optimizer | 4.491971 | 111 |
-| **M0-fresh** | v3, zero axis, **fresh** optimizer | **4.513572** | 19 |
-| **S1-axis** | v3, real axis, **fresh** optimizer | **4.514053** | 19 |
-| S2-response | bounded spline | *running* | — |
-| S3-first | hierarchical first layer | *queued* | — |
+| Run | What it is | Historical raw val | Common-measure val | Epoch |
+|---|---|---:|---:|---:|
+| **B0** `dicos-f-02` | v2.2 baseline, frozen | **4.483768** | **4.905704** | 90 |
+| `dicos-f-03` | v2.2, 24-ep re-heat, **resumed** optimizer | 4.491971 | 4.913907 | 111 |
+| **M0-fresh** | v3, zero axis, **fresh** optimizer | **4.513572** | **4.935508** | 19 |
+| **S1-axis** | v3, real axis, **fresh** optimizer | **4.514053** | **4.935990** | 19 |
+| S2-response | bounded spline; already GeV-density | 4.988013 | 4.988013 | 4 so far |
+| S3-first | hierarchical first layer | *queued* | *queued* | — |
+
+The historical v2-family values were logged in `y=log1p(T/s)` density units.
+The audit in `audit/response_loss_measure_M0_20260815.json` reproduces the
+trainer's validation batching and establishes a **+0.421936354321** total-loss
+offset to express them in deposited-energy-GeV density units. It is target-only:
+gradients and within-run selected epochs are unchanged. Raw values remain
+immutable provenance; all cross-response-mode comparisons use the common
+column.
 
 ### 3.2 The axis feature is neutral
 
@@ -95,12 +103,13 @@ horizon.
 
 ### 3.4 The comparator rule — the most reusable result here
 
-> **The correct comparator for any screening row is M0-fresh at 4.513572, not B0
-> at 4.483768.**
+> **The correct comparator for any screening row is M0-fresh at 4.935508 on the
+> common GeV-density measure, not raw M0 at 4.513572 or B0 at 4.483768.**
 
 Every screening row pays the same measured optimizer restart. Comparing a row
-directly against B0 charges its feature for that restart. Screening rows remain
-mutually comparable because all of them pay it.
+directly against B0 charges its feature for that restart; comparing raw v2-head
+loss against the spline additionally mixes two density measures. Screening
+rows are compared only after the audited measure normalization.
 
 Read against the right yardstick, S1 is not "0.030 worse than B0" — it is
 **0.0005 from its true control**, which is nothing. This is recorded as

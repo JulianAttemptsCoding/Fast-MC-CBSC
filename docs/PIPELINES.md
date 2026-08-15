@@ -38,7 +38,11 @@ These are the ones that have already cost this project real time. Full list in
 
 ### The one scientific rule that is easy to get wrong
 
-**Compare a v3 screening row to M0-fresh (4.513572), never to B0 (4.483768).**
+**Compare a v3 screening row to M0-fresh (4.935508 on the common deposited-
+energy-GeV response-density measure), never to B0 (4.483768) or raw M0
+(4.513572).** Historical v2 totals receive the audited +0.421936354321
+target-Jacobian offset before any cross-response-mode comparison. Raw values
+remain provenance only.
 Every screening row uses `initialize_from`, which transfers weights but not
 optimizer state, and that fresh Adam costs a measured **0.021601**. Comparing to
 B0 charges the feature for the optimizer restart.

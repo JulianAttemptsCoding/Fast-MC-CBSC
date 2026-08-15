@@ -216,8 +216,17 @@ def run_once(seen: dict) -> dict:
             continue
 
         changed = True
+        fair_delta = (
+            record["delta_vs_comparator"]
+            if record.get("delta_vs_comparator") is not None
+            else record["delta_vs_parent"]
+        )
+        fair_reference = (
+            record.get("comparator_run_tag") or row["parent"]["run_tag"]
+        )
         lines = [
-            f"- {row_id} e{newest}: val {record['best_validation_loss']:.6f} best "
+            f"- {row_id} e{newest}: common-measure val "
+            f"{record['best_validation_loss']:.6f} best "
             f"@ e{record['best_epoch']}, {record['epochs_imported']}/"
             f"{row['horizon_epochs']} epochs, invariants "
             f"{record['invariant_reports']}/{record['epochs_imported']} pass"
@@ -225,9 +234,9 @@ def run_once(seen: dict) -> dict:
         improved = best_loss is None or record["best_validation_loss"] < float(best_loss)
         if improved:
             lines.append(
-                f"  new best for this row: {record['best_validation_loss']:.6f} "
-                f"(parent {record['parent_validation_loss']:.6f}, "
-                f"delta {record['delta_vs_parent']:+.6f})"
+                f"  new best for this row: {record['best_validation_loss']:.6f} common "
+                f"({fair_reference} comparator, delta {fair_delta:+.6f}); "
+                f"raw reported {record['raw_best_validation_loss']:.6f}"
             )
         append_logs_md("\n".join(lines) + "\n")
         watch_log(
@@ -240,17 +249,21 @@ def run_once(seen: dict) -> dict:
             "epochs_imported": record["epochs_imported"],
             "best_epoch": record["best_epoch"],
             "best_validation_loss": record["best_validation_loss"],
+            "raw_best_validation_loss": record["raw_best_validation_loss"],
             "delta_vs_parent": record["delta_vs_parent"],
+            "delta_vs_comparator": record.get("delta_vs_comparator"),
             "updated": utcnow(),
         }
 
         if record["epochs_imported"] >= int(row["horizon_epochs"]):
             append_logs_md(
                 f"\n**{row_id} reached its full {row['horizon_epochs']}-epoch horizon.** "
-                f"Best validation loss {record['best_validation_loss']:.6f} at epoch "
+                f"Best common-measure validation loss "
+                f"{record['best_validation_loss']:.6f} at epoch "
                 f"{record['best_epoch']}, against parent "
                 f"{record['parent_validation_loss']:.6f} "
-                f"({record['delta_vs_parent']:+.6f}). Set its `status` to `complete` "
+                f"({record['delta_vs_parent']:+.6f}); declared comparator delta "
+                f"{fair_delta:+.6f}. Set its `status` to `complete` "
                 "and record a `disposition` in exhibition/data/v3_screening_rows.json; "
                 "a negative result is a result, and the promotion rule retains the "
                 "simpler parent when an improvement is unresolved.\n"
@@ -301,10 +314,27 @@ def status_report() -> int:
                   f"acquired {holder.get('acquired')}")
         except Exception:
             print(f"lock file at {LOCK_PATH} is unreadable")
+    summary_rows = {}
+    if SUMMARY.is_file():
+        try:
+            summary_rows = {
+                row["row_id"]: row
+                for row in json.loads(SUMMARY.read_text(encoding="utf-8"))["rows"]
+            }
+        except Exception:
+            summary_rows = {}
     for row_id, state in sorted(load_seen().items()):
-        print(f"{row_id}: e{state['last_epoch']} best "
-              f"{state['best_validation_loss']:.6f} @ e{state['best_epoch']} "
-              f"({state['delta_vs_parent']:+.6f} vs parent)")
+        current = summary_rows.get(row_id, {})
+        best = float(current.get("best_validation_loss", state["best_validation_loss"]))
+        epoch = int(current.get("best_epoch", state["best_epoch"]))
+        delta = current.get(
+            "delta_vs_comparator", current.get("delta_vs_parent", state["delta_vs_parent"])
+        )
+        raw = current.get("raw_best_validation_loss", state.get("raw_best_validation_loss"))
+        raw_note = f", raw {float(raw):.6f}" if raw is not None else ""
+        print(f"{row_id}: e{state['last_epoch']} common-measure best "
+              f"{best:.6f} @ e{epoch} ({float(delta):+.6f} vs declared reference"
+              f"{raw_note})")
     for row in registry_rows():
         print(f"registry {row['row_id']}: {row['status']}")
     return 0
