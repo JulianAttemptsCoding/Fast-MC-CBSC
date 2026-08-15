@@ -73,6 +73,21 @@ REQUIRED_PAIRS_PER_BIN = 500
 BOOTSTRAP_REPLICATES = 1_000
 BOOTSTRAP_CONFIDENCE = 0.95
 
+#: Structural families -- topology and memorization -- are O(events) with a
+#: Python union-find per event and pairwise distance matrices, so they do not
+#: scale to the full bank. `connected_components` allocates a 6,790-element
+#: parent list and runs a Python-level union-find for every event, and
+#: `topology_report` is called twice per checkpoint (truth and generated).
+#: Measured on the 3090 the full 10,000-pair bank did not finish.
+#:
+#: They therefore run on a DECLARED deterministic subsample, recorded in the
+#: output alongside its selection rule. This is not a relaxation of the frozen
+#: event minimum: that minimum governs the distribution and C2ST families, which
+#: still consume every one of the 10,000 pairs. Topology and memorization carry
+#: no frozen event-count gate, and reporting them over a stated subsample is
+#: honest where silently reporting them over an unstated one would not be.
+STRUCTURAL_SUBSAMPLE_EVENTS = 1000
+
 #: Selection salt. Changing it changes the bank, which is a new declared
 #: experiment; it is recorded in the manifest so a bank can never be silently
 #: reselected under the same name.
@@ -497,6 +512,7 @@ def battery_report(
     invariants: dict,
     edge_index: torch.Tensor | None = None,
     train_reference: np.ndarray | None = None,
+    structural_events: int = STRUCTURAL_SUBSAMPLE_EVENTS,
     timing: dict | None = None,
 ) -> dict:
     """Assemble every metric family over an already-generated paired sample."""
@@ -682,6 +698,8 @@ def battery_report(
         "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED",
     }
     if edge_index is not None:
+        picks = structural_subsample(len(truth), structural_events)
+        index = np.array(picks)
         position_tensor = torch.from_numpy(positions).float()
         # topology_report takes one support set, so truth and generated are
         # measured separately and compared here. The truth column IS the floor
@@ -689,10 +707,21 @@ def battery_report(
         # deterministic truth-truth split would not bound them.
         report["topology"] = {
             "generated": topology_report(
-                torch.from_numpy(generated > 0), position_tensor, edge_index
+                torch.from_numpy(generated[index] > 0), position_tensor, edge_index
             ),
             "truth": topology_report(
-                torch.from_numpy(truth > 0), position_tensor, edge_index
+                torch.from_numpy(truth[index] > 0), position_tensor, edge_index
+            ),
+            "subsample_events": len(picks),
+            "subsample_rule": (
+                "evenly spaced stride over the frozen bank, preserving its energy "
+                "composition; a pure function of (bank size, subsample size)"
+            ),
+            "subsample_reason": (
+                "connected_components runs a Python union-find per event and is "
+                "called for truth and generated separately; the full bank does not "
+                "finish. The frozen event minimum governs the distribution and "
+                "C2ST families, which still use every pair."
             ),
         }
 
@@ -701,10 +730,14 @@ def battery_report(
         # against the validation truth they were conditioned on would answer a
         # different question entirely -- that is reconstruction accuracy, which
         # this battery already reports separately.
-        report["memorization"] = memorization_report(
-            torch.from_numpy(generated).float(),
+        picks = structural_subsample(len(generated), structural_events)
+        memorization = memorization_report(
+            torch.from_numpy(generated[np.array(picks)]).float(),
             torch.from_numpy(train_reference).float(),
         )
+        memorization["subsample_events"] = len(picks)
+        memorization["train_reference_events"] = int(train_reference.shape[0])
+        report["memorization"] = memorization
     else:
         report["memorization"] = {
             "computed": False,
@@ -716,6 +749,19 @@ def battery_report(
             ),
         }
     return report
+
+
+def structural_subsample(total: int, count: int) -> list[int]:
+    """Evenly spaced indices over the bank, preserving its energy composition.
+
+    The bank is emitted in digest order, so taking the first N would not be
+    energy-stratified. An evenly spaced stride keeps every bin represented in
+    proportion and is a pure function of (total, count).
+    """
+    if count <= 0 or count >= total:
+        return list(range(total))
+    step = total / count
+    return sorted({min(total - 1, int(i * step)) for i in range(count)})
 
 
 def _truth_half_tensors(
@@ -773,6 +819,7 @@ __all__ = [
     "REQUIRED_PAIRS",
     "REQUIRED_PAIRS_PER_BIN",
     "SELECTION_SALT",
+    "STRUCTURAL_SUBSAMPLE_EVENTS",
     "battery_report",
     "build_model",
     "build_validation_manifest",
@@ -782,4 +829,5 @@ __all__ = [
     "load_validation_manifest",
     "reduce_invariants",
     "resolve_runtime_config",
+    "structural_subsample",
 ]

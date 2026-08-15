@@ -519,3 +519,46 @@ def test_every_request_attribute_the_cli_uses_actually_exists():
     methods = {name for name in dir(BatteryRequest) if not name.startswith("_")}
     unknown = used - fields - methods
     assert not unknown, f"CLI references non-existent BatteryRequest attributes: {sorted(unknown)}"
+
+
+# --------------------------------------------------------------------------
+# the declared structural subsample
+# --------------------------------------------------------------------------
+
+def test_structural_subsample_is_evenly_spaced_and_deterministic():
+    """An evenly spaced stride keeps the bank's energy composition.
+
+    The bank is emitted in digest order, so taking the first N would not be
+    energy-stratified even though the bank itself is.
+    """
+    first = battery.structural_subsample(10_000, 1_000)
+    second = battery.structural_subsample(10_000, 1_000)
+    assert first == second
+    assert len(first) == 1_000
+    assert first == sorted(first)
+    assert len(set(first)) == len(first)
+    gaps = {b - a for a, b in zip(first, first[1:])}
+    assert gaps <= {10}, gaps
+
+
+def test_structural_subsample_degenerates_to_everything_when_not_smaller():
+    assert battery.structural_subsample(50, 0) == list(range(50))
+    assert battery.structural_subsample(50, 500) == list(range(50))
+
+
+def test_the_subsample_is_recorded_with_its_reason(synthetic, tmp_path):
+    """Reporting a subsampled family without saying so would be dishonest."""
+    source = MODULE.read_text(encoding="utf-8")
+    assert "subsample_rule" in source
+    assert "subsample_reason" in source
+    # And it must be explicit that the frozen minimum still binds the families
+    # it actually governs.
+    assert "still consume every one of the 10,000 pairs" in source
+
+
+def test_c2st_and_bootstrap_never_use_the_subsample():
+    """The frozen event minimum governs these families; they take every pair."""
+    source = MODULE.read_text(encoding="utf-8")
+    c2st_block = source[source.index('c2st = {'):source.index('response_wasserstein = ')]
+    assert "index" not in c2st_block
+    assert "picks" not in c2st_block

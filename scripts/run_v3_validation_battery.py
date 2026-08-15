@@ -37,6 +37,7 @@ from cbsc_zdc.eval.v3_battery import (
     EVALUATION_SPLIT,
     REQUIRED_PAIRS,
     REQUIRED_PAIRS_PER_BIN,
+    STRUCTURAL_SUBSAMPLE_EVENTS,
     BatteryContractError,
     BatteryRequest,
     battery_report,
@@ -199,6 +200,7 @@ def evaluate(args) -> int:
         invariants=reduce_invariants(invariants),
         edge_index=getattr(model, "edge_index", None),
         train_reference=train_reference,
+        structural_events=args.structural_subsample_events,
         timing={
             "total_seconds": float(elapsed),
             "seconds_per_event": float(elapsed / max(seen, 1)),
@@ -216,6 +218,7 @@ def evaluate(args) -> int:
         "low_level_c2st_auroc_mean": report["c2st"]["low_level"]["auroc_mean"],
         "condition_only_c2st_auroc_mean": report["c2st"]["condition_only"]["auroc_mean"],
         "evaluation_role": report["identity"]["evaluation_role"],
+        "structural_subsample_events": report.get("topology", {}).get("subsample_events"),
         "scientific_status": report["scientific_status"],
     }, indent=2))
     return 0
@@ -276,6 +279,13 @@ def main(argv=None) -> int:
              "silently substituting validation truth",
     )
     run.add_argument("--memorization-reference-seed", type=int, default=20260815)
+    run.add_argument(
+        "--structural-subsample-events", type=int, default=STRUCTURAL_SUBSAMPLE_EVENTS,
+        help="events used for the topology and memorization families, which run a "
+             "Python union-find per event and pairwise distance matrices and do not "
+             "scale to the full bank. Recorded in the output with its selection rule. "
+             "The distribution and C2ST families always use every pair.",
+    )
     run.set_defaults(handler=evaluate)
 
     args = parser.parse_args(argv)
