@@ -122,7 +122,7 @@ def evaluate(args) -> int:
 
     payload = torch.load(request.checkpoint, map_location=request.device, weights_only=False)
     config = payload["config"]
-    geometry = load_geometry(request.geometry, request.device)
+    geometry = load_geometry(request.geometry_manifest, request.device)
     runtime = resolve_runtime_config(config, request)
     model = build_model(geometry, config, payload, request.device)
 

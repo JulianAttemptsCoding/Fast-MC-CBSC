@@ -494,3 +494,28 @@ def test_the_c2st_families_are_never_merged_into_one_number(synthetic, tmp_path)
     source = MODULE.read_text(encoding="utf-8")
     assert "max_high_level_c2st_auc" in source
     assert "the D1/D2 promotion rule names this family" in source
+
+
+def test_every_request_attribute_the_cli_uses_actually_exists():
+    """Catch `request.geometry` when the field is `geometry_manifest`.
+
+    The contract tests construct a BatteryRequest but never execute the CLI's
+    evaluate path, so an attribute typo there survived them -- the same shape of
+    gap as the v3 format-4 defect, where the helper was tested and the caller
+    was not. This walks the CLI's AST and checks every `request.<name>` against
+    the dataclass's real fields.
+    """
+    import dataclasses
+
+    tree = ast.parse(CLI.read_text(encoding="utf-8"))
+    used = {
+        node.attr
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Attribute)
+        and isinstance(node.value, ast.Name)
+        and node.value.id == "request"
+    }
+    fields = {f.name for f in dataclasses.fields(BatteryRequest)}
+    methods = {name for name in dir(BatteryRequest) if not name.startswith("_")}
+    unknown = used - fields - methods
+    assert not unknown, f"CLI references non-existent BatteryRequest attributes: {sorted(unknown)}"
