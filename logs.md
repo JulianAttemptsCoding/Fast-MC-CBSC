@@ -10460,3 +10460,75 @@ still means v2.2, v2.2 loss keys unchanged at 9.
 Audit twin: `audit/v3_checkpoint_format4_fix_20260815.{json,md}`.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+
+### 2026-08-15 (Phase C) -- the v3 metric battery is wired to the frozen validation bank
+
+The topology, correlation, diversity and memorization modules have been
+implemented and unit-tested since the v3 overlay landed, but **nothing could run
+them against a real checkpoint over the production validation bank**. That is
+why the project could say its fidelity was bad without being able to say *how*.
+This closes the gap. No new metric formula was written: every quantity is
+computed by the existing implementation.
+
+No training launched, no paid compute, test split not opened.
+
+**The evaluation split is a module constant, not a parameter.** The CLI registers
+no `--split` option. One test parses both source files and fails if the bare
+split literal appears anywhere in either; another walks every dataset
+construction in the CLI and asserts its split argument is `EVALUATION_SPLIT`, or
+the train literal used solely for the memorization reference. A battery that can
+be pointed at test is one typo from ending the untouched-test claim, so the
+guard is syntactic rather than a runtime check a caller could route around.
+
+**The bank is fixed and immutable.** 10,000 validation conditions selected by
+sha256(salt + event id) order, each primary energy bin filled to its 500 floor
+first, the remainder taken in global digest order, hashed before any checkpoint
+is evaluated and reused byte-identically for every comparison. Selection does not
+depend on shard order, worker count, or build time. Each condition contributes
+one held Geant4 event and one generated Fast-MC event, so the evaluator corpus is
+**20,000 examples** -- above the frozen 10,000 minimum under either convention.
+An under-filled bin is fatal, not sampled around.
+
+Fourteen inputs fail closed with no defaults. The run additionally refuses a
+wrong evaluator-seed count or duplicates, any precision other than fp32,
+non-increasing bin edges, a bootstrap setting other than 1000 replicates at 95%,
+a declared hash that disagrees with the bank, and any reordering of the bank.
+
+**Four scientific decisions are recorded rather than left implicit.**
+
+1. The zero-response rate is **decomposed by cause** -- invisible, versus visible
+   with an empty positive branch. The marginal rate cannot distinguish them and
+   the two have different fixes: the visibility head, versus the second zero atom
+   the v2.2 clamped mixture creates and the S2 bounded spline exists to remove.
+2. **C2ST families are reported separately and never merged.** The frozen 0.65
+   diagnostic is named `max_high_level_c2st_auc` and applies to the high-level
+   family alone; the D1/D2 promotion rule names low-level. A single blended
+   AUROC is how a schedule change gets compared against an adversarial gate it
+   never met.
+3. **Memorization refuses to run without a declared train reference.**
+   Memorization is nearest-neighbour closeness to *training* events; running it
+   against the validation truth the events were conditioned on would measure
+   reconstruction accuracy under a memorization label. The battery records
+   `computed: false` with that reason rather than substituting silently.
+4. **Topology is measured separately for truth and generated** rather than
+   differenced against a truth-half floor: these are structural counts, not
+   distances, so a deterministic truth-truth split does not bound them.
+
+44 tests, including an end-to-end run of `battery_report` on a real model's
+generated output over a real fixed bank. It asserts all twelve metric families
+are present, the condition-only C2ST control sits at **exactly 0.5**, every
+bootstrap interval carries 1000 replicates with low <= high, and memorization
+refuses without a train reference. A contract test alone would have repeated
+Phase B's mistake of proving the helper while leaving the caller unexercised.
+
+Verification: `compileall` exit 0; `pytest` **678 passed** (634 -> 678, +44).
+
+Not done, and reported as a separate authorized step: the battery has not been
+run against `dicos-f-02` e90, `dicos-f-03` e111 or S1-axis e19. Those
+checkpoints live on the pod and each evaluation is an inference pass over 10,000
+conditions.
+
+Audit twin: `audit/v3_validation_battery_20260815.json`.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.
