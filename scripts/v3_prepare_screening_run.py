@@ -24,7 +24,11 @@ import yaml
 
 from cbsc_zdc.data.dataset import load_geometry
 from cbsc_zdc.models.system import CBSCZDC
-from cbsc_zdc.training.migration import migrate_state_dict, sha256_file
+from cbsc_zdc.training.migration import (
+    AXIS_FEATURE_COLUMNS,
+    migrate_state_dict,
+    sha256_file,
+)
 from cbsc_zdc.utils import sha256_json
 
 
@@ -76,10 +80,16 @@ def main() -> int:
     # condition, layer-energy and count-fraction columns and silently destroy
     # the parent's behaviour.
     axis_offset = int(target_model.node_features.shape[1]) if target_model.axis_enabled else None
+    # A v3 row that leaves axis features off adds no columns at all. Passing the
+    # default 4 would make the migration demand an expansion the target does not
+    # have, which is exactly how S2-response first failed.
+    axis_columns = AXIS_FEATURE_COLUMNS if target_model.axis_enabled else 0
     migrated, report = migrate_state_dict(
-        payload["model_state"], target_state, axis_offset=axis_offset
+        payload["model_state"], target_state,
+        axis_columns=axis_columns, axis_offset=axis_offset,
     )
     report["axis_insertion_offset"] = axis_offset
+    report["axis_columns_added"] = axis_columns
 
     # The migrated model must load cleanly and still satisfy every invariant.
     target_model.load_state_dict(migrated)

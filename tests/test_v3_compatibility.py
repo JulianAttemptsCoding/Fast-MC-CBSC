@@ -9,6 +9,7 @@ widened for everyone.
 from __future__ import annotations
 
 import pytest
+import torch
 
 from cbsc_zdc.config import (
     ARCHITECTURE_V2_2,
@@ -349,3 +350,55 @@ def test_an_out_of_range_axis_offset_is_fatal() -> None:
     target = {"share.input.0.weight": torch.randn(2, 10)}
     with pytest.raises(MigrationError, match="outside the parent"):
         migrate_state_dict(source, target, axis_offset=99)
+
+
+# ---------------------------------------------------------------------------
+# a v3 row that leaves axis features off adds no columns at all
+# ---------------------------------------------------------------------------
+
+def test_migration_without_axis_columns_is_an_exact_copy() -> None:
+    """S2-response is the first v3 row with axis features off.
+
+    `classify` routes the input projections to the expanded rule by key name,
+    so a v3 row without axis lands there too. With no columns to add the rule
+    must degenerate to an exact copy; before this it demanded old+4 columns and
+    refused a perfectly valid migration.
+    """
+    from cbsc_zdc.training.migration import migrate_state_dict
+
+    source = {
+        "support.input.0.weight": torch.arange(96 * 136, dtype=torch.float32).reshape(96, 136),
+        "support.input.0.bias": torch.zeros(96),
+    }
+    target = {
+        "support.input.0.weight": torch.zeros(96, 136),
+        "support.input.0.bias": torch.zeros(96),
+    }
+    migrated, report = migrate_state_dict(source, target, axis_columns=0, axis_offset=None)
+    assert torch.equal(migrated["support.input.0.weight"], source["support.input.0.weight"])
+    assert report["counts"]["expanded"] == 0
+    assert report["counts"]["unexpected"] == 0
+
+
+def test_migration_without_axis_columns_refuses_a_width_change() -> None:
+    """No axis columns means the projection must be unchanged, not reshaped."""
+    from cbsc_zdc.training.migration import MigrationError, migrate_state_dict
+
+    source = {"support.input.0.weight": torch.zeros(96, 136)}
+    target = {"support.input.0.weight": torch.zeros(96, 140)}
+    with pytest.raises(MigrationError, match="must be unchanged"):
+        migrate_state_dict(source, target, axis_columns=0, axis_offset=None)
+
+
+def test_migration_with_axis_columns_still_expands_and_inserts() -> None:
+    """The axis path is unchanged: insert at the offset, zero the new columns."""
+    from cbsc_zdc.training.migration import migrate_state_dict
+
+    source = {"support.input.0.weight": torch.ones(96, 136)}
+    target = {"support.input.0.weight": torch.zeros(96, 140)}
+    migrated, report = migrate_state_dict(source, target, axis_columns=4, axis_offset=6)
+    weight = migrated["support.input.0.weight"]
+    assert torch.count_nonzero(weight[:, 6:10]) == 0
+    assert torch.equal(weight[:, :6], torch.ones(96, 6))
+    assert torch.equal(weight[:, 10:], torch.ones(96, 130))
+    assert report["counts"]["expanded"] == 1

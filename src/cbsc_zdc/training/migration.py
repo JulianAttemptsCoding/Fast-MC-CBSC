@@ -180,7 +180,24 @@ def migrate_state_dict(
             migrated[key] = tensor.clone()
             copied.append({"key": key, "shape": list(tensor.shape)})
             continue
-        # expanded input projection: copy the old columns, zero the new ones
+        # expanded input projection: copy the old columns, zero the new ones.
+        #
+        # `classify` routes these keys by name, so a v3 row that does NOT enable
+        # axis features lands here too -- S2-response is the first such row.
+        # With no axis columns to add, the expanded rule degenerates to an exact
+        # copy, and the shape equality is asserted rather than assumed: a width
+        # difference here would mean the module changed meaning for some reason
+        # other than the axis block, which must fail rather than be reshaped.
+        if axis_columns == 0:
+            if destination.shape != tensor.shape:
+                raise MigrationError(
+                    f"{key}: no axis columns are being added, so the input "
+                    f"projection must be unchanged, got {tuple(tensor.shape)} -> "
+                    f"{tuple(destination.shape)}"
+                )
+            migrated[key] = tensor.clone()
+            copied.append({"key": key, "shape": list(tensor.shape), "kind": "no_axis_expansion"})
+            continue
         if destination.shape[0] != tensor.shape[0]:
             raise MigrationError(
                 f"{key}: expanded rule expects an unchanged output width, got "
