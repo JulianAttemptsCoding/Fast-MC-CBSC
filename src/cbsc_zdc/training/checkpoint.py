@@ -56,6 +56,41 @@ V4_REQUIRED_FIELDS = (
 )
 
 
+def require_adversarial_resume_source(payload, path=None):
+    """Reject a checkpoint that cannot carry adversarial resume state.
+
+    A format-3 checkpoint has no slot for the critic, its optimizer and
+    scheduler, the gradient-ratio controller, the replay manifest, or the update
+    counters.  Resuming an adversarial run from one would silently restart the
+    critic from scratch against a partly-trained generator, which is a different
+    experiment wearing the same run tag.
+
+    This is not hypothetical: `_runs/v3_S1_axis/checkpoints/best.pt` is exactly
+    such a file.  S1 was a correct v3 run whose checkpoints were written through
+    the v2.2 path, so they hold `architecture_version: null` and omit every
+    format-4 field.  They remain perfectly valid for evaluation and for
+    weight-only initialization; they are not a resume source.  The file is
+    immutable and must never be rewritten or re-stamped to satisfy this check.
+    """
+    where = f" ({path})" if path else ""
+    format_version = payload.get('format_version')
+    if format_version != CHECKPOINT_FORMAT_V4:
+        raise ValueError(
+            f"adversarial resume requires checkpoint format {CHECKPOINT_FORMAT_V4}, "
+            f"found {format_version!r}{where}; evaluation and weight-only "
+            "initialization are still fine, but this file cannot carry critic state"
+        )
+    missing = [field for field in V4_REQUIRED_FIELDS if field not in payload]
+    if missing:
+        raise ValueError(
+            f"checkpoint declares format {CHECKPOINT_FORMAT_V4} but omits "
+            f"{sorted(missing)}{where}"
+        )
+    if not payload.get('architecture_version'):
+        raise ValueError(f"checkpoint has no architecture_version{where}")
+    return payload
+
+
 def save_checkpoint(
     path,
     model,

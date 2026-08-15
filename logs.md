@@ -10394,3 +10394,69 @@ Audit twin: `audit/v3_post_s1_reconciliation_20260815.{json,md}`.
 Import record: `audit/v3_s1_import_20260815.json`.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+### 2026-08-15 (later) -- the v3 checkpoint format-4 save path, and why a helper test could not catch it
+
+Phase B. Release-blocking v3 software defect, fixed. No training launched, no
+paid compute, test split not opened.
+
+**`save_checkpoint` has supported format 4 since the v3 overlay landed. Nothing
+ever called it with `architecture_version`.** All three trainer save sites --
+`best.pt`, `last.pt`, and the mid-epoch `progress.pt` -- passed only the
+format-3 positional arguments, so the helper took its format-3 early return for
+every run regardless of the declared architecture.
+
+`tests/test_v3_checkpoint_resume.py` exercises `save_checkpoint` directly and
+supplies `architecture_version` itself, so it proved the helper correct while the
+production caller was not. **A helper test cannot observe an argument its caller
+never passes.** The new tests drive `train_from_config` and inspect the bytes it
+actually wrote.
+
+The consequence is already on disk: S1-axis is a correct v3 run whose
+checkpoints record `architecture_version: null` and omit every format-4 field.
+The blast radius was every v3 row that would have followed, including the D1 and
+D2 arms whose resume depends entirely on those twelve fields.
+
+**Fix.** `trainer.v3_checkpoint_fields(config)` returns `{}` when the
+architecture resolves to `cbsc-zdc-v2.2` -- including when the key is absent --
+which keeps `save_checkpoint` on its format-3 early return and every historical
+checkpoint byte-identical. Under `cbsc-zdc-v3` it returns the full twelve-field
+set with the adversarial slots null. It is derived **once per run**, beside
+`provenance`, so the three checkpoints cannot disagree about the run's
+architecture identity; deriving it per save site is how the defect was possible.
+
+New guard `checkpoint.require_adversarial_resume_source()` rejects any format
+other than 4, a format-4 claim missing a required field, and a null
+`architecture_version`. It explicitly still permits loading a format-3
+checkpoint for **evaluation and weight-only initialization** -- it governs
+adversarial resume only.
+
+**The S1 checkpoint was not touched.** `2235774417fcb916ab3becbfe3eef985bbd90e0ee24a090174736de5afd9ae31`
+before and after, re-hashed on the pod. It is not re-stamped, re-saved, or
+migrated to satisfy the new guard. A format-4 derivative, if ever needed, must be
+a new provenance-linked file with a new hash and proved tensor equality, never a
+replacement of the original bytes.
+
+36 new tests in `tests/test_v3_checkpoint_format_integration.py`, including one
+parametrized test per required field, the format-3 key set pinned as a literal,
+and the guard's accept/reject cases.
+
+**One wrong premise, caught and corrected.** The first version of the "v2.2 and
+bare v3 agree" test asserted *identical* state-dict key sets and failed. The
+cause was not the code: a v3 model always registers
+`response_envelope_caps_gev`, and with no envelope supplied it is
+`torch.zeros(0)` while `response_cap_for` falls back to the v2.2 cap rule. The
+assertion now proves the real property -- every shared tensor bit-identical, the
+only extra entry that buffer, and that buffer asserted to hold **zero elements**
+in a separate test. A subset assertion alone would have let a genuine
+behavioural change hide behind it.
+
+Verification: `compileall` exit 0; `pytest` **634 passed** (598 -> 634, +36);
+resume soak **max abs difference 0.0** against the 1e-6 gate with contract hash
+and replay manifest verified and both update counters restored at 16;
+`verify_v3_run.py --mode software` status pass, 17 test files, absent version
+still means v2.2, v2.2 loss keys unchanged at 9.
+
+Audit twin: `audit/v3_checkpoint_format4_fix_20260815.{json,md}`.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.

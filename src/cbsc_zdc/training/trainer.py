@@ -10,7 +10,7 @@ from typing import Any
 import torch
 from torch.utils.data import DataLoader
 
-from ..config import RunPaths
+from ..config import ARCHITECTURE_V2_2, RunPaths, architecture_version
 from ..contracts import NEUTRON_MASS_GEV, kinetic_energy_from_p4
 from ..data.dataset import ShardedSparseDataset,load_geometry
 from ..eval.invariants import closure_tolerances, invariant_report
@@ -52,6 +52,48 @@ V3_STAGE_LOSSES={
  'share':{'share_flow'},
  'joint':{'visible','response','first_layer','active','profile_flow','count','support_bce','support_rank','share_flow','ecal_start','hcal_first','active_last','active_gap'},
 }
+
+
+def v3_checkpoint_fields(config: dict[str, Any]) -> dict[str, Any]:
+    """Checkpoint keyword arguments carrying this run's architecture identity.
+
+    Returns ``{}`` for v2.2, which keeps `save_checkpoint` on its format-3 path
+    and every historical checkpoint byte-identical.  Under a ``cbsc-zdc-v3``
+    declaration it returns the full format-4 field set, with the adversarial
+    slots null for a supervised run -- present but null is what lets a reader
+    tell "this run had no critic" from "an older writer did not know about
+    critics".
+
+    Deriving these at the save sites rather than here is how S1-axis came to be
+    written through the v2.2 path: the run was correct in every other respect,
+    but its checkpoints record ``architecture_version: null`` and omit the
+    resume fields entirely, so they cannot serve as an adversarial-resume
+    source.
+    """
+    version = architecture_version(config)
+    if version == ARCHITECTURE_V2_2:
+        return {}
+    model = config.get("model", {}) or {}
+    return {
+        "architecture_version": version,
+        # Present but null on a supervised row. A critic row supplies the
+        # contract hash and its own states through the adversarial trainer.
+        "experiment_contract_sha256": (
+            config.get("provenance", {}) or {}
+        ).get("experiment_contract_sha256"),
+        "critic_state": None,
+        "critic_optimizer_state": None,
+        "critic_scheduler_state": None,
+        "gradient_ratio_controller_state": None,
+        "replay_state_manifest": None,
+        "critic_update_count": 0,
+        "generator_update_count": 0,
+        "role_partition_sha256": (
+            config.get("provenance", {}) or {}
+        ).get("role_partition_sha256"),
+        "response_envelope_sha256": model.get("response_envelope_sha256"),
+        "support_temperature": model.get("support_temperature", 1.0),
+    }
 
 
 def stage_losses_for(model)->dict[str,set[str]]:
@@ -599,6 +641,9 @@ def train_from_config(
     )
     history_path=run.logs/'history.csv'; write_header=not history_path.exists()
     provenance={'geometry_sha256':sha256_file(Path(config['geometry']['path'])/'geometry.npz' if Path(config['geometry']['path']).is_dir() else config['geometry']['path']),'manifest_sha256':sha256_file(config['data']['manifest']),'splits_sha256':sha256_file(config['data']['splits']),'seed':seed}
+    # Every checkpoint this run writes carries the same architecture identity.
+    # Derived once, here, so best.pt, last.pt and progress.pt cannot disagree.
+    checkpoint_fields = v3_checkpoint_fields(config)
     updates=(
         int(mid_epoch_progress["updates"])
         if mid_epoch_progress is not None
@@ -705,6 +750,7 @@ def train_from_config(
                         stage,
                         provenance,
                         progress=progress,
+                        **checkpoint_fields,
                     )
                     if progress_callback is not None:
                         progress_callback(progress,run,progress_path)
@@ -741,12 +787,12 @@ def train_from_config(
             if write_header: writer.writeheader(); write_header=False
             writer.writerow(row)
         if val_loss<best:
-            best=val_loss; stale=0; save_checkpoint(run.checkpoints/'best.pt',model,optimizer,scheduler,scaler,epoch,best,config,stage,provenance)
+            best=val_loss; stale=0; save_checkpoint(run.checkpoints/'best.pt',model,optimizer,scheduler,scaler,epoch,best,config,stage,provenance,**checkpoint_fields)
         else: stale+=1
         # Persist last only after checkpoint selection so its best_metric is
         # the selected value for this epoch.  Saving it before this branch
         # made epoch-zero recovery carry +inf even when best.pt was valid.
-        save_checkpoint(run.checkpoints/'last.pt',model,optimizer,scheduler,scaler,epoch,best,config,stage,provenance)
+        save_checkpoint(run.checkpoints/'last.pt',model,optimizer,scheduler,scaler,epoch,best,config,stage,provenance,**checkpoint_fields)
         # In-flight state is superseded by last.pt at epoch completion.  Keep a
         # stale next_step checkpoint out of immutable completed-epoch output.
         (run.checkpoints/'progress.pt').unlink(missing_ok=True)

@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-checkpoint-format4-fix",
+  "recorded_at": "2026-08-15",
+  "severity": "release-blocking v3 software defect",
+  "authorization": {
+    "training_campaign": "NOT AUTHORIZED; none launched",
+    "paid_cloud": "NOT AUTHORIZED; none used",
+    "test_split": "NOT OPENED; the synthetic fixtures used here contain no real events"
+  },
+  "root_cause": {
+    "statement": "save_checkpoint has supported format 4 since the v3 overlay landed, but nothing ever called it with architecture_version. All three trainer save sites -- best.pt, last.pt and the mid-epoch progress.pt -- passed only the format-3 positional arguments, so save_checkpoint took its early-return format-3 branch for every run regardless of the declared architecture.",
+    "why_the_existing_tests_missed_it": "tests/test_v3_checkpoint_resume.py exercises save_checkpoint directly and passes architecture_version itself, so it proved the helper correct while the production caller was not. A helper test cannot observe an argument its caller never supplies.",
+    "observed_consequence": "S1-axis is a correct v3 run whose checkpoints record architecture_version: null and omit every format-4 field. They remain valid for evaluation and weight-only initialization but cannot carry critic, replay, controller or update-counter state, so they are not an adversarial-resume source.",
+    "blast_radius": "every v3 row that would have followed, including the D1 and D2 critic arms, whose resume depends entirely on the twelve format-4 fields"
+  },
+  "fix": {
+    "new_function": "cbsc_zdc.training.trainer.v3_checkpoint_fields(config)",
+    "behaviour": "Returns {} when architecture_version resolves to cbsc-zdc-v2.2 -- including when the key is absent -- which keeps save_checkpoint on its format-3 early return and every historical checkpoint byte-identical. Under cbsc-zdc-v3 it returns the full twelve-field set, with the adversarial slots null for a supervised row.",
+    "derivation_point": "once per run, beside provenance, so best.pt, last.pt and progress.pt cannot disagree about the run's architecture identity",
+    "call_sites_updated": [
+      "src/cbsc_zdc/training/trainer.py progress.pt (mid-epoch snapshot)",
+      "src/cbsc_zdc/training/trainer.py best.pt",
+      "src/cbsc_zdc/training/trainer.py last.pt"
+    ],
+    "new_guard": {
+      "function": "cbsc_zdc.training.checkpoint.require_adversarial_resume_source(payload, path=None)",
+      "rejects": [
+        "any format other than 4",
+        "a format-4 claim that omits any V4_REQUIRED_FIELDS entry",
+        "a null or empty architecture_version"
+      ],
+      "explicitly_permits": "loading a format-3 checkpoint for evaluation and for weight-only initialization; the guard governs adversarial resume only"
+    }
+  },
+  "immutability": {
+    "s1_checkpoint_rewritten": false,
+    "s1_best_sha256_before": "2235774417fcb916ab3becbfe3eef985bbd90e0ee24a090174736de5afd9ae31",
+    "s1_best_sha256_after": "2235774417fcb916ab3becbfe3eef985bbd90e0ee24a090174736de5afd9ae31",
+    "verified_on_pod_after_the_fix": true,
+    "policy": "The S1 checkpoint is immutable. It is not re-stamped, re-saved, or migrated to satisfy the new guard. If a format-4 derivative is ever required it must be a new provenance-linked file with a new hash and a proved tensor equality, never a replacement of the original bytes."
+  },
+  "tests_added": {
+    "file": "tests/test_v3_checkpoint_format_integration.py",
+    "count": 36,
+    "drives": "train_from_config, the real production trainer entry point, not the checkpoint helper",
+    "proofs": [
+      "a v3 config yields format_version 4 and architecture_version exactly cbsc-zdc-v3, for both best.pt and last.pt",
+      "architecture_version is never null on a v3 run -- the precise S1 defect",
+      "each of the twelve V4_REQUIRED_FIELDS is present, parametrized one test per field",
+      "field types are valid for a supervised row: string version, integer counters at zero, present-but-null adversarial slots, positive support_temperature",
+      "an absent or explicitly v2.2 architecture_version still writes format 3",
+      "the format-3 key set is exactly unchanged, pinned as a literal set",
+      "a v2.2 checkpoint gains no format-4 field",
+      "the helper emits exactly the required field set and carries declared envelope hash, support temperature and contract hash",
+      "a v3 save/load round trip preserves every tensor bit-exactly",
+      "a bare v3 declaration leaves the trained weights bit-identical to the v2.2 run",
+      "the only v3-only state entry is response_envelope_caps_gev and it is provably zero-length, so the subset assertion above cannot hide a behavioural change",
+      "a supervised v3 run initialized from a v3 checkpoint is itself format 4 -- the original defect one step later",
+      "a format-4 checkpoint is accepted as an adversarial-resume source",
+      "a format-3 checkpoint loads for evaluation but is rejected as a resume source",
+      "a format-4 claim missing a field is rejected",
+      "a null architecture_version is rejected even at format 4",
+      "critic_state without architecture_version fails closed",
+      "critic_state without experiment_contract_sha256 fails closed",
+      "the screening registry records S1 as format 3, non-resume, immutable"
+    ]
+  },
+  "defect_found_while_writing_the_tests": {
+    "defect": "the first version of test_v3_and_v2_runs_agree_on_weights asserted identical state-dict key sets between a v2.2 and a bare v3 run",
+    "reality": "a v3 model always registers response_envelope_caps_gev; with no envelope supplied it is torch.zeros(0) and response_cap_for falls back to the v2.2 cap rule",
+    "resolution": "the premise was wrong, not the code. The assertion now proves the real property: every shared tensor is bit-identical, the only extra entry is response_envelope_caps_gev, and that buffer is asserted to hold zero elements. Asserting the subset alone would have let a genuine behavioural change hide behind it, so the emptiness check is a separate test."
+  },
+  "verification": {
+    "compileall": {"command": "python -m compileall -q src vertex scripts tests exhibition", "exit": 0},
+    "pytest": {"command": "PYTHONPATH=src python -m pytest -q", "result": "634 passed", "before_this_phase": 598, "added": 36},
+    "resume_soak": {
+      "command": "python scripts/v3_resume_soak.py --updates 32 --stop-at 16",
+      "max_abs_generator_parameter_difference": 0.0,
+      "gate_max_abs_difference": 1e-06,
+      "generator_parameters_match": true,
+      "critic_update_count_restored": 16,
+      "generator_update_count_restored": 16,
+      "contract_hash_verified": true,
+      "replay_manifest_verified": true,
+      "replay_content_matches_after_resume": true,
+      "controller_lambda_restored": 1.0,
+      "status": "pass"
+    },
+    "software_verifier": {
+      "command": "python scripts/verify_v3_run.py --mode software --repo-root .",
+      "status": "pass",
+      "tests_present": 17,
+      "modules_missing": [],
+      "absent_version_means_v2_2": true,
+      "v2_2_loss_keys_unchanged": true,
+      "v2_2_loss_key_count": 9
+    }
+  },
+  "collected_test_count_policy": "The suite total is reported as measured each phase and is not hard-coded as a final expected value anywhere in the test suite.",
+  "status_labels": ["QA PASS"],
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}
