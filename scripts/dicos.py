@@ -175,6 +175,19 @@ class Dicos:
         )
         r.raise_for_status()
         payload = r.json()
+        # Some DiCOS/Jupyter deployments return directory entries directly;
+        # others wrap them in a standard contents model.
+        if isinstance(payload, list):
+            if not payload:
+                raise SystemExit(
+                    "the DiCOS contents API returned an ambiguous empty list for "
+                    f"{target}; use guarded `dicos.py exec \"ls ...\"` rather than "
+                    "treating this as proof that the directory is empty"
+                )
+            return sorted(
+                payload,
+                key=lambda c: (c["type"] != "directory", c["name"]),
+            )
         if payload["type"] != "directory":
             return [payload]
         return sorted(payload["content"], key=lambda c: (c["type"] != "directory", c["name"]))
@@ -400,7 +413,7 @@ class Dicos:
                 f"  command: {command}"
             )
 
-        token = r"(?<![\w.])~?/[^\s;|&'\"()}{,\]]+"
+        token = r"(?<![\w.)\]])~?/[^\s;|&'\"()}{,\]]+"
         sinks = {"/dev/null", "/dev/stdout", "/dev/stderr", "/dev/tty", "/dev/zero"}
         for match in re.finditer(token, scan):
             raw, position = match.group(0), match.start()

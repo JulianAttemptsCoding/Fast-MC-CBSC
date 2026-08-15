@@ -62,6 +62,28 @@ def _write_json(path: Path, payload: dict) -> None:
     temporary.replace(path)
 
 
+def checkpoint_identity(payload: dict, checkpoint: Path, frozen_config: Path,
+                        expected_epoch: int) -> dict:
+    """Prove that a checkpoint matches the epoch the report will claim."""
+    try:
+        embedded_epoch = int(payload["epoch"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise BatteryContractError(
+            f"checkpoint has no valid embedded epoch: {checkpoint}"
+        ) from exc
+    if embedded_epoch != expected_epoch:
+        raise BatteryContractError(
+            "checkpoint provenance mismatch: "
+            f"requested epoch {expected_epoch}, embedded epoch {embedded_epoch}, "
+            f"checkpoint {checkpoint}"
+        )
+    return {
+        "checkpoint_sha256": sha256_file(checkpoint),
+        "checkpoint_embedded_epoch": embedded_epoch,
+        "frozen_config_sha256": sha256_file(frozen_config),
+    }
+
+
 def build_bank(args) -> int:
     payload = build_validation_manifest(
         data_manifest=args.data_manifest,
@@ -122,6 +144,9 @@ def evaluate(args) -> int:
         )
 
     payload = torch.load(request.checkpoint, map_location=request.device, weights_only=False)
+    artifact_identity = checkpoint_identity(
+        payload, request.checkpoint, request.frozen_config, args.epoch
+    )
     config = payload["config"]
     geometry = load_geometry(request.geometry_manifest, request.device)
     runtime = resolve_runtime_config(config, request)
@@ -207,6 +232,7 @@ def evaluate(args) -> int:
             "events": int(seen),
         },
     )
+    report["identity"].update(artifact_identity)
     _write_json(args.output, report)
     print(json.dumps({
         "output": str(args.output).replace("\\", "/"),

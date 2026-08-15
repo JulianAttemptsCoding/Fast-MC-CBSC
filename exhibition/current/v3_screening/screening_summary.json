@@ -101,7 +101,7 @@
       "delta_vs_parent": 0.5042457022045577,
       "direction_vs_parent": "worse",
       "disposition": null,
-      "epochs_observed": 5,
+      "epochs_observed": 6,
       "evidence": {
         "distribution_diagnostics": false,
         "fixed_condition_visualizations": false,
@@ -110,10 +110,10 @@
         "validation_metric_battery": false
       },
       "evidence_gap": "not yet started",
-      "final_epoch": 4,
-      "final_generalization_gap": -0.042835641937228885,
-      "final_train_loss": 5.0308489635610245,
-      "final_validation_loss": 4.988013321623796,
+      "final_epoch": 5,
+      "final_generalization_gap": 0.018584373965977896,
+      "final_train_loss": 5.001221544011262,
+      "final_validation_loss": 5.01980591797724,
       "first_epoch_validation_loss": 5.064650232585946,
       "horizon_epochs": 24,
       "optimizer_state_transferred": false,

@@ -183,6 +183,25 @@ def test_a_missing_declared_file_is_rejected(tmp_path):
         _request(tmp_path, checkpoint=tmp_path / "absent.pt").validate()
 
 
+def test_checkpoint_epoch_must_match_the_reported_epoch(tmp_path):
+    from scripts.run_v3_validation_battery import checkpoint_identity
+
+    checkpoint = tmp_path / "best.pt"
+    frozen = tmp_path / "frozen.yaml"
+    checkpoint.write_bytes(b"inherited epoch 90")
+    frozen.write_text("schema_version: 1\n", encoding="utf-8")
+
+    with pytest.raises(BatteryContractError, match="requested epoch 111.*embedded epoch 90"):
+        checkpoint_identity({"epoch": 90}, checkpoint, frozen, expected_epoch=111)
+
+    identity = checkpoint_identity(
+        {"epoch": 90}, checkpoint, frozen, expected_epoch=90
+    )
+    assert identity["checkpoint_embedded_epoch"] == 90
+    assert len(identity["checkpoint_sha256"]) == 64
+    assert len(identity["frozen_config_sha256"]) == 64
+
+
 def test_frozen_constants_match_the_gate_file():
     gates = (ROOT / "configs" / "gates_primary.yaml").read_text(encoding="utf-8")
     assert f"min_total_evaluation_events: {REQUIRED_PAIRS}" in gates

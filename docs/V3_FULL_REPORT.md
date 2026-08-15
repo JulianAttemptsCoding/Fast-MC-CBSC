@@ -300,7 +300,7 @@ Ordered by how much damage each would have done.
 | Job | Card | State |
 |---|---|---|
 | `queue2` | 4090 | S2 running, S3 queued behind it |
-| `battery5` | 3090 | B0 → f-03 → S1 on the fixed bank |
+| `battery5` | 3090 | B0 valid; f-03 mislabeled artifact quarantined; S1 running |
 | `watch_v3_outputs` | workstation | imports epochs, rebuilds figures every 15 min |
 
 The queue refuses to start a row until the card is free, refuses to continue
@@ -308,6 +308,13 @@ past a row that stopped short of its horizon or never reached postflight, and
 skips completed rows so it is safe to re-issue after a pod restart.
 
 The watcher only runs while the workstation is on.
+
+The f-03 battery leg exposed a provenance failure, not a physics result.
+`dicos-f-03/checkpoints/best.pt` is the inherited B0 epoch-90 checkpoint (same
+SHA-256 `491284c7…`), because no f-03 epoch beat B0. The launcher labeled that
+evaluation epoch 111. Its report is quarantined and excluded from comparison;
+the intended epoch-111 checkpoint was not retained. The battery now fails
+before generation when the requested and embedded checkpoint epochs differ.
 
 ---
 

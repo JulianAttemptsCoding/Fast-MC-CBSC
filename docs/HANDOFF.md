@@ -351,6 +351,11 @@ prune_superseded_rows(Path("exhibition/data/continuation_history.csv"),
   never auto-resume a visualization-gate death: RNG is restored and the visual
   bank is fixed, so it re-runs the identical epochs and re-hits the identical
   failure forever.
+- **A history-best epoch is not necessarily `best.pt`.** A segment that never
+  beats its inherited parent can name its own lowest row while leaving
+  `best.pt` untouched. Validation batteries must verify the checkpoint's
+  embedded epoch against the report epoch and record its hash. The mislabeled
+  f-03 epoch-111 report evaluated B0 epoch 90 and is quarantined.
 - **`git checkout -- .` will revert your own uncommitted source fixes** along
   with generated output. Scope the pathspec explicitly.
 - **Windows Git Bash mangles `/usr/lib64`** into `C:/Program Files/Git/usr/lib64`

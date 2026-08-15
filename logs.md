@@ -11083,3 +11083,46 @@ Audit twins: `audit/dicos_read_allowlist_publication_20260815.{json,md}`.
 No test data was used and no live process was launched, restarted, or stopped.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+- S2-response e5: val 4.988013 best @ e4, 6/24 epochs, invariants 6/6 pass
+
+
+### 2026-08-15 (v3 battery QA) — f-03 report quarantined
+
+The fixed-bank reports for B0 and the purported `dicos-f-03` epoch 111 had
+headline C2ST means identical to every displayed digit and generated metrics
+equal to machine precision. Checkpoint provenance confirmed why:
+
+- B0 `best.pt` SHA-256: `491284c7423f365230d34b0443f95aa4888ec770bdc673c4c979897bad8acbce`;
+- f-03 `best.pt` SHA-256: the same value;
+- f-03 never beat inherited B0, so its `best.pt` correctly remained embedded
+  epoch 90 while the battery command supplied the history-best label 111;
+- f-03 retained only inherited `best.pt` and epoch-114 `last.pt`; the intended
+  epoch-111 checkpoint is unrecoverable and epoch 114 will not be substituted
+  under the old label.
+
+The affected report (SHA-256 `ff2ecca405593101c775d63271ede5cc53b7fd9b289a1416a0f7421af0b2ef59`)
+was moved to `_v3/battery/quarantine/` on DiCOS and
+`exhibition/data/v3_battery/quarantine/` locally. It is evidence only and may
+not enter comparison, selection, promotion, or publication. B0 is unaffected.
+S1's `best.pt` independently embeds epoch 19, has SHA-256 `2235774417…`, and
+its battery remains running; it is not accepted yet. Test events used: 0.
+
+Correction: the battery now rejects requested/embedded checkpoint epoch
+mismatches before generation and records checkpoint SHA-256, embedded epoch,
+and frozen-config SHA-256. `dicos.py ls` now handles direct-list contents
+responses and fails closed when this backend returns an ambiguous empty list.
+The read guard no longer mistakes a Python `Path(...) / name` operator for an
+absolute filesystem path; real absolute paths remain rejected.
+
+Failed attempts retained in the audit twin: two PowerShell/argv quoting
+failures for inline `torch.load`, the contents-list `TypeError`, one `find
+-printf` argv failure, the backend's ambiguous empty listing, one Jupyter IOPub
+rate-limit response after grepping a one-line JSON, and one correctly refused
+Python slash-operator probe that was rewritten without bypassing the guard.
+
+Verification: focused QA **166 passed**; full QA **772 passed** with 64 known
+PyTorch warnings; `compileall` exit 0; `git diff --check` exit 0 with
+line-ending notices only; metrics catalog **131 graphics, PASS**. Audit twins:
+`audit/v3_battery_f03_quarantine_20260815.{json,md}`.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.

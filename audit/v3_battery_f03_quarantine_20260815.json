@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "kind": "v3-validation-battery-artifact-quarantine",
+  "timestamp_utc": "2026-08-15T23:27:21.8755769Z",
+  "source_commit": "e067cb5",
+  "affected_artifact": {
+    "claimed_identity": "dicos-f-03 epoch 111",
+    "sha256": "ff2ecca405593101c775d63271ede5cc53b7fd9b289a1416a0f7421af0b2ef59",
+    "remote_quarantine_path": "_v3/battery/quarantine/dicos-f-03_epoch111.mislabeled-checkpoint.json",
+    "local_quarantine_path": "exhibition/data/v3_battery/quarantine/dicos-f-03_epoch111.mislabeled-checkpoint.json",
+    "status": "QUARANTINED; evidence only; forbidden for comparison, selection, promotion, or publication"
+  },
+  "failure": {
+    "type": "checkpoint provenance mismatch",
+    "evaluated_checkpoint_sha256": "491284c7423f365230d34b0443f95aa4888ec770bdc673c4c979897bad8acbce",
+    "b0_checkpoint_sha256": "491284c7423f365230d34b0443f95aa4888ec770bdc673c4c979897bad8acbce",
+    "evaluated_embedded_epoch": 90,
+    "claimed_epoch": 111,
+    "cause": "dicos-f-03 never improved over its inherited B0 best, so best.pt deliberately remained the epoch-90 B0 checkpoint; the battery launcher trusted a separately supplied epoch label",
+    "intended_epoch_111_checkpoint_retained": false,
+    "available_f03_checkpoints": ["best.pt (inherited epoch 90)", "last.pt (epoch 114)"],
+    "substitution_allowed": false
+  },
+  "unaffected": {
+    "b0_report_sha256": "c0600cafcb571e4a6960b731d4b972d5bc62e8f4ac1423271422d90e51f0b214",
+    "b0_report_status": "valid",
+    "s1_checkpoint_sha256": "2235774417fcb916ab3becbfe3eef985bbd90e0ee24a090174736de5afd9ae31",
+    "s1_checkpoint_embedded_epoch": 19,
+    "s1_battery_status": "running at audit time; not yet accepted",
+    "test_events_used": 0
+  },
+  "correction": {
+    "pre_generation_epoch_assertion": true,
+    "report_records_checkpoint_sha256": true,
+    "report_records_checkpoint_embedded_epoch": true,
+    "report_records_frozen_config_sha256": true,
+    "directory_listing_empty_response_fails_closed": true,
+    "output_sha256": {
+      "scripts/dicos.py": "dbc778a2d0c91d76b8e812c31fb41d25b9c096cd4126844574ac5d1f8c558fa7",
+      "scripts/run_v3_validation_battery.py": "5f9c369f1de6848e2f3c90935b6794d8ccc14a1794c7dad6786ec5892cd5c07a",
+      "tests/test_dicos_client.py": "a0de316adf0f7cbeaaa561b1a7c40c90b4d72ae2832874e30845c8dce85de6c2",
+      "tests/test_v3_validation_battery_cli.py": "0242e2b1ae69b1d91ab005d5571134d318a8e0806f0987358183473ebf889f3a"
+    }
+  },
+  "verification": {
+    "focused_tests": "166 passed, 1 known PyTorch warning",
+    "full_tests": "772 passed, 64 known PyTorch warnings",
+    "compileall": "exit 0",
+    "metrics_catalog": "131 graphics, PASS",
+    "git_diff_check": "exit 0; line-ending notices only",
+    "remote_and_local_quarantine_hash_match": true
+  },
+  "failed_attempts": [
+    "A PowerShell-quoted inline torch.load command was parsed locally and exited 1 before remote execution.",
+    "A second inline torch.load invocation reached dicos.py as multiple argv tokens and exited 1.",
+    "The first dicos.py ls call exposed a direct-list contents response and raised TypeError; the client was corrected.",
+    "A quoted find -printf command reached dicos.py as multiple argv tokens and exited 1.",
+    "The corrected contents API call returned an ambiguous empty list for a known nonempty directory; the client now fails closed and directs operators to guarded exec listing.",
+    "A grep against one-line visualization JSON exceeded the Jupyter IOPub data rate; no artifact was changed.",
+    "The first here-document metadata probe was correctly refused because its Python source contained a slash operator that the textual path guard read as an absolute token; the probe was rewritten without that operator."
+  ],
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

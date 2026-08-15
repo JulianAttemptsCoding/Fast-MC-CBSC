@@ -12,7 +12,7 @@ Three jobs across two cards. None of them needs you.
 | Job | Pod | What it is | Expected |
 |---|---|---|---|
 | `queue2` | RTX 4090 | **S2-response** running, **S3-first** queued behind it | ~12 h each |
-| `battery5` | RTX 3090 | Validation battery on B0, `dicos-f-03` e111 and S1 e19 | ~3–4 h |
+| `battery5` | RTX 3090 | B0 valid; mislabeled `dicos-f-03` report quarantined; S1 e19 running | ~3–4 h |
 | `watch_v3_outputs` | workstation | Imports epochs and rebuilds figures every 15 min | continuous |
 
 **M0-fresh is complete.** Best 4.513572 at epoch 19. It resolved the S1 causal
@@ -87,9 +87,15 @@ with a nonzero `initialized` count means a head was replaced on purpose.
 `copied 193, expanded 0, initialized 15, unexpected 0` — `expanded 0` is correct
 and expected, because S2 adds no axis columns.
 
-**The battery.** Three JSON files under `_v3/battery/`. Each records
+**The battery.** Valid reports under `_v3/battery/` record
 `test_events_used: 0`, all twelve metric families, and 1,000 bootstrap
-replicates at 95%.
+replicates at 95%. The file originally labeled `dicos-f-03` epoch 111 is under
+`_v3/battery/quarantine/`: that run never beat its inherited epoch-90 parent,
+so `best.pt` was byte-identical to B0 while the launcher supplied epoch 111.
+The intended epoch-111 checkpoint was not retained and may not be reconstructed
+or replaced by epoch 114 under the old label. Future batteries compare the
+requested epoch to the checkpoint's embedded epoch before generation and record
+the checkpoint/config hashes.
 
 ## 4. What each result means
 

@@ -133,6 +133,37 @@ def test_exact_dataset_and_project_tree_are_readable(client: Dicos) -> None:
     client._assert_readable(f"{WORKDIR}/repo/AGENTS.md")
 
 
+def test_directory_listing_accepts_direct_jupyter_entry_lists(
+    client: Dicos, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class Response:
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> list[dict]:
+            return [{"name": "last.pt", "type": "file", "size": 29}]
+
+    monkeypatch.setattr(client.session, "get", lambda *args, **kwargs: Response())
+    assert client.ls("_runs/example/checkpoints") == [
+        {"name": "last.pt", "type": "file", "size": 29}
+    ]
+
+
+def test_ambiguous_empty_directory_response_fails_closed(
+    client: Dicos, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class Response:
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> list[dict]:
+            return []
+
+    monkeypatch.setattr(client.session, "get", lambda *args, **kwargs: Response())
+    with pytest.raises(SystemExit, match="ambiguous empty list"):
+        client.ls("_runs/example/checkpoints")
+
+
 # --------------------------------------------------------------- exec scope
 # `exec` is the path every real action takes -- training, conversion, mkdir --
 # so the write-scope rule has to hold there, not only on put/mkdir. An audit
@@ -238,6 +269,13 @@ def test_cuda_runtime_assignment_is_not_a_directory_read(client: Dicos) -> None:
     client._assert_command_safe(
         "LD_LIBRARY_PATH=/usr/lib64:$LD_LIBRARY_PATH "
         "PYTHONPATH=repo/src .venv/bin/python repo/scripts/dicos_train.py"
+    )
+
+
+def test_python_path_join_operator_is_not_an_absolute_path(client: Dicos) -> None:
+    client._assert_command_safe(
+        "python -c \"from pathlib import Path; print(Path('prep').joinpath('x')); "
+        "print(Path('prep')/'x')\""
     )
 
 
