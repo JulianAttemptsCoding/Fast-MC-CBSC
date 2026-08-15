@@ -41,11 +41,29 @@ because `initialize_from` was unset and it trained from random weights; that run
 was discarded. If a future row starts anywhere near 5.2, suspect the
 initialization pointer before believing anything about the feature.
 
-**Measured cost: 1735.8 s/epoch**, so 24 epochs is about 11.6 h. That is roughly
-double the v2.2 rate of 779.6 s/epoch — the axis features add four columns
-across 6,790 nodes on a 107,920-edge graph. The earlier 5.2 h/row figure
-extrapolated the v2.2 rate and is withdrawn; the eleven pilot rows are closer to
-**115 GPU-hours** than 57.
+**Measured cost: 1735.8 s/epoch**, so 24 epochs was about 12.3 h, against the
+v2.2 rate of 779.6 s/epoch (34.15 vs 15.4 examples/s).
+
+**The causal attribution once written here is WITHDRAWN.** It said the axis
+features cause that factor, because they add four columns across 6,790 nodes on
+a 107,920-edge graph. Profiled on the production graph 2026-08-15
+(`audit/v3_axis_performance_profile_20260815.json`), that is false:
+
+    support field forward   with axis / without axis   1.0015
+    share field forward                                1.0099
+    full sample                                        1.0055
+    axis construction                                  0.00023 s per batch
+
+Roughly **1%**, not 2.23x. `axis_for()` is also already hoisted — computed once
+per batch before the share-flow loop and reused across every solver step — so
+there is no caching win available either.
+
+The 2.23x epoch-rate difference is **real but unattributed**. It is not the axis
+feature's forward cost. Until a full training-step comparison including backward
+is run, do not cost any row from S1's rate. The consequent **115 GPU-hour**
+projection for the eleven pilot rows is withdrawn with it; the rows in
+`audit/v3_prepared_tranche_20260815.json` are projected from the v2.2 rate and
+carry a first-epoch cost checkpoint.
 
 The question S1 answers: *do incident-axis node coordinates lower the validation
 loss?* Anything better than 4.483768 at the end is a candidate improvement;

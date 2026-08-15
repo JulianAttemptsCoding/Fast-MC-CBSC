@@ -10720,3 +10720,56 @@ Audit twins: `audit/v3_interpretation_corrections_20260815.json`,
 `audit/v3_prepared_tranche_20260815.json`.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+
+### 2026-08-15 (Phase D) -- the axis features do NOT cost 2.23x; that attribution is withdrawn
+
+S1 measured **1735.8 s/epoch** against the v2.2 rate of **779.6** (15.4 vs 34.15
+examples/s). Four static node columns causing a 2.23x slowdown was suspicious
+enough to attribute before accepting it as an unavoidable trade-off.
+
+**Reading the code ruled out the obvious cause first.** `CBSCZDC.axis_for` is
+**already hoisted**: `sample()` computes it once per batch *before* the
+share-flow loop and passes the same tensor into every solver step, and
+`compute_component_losses` computes it once per evaluation. Nothing recomputes
+it per solver step, per loss component, or per message block. The optimization
+this phase was meant to find is already in place.
+
+That left the widened input projection -- the axis block takes the node-field
+input from roughly 136 to 140 columns, a ~3% change on one Linear, which cannot
+arithmetically produce 2.23x. Profiled at production shape (6,790 nodes,
+107,920 edges, batch 6, 8 share steps, RTX 4090):
+
+    component                with axis / without axis
+    support_field_forward              1.0015
+    share_field_forward                1.0099
+    full_sample                        1.0055
+    axis_construction        0.00022966 s per batch
+
+**Roughly 1%, not 2.23x.** The axis feature is very close to free at production
+shape.
+
+**Consequences, all corrections rather than new measurements.**
+
+1. The statement in `docs/WALKAWAY_RUNBOOK.md` that the axis features cause the
+   epoch-rate factor is **withdrawn** and replaced by this measurement.
+2. The consequent projection that the eleven pilot rows cost **115 GPU-hours
+   rather than 57** is **withdrawn**: it was derived entirely from that
+   attribution.
+3. The 2.23x epoch-rate difference is **real but now unattributed**. Whatever
+   produced it, it is not the axis feature's forward cost. It cannot be closed
+   from this profile because the profile measures forward and sampling, not a
+   full training step including backward, and that comparison has not been run.
+4. Until it is, **no row may be costed from S1's rate.** The rows in
+   `audit/v3_prepared_tranche_20260815.json` are projected from the v2.2 rate
+   and each carries a first-epoch cost checkpoint, which is the correct
+   safeguard for a projection whose basis is a prediction rather than a
+   measurement.
+
+There is no Pareto guard to retain here: a ~1% cost is not a trade-off worth
+declaring. S1 remains not promoted on its validation loss, which is unaffected
+by anything in this phase -- performance was never S1's disposition.
+
+Audit twin: `audit/v3_axis_performance_profile_20260815.json`.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.
