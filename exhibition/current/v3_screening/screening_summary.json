@@ -19,10 +19,32 @@
   "promotion_rule": "Retain the simpler parent when an improvement is statistically unresolved. A screening row is promoted only when its declared target improves AND every declared guard passes.",
   "rows": [
     {
+      "causal_status": null,
+      "color": "#0f7fbf",
+      "declared_change": "zero_axis_control_fresh_optimizer",
+      "disposition": null,
+      "epochs_observed": 0,
+      "evidence": {
+        "distribution_diagnostics": false,
+        "fixed_condition_visualizations": false,
+        "structural_invariants_per_epoch": false,
+        "validation_loss_per_epoch": false,
+        "validation_metric_battery": false
+      },
+      "evidence_gap": "run in flight; evidence is imported through scripts/import_v3_screening_run.py once it completes",
+      "horizon_epochs": 24,
+      "optimizer_state_transferred": false,
+      "row_id": "M0-fresh",
+      "run_tag": "v3-m0-fresh",
+      "scientific_question": "How much of S1's shortfall is the fresh optimizer rather than the axis features?",
+      "status": "running",
+      "variant": "v3_m0_fresh"
+    },
+    {
       "best_epoch": 19,
       "best_validation_loss": 4.514053317498672,
       "causal_status": "S1_AXIS_CAUSAL_EFFECT_UNRESOLVED",
-      "color": "#0f7fbf",
+      "color": "#00a06d",
       "control_mismatch": "resumed optimizer state; no axis features",
       "control_run_tag": "dicos-f-03",
       "control_validation_loss": 4.491971,
@@ -54,6 +76,28 @@
       "scientific_question": "Do incident-axis-relative node coordinates lower the validation loss?",
       "status": "complete",
       "variant": "v3_s1_axis"
+    },
+    {
+      "causal_status": null,
+      "color": "#c1121f",
+      "declared_change": "bounded_positive_response_spline",
+      "disposition": null,
+      "epochs_observed": 0,
+      "evidence": {
+        "distribution_diagnostics": false,
+        "fixed_condition_visualizations": false,
+        "structural_invariants_per_epoch": false,
+        "validation_loss_per_epoch": false,
+        "validation_metric_battery": false
+      },
+      "evidence_gap": "not yet started",
+      "horizon_epochs": 24,
+      "optimizer_state_transferred": false,
+      "row_id": "S2-response",
+      "run_tag": "v3-s2-response",
+      "scientific_question": "Does a bounded conditional spline with one zero atom beat the clamped mixture?",
+      "status": "queued",
+      "variant": "v3_s2_response"
     }
   ],
   "run_to_run_reference": 0.001259,

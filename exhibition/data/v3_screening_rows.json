@@ -23,11 +23,84 @@
   },
   "rows": [
     {
+      "row_id": "M0-fresh",
+      "variant": "v3_m0_fresh",
+      "run_tag": "v3-m0-fresh",
+      "run_dir": "_runs/v3_M0_fresh",
+      "label": "M0 \u00b7 zero-axis control, fresh optimizer",
+      "declared_change": "zero_axis_control_fresh_optimizer",
+      "scientific_question": "How much of S1's shortfall is the fresh optimizer rather than the axis features?",
+      "architecture_version": "cbsc-zdc-v3",
+      "standalone_control": true,
+      "features_enabled": {
+        "axis_features": true,
+        "axis_zero_ablation": true,
+        "response_mode": "v2",
+        "first_layer_mode": "v2",
+        "count_mode": "v2",
+        "activity_head_mode": "v2"
+      },
+      "loss_weight_schema": "v2.2 keys only; this row adds no loss term",
+      "parent": {
+        "label": "B0",
+        "run_tag": "dicos-f-02",
+        "epoch": 90,
+        "validation_loss": 4.483767619419238
+      },
+      "initialization": {
+        "mode": "initialize_from",
+        "checkpoint": "prep/checkpoints/v3_M0_fresh_init.pt",
+        "checkpoint_sha256": "0507cad93bc103281ad920ef9ac76e9d925129fe95e5c34c98f394612996b65a",
+        "migration": "v2->v3",
+        "migration_counts": {
+          "copied": 191,
+          "expanded": 2,
+          "initialized": 17,
+          "unexpected": 0
+        },
+        "optimizer_state_transferred": false,
+        "note": "Deliberately fresh, matching S1 exactly. That is the point of the control."
+      },
+      "control": {
+        "run_tag": "v3-s1-axis",
+        "best_validation_loss": 4.514053317498672,
+        "match": "identical architecture, parameter count, input width, seed, data order, bank, batch, accumulation, schedule, solver steps, update count and stopping rule",
+        "mismatch": "S1 feeds computed incident-axis values where this row feeds zeros"
+      },
+      "second_control": {
+        "run_tag": "dicos-f-03",
+        "best_validation_loss": 4.491971,
+        "match": "no axis information, same parent, same horizon",
+        "mismatch": "dicos-f-03 resumed optimizer state; this row starts fresh"
+      },
+      "reads": "Near dicos-f-03's 4.491971 means the fresh optimizer explains most of S1's shortfall. Near S1's 4.514053 means the optimizer is the dominant term and the axis feature is not the story. Near B0 means both cost something.",
+      "mathematical_note": "With identically zero axis input the axis weight block receives zero gradient and stays zero for the whole run, so this row is mathematically a v2.2 model trained with a fresh optimizer while keeping S1's exact parameter count.",
+      "frozen_config": "prep/configs/frozen_v3_M0_fresh.yaml",
+      "frozen_config_sha256": "e49bf383ccf050e300e309162a297497abac9f9de835699a7d86890dd74ea740",
+      "seed": 20260723,
+      "horizon_epochs": 24,
+      "early_stopping_patience": 24,
+      "restart_scheduler_on_resume": false,
+      "batch_size": 6,
+      "gradient_accumulation": 4,
+      "status": "running",
+      "launched_at": "2026-08-15T07:57Z",
+      "device": "NVIDIA GeForce RTX 4090",
+      "evidence": {
+        "validation_loss_per_epoch": false,
+        "structural_invariants_per_epoch": false,
+        "fixed_condition_visualizations": false,
+        "distribution_diagnostics": false,
+        "validation_metric_battery": false
+      },
+      "evidence_gap": "run in flight; evidence is imported through scripts/import_v3_screening_run.py once it completes"
+    },
+    {
       "row_id": "S1-axis",
       "variant": "v3_s1_axis",
       "run_tag": "v3-s1-axis",
       "run_dir": "_runs/v3_S1_axis",
-      "label": "S1 · incident-axis features",
+      "label": "S1 \u00b7 incident-axis features",
       "declared_change": "incident_axis_features",
       "scientific_question": "Do incident-axis-relative node coordinates lower the validation loss?",
       "architecture_version": "cbsc-zdc-v3",
@@ -98,6 +171,79 @@
       "optimizer_updates": 26640,
       "measured_seconds_per_epoch": 1735.8,
       "device": "NVIDIA GeForce RTX 4090"
+    },
+    {
+      "row_id": "S2-response",
+      "variant": "v3_s2_response",
+      "run_tag": "v3-s2-response",
+      "run_dir": "_runs/v3_S2_response",
+      "label": "S2 \u00b7 bounded response spline",
+      "declared_change": "bounded_positive_response_spline",
+      "scientific_question": "Does a bounded conditional spline with one zero atom beat the clamped mixture?",
+      "architecture_version": "cbsc-zdc-v3",
+      "features_enabled": {
+        "axis_features": false,
+        "response_mode": "spline",
+        "first_layer_mode": "v2",
+        "count_mode": "v2",
+        "activity_head_mode": "v2"
+      },
+      "inherited_features": [],
+      "inheritance_note": "S2 does NOT inherit S1's axis features. S1 was not promoted, and the original matrix's cumulative chain assumed every row promotes. Inheritance is now opt-in and must name promoted rows.",
+      "loss_weight_schema": "v2.2 keys only; the spline replaces the response head rather than adding a term",
+      "parent": {
+        "label": "B0",
+        "run_tag": "dicos-f-02",
+        "epoch": 90,
+        "validation_loss": 4.483767619419238
+      },
+      "initialization": {
+        "mode": "initialize_from",
+        "checkpoint": "prep/checkpoints/v3_S2_response_init.pt",
+        "checkpoint_sha256": "a5fd7998db42603f3839ddab7827a911f1596463bee709a13ccfe4c4c4091f47",
+        "migration": "v2->v3",
+        "migration_counts": {
+          "copied": 193,
+          "expanded": 0,
+          "initialized": 15,
+          "unexpected": 0
+        },
+        "optimizer_state_transferred": false,
+        "note": "expanded is 0 because this row adds no axis columns; the 15 initialized tensors are the new spline head"
+      },
+      "response_envelope": {
+        "source": "_v3/envelope_pilot_full.json",
+        "events": 26624,
+        "bins_populated": 12,
+        "monotone_caps_gev": [
+          9.392,
+          63.2215
+        ],
+        "training_exceedances": 0
+      },
+      "target_families": [
+        "zero-cause decomposition",
+        "positive-response distribution"
+      ],
+      "scientific_motivation": "the v2.2 clamped mixture creates a second zero atom; the bounded spline removes it. Justified as a structural repair, not an AUROC fix: the zero-only AUROC bound is at most 0.507 against a measured 0.843.",
+      "frozen_config": "prep/configs/frozen_v3_S2_response.yaml",
+      "frozen_config_sha256": "d388c4eadeffadfeb55f3d568df739d9f020e061dbee89672141999b8dacc603",
+      "seed": 20260723,
+      "horizon_epochs": 24,
+      "early_stopping_patience": 24,
+      "restart_scheduler_on_resume": false,
+      "batch_size": 6,
+      "gradient_accumulation": 4,
+      "status": "queued",
+      "queued_behind": "M0-fresh, via _v3/chain_m0_then_s2.sh, which refuses to start unless M0 completes its full declared horizon",
+      "evidence": {
+        "validation_loss_per_epoch": false,
+        "structural_invariants_per_epoch": false,
+        "fixed_condition_visualizations": false,
+        "distribution_diagnostics": false,
+        "validation_metric_battery": false
+      },
+      "evidence_gap": "not yet started"
     }
   ]
 }

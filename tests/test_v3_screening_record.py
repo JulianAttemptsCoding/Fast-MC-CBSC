@@ -81,7 +81,16 @@ def test_registry_rows_declare_a_parent_and_a_single_change(registry):
             key for key, value in features.items()
             if not (value is False or value == "v2")
         ]
-        assert len(non_default) == 1, f"{row['row_id']} enables {non_default}"
+        if row.get("standalone_control"):
+            # A zero-ablation control necessarily declares the feature it is
+            # ablating plus the ablation itself. That pair is one change: it
+            # keeps the axis path and its parameters while removing only the
+            # information the columns carry.
+            assert set(non_default) == {"axis_features", "axis_zero_ablation"}, (
+                f"{row['row_id']} enables {non_default}"
+            )
+        else:
+            assert len(non_default) == 1, f"{row['row_id']} enables {non_default}"
 
 
 def test_registry_row_identifiers_are_filesystem_safe(importer, registry):
@@ -95,9 +104,32 @@ def test_registry_row_identifiers_are_filesystem_safe(importer, registry):
 
 
 def test_unpromoted_rows_do_not_claim_promotion(registry):
+    """A finished row that is not promoted must say why.
+
+    A running or queued row has no disposition yet, and demanding a reason from
+    it would push the agent to write a conclusion before the evidence exists.
+    """
     for row in registry["rows"]:
+        if row["status"] != "complete":
+            assert "disposition" not in row, (
+                f"{row['row_id']} is {row['status']} but already claims a disposition"
+            )
+            continue
         if row.get("disposition") != "promoted":
             assert row.get("disposition_reason"), row["row_id"]
+
+
+def test_every_registered_row_has_a_known_status(registry):
+    for row in registry["rows"]:
+        assert row["status"] in {"queued", "running", "complete"}, row["row_id"]
+
+
+def test_running_and_queued_rows_carry_no_measured_evidence(registry):
+    """Evidence flags must not be set before the evidence is imported."""
+    for row in registry["rows"]:
+        if row["status"] == "complete":
+            continue
+        assert not any(row["evidence"].values()), row["row_id"]
 
 
 # --------------------------------------------------------------------------

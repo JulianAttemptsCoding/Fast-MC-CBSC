@@ -1,21 +1,26 @@
 # Walk-away runbook — what is running, and what to do when you come back
 
-Written 2026-08-14. This is the "I ignored this for a few days, what now" page.
+Rewritten 2026-08-15. This is the "I ignored this for a few days, what now" page.
 It assumes nothing except that you can run `python scripts/dicos.py`.
 
 ---
 
 ## 1. What is running right now
 
-Two independent jobs, one per GPU. Neither needs you.
+Three jobs across two cards. None of them needs you.
 
-| Job | Pod | What it is | Expected duration |
+| Job | Pod | What it is | Expected |
 |---|---|---|---|
-| `v3s1` | RTX 4090 (training) | **S1-axis**: the first v3 screening row, 24 epochs on the pilot bank | **~11.5 h** |
-| `campdiag` | RTX 3090 (diagnostics) | Draining `_diag/dicos-f-03/queue`, 24 checkpoints, closing the declared 91–114 gap | ~3 h |
+| `v3m0` | RTX 4090 | **M0-fresh**, 24 epochs — the zero-axis control that closes S1's causal question | ~7–12 h |
+| `chain` | RTX 4090 | Waits for M0, verifies it finished its full horizon, then starts **S2-response** | +~6–12 h |
+| `battery2` | RTX 3090 | The v3 validation battery on B0, `dicos-f-03` e111 and S1 e19 | ~1–4 h |
 
-Both write only under the permitted project directory. Neither touches the test
-split. No paid cloud compute is involved.
+Everything writes only under the permitted project directory. Nothing touches
+the test split. No paid cloud compute is involved.
+
+**The chain refuses to start S2 unless M0 completed all 24 epochs and reached
+postflight.** A tranche that silently continues past a failed row produces
+results nobody can attribute.
 
 ## 2. The single command to check on things
 
@@ -23,123 +28,98 @@ split. No paid cloud compute is involved.
 python scripts/v3_status.py
 ```
 
-It prints, for both pods: GPU utilization, live writer PIDs, the newest epoch and
-loss for every active run, the diagnostics queue depth, and whether anything has
-died. If that script is unavailable, the manual equivalents are in §6.
+Manual equivalents, if that script is unavailable:
+
+```bash
+python scripts/dicos.py jobs
+python scripts/dicos.py exec "tail -3 '_runs/v3_M0_fresh/logs/history.csv'"
+python scripts/dicos.py logs chain
+```
+
+```bash
+MSYS_NO_PATHCONV=1 DICOS_CONFIG="C:/Users/Julia/.dicos/config_3090.json" python scripts/dicos.py logs battery2
+```
 
 ## 3. What "good" looks like
 
-**S1-axis.** Epoch 0 came in at **4.665888**, which is the right shape: the run
-starts from B0's weights (4.483768) through a migration verified as a
-behavioural no-op, then trains one epoch at the fresh cosine's peak learning
-rate of 2.99e-4, which moves a converged model away from its optimum before the
-anneal brings it back. For comparison `dicos-f-01`'s equivalent re-heat epoch
-was 4.6115.
+**M0-fresh.** Epoch 0 should land near **4.6659**, the same re-heat signature S1
+produced, because both start from B0's weights through a migration verified as a
+behavioural no-op and then train one epoch at the fresh cosine's 2.99e-4 peak.
 
-This number is the initialization check. The first launch of S1 read **5.204838**
-because `initialize_from` was unset and it trained from random weights; that run
-was discarded. If a future row starts anywhere near 5.2, suspect the
-initialization pointer before believing anything about the feature.
+**If a row ever starts anywhere near 5.2, suspect the `initialize_from` pointer
+before believing anything about the feature.** That number is what S1's first,
+discarded launch produced when it trained from random weights.
 
-**Measured cost: 1735.8 s/epoch**, so 24 epochs was about 12.3 h, against the
-v2.2 rate of 779.6 s/epoch (34.15 vs 15.4 examples/s).
+**S2-response.** Same initialization signature. Its migration report should read
+`copied 193, expanded 0, initialized 15, unexpected 0` — `expanded 0` is correct
+and expected, because S2 adds no axis columns.
 
-**The causal attribution once written here is WITHDRAWN.** It said the axis
-features cause that factor, because they add four columns across 6,790 nodes on
-a 107,920-edge graph. Profiled on the production graph 2026-08-15
-(`audit/v3_axis_performance_profile_20260815.json`), that is false:
+**The battery.** Three JSON files under `_v3/battery/`. Each records
+`test_events_used: 0`, all twelve metric families, and 1,000 bootstrap
+replicates at 95%.
 
-    support field forward   with axis / without axis   1.0015
-    share field forward                                1.0099
-    full sample                                        1.0055
-    axis construction                                  0.00023 s per batch
+## 4. What each result means
 
-Roughly **1%**, not 2.23x. `axis_for()` is also already hoisted — computed once
-per batch before the share-flow loop and reused across every solver step — so
-there is no caching win available either.
+### M0-fresh — read it against two numbers
 
-The 2.23x epoch-rate difference is **real but unattributed**. It is not the axis
-feature's forward cost. Until a full training-step comparison including backward
-is run, do not cost any row from S1's rate. The consequent **115 GPU-hour**
-projection for the eleven pilot rows is withdrawn with it; the rows in
-`audit/v3_prepared_tranche_20260815.json` are projected from the v2.2 rate and
-carry a first-epoch cost checkpoint.
+| M0 lands near | Reading |
+|---|---|
+| **4.491971** (`dicos-f-03`) | the fresh optimizer explains most of S1's shortfall; the axis feature is close to neutral |
+| **4.514053** (S1) | the optimizer is the dominant term and the axis feature is not the story |
+| **4.483768** (B0) | both the optimizer and the axis feature cost something |
 
-The question S1 answers: *do incident-axis node coordinates lower the validation
-loss?* Anything better than 4.483768 at the end is a candidate improvement;
-anything worse is a real negative result and must be reported as one.
+M0 holds architecture, parameter count, input width, seed, data order, bank,
+batch, accumulation, schedule, solver steps, update count and stopping rule
+identical to S1. The only difference is that S1 feeds computed incident-axis
+values where M0 feeds zeros. Because the axis input is identically zero, its
+weight block receives zero gradient and stays zero all run, so M0 is
+mathematically a v2.2 model with a fresh optimizer while keeping S1's exact
+parameter count.
 
-**Diagnostics.** `_diag/dicos-f-03/queue` should shrink toward zero and
-`metrics_epoch_*.json` should grow toward 24.
+**Whatever it says, record it.** A negative result is a result, and the
+promotion rule retains the simpler parent when an improvement is unresolved.
 
-## 4. What to do when S1 finishes
+### S2-response
 
-```bash
-# 1. pull the evidence and rebuild everything
-PYTHONPATH=src python scripts/refresh_continuation_outputs.py --offline \
-  --family calibrated_lr3e4 --run-tag v3-S1-axis \
-  --run-dir "_runs/v3_S1_axis" --expected-epoch <last epoch>
+Its declared targets are the **zero-cause decomposition** and the
+**positive-response distribution**. The battery reports the zero rate split into
+the visibility hurdle and the positive branch, which is exactly the second zero
+atom the bounded spline exists to remove.
 
-# 2. full QA
-PYTHONPATH=src python -m pytest -q                 # expect 555 passed
-python exhibition/build_metrics_catalog.py         # expect status PASS
-```
+S2 is justified as a **structural repair, not an AUROC fix**: the zero-only
+AUROC bound is `0.5 + |p_fast − p_truth|/2` = at most **0.507**, against a
+measured 0.843. Do not expect it to move the classifier much.
 
-Then decide the row: keep S1 if it beat 4.483768, otherwise retain the simpler
-parent. Either way, record the result — **a negative result is a result**, and
-the promotion rule is "retain the simpler parent when an improvement is
-statistically unresolved."
-
-To start the next row (S2 adds the bounded response spline):
+## 5. When a row finishes
 
 ```bash
-python scripts/dicos.py exec "cd '<workdir>' && LD_LIBRARY_PATH=/usr/lib64:\$LD_LIBRARY_PATH \
-  PYTHONNOUSERSITE=1 PYTHONPATH=repo/src .venv/bin/python \
-  repo/scripts/build_v3_screening_configs.py \
-  --parent prep/configs/frozen_calibrated_lr3e4_dicos-f-02.yaml \
-  --envelope _v3/envelope_pilot_full.json --output-dir _v3/templates \
-  --only S2-response --horizon 24"
+# 1. import the evidence (hash-verified against the pod)
+PYTHONPATH=src python scripts/import_v3_screening_run.py --row M0-fresh \
+  --report audit/v3_M0_import_20260815.json
+
+# 2. rebuild the screening figures and summary
+PYTHONPATH=src python exhibition/build_v3_screening_figure.py
+
+# 3. full QA
+PYTHONPATH=src python -m pytest -q
+python exhibition/build_metrics_catalog.py     # expect status PASS
 ```
 
-then `v3_prepare_screening_run.py` with `--parent-checkpoint` set to S1's best,
-then launch exactly as S1 was launched.
+Then set the row's `status` to `complete` and write its `disposition` in
+`exhibition/data/v3_screening_rows.json`. A test enforces that only a completed
+row may claim a disposition, and that an unpromoted one states its reason.
 
-## 5. If something has gone wrong
+**Screening rows never enter `exhibition/data/continuation_history.csv`.** That
+file is the four v2.2 learning-rate families on one continuous loss axis; a
+screening row changes the architecture and is *initialized from* rather than
+*resumed from* its parent. A test makes the leak impossible.
 
-**A job died.** Both are checkpoint/resume capable. Re-issue the same `start`
-command; the trainer picks up from its last checkpoint. **Before re-issuing,
-prove there is no live writer** (§6) — a log that looks empty is not proof, and
-starting a second writer on one run directory has cost this project real time.
+## 6. If something has gone wrong
 
-**The pod expired.** Re-auth with the new URL, then `setup` is *not* needed on
-the diagnostics pod — it would rebuild the shared venv out from under the
-trainer. Only re-auth.
-
-**The GPU shows 0% but a PID is alive.** Preflight hashes every shard before the
-first epoch and can take several minutes with no output at all. That is normal.
-
-**`dicos.py stop` returned but the GPU is still busy.** Known: `stop` kills the
-wrapper and leaves its children. Scan `/proc` and SIGTERM them explicitly (§6).
-
-**Git Bash mangles `/usr/lib64`.** It rewrites POSIX paths before they reach the
-pod. Prefix the command with `MSYS_NO_PATHCONV=1`, and note that this also
-disables `~` expansion, so pass `DICOS_CONFIG` as an explicit
-`C:/Users/...` path.
-
-## 6. Manual checks, if the status script is unavailable
-
-```bash
-# training pod
-python scripts/dicos.py exec "nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader"
-python scripts/dicos.py exec "tail -5 _runs/v3_S1_axis/logs/history.csv"
-
-# diagnostics pod
-MSYS_NO_PATHCONV=1 DICOS_CONFIG="C:/Users/Julia/.dicos/config_3090.json" \
-  python scripts/dicos.py exec "ls _diag/dicos-f-03/queue/*.pt | wc -l"
-```
-
-One-writer proof — the probe must not match itself, so the token is built at
-runtime and the probe excludes its own PID and its parent:
+**A job died.** Every row is checkpoint/resume capable. Re-issue the same start
+command; the trainer resumes from its last checkpoint. **Before re-issuing,
+prove there is no live writer** — a log that looks empty is not proof, and
+starting a second writer on one run directory has cost this project real time:
 
 ```bash
 python scripts/dicos.py exec "PYTHONNOUSERSITE=1 .venv/bin/python -c \"
@@ -150,18 +130,64 @@ print([int(c.split('/')[2]) for c in glob.glob('/proc/[0-9]*/cmdline')
        and int(c.split('/')[2]) not in (os.getpid(),os.getppid())])\""
 ```
 
+**The pod expired.** Re-auth with the new URL. Do **not** run `setup` on the
+diagnostics pod — it rebuilds the shared venv out from under whatever is
+training.
+
+**GPU shows 0% but a PID is alive.** Preflight hashes every shard before the
+first epoch and can take several minutes with no output at all. Normal.
+
+**`dicos.py stop` returned but the GPU is still busy.** Known: `stop` kills the
+wrapper and leaves its children. Scan `/proc` and SIGTERM them explicitly.
+
+**Git Bash mangles `/usr/lib64`.** Prefix with `MSYS_NO_PATHCONV=1`, and note
+that this also disables `~` expansion, so pass `DICOS_CONFIG` as an explicit
+`C:/Users/...` path. The `/usr/lib64` prefix is required on the training pod or
+every CUDA call fails with `cudaErrorSystemDriverMismatch` (803).
+
+**The 3090 has no `git`.** Both pods mount the same `repo/`, so pull from the
+4090 side.
+
 ## 7. What is deliberately NOT running
 
-- **D1 and D2 critic arms.** Measured at 446.6 h and 141.5 h each. They need
-  their own budget decision, and D1's memory must be re-measured first: the
-  preflight used a synthetic graph with 40,740 edges while the production
-  geometry has **107,920**, so the 14.85 GiB figure is an underestimate.
-- **Any full-data or FINAL row.** Not authorized, and the test split stays sealed.
-- **Publication.** Still owed, still the owner's deliberate act.
+- **D1.** `RESOURCE_PREFLIGHT_FAIL`, measured 2026-08-15 on the real
+  107,920-edge production graph: the critic update at batch 4 peaks at
+  **22.796 GiB** and OOMs with 4.69 MiB free on a 23.518 GiB card. **D1 is
+  `resource_blocked`; do not plan D1 training on this card.** The earlier
+  14.85 GiB figure came from a synthetic 40,740-edge graph and is superseded.
+  The one remaining implementation-equivalent lever is activation checkpointing,
+  which must prove 1e-6 forward equivalence and float32-tolerance gradient
+  equivalence.
+- **D2.** Independently eligible — its memory path is distinct and does not
+  touch the edge set — but it is a separate multi-day budget decision and only
+  becomes *preferred* once the battery shows profile or correlation
+  discrepancies are leading.
+- **S3-first, R1-data4x.** Prepared and costed in
+  `audit/v3_prepared_tranche_20260815.json`, not launched. S3's parent rule: if
+  S2 promotes, S3 forks from S2; if not, S3 is an isolated B0/M0 row. A failed
+  feature is never stacked just because the matrix listed a chain.
+- **Any full-data or FINAL row, the three-seed protocol, opening the test
+  split, publication.**
 
-## 8. Status vocabulary
+## 8. Standing corrections worth remembering
 
-`QA PASS` on the software. `FOLLOW-UP QA` on S1 until it completes.
-**`PHYSICS VALIDATION NOT ESTABLISHED`** — unchanged. A classifier still
-separates Fast-MC from Geant4 at AUROC 0.843 against a 0.65 target, and nothing
-currently running changes that.
+- **The axis features do not cost 2.23×.** Profiled at production shape they
+  cost ~1% (support 1.0015, share 1.0099, full sample 1.0055). S1's
+  1735.8 s/epoch is real but **unattributed**; do not cost any row from it.
+- **The 0.65 gate names high-level C2ST**, where B0 reads **0.892897** — not the
+  hybrid 0.843222. The claim that the learning-rate correction nearly cleared
+  D1's 0.02 gate is **withdrawn**; that delta was hybrid and D1's rule names
+  low-level.
+- **The 8,000-example external battery is below the frozen 10,000 minimum.**
+  Directional evidence only; it may not pass or fail the 0.65 diagnostic or
+  select a row. The new fixed bank is 10,000 pairs = 20,000 examples.
+
+## 9. Status vocabulary
+
+`QA PASS` on the software. `FOLLOW-UP QA` on M0, S2 and the battery until they
+complete. `RESOURCE PREFLIGHT FAIL` on D1. `D3_TRIGGER_NOT_MET`.
+`S1_CONFIGURATION_NOT_PROMOTED` and `S1_AXIS_CAUSAL_EFFECT_UNRESOLVED`.
+
+**`PHYSICS VALIDATION NOT ESTABLISHED`** — unchanged. A classifier separates
+Fast-MC from Geant4 at high-level AUROC 0.892897 against a 0.65 target, and
+nothing currently running changes that.
