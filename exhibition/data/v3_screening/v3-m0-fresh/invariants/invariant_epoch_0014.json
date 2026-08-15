@@ -1,0 +1,16 @@
+{
+  "closure_scale_gev": 6.0345611572265625,
+  "closure_tolerance_absolute_gev": 2e-05,
+  "closure_tolerance_effective_gev": 6.034561157226563e-05,
+  "closure_tolerance_relative": 1e-05,
+  "count_mismatch_max": 0,
+  "dust_cells": 0,
+  "event_closure_max_gev": 9.5367431640625e-07,
+  "layer_closure_max_gev": 9.5367431640625e-07,
+  "negative": 0,
+  "nonfinite": 0,
+  "outside_valid_support": 0,
+  "pass": true,
+  "requested_realized_mismatch_max": 0,
+  "support_mask_mismatch": 0
+}

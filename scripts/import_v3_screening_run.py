@@ -152,11 +152,17 @@ def verify_declared_identity(row: dict) -> dict:
     The registry is hand-authored.  Trusting it would let a typo silently
     attribute one run's trajectory to another row's declared change.
     """
-    targets = {
-        "frozen_config_sha256": row["frozen_config"],
-        "best_sha256": row["checkpoints"]["best"],
-        "last_sha256": row["checkpoints"]["last"],
-    }
+    # A row still training has no final checkpoint hashes to declare yet, so it
+    # declares only its frozen config. Verify whatever identity IS declared
+    # rather than demanding a block that cannot exist mid-run -- and never skip
+    # the frozen config, which is what ties the trajectory to its declared
+    # change.
+    targets = {"frozen_config_sha256": row["frozen_config"]}
+    checkpoints = row.get("checkpoints") or {}
+    if checkpoints.get("best"):
+        targets["best_sha256"] = checkpoints["best"]
+    if checkpoints.get("last"):
+        targets["last_sha256"] = checkpoints["last"]
     quoted = " ".join(f"'{path}'" for path in targets.values())
     observed = remote_hashes(quoted)
     checked = {}

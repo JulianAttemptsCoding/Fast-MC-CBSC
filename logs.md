@@ -10872,3 +10872,5 @@ Verification: `pytest` **696 passed** (682 -> 696); metrics catalog **131
 graphics, PASS**.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+- M0-fresh e16: val 4.523105 best @ e11, 17/24 epochs, invariants 17/17 pass
+  new best for this row: 4.523105 (parent 4.483768, delta +0.039337)
