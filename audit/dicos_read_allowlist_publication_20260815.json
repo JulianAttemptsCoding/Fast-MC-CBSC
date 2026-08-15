@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "kind": "repository-publication-audit",
+  "timestamp_utc": "2026-08-15T23:25:00Z",
+  "input_commit": "c061d37",
+  "commands": [
+    {
+      "command": "git fetch origin",
+      "result": "exit 0"
+    },
+    {
+      "command": "git rev-list --left-right --count origin/main...HEAD",
+      "result": "0 1; remote had no unintegrated commits"
+    },
+    {
+      "command": "git push origin main",
+      "result": "exit 0; 9d2d8d1..c061d37 main -> main"
+    }
+  ],
+  "published_scope": [
+    "exact two-entry DiCOS read allowlist and client guard",
+    "process-tree helpers compliant with the read rule",
+    "offline regression tests and audit evidence",
+    "S2-response epochs 3 and 4 imported by the existing watcher"
+  ],
+  "test_split_used": false,
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

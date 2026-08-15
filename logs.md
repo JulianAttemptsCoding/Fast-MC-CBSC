@@ -7944,6 +7944,7 @@ A diagnostic threshold changed. The model, loss, data, split, seed and every
 selection rule are untouched. This establishes nothing about Geant4 fidelity.
 `PHYSICS VALIDATION NOT ESTABLISHED`.
 
+
 `dicos-p10` epoch 40 **remains `ARTIFACT QUARANTINED`.** It was quarantined
 under the old rule, and re-auditing it under the new one is a separate declared
 act that has not been performed. It is not a valid parent.
@@ -11065,5 +11066,20 @@ Live automation was preserved: watcher PID 17320 remained alive; M0-fresh and
 S1-axis are complete; S2-response is running with epoch 4 imported and best
 validation loss 4.988013; S3-first is queued. No duplicate watcher or writer was
 started.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.
+
+
+### 2026-08-15 (publication) — DiCOS read guard pushed
+
+Committed the verified read-scope guard, documentation, audit, tests, and the
+existing watcher's S2-response epoch-3/4 evidence as `c061d37`
+(`fix(dicos): enforce two-path read scope`). After `git fetch origin`,
+`git rev-list --left-right --count origin/main...HEAD` returned `0 1`, proving
+the remote had no unintegrated work. `git push origin main` succeeded:
+`9d2d8d1..c061d37 main -> main`.
+
+Audit twins: `audit/dicos_read_allowlist_publication_20260815.{json,md}`.
+No test data was used and no live process was launched, restarted, or stopped.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
