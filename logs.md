@@ -10884,3 +10884,78 @@ graphics, PASS**.
 - M0-fresh e23: val 4.513572 best @ e19, 24/24 epochs, invariants 24/24 pass
 
 **M0-fresh reached its full 24-epoch horizon.** Best validation loss 4.513572 at epoch 19, against parent 4.483768 (+0.029804). Set its `status` to `complete` and record a `disposition` in exhibition/data/v3_screening_rows.json; a negative result is a result, and the promotion rule retains the simpler parent when an improvement is unresolved.
+
+
+### 2026-08-15 (M0-fresh result) -- the axis feature is neutral; the shortfall was the optimizer
+
+M0-fresh completed its full 24-epoch horizon: 24/24 invariant reports passing,
+24 fixed-condition visualization payloads, zero structural failures. Best
+validation loss **4.513572058600877 at epoch 19** -- the same epoch S1 peaked at.
+
+    B0        dicos-f-02 e90                         4.483768
+    control   dicos-f-03 e111  no axis, RESUMED opt  4.491971
+    M0-fresh  e19              no axis, FRESH opt     4.513572
+    S1-axis   e19              axis,    FRESH opt     4.514053
+
+**The axis feature is neutral.** M0 and S1 are identical in architecture,
+parameter count, input width, seed, data order, bank, batch, accumulation,
+schedule, solver steps, update count and stopping rule. The only difference is
+that S1 feeds computed incident-axis coordinates where M0 feeds zeros. They
+differ by **0.000481**, against a run-to-run reference of **0.001259**. Below the
+reproducibility band: indistinguishable.
+
+**S1's shortfall was the optimizer, and it is now quantified.**
+
+    S1 vs dicos-f-03, total          0.022082
+      from the fresh optimizer       0.021601   (M0 vs dicos-f-03)
+      from the axis feature          0.000481   (S1 vs M0, below reference)
+
+`S1_AXIS_CAUSAL_EFFECT_UNRESOLVED` is superseded by
+**`S1_AXIS_CAUSAL_EFFECT_RESOLVED_NEUTRAL`**. S1's disposition is unchanged --
+the configuration still lost to both references, so the promotion rule still
+retains the simpler parent -- but the reason is now attributed rather than open.
+One control run, exactly as designed, and no compute was spent re-running S1 or
+dicos-f-03 under matched optimizer state.
+
+M0 itself is recorded `M0_CONTROL_COMPLETE`, not promoted: it is a control and
+carries no feature to promote.
+
+### The comparator rule, and why it matters for every row that follows
+
+**The correct comparator for any screening row is M0-fresh at 4.513572, not B0
+at 4.483768.**
+
+Every screening row uses `initialize_from`, which transfers weights but not
+optimizer state, so every row starts a fresh Adam. M0 measures what that costs
+on this bank and horizon: **0.021601**, against `dicos-f-03` which resumed its
+optimizer and is otherwise identical.
+
+Comparing a screening row directly against B0 or `dicos-f-03` therefore charges
+the feature for the optimizer restart. Screening rows remain mutually
+comparable, because all of them pay it. This is recorded as `comparator_rule` in
+the screening registry and pinned by a test.
+
+Read against the right yardstick, S1 is not "0.030 worse than B0" -- it is
+**0.0005 different from its true control**, which is nothing.
+
+### Also this session
+
+**The battery finally ran end to end and then died on a device mismatch.** All
+three checkpoints reached topology -- through generation, all four C2ST families
+and every distribution metric, about an hour each -- and raised `indices should
+be either on cpu or on the same device as the indexed tensor`.
+`connected_components` indexes a CPU support tensor with `model.edge_index`,
+which is on CUDA. Coerced once in `battery_report`.
+
+That the failure moved that far down is itself the evidence that the quadratic
+`wasserstein_1d` fix worked.
+
+**A `StageTimer` now times every metric family**, writes the timings into the
+report under `timing.stage_seconds`, and prints each one as it completes. The
+battery ran for over an hour per checkpoint in silence and finding the cause
+took three wrong guesses; a live run is now observable. A failing stage is still
+timed, because that is the stage that matters.
+
+Verification: `pytest` **724 passed**; metrics catalog **131 graphics, PASS**.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.

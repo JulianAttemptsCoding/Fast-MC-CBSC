@@ -1,0 +1,37 @@
+{
+  "aggregate_rows": 24,
+  "beats_control": true,
+  "beats_parent": false,
+  "best_epoch": 19,
+  "best_validation_loss": 4.513572058600877,
+  "control_run_tag": "v3-s1-axis",
+  "control_validation_loss": 4.514053317498672,
+  "declared_identity": {
+    "frozen_config_sha256": "e49bf383ccf050e300e309162a297497abac9f9de835699a7d86890dd74ea740"
+  },
+  "declared_identity_verified": true,
+  "delta_vs_control": -0.000481258897795378,
+  "delta_vs_parent": 0.029804439181638998,
+  "distribution_diagnostics_present": false,
+  "epoch_range": [
+    0,
+    23
+  ],
+  "epochs_imported": 24,
+  "fetched": {
+    "history": false,
+    "invariants": [],
+    "visualizations": []
+  },
+  "first_epoch_validation_loss": 4.66059759141411,
+  "invariant_reports": 24,
+  "invariant_reports_all_pass": true,
+  "mode": "remote-import",
+  "parent_validation_loss": 4.483767619419238,
+  "row_id": "M0-fresh",
+  "run_tag": "v3-m0-fresh",
+  "test_events_used": 0,
+  "training_started_by_import": false,
+  "variant": "v3_m0_fresh",
+  "visualization_payloads": 24
+}

@@ -83,17 +83,48 @@
       "restart_scheduler_on_resume": false,
       "batch_size": 6,
       "gradient_accumulation": 4,
-      "status": "running",
+      "status": "complete",
       "launched_at": "2026-08-15T07:57Z",
       "device": "NVIDIA GeForce RTX 4090",
       "evidence": {
-        "validation_loss_per_epoch": false,
-        "structural_invariants_per_epoch": false,
-        "fixed_condition_visualizations": false,
+        "validation_loss_per_epoch": true,
+        "structural_invariants_per_epoch": true,
+        "fixed_condition_visualizations": true,
         "distribution_diagnostics": false,
         "validation_metric_battery": false
       },
-      "evidence_gap": "run in flight; evidence is imported through scripts/import_v3_screening_run.py once it completes"
+      "evidence_gap": "no per-epoch distribution diagnostics: launched through dicos_train.py rather than the campaign supervisor, so nothing was staged into _diag/",
+      "disposition": "M0_CONTROL_COMPLETE",
+      "disposition_reason": "M0 is a control, not a promotion candidate: it carries no feature to promote. It completed its full 24-epoch horizon with best validation loss 4.513572058600877 at epoch 19, the same epoch S1 peaked at.",
+      "measured": {
+        "best_epoch": 19,
+        "best_validation_loss": 4.513572058600877,
+        "epochs": 24,
+        "invariant_reports_all_pass": true,
+        "visualization_payloads": 24
+      },
+      "result": {
+        "vs_s1_axis": {
+          "s1": 4.514053317498672,
+          "m0": 4.513572058600877,
+          "difference": 0.000481258897795378,
+          "run_to_run_reference": 0.001259,
+          "within_reference": true,
+          "reading": "The axis feature is NEUTRAL. S1 and M0 differ by 0.000481, which is below the 0.001259 run-to-run reference, so the two are indistinguishable. Feeding real incident-axis coordinates instead of zeros changed nothing measurable."
+        },
+        "vs_dicos_f_03": {
+          "f_03": 4.491971,
+          "m0": 4.513572058600877,
+          "difference": 0.021601058600877,
+          "reading": "This is the FRESH-OPTIMIZER COST, isolated. f-03 resumed its optimizer state; M0 started a fresh Adam. Nothing else differs: both carry no axis information, both fork from the same parent, both run 24 epochs."
+        },
+        "attribution_of_s1_shortfall": {
+          "total_vs_f_03": 0.022082317498671955,
+          "from_fresh_optimizer": 0.021601058600877,
+          "from_axis_feature": 0.000481258897795378,
+          "statement": "S1's entire shortfall against dicos-f-03 is the fresh optimizer. The axis feature accounts for 0.00048 of 0.02208, which is below the reproducibility reference."
+        }
+      }
     },
     {
       "row_id": "S1-axis",
@@ -146,9 +177,9 @@
       "gradient_accumulation": 4,
       "status": "complete",
       "disposition": "S1_CONFIGURATION_NOT_PROMOTED",
-      "causal_status": "S1_AXIS_CAUSAL_EFFECT_UNRESOLVED",
+      "causal_status": "S1_AXIS_CAUSAL_EFFECT_RESOLVED_NEUTRAL",
       "disposition_reason": "The completed configuration was worse in validation loss than both its parent (4.483768) and its matched no-axis control (4.491971). Under the frozen promotion rule the simpler parent is retained and axis features stay off in downstream configs.",
-      "causal_reason": "The row used a fresh optimizer while its control resumed one, and it was selected on validation loss alone even though the frozen v3 plan required off-axis/topology targets, paired bootstrap, guard metrics, and C2ST. The feature-specific causal question is not closed by this run.",
+      "causal_reason": "RESOLVED by M0-fresh on 2026-08-15. M0 is identical to S1 in architecture, parameter count, input width, seed, data order, bank, batch, accumulation, schedule, solver steps, update count and stopping rule, and differs only by feeding zero axis values instead of computed ones. M0 reached 4.513572 against S1's 4.514053, a difference of 0.000481 -- below the 0.001259 run-to-run reference. The axis feature is neutral. S1's 0.022082 shortfall against dicos-f-03 is almost entirely the fresh optimizer (0.021601), which M0 isolates.",
       "checkpoints": {
         "best": "_runs/v3_S1_axis/checkpoints/best.pt",
         "best_sha256": "2235774417fcb916ab3becbfe3eef985bbd90e0ee24a090174736de5afd9ae31",
@@ -170,7 +201,8 @@
       "wall_seconds": 44124.213,
       "optimizer_updates": 26640,
       "measured_seconds_per_epoch": 1735.8,
-      "device": "NVIDIA GeForce RTX 4090"
+      "device": "NVIDIA GeForce RTX 4090",
+      "superseded_causal_status": "S1_AXIS_CAUSAL_EFFECT_UNRESOLVED"
     },
     {
       "row_id": "S2-response",
@@ -245,5 +277,11 @@
       },
       "evidence_gap": "not yet started"
     }
-  ]
+  ],
+  "comparator_rule": {
+    "statement": "The correct comparator for any screening row is M0-fresh at 4.513572058600877, NOT B0 at 4.483767619419238.",
+    "why": "Every screening row uses initialize_from, which transfers weights but not optimizer state, so every row starts a fresh Adam. M0 measures what that costs on this bank and horizon: 0.021601 against dicos-f-03, which resumed its optimizer and is otherwise identical. Comparing a screening row directly against B0 or f-03 charges the feature for the optimizer restart. Screening rows are mutually comparable because all of them pay it.",
+    "measured_fresh_optimizer_cost": 0.021601058600877,
+    "established_by": "M0-fresh, 2026-08-15"
+  }
 }

@@ -463,15 +463,58 @@ def test_a_row_worse_than_its_parent_is_not_promoted(builder):
     assert summary["promoted_rows"] == []
 
 
-def test_s1_is_recorded_as_a_negative_result_with_an_open_causal_question(builder):
+def test_s1_is_a_negative_result_whose_causal_question_is_now_resolved(builder):
+    """S1 stays not promoted, and its cause is now attributed rather than open.
+
+    The configuration lost to both references, so the promotion rule retains the
+    simpler parent. What changed on 2026-08-15 is the *reason*: M0-fresh isolated
+    the fresh optimizer, and the axis feature turned out to be neutral.
+    """
     summary = builder.summarize(builder.load_registry(), builder.load_history())
     s1 = next(r for r in summary["rows"] if r["row_id"] == "S1-axis")
     assert s1["disposition"] == "S1_CONFIGURATION_NOT_PROMOTED"
-    assert s1["causal_status"] == "S1_AXIS_CAUSAL_EFFECT_UNRESOLVED"
+    assert s1["causal_status"] == "S1_AXIS_CAUSAL_EFFECT_RESOLVED_NEUTRAL"
     assert s1["direction_vs_parent"] == "worse"
-    assert s1["direction_vs_control"] == "worse"
-    # The confound that keeps the causal question open must stay recorded.
+    # The confound that kept it open must remain on the record.
     assert s1["optimizer_state_transferred"] is False
+
+
+def test_the_axis_effect_is_below_the_run_to_run_reference(builder):
+    """M0 and S1 differ by less than the reproducibility band, so axis is neutral."""
+    registry = builder.load_registry()
+    m0 = next(r for r in registry["rows"] if r["row_id"] == "M0-fresh")
+    result = m0["result"]["vs_s1_axis"]
+    assert abs(result["difference"]) < builder.RUN_TO_RUN_REFERENCE
+    assert result["within_reference"] is True
+
+
+def test_the_fresh_optimizer_cost_is_recorded_and_attributed(builder):
+    """The shortfall must be attributed, not left as an unexplained delta."""
+    registry = builder.load_registry()
+    m0 = next(r for r in registry["rows"] if r["row_id"] == "M0-fresh")
+    attribution = m0["result"]["attribution_of_s1_shortfall"]
+    total = attribution["total_vs_f_03"]
+    parts = attribution["from_fresh_optimizer"] + attribution["from_axis_feature"]
+    assert parts == pytest.approx(total, abs=1e-9)
+    assert attribution["from_fresh_optimizer"] > attribution["from_axis_feature"] * 10
+
+
+def test_the_comparator_rule_points_at_m0_not_b0(builder):
+    """Every screening row pays the optimizer restart, so B0 is the wrong yardstick."""
+    registry = builder.load_registry()
+    rule = registry["comparator_rule"]
+    assert "M0-fresh" in rule["statement"]
+    assert "NOT B0" in rule["statement"]
+    assert rule["measured_fresh_optimizer_cost"] > 0
+
+
+def test_a_control_row_is_not_treated_as_a_promotion_candidate(builder):
+    registry = builder.load_registry()
+    m0 = next(r for r in registry["rows"] if r["row_id"] == "M0-fresh")
+    assert m0["disposition"] == "M0_CONTROL_COMPLETE"
+    assert m0["standalone_control"] is True
+    summary = builder.summarize(registry, builder.load_history())
+    assert "M0-fresh" not in summary["promoted_rows"]
 
 
 def test_published_summary_matches_a_fresh_rebuild(builder):
