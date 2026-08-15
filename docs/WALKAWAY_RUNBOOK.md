@@ -13,7 +13,7 @@ Three jobs across two cards. None of them needs you.
 |---|---|---|---|
 | `v3m0` | RTX 4090 | **M0-fresh**, 24 epochs — the zero-axis control that closes S1's causal question | ~7–12 h |
 | `chain` | RTX 4090 | Waits for M0, verifies it finished its full horizon, then starts **S2-response** | +~6–12 h |
-| `battery2` | RTX 3090 | The v3 validation battery on B0, `dicos-f-03` e111 and S1 e19 | ~1–4 h |
+| `battery3` | RTX 3090 | The v3 validation battery on B0, `dicos-f-03` e111 and S1 e19 | ~1–4 h |
 
 Everything writes only under the permitted project directory. Nothing touches
 the test split. No paid cloud compute is involved.
@@ -37,14 +37,21 @@ python scripts/dicos.py logs chain
 ```
 
 ```bash
-MSYS_NO_PATHCONV=1 DICOS_CONFIG="C:/Users/Julia/.dicos/config_3090.json" python scripts/dicos.py logs battery2
+MSYS_NO_PATHCONV=1 DICOS_CONFIG="C:/Users/Julia/.dicos/config_3090.json" python scripts/dicos.py logs battery3
 ```
 
 ## 3. What "good" looks like
 
-**M0-fresh.** Epoch 0 should land near **4.6659**, the same re-heat signature S1
-produced, because both start from B0's weights through a migration verified as a
-behavioural no-op and then train one epoch at the fresh cosine's 2.99e-4 peak.
+**M0-fresh.** Epoch 0 measured **4.660598**, against S1's 4.665888 — the
+expected re-heat signature, because both start from B0's weights through a
+migration verified as a behavioural no-op and then train one epoch at the fresh
+cosine's 2.99e-4 peak. The pointer is confirmed good.
+
+Its rate is **1733.7 s/epoch**, essentially identical to S1's 1735.8 despite
+carrying **zero** axis information — an independent confirmation that the 2.23x
+gap against `dicos-f-02`'s 779.6 is not the axis feature. Note the 3090 battery
+was reading the same shared filesystem throughout, so this run's *timing*
+carries that confound; its loss does not.
 
 **If a row ever starts anywhere near 5.2, suspect the `initialize_from` pointer
 before believing anything about the feature.** That number is what S1's first,
@@ -140,7 +147,7 @@ first epoch and can take several minutes with no output at all. Normal.
 **`dicos.py stop` returned but the GPU is still busy.** Known: `stop` kills the
 wrapper and leaves its children. Scan `/proc` and SIGTERM them explicitly.
 
-**Stopping a chained script needs the shell killed FIRST.** `battery2` and
+**Stopping a chained script needs the shell killed FIRST.** `battery3` and
 `chain` run several steps in sequence. Killing only the current child lets the
 shell start the next one, which on 2026-08-15 left two evaluations running that
 would have collided on one output path. Kill the parent shell, then its current
