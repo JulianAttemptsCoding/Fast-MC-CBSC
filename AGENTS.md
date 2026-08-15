@@ -4,7 +4,8 @@ The project owner's active-scope index is `docs/FOCUSED_OPERATING_RULES.md`.
 It summarizes the DiCOS/token/updating/split-rigor/accident-prevention subset;
 the numbered rules below remain binding.
 
-1. Read `docs/IMPLEMENTATION_GUIDE.md` before executing commands.
+1. Read `docs/IMPLEMENTATION_GUIDE.md` before executing commands, and
+   `docs/PIPELINES.md` for how each operation is actually run on this host.
 2. Treat `legacy/` as evidence only; never import or train from it.
 3. Never hand-edit a frozen configuration.
 4. Never use test data for preprocessing, thresholds, loss weights, architecture, stopping, or checkpoint selection.
