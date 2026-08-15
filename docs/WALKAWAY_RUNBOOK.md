@@ -140,6 +140,12 @@ first epoch and can take several minutes with no output at all. Normal.
 **`dicos.py stop` returned but the GPU is still busy.** Known: `stop` kills the
 wrapper and leaves its children. Scan `/proc` and SIGTERM them explicitly.
 
+**Stopping a chained script needs the shell killed FIRST.** `battery2` and
+`chain` run several steps in sequence. Killing only the current child lets the
+shell start the next one, which on 2026-08-15 left two evaluations running that
+would have collided on one output path. Kill the parent shell, then its current
+child, then confirm nothing matching remains.
+
 **Git Bash mangles `/usr/lib64`.** Prefix with `MSYS_NO_PATHCONV=1`, and note
 that this also disables `~` expansion, so pass `DICOS_CONFIG` as an explicit
 `C:/Users/...` path. The `/usr/lib64` prefix is required on the training pod or

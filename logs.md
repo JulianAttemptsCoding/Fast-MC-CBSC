@@ -10773,3 +10773,102 @@ by anything in this phase -- performance was never S1's disposition.
 Audit twin: `audit/v3_axis_performance_profile_20260815.json`.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+
+### 2026-08-15 (tranche launch) -- M0-fresh running, S2 chained, battery on the 3090, four defects found on the way
+
+The owner authorized the tranche ("set up the training so I can ignore this for
+a few days"). 28.3 GPU-hours high across four rows is about 1.2 days back to
+back, which fits. DiCOS only; no paid cloud. Test split untouched.
+
+**Running:** `v3m0` (M0-fresh, 24 epochs, 4090), `chain` (starts S2-response
+only if M0 completes its full horizon and reaches postflight), `battery3` (the
+v3 validation battery over B0, `dicos-f-03` e111 and S1 e19, 3090).
+
+**M0-fresh is the control that closes S1's causal question.** New
+`model.axis_zero_ablation` keeps the axis input path and its parameters and
+zeroes only the values, so M0 holds architecture, parameter count, input width,
+seed, data order, bank, batch, accumulation, schedule, solver steps, update
+count and stopping rule identical to S1. Because the axis input is identically
+zero its weight block receives zero gradient and stays zero all run, making M0
+mathematically a v2.2 model with a fresh optimizer at S1's exact parameter
+count. Epoch 0 read **4.660598** against S1's 4.665888 -- the expected
+initialization signature, so the `initialize_from` pointer is right.
+
+**The fixed evaluation bank is frozen.** 10,000 pairs = **20,000 evaluator
+examples**, every energy bin between 1,182 and 1,310 against a floor of 500,
+sha256 `1bc3a6b2...`. It comes from the **canonical** split, not the pilot one:
+the pilot split holds only 6,656 validation events, below the frozen 10,000
+minimum, so it could never have supplied a gate-compliant bank.
+
+Cross-tabulating the two splits first proved there is no contamination:
+
+    pilot train      26,624  ->  100% canonical train
+    pilot validation  6,656  ->  100% canonical validation
+
+No canonical-validation event was ever in pilot training, so B0 has seen none of
+the 10,000. Evaluating on canonical validation is a declared superset choice
+with that cross-tab as its justification.
+
+Evaluator seeds **20260804 / 20260805 / 20260806**, read out of the existing
+external-metric manifest rather than invented.
+
+### Four defects, each caught before it could corrupt a result
+
+1. **S2 was built carrying S1's axis features.** The screening row list is
+   cumulative by design, but that design assumes every row promotes and S1 did
+   not. A blind build would have stacked a rejected feature into S2, S3 and
+   every later row while each still reported only its own declared change.
+   Inheritance is now opt-in via `--inherit`, must name promoted rows, and
+   refuses standalone controls. Default is no inheritance.
+2. **The migration refused S2 outright**: `expected 140 input columns, target
+   has 136`. `classify` routes input projections to the expanded rule by key
+   name, so a v3 row with axis features **off** -- S2 is the first -- landed
+   there and was asked for four columns it correctly does not have. The rule now
+   degenerates to an exact copy when no axis columns are added, asserting shape
+   equality rather than assuming it. S2 migrates as `copied 193, expanded 0,
+   initialized 15, unexpected 0`.
+3. **The battery CLI referenced `request.geometry`** where the field is
+   `geometry_manifest`, so every evaluation died instantly. The contract tests
+   construct a request but never execute the CLI path -- the same shape of gap
+   as the format-4 defect, where the helper was tested and the caller was not. A
+   test now walks the CLI's AST and checks every `request.<name>` against the
+   dataclass's real fields, catching the class rather than the instance.
+4. **The battery did not scale to the bank.** It ran CPU-bound with the GPU idle
+   and never finished B0: `connected_components` allocates a 6,790-element
+   parent list and runs a **Python** union-find per event, `topology_report` is
+   called twice per checkpoint, and memorization does a 10,000 x 2,000 `cdist`
+   over 6,790 dimensions. Those implementations had only ever been unit-tested
+   on small synthetic inputs. Topology and memorization now run on a **declared**
+   evenly spaced subsample that preserves the bank's energy composition, with the
+   size, rule and reason recorded in the output. **This is not a relaxation of
+   the frozen event minimum:** that minimum governs the distribution and C2ST
+   families, which still consume every one of the 10,000 pairs, and a test
+   asserts the C2ST and bootstrap blocks never touch the subsample index.
+
+### An operational trap worth recording
+
+Stopping the first battery left **two writers**. `dicos.py stop` kills the
+wrapper and leaves its children -- already known -- but the child I then
+SIGTERMed was only the one alive at that instant. The **shell** survived and
+moved on to the next checkpoint in its chain, so an old-code run was evaluating
+`dicos-f-03` while the new run evaluated `dicos-f-02`. They would have collided
+on the same output path.
+
+**Killing a chained script means killing the shell first, then its current
+child.** Killing the child alone just lets the shell start the next item.
+
+### The axis cost finding is independently confirmed
+
+M0 measured **1733.7 s/epoch** against S1's **1735.8** -- essentially identical,
+with **zero** axis information. That confirms Phase D from the other direction:
+the 2.23x gap against `dicos-f-02`'s 779.6 s/epoch is real but is **not** the
+axis feature, and it is shared by both v3 runs. It remains unattributed, and no
+row may be costed from S1's rate. Note also that the 3090 battery was reading
+the shared filesystem throughout, so this run's timing carries that confound;
+its loss does not.
+
+Verification: `pytest` **696 passed** (682 -> 696); metrics catalog **131
+graphics, PASS**.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.
