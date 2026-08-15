@@ -599,3 +599,29 @@ def test_the_battery_coerces_edge_index_to_cpu():
 def test_stage_timings_reach_the_report():
     source = MODULE.read_text(encoding="utf-8")
     assert '"stage_seconds": stage.seconds' in source
+
+
+def test_relative_energy_error_excludes_zero_truth_events():
+    """A zero-truth event has no relative error; dividing by a floor invents one.
+
+    The first real battery run reported energy_relative_rmse = 5.3e8 because
+    ~0.9% of validation events have exactly zero truth response and each
+    contributed a ratio of order 1e9, against the external evaluator's 0.21.
+    """
+    truth = np.array([10.0, 0.0, 20.0, 0.0])
+    generated = np.array([11.0, 5.0, 18.0, 3.0])
+    kinetic = np.array([100.0, 100.0, 100.0, 100.0])
+    report = battery._reconstruction_report(kinetic, truth, generated)
+    assert report["events_excluded_zero_truth"] == 2
+    assert report["events_with_positive_truth"] == 2
+    # (1.0/10) and (-2.0/20) -> rms of 0.1 and 0.1
+    assert report["energy_relative_rmse"] == pytest.approx(0.1)
+    assert report["energy_relative_rmse"] < 1.0
+
+
+def test_relative_energy_error_is_none_when_no_truth_is_positive():
+    report = battery._reconstruction_report(
+        np.array([1.0]), np.array([0.0]), np.array([3.0])
+    )
+    assert report["energy_relative_rmse"] is None
+    assert report["events_with_positive_truth"] == 0

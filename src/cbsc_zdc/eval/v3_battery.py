@@ -469,12 +469,36 @@ def _count_report(cell_energy: np.ndarray, layer_index: np.ndarray) -> dict[str,
 def _reconstruction_report(
     kinetic: np.ndarray, truth_total: np.ndarray, generated_total: np.ndarray
 ) -> dict[str, float]:
-    scale = np.maximum(np.abs(truth_total), 1e-9)
-    relative = (generated_total - truth_total) / scale
+    """Relative energy error over events with a positive truth response.
+
+    Dividing by `max(|truth|, 1e-9)` across the whole sample is wrong: about 0.9%
+    of validation events have exactly zero truth response, and each of those
+    contributes a ratio of order 1e9. The first run of this battery reported
+    energy_relative_rmse = 5.3e8 for that reason, against the external
+    evaluator's 0.21. Zero-truth events carry no relative error to measure, so
+    they are excluded and counted instead.
+    """
+    positive = truth_total > 0
+    excluded = int((~positive).sum())
+    if not positive.any():
+        return {
+            "energy_relative_rmse": None,
+            "energy_mean_bias_fraction": None,
+            "energy_median_absolute_relative": None,
+            "events_with_positive_truth": 0,
+            "events_excluded_zero_truth": excluded,
+            "mean_kinetic_gev": float(np.mean(kinetic)),
+        }
+    relative = (
+        generated_total[positive] - truth_total[positive]
+    ) / truth_total[positive]
     return {
         "energy_relative_rmse": float(np.sqrt(np.mean(relative ** 2))),
         "energy_mean_bias_fraction": float(np.mean(relative)),
         "energy_median_absolute_relative": float(np.median(np.abs(relative))),
+        "events_with_positive_truth": int(positive.sum()),
+        "events_excluded_zero_truth": excluded,
+        "zero_truth_fraction": float(excluded / len(truth_total)),
         "mean_kinetic_gev": float(np.mean(kinetic)),
     }
 
