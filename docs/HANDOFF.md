@@ -9,6 +9,35 @@ project real time. It does not replace the binding contracts — `AGENTS.md`,
 
 ---
 
+## 0. Read this first, as of 2026-08-15
+
+**`docs/V3_FULL_REPORT.md` is the complete v3 record** — every number, all
+eleven defects with how each was caught, the five wrong diagnoses that were made
+and corrected, and the honest status. Read it before acting on anything below,
+because two of its results change how the rest of this document must be read.
+
+**1. The comparator rule.** Every v3 screening row uses `initialize_from`, which
+transfers weights but **not** optimizer state. That fresh Adam costs a measured
+**0.021601**. So the correct yardstick for any screening row is **M0-fresh at
+4.513572**, not B0 at 4.483768. Comparing a row to B0 charges its feature for
+the optimizer restart.
+
+**2. The 0.65 gate names high-level C2ST.** B0's value for that gate is
+**0.892897**, not the hybrid 0.843222 quoted in §1 below. Both numbers are real
+and both are in the record; they answer to different gates and must never be
+mixed. The claim that the learning-rate correction nearly cleared D1's 0.02 gate
+is **withdrawn** — that delta was hybrid, and D1's rule names low-level.
+
+Also since this document was written: the 8,000-example external battery is
+**below the frozen 10,000 minimum**, so it is `FOLLOW-UP QA — BELOW FROZEN EVENT
+MINIMUM` and may not pass or fail the gate or select a row. **D1 does not fit the
+RTX 4090** (22.8 GiB against 23.5). And the **incident-axis feature is neutral**
+— 0.000481 against a 0.001259 reproducibility reference.
+
+Operational page for what is running right now: `docs/WALKAWAY_RUNBOOK.md`.
+
+---
+
 ## 1. The one-paragraph summary
 
 Four calibrated families train a hierarchical stochastic generative model of
