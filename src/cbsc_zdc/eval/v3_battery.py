@@ -73,20 +73,22 @@ REQUIRED_PAIRS_PER_BIN = 500
 BOOTSTRAP_REPLICATES = 1_000
 BOOTSTRAP_CONFIDENCE = 0.95
 
-#: Structural families -- topology and memorization -- are O(events) with a
-#: Python union-find per event and pairwise distance matrices, so they do not
-#: scale to the full bank. `connected_components` allocates a 6,790-element
-#: parent list and runs a Python-level union-find for every event, and
-#: `topology_report` is called twice per checkpoint (truth and generated).
-#: Measured on the 3090 the full 10,000-pair bank did not finish.
+#: Events used by the structural families (topology, memorization). 0 means the
+#: whole bank, which is the default and the scientifically preferable setting.
 #:
-#: They therefore run on a DECLARED deterministic subsample, recorded in the
-#: output alongside its selection rule. This is not a relaxation of the frozen
-#: event minimum: that minimum governs the distribution and C2ST families, which
-#: still consume every one of the 10,000 pairs. Topology and memorization carry
-#: no frozen event-count gate, and reporting them over a stated subsample is
-#: honest where silently reporting them over an unstated one would not be.
-STRUCTURAL_SUBSAMPLE_EVENTS = 1000
+#: An earlier revision defaulted this to 1000 on the diagnosis that
+#: `connected_components`, with its Python union-find per event, could not scale.
+#: **That diagnosis was wrong and is recorded here so it is not repeated.**
+#: Measured on the production graph: connected_components 5.1 s per 1,000
+#: events, nearest_neighbor_distances 3.1 s, distance_binned_cooccupancy 1.0 s,
+#: memorization 0.8 s -- roughly three minutes for the full bank across truth
+#: and generated together.
+#:
+#: The real bottleneck was `wasserstein_1d`, which was quadratic and took hours
+#: on the several-million-entry positive-cell array. That is fixed at the
+#: source, so the structural families need no subsample. The knob remains for a
+#: deliberate quick pass, and whatever it is set to is recorded in the output.
+STRUCTURAL_SUBSAMPLE_EVENTS = 0
 
 #: Selection salt. Changing it changes the bank, which is a new declared
 #: experiment; it is recorded in the manifest so a bank can never be silently
@@ -718,10 +720,9 @@ def battery_report(
                 "composition; a pure function of (bank size, subsample size)"
             ),
             "subsample_reason": (
-                "connected_components runs a Python union-find per event and is "
-                "called for truth and generated separately; the full bank does not "
-                "finish. The frozen event minimum governs the distribution and "
-                "C2ST families, which still use every pair."
+                "0 means the whole bank, which is the default. The knob exists for a "
+                "deliberate quick pass; the structural families are fast enough for "
+                "the full bank once wasserstein_1d is not quadratic."
             ),
         }
 

@@ -551,9 +551,14 @@ def test_the_subsample_is_recorded_with_its_reason(synthetic, tmp_path):
     source = MODULE.read_text(encoding="utf-8")
     assert "subsample_rule" in source
     assert "subsample_reason" in source
-    # And it must be explicit that the frozen minimum still binds the families
-    # it actually governs.
-    assert "still consume every one of the 10,000 pairs" in source
+
+
+def test_the_structural_families_default_to_the_whole_bank():
+    """0 means everything. The earlier default of 1000 rested on a wrong
+    diagnosis, and the module records that so it is not repeated."""
+    assert battery.STRUCTURAL_SUBSAMPLE_EVENTS == 0
+    source = MODULE.read_text(encoding="utf-8")
+    assert "That diagnosis was wrong" in source
 
 
 def test_c2st_and_bootstrap_never_use_the_subsample():
