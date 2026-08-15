@@ -169,6 +169,13 @@ def main() -> int:
     parser.add_argument("--only", nargs="*", help="restrict to these row ids")
     parser.add_argument("--horizon", type=int, default=24,
                         help="epochs and early-stopping patience for each screening row")
+    parser.add_argument(
+        "--inherit", nargs="*", metavar="ROW_ID", default=None,
+        help="row ids whose features this build should carry forward. Name only "
+             "rows that were PROMOTED. Defaults to none: a screening row changes "
+             "exactly one thing relative to the shared parent unless inheritance "
+             "is declared here.",
+    )
     args = parser.parse_args()
 
     parent = yaml.safe_load(args.parent.read_text(encoding="utf-8"))
@@ -186,18 +193,32 @@ def main() -> int:
     vertex = manifest.get("fixed_vertex_mm")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    cumulative: dict = {}
+    known_ids = {row["id"] for row in ROWS}
+    promoted = list(args.inherit or [])
+    unknown = [r for r in promoted if r not in known_ids]
+    if unknown:
+        raise SystemExit(f"--inherit names unknown rows: {unknown}")
+
+    # Inheritance is opt-in and must name PROMOTED rows explicitly. The original
+    # matrix listed S1..S5 as a cumulative chain on the assumption that each row
+    # promotes. S1-axis did not: it lost to both its parent and its matched
+    # control. Carrying its feature forward regardless would stack a rejected
+    # change into every later row and make their results unattributable, while
+    # still reporting each under its own declared change.
+    inheritable: dict = {}
+    for row in ROWS:
+        if row["id"] in promoted:
+            if row.get("standalone"):
+                raise SystemExit(
+                    f"{row['id']} is a standalone control and cannot be inherited from"
+                )
+            inheritable.update(row["model"])
+
     written = []
     for row in ROWS:
-        # A standalone row is a control, not a step in the cumulative chain.
-        # Without this guard M0-fresh's axis_zero_ablation would be inherited by
-        # S1 and every later row, silently converting each of them into a
-        # zero-axis ablation while still calling itself by the original name.
-        if not row.get("standalone"):
-            cumulative.update(row["model"])
         if args.only and row["id"] not in args.only:
             continue
-        inherited = {} if row.get("standalone") else dict(cumulative)
+        inherited = {} if row.get("standalone") else dict(inheritable)
         config = build_row(parent, row, envelope, inherited, args.horizon, vertex)
         path = args.output_dir / f"v3_{row['id'].replace('-', '_')}.yaml"
         path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8", newline="\n")
@@ -217,6 +238,7 @@ def main() -> int:
         "parent_sha256": sha256_file(args.parent),
         "envelope_sha256": envelope["envelope_sha256"] if envelope else None,
         "generator_vertex_mm": vertex,
+        "inherited_from_promoted_rows": promoted,
         "rows": written,
         "note": "templates are unfrozen; freeze through the repository CLI and record both hashes",
     }, indent=2))

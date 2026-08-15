@@ -449,3 +449,45 @@ def test_published_summary_matches_a_fresh_rebuild(builder):
     on_disk = json.loads(SUMMARY.read_text(encoding="utf-8"))
     rebuilt = builder.summarize(builder.load_registry(), builder.load_history())
     assert on_disk == rebuilt
+
+
+# --------------------------------------------------------------------------
+# inheritance must be declared, and only from promoted rows
+# --------------------------------------------------------------------------
+
+@pytest.fixture(scope="module")
+def config_builder():
+    return _load("build_v3_screening_configs",
+                 ROOT / "scripts" / "build_v3_screening_configs.py")
+
+
+def test_no_row_inherits_a_feature_by_default(config_builder, registry):
+    """A screening row changes exactly one thing unless inheritance is declared.
+
+    The original matrix listed S1..S5 as a cumulative chain on the assumption
+    that each row promotes. S1-axis did not -- it lost to both its parent and
+    its matched control. A blind cumulative build would hand its axis feature to
+    S2, S3 and every later row, stacking a rejected change while each row still
+    reported only its own declared change.
+    """
+    rows = {row["id"]: row for row in config_builder.ROWS}
+    s2 = rows["S2-response"]
+    assert set(s2["model"]) == {"response_mode"}
+    assert "axis_features" not in s2["model"]
+
+
+def test_the_registry_records_s1_as_unpromoted_so_nothing_may_inherit_it(registry):
+    s1 = next(r for r in registry["rows"] if r["row_id"] == "S1-axis")
+    assert s1["disposition"] != "promoted"
+
+
+def test_a_standalone_control_cannot_be_inherited_from(config_builder):
+    m0 = next(r for r in config_builder.ROWS if r["id"] == "M0-fresh")
+    assert m0.get("standalone") is True
+
+
+def test_every_matrix_row_changes_exactly_one_thing(config_builder):
+    for row in config_builder.ROWS:
+        if row.get("standalone"):
+            continue
+        assert len(row["model"]) == 1, f"{row['id']} declares {row['model']}"
