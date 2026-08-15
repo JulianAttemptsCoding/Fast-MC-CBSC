@@ -93,11 +93,15 @@
       "variant": "v3_s1_axis"
     },
     {
+      "best_epoch": 0,
+      "best_validation_loss": 5.064650232585946,
       "causal_status": null,
       "color": "#c1121f",
       "declared_change": "bounded_positive_response_spline",
+      "delta_vs_parent": 0.5808826131667084,
+      "direction_vs_parent": "worse",
       "disposition": null,
-      "epochs_observed": 0,
+      "epochs_observed": 1,
       "evidence": {
         "distribution_diagnostics": false,
         "fixed_condition_visualizations": false,
@@ -106,8 +110,14 @@
         "validation_metric_battery": false
       },
       "evidence_gap": "not yet started",
+      "final_epoch": 0,
+      "final_generalization_gap": -0.08270505120110183,
+      "final_train_loss": 5.147355283787048,
+      "final_validation_loss": 5.064650232585946,
+      "first_epoch_validation_loss": 5.064650232585946,
       "horizon_epochs": 24,
       "optimizer_state_transferred": false,
+      "parent_validation_loss": 4.483767619419238,
       "row_id": "S2-response",
       "run_tag": "v3-s2-response",
       "scientific_question": "Does a bounded conditional spline with one zero atom beat the clamped mixture?",

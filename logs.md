@@ -10959,3 +10959,5 @@ timed, because that is the stage that matters.
 Verification: `pytest` **724 passed**; metrics catalog **131 graphics, PASS**.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+- S2-response e0: val 5.064650 best @ e0, 1/24 epochs, invariants 1/1 pass
+  new best for this row: 5.064650 (parent 4.483768, delta +0.580883)
