@@ -1,0 +1,111 @@
+{
+  "authorization": "measurement only; this does not authorize a training campaign",
+  "critic_batch": 4,
+  "d1_fits_declared_batch": false,
+  "decision": "D1 is resource_blocked on this device at the declared shapes",
+  "declared_values_not_adjusted": [
+    "critic batch size 4",
+    "generator batch size 6",
+    "replay capacity 65536",
+    "R1 gamma 1.0",
+    "spectral normalization",
+    "65 detector layers",
+    "107920 production edges"
+  ],
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 4090",
+  "first_failing_stage": "d1_critic_update_batch_4",
+  "forbidden_next_steps": [
+    "reducing batch size",
+    "sampling edges",
+    "removing message passing",
+    "replacing D1 with a layer-only critic",
+    "shrinking replay",
+    "removing R1 or spectral normalization",
+    "treating gradient accumulation as equivalent"
+  ],
+  "frozen_config": "prep/configs/frozen_calibrated_lr3e4_dicos-f-02.yaml",
+  "generator_batch": 6,
+  "geometry": {
+    "edge_ratio_vs_synthetic": 2.649,
+    "edges": 107920,
+    "expected_edges": 107920,
+    "expected_layers": 65,
+    "expected_nodes": 6790,
+    "is_production_graph": true,
+    "layers": 65,
+    "nodes": 6790,
+    "path": "prep/geometry_frozen",
+    "synthetic_preflight_edges": 40740
+  },
+  "gradient_isolation": {
+    "measured": false,
+    "reason": "declared shapes did not fit; isolation is measured only on a configuration that can actually run"
+  },
+  "kind": "cbsc-zdc-v3-d1-production-graph-preflight",
+  "nonfinite_guard": {
+    "measured": false
+  },
+  "permitted_next_steps": [
+    "remove accidental tensor retention and duplicate graph copies",
+    "reuse static geometry and edge tensors across updates",
+    "activation-checkpoint the two message blocks and the 65-token Transformer, proving fixed-batch logits and losses match within 1e-6 absolute and gradients within the existing float32 gradient tolerance",
+    "preserve R1 computation in stable float32"
+  ],
+  "r1_gamma": 1.0,
+  "recorded_at": "2026-08-15",
+  "schema_version": 1,
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED",
+  "stages": [
+    {
+      "device_free_gib": 23.03192138671875,
+      "device_total_gib": 23.5184326171875,
+      "peak_allocated_gib": 0.07203006744384766,
+      "peak_reserved_gib": 0.08984375,
+      "seconds": 0.23949270695447922,
+      "stage": "allocation_and_forward_smoke_batch_1",
+      "status": "ok"
+    },
+    {
+      "declared_values_not_reduced": [
+        "critic batch size",
+        "generator batch size",
+        "replay capacity",
+        "R1 gamma",
+        "spectral normalization",
+        "65 detector layers",
+        "edge count"
+      ],
+      "detail": "CUDA out of memory. Tried to allocate 24.00 MiB. GPU 0 has a total capacity of 23.52 GiB of which 4.69 MiB is free. Including non-PyTorch memory, this process has 23.51 GiB memory in use. Of the allocated memory 22.80 GiB is allocated by PyTorch, and 267.28 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segment",
+      "device_free_gib": 0.00457763671875,
+      "device_total_gib": 23.5184326171875,
+      "peak_allocated_gib": 22.7956280708313,
+      "peak_reserved_gib": 23.056640625,
+      "reason": "CUDA out of memory",
+      "stage": "d1_critic_update_batch_4",
+      "status": "RESOURCE_PREFLIGHT_FAIL"
+    },
+    {
+      "declared_values_not_reduced": [
+        "critic batch size",
+        "generator batch size",
+        "replay capacity",
+        "R1 gamma",
+        "spectral normalization",
+        "65 detector layers",
+        "edge count"
+      ],
+      "detail": "CUDA out of memory. Tried to allocate 74.00 MiB. GPU 0 has a total capacity of 23.52 GiB of which 42.69 MiB is free. Including non-PyTorch memory, this process has 23.47 GiB memory in use. Of the allocated memory 22.86 GiB is allocated by PyTorch, and 165.94 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segmen",
+      "device_free_gib": 0.04168701171875,
+      "device_total_gib": 23.5184326171875,
+      "peak_allocated_gib": 22.857478618621826,
+      "peak_reserved_gib": 23.021484375,
+      "reason": "CUDA out of memory",
+      "stage": "d1_generator_through_frozen_critic_batch_6",
+      "status": "RESOURCE_PREFLIGHT_FAIL"
+    }
+  ],
+  "status": "RESOURCE_PREFLIGHT_FAIL",
+  "supersedes": "audit/v3_resource_preflight_20260814.json D1 probes, which used a synthetic 40,740-edge graph",
+  "torch": "2.6.0+cu124"
+}

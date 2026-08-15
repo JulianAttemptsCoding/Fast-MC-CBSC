@@ -10532,3 +10532,71 @@ conditions.
 Audit twin: `audit/v3_validation_battery_20260815.json`.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+
+### 2026-08-15 (Phase E) -- D1 does NOT fit the production graph: RESOURCE PREFLIGHT FAIL
+
+The 2026-08-14 preflight reported a D1 peak of **14.85 GiB**, 63.1% of the card,
+and concluded `d1_fits_declared_batch: true`. That measurement used a
+**synthetic 40,740-edge graph**. Re-measured against the actual frozen
+production geometry -- **6,790 nodes, 107,920 edges, 65 layers**, verified by
+loading `prep/geometry_frozen` rather than generating shapes -- the answer
+reverses.
+
+    stage                                        status                   peak allocated
+    allocation_and_forward_smoke_batch_1         ok                          0.072 GiB
+    d1_critic_update_batch_4                     RESOURCE_PREFLIGHT_FAIL    22.796 GiB
+    d1_generator_through_frozen_critic_batch_6   RESOURCE_PREFLIGHT_FAIL    22.857 GiB
+
+Card total 23.518 GiB. Both failures are genuine CUDA OOM with **4.69 MiB** and
+**42.69 MiB** free respectively -- the critic update died trying to allocate a
+further 24 MiB, the generator update a further 74 MiB. The production graph
+carries **2.649x** the synthetic edge count, and the D1 critic runs edge-message
+blocks over every edge.
+
+**Nothing was reduced to obtain a pass.** Batch sizes 4 and 6, replay capacity,
+R1 gamma 1.0, spectral normalization, 65 layers and the full 107,920-edge graph
+are all declared values and all held. `RESOURCE_PREFLIGHT_FAIL` is the correct
+output, not a smaller configuration that would have answered a different
+question.
+
+**Decision, per the frozen branch rule: D1 is `resource_blocked`. Do not plan D1
+training on the 4090.** D2 remains independently eligible -- its measured memory
+path is distinct and tiny (0.098 GiB critic, 0.092 GiB generator on the
+synthetic graph), and it does not touch the edge set.
+
+The batch-1 forward smoke passing at 0.072 GiB places the failure squarely in
+the update path -- the backward graph across two edge-message blocks plus the
+lazy R1 second-order term -- not in allocation or the forward pass.
+
+**The one remaining implementation-equivalent lever is activation
+checkpointing** of the two message blocks and the 65-token Transformer.
+Ordinary retention removal and static-tensor reuse are already in force: the
+probe reuses `model.node_features`, `model.edge_index`, `model.edge_features`
+and `model.layer_index` across every update rather than rebuilding them. If
+checkpointing is attempted it must prove fixed-batch forward logits and losses
+match within **1e-6 absolute** and generator/critic gradients within the
+existing float32 gradient tolerance, and re-run the update-isolation and resume
+tests. It is not implemented and is its own authorized step.
+
+Explicitly forbidden as workarounds, unchanged: reducing batch size, sampling
+edges, removing message passing, replacing D1 with a layer-only critic,
+shrinking replay, removing R1 or spectral normalization, or treating gradient
+accumulation as equivalent. Each is a new declared critic contract needing its
+own scientific controls and owner approval.
+
+**A defect in the probe itself, found and fixed.** The first run crashed with an
+unhandled OOM before writing any report, because the gradient-isolation section
+ran unguarded after the staged attempts. A preflight whose whole purpose is to
+name the stage that failed must survive the failure it is measuring. Isolation
+is now skipped when the declared shapes do not fit, wrapped in its own OOM
+handler, and each stage empties the cache so an OOM names its own stage rather
+than inheriting the previous stage's retained memory.
+
+The cost plan must now be updated from measurement, not from the withdrawn
+14.85 GiB figure: **D1 has no valid cost on this hardware**, because it does not
+run on this hardware.
+
+Audit twin: `audit/v3_d1_production_graph_preflight_20260815.json`.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.
