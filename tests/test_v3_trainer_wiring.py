@@ -394,3 +394,79 @@ def test_axis_coordinates_are_measured_from_the_declared_vertex() -> None:
     far = CBSCZDC(far_geometry, config(ARCHITECTURE_V3, axis_features=True))
     p4 = batch()["p4_total_gev"]
     assert not torch.allclose(near.axis_for(p4), far.axis_for(p4))
+
+
+# ---------------------------------------------------------------------------
+# M0-fresh: the zero-axis ablation control
+# ---------------------------------------------------------------------------
+
+def test_zero_ablation_keeps_the_axis_path_and_zeroes_only_the_values() -> None:
+    """M0-fresh must differ from S1 only in what the axis columns carry."""
+    ablated = axis_model(axis_zero_ablation=True)
+    live = axis_model()
+    # Same architecture, same parameter count: a row that merely disabled axis
+    # features would differ in parameters too, so a loss difference could not be
+    # attributed to the geometry the axis encodes.
+    assert sum(p.numel() for p in ablated.parameters()) == sum(
+        p.numel() for p in live.parameters()
+    )
+    assert ablated.axis_enabled is True
+
+    p4 = torch.tensor([[150.0, 0.0, 0.0, 149.997]], dtype=torch.float32)
+    zero_axis = ablated.axis_for(p4)
+    real_axis = live.axis_for(p4)
+    assert zero_axis.shape == real_axis.shape
+    assert torch.count_nonzero(zero_axis) == 0
+    # The live axis must actually carry information, or the control is vacuous.
+    assert torch.count_nonzero(real_axis) > 0
+
+
+def test_zero_ablation_without_axis_features_fails_closed() -> None:
+    # axis_model() forces axis_features on, so build the config directly.
+    with pytest.raises(ValueError, match="requires model.axis_features"):
+        CBSCZDC(
+            geometry_with_positions(),
+            config(ARCHITECTURE_V3, axis_zero_ablation=True),
+        )
+
+
+def test_zero_ablation_is_off_by_default_under_v3() -> None:
+    assert axis_model().axis_zero_ablation is False
+
+
+def test_m0_is_standalone_and_does_not_leak_into_later_rows() -> None:
+    """A control must not become a feature every later row inherits.
+
+    The screening builder is cumulative by design: each row keeps what its
+    predecessors turned on. M0-fresh sits first in that list, so without the
+    standalone guard its axis_zero_ablation would be inherited by S1, S2 and
+    every row after them -- silently converting each into a zero-axis ablation
+    while still reporting itself under its original name.
+    """
+    import importlib.util
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location(
+        "build_v3_screening_configs", root / "scripts" / "build_v3_screening_configs.py"
+    )
+    builder = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(builder)
+
+    m0 = next(r for r in builder.ROWS if r["id"] == "M0-fresh")
+    assert m0["standalone"] is True
+    assert m0["model"]["axis_zero_ablation"] is True
+
+    # Replay the builder's cumulative accumulation exactly.
+    cumulative: dict = {}
+    inherited_by: dict[str, dict] = {}
+    for row in builder.ROWS:
+        if not row.get("standalone"):
+            cumulative.update(row["model"])
+        inherited_by[row["id"]] = dict(cumulative)
+    for row_id, inherited in inherited_by.items():
+        if row_id == "M0-fresh":
+            continue
+        assert "axis_zero_ablation" not in inherited, (
+            f"{row_id} inherited the M0 control's ablation flag"
+        )

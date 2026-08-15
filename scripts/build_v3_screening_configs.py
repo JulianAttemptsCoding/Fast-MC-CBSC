@@ -22,6 +22,22 @@ from cbsc_zdc.utils import sha256_file
 # Ordered exactly as specs/improvement_v3/experiment_matrix.csv declares them.
 ROWS = [
     {
+        # Not part of the original matrix. M0-fresh is the control that closes
+        # S1's causal question: S1 ran a fresh Adam while its comparator
+        # dicos-f-03 resumed one, so the two differ in optimizer state as well
+        # as in axis features. M0 holds the architecture, parameter count, input
+        # width, seed, data order, schedule and update count identical to S1 and
+        # changes only the information the axis columns carry.
+        "id": "M0-fresh",
+        "change": "zero_axis_control_fresh_optimizer",
+        "model": {"axis_features": True, "axis_zero_ablation": True},
+        "question": (
+            "How much of S1's shortfall is the fresh optimizer rather than the "
+            "axis features?"
+        ),
+        "standalone": True,
+    },
+    {
         "id": "S1-axis",
         "change": "incident_axis_features",
         "model": {"axis_features": True},
@@ -139,8 +155,8 @@ def build_row(parent: dict, row: dict, envelope: dict | None, cumulative: dict, 
         "v3_declared_change": row["change"],
         "v3_scientific_question": row["question"],
         "v3_features_enabled": {k: v for k, v in model.items() if k in
-                                ("axis_features", "response_mode", "first_layer_mode",
-                                 "count_mode", "activity_head_mode")},
+                                ("axis_features", "axis_zero_ablation", "response_mode",
+                                 "first_layer_mode", "count_mode", "activity_head_mode")},
     })
     return config
 
@@ -173,10 +189,16 @@ def main() -> int:
     cumulative: dict = {}
     written = []
     for row in ROWS:
-        cumulative.update(row["model"])
+        # A standalone row is a control, not a step in the cumulative chain.
+        # Without this guard M0-fresh's axis_zero_ablation would be inherited by
+        # S1 and every later row, silently converting each of them into a
+        # zero-axis ablation while still calling itself by the original name.
+        if not row.get("standalone"):
+            cumulative.update(row["model"])
         if args.only and row["id"] not in args.only:
             continue
-        config = build_row(parent, row, envelope, dict(cumulative), args.horizon, vertex)
+        inherited = {} if row.get("standalone") else dict(cumulative)
+        config = build_row(parent, row, envelope, inherited, args.horizon, vertex)
         path = args.output_dir / f"v3_{row['id'].replace('-', '_')}.yaml"
         path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8", newline="\n")
         written.append({

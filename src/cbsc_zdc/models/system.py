@@ -52,6 +52,16 @@ class CBSCZDC(nn.Module):
         # baseline must be able to run without them; turning them on by default
         # would fold S1's change into every later row and make it unattributable.
         self.axis_enabled=bool(self.is_v3 and m.get('axis_features',False))
+        # The ablation keeps the axis input path and its parameters, and zeroes
+        # only the values. It is meaningless without axis_features, so it fails
+        # closed rather than being silently ignored.
+        self.axis_zero_ablation=bool(m.get('axis_zero_ablation',False))
+        if self.axis_zero_ablation and not self.axis_enabled:
+            raise ValueError(
+                'model.axis_zero_ablation requires model.axis_features: the ablation '
+                'zeroes the axis values while keeping the axis input path, so without '
+                'the path there is nothing to zero'
+            )
         axis_dim=AXIS_FEATURE_DIM if self.axis_enabled else 0
         field_args=dict(node_dim=self.node_features.shape[1],edge_dim=self.edge_features.shape[1],cond_dim=cond_dim,n_layers=self.n_layers,hidden=hidden,blocks=int(m.get('graph_blocks',3)),heads=int(m.get('attention_heads',4)),context_layers=int(m.get('attention_layers',2)),mode=mode,axis_dim=axis_dim)
         self.support=SupportScoreField(**field_args); self.share=ShareFlowField(**field_args)
@@ -165,9 +175,22 @@ class CBSCZDC(nn.Module):
             raise ValueError('response envelope caps must be nondecreasing')
     def encode_condition(self,p4): return self.condition(p4_condition_features(p4))
     def axis_for(self,p4_total_gev):
-        """Per-event incident-axis node coordinates, or None when disabled."""
+        """Per-event incident-axis node coordinates, or None when disabled.
+
+        Under ``model.axis_zero_ablation`` the axis block is present with the
+        right shape but every value is zero.  That is the M0-fresh control: it
+        holds the architecture, the parameter count, the input width and the
+        whole optimizer trajectory identical to an axis row, and changes only
+        the *information* the axis columns carry.  A row that simply disables
+        axis features instead would differ in parameter count as well, so a loss
+        difference could not be attributed to the geometry the axis encodes.
+        """
         if not self.axis_enabled:
             return None
+        b=p4_total_gev.shape[0]
+        if self.axis_zero_ablation:
+            return torch.zeros(b,int(self.cell_positions_mm.shape[0]),4,
+                               device=p4_total_gev.device,dtype=p4_total_gev.dtype)
         direction=p4_total_gev[:,1:4]
         return axis_features(self.cell_positions_mm,self.generator_vertex_mm,direction,
                              {'s_scale_mm':self.axis_s_scale_mm,'r_scale_mm':self.axis_r_scale_mm}).to(p4_total_gev.dtype)
