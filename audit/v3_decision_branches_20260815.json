@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-decision-branches",
+  "recorded_at": "2026-08-15",
+  "purpose": "Fire the frozen decision branches mechanically against the evidence produced in phases A-E, and record which branch fired for each.",
+  "branches": [
+    {
+      "id": "8.1",
+      "question": "S1 scientific disposition",
+      "branch_fired": "the target interval overlaps zero / the declared target was never measured",
+      "reasoning": "S1's declared off-axis and topology targets were never measured: the row was launched through dicos_train.py rather than the campaign supervisor, so no checkpoints were staged into _diag/ and no distribution diagnostics exist for it. The only evidence available is validation loss, on which S1 is worse than both its parent (by 0.030286) and its matched control (by 0.022082). Under the frozen promotion rule the simpler parent is retained.",
+      "outcome": "keep axis features OFF; S1 closed as not promoted; the feature-specific causal question remains open",
+      "labels": ["S1_CONFIGURATION_NOT_PROMOTED", "S1_AXIS_CAUSAL_EFFECT_UNRESOLVED"],
+      "compute_spent_matching_optimizer_state": "none",
+      "what_would_reopen_it": "the M0-fresh control, which isolates the optimizer confound at one run's cost, or a battery evaluation of S1's retained best checkpoint against B0 on the fixed bank"
+    },
+    {
+      "id": "8.2",
+      "question": "the D3 tiny-geometry estimator-QA trigger",
+      "branch_fired": "trigger not evaluated, therefore not met",
+      "reasoning": "The trigger asks whether support topology remains significantly above its truth-half floor AND is a leading low-level C2ST feature family. Neither quantity has been measured on a real checkpoint: the topology metric had no path to the production validation bank until Phase C built one, and it has not yet been run. A trigger that has never been evaluated is not met.",
+      "outcome": "unit 16 stays unimplemented and deferred",
+      "label": "D3_TRIGGER_NOT_MET",
+      "what_would_evaluate_it": "running the Phase C battery on B0, which emits topology for generated and truth separately alongside the four C2ST families"
+    },
+    {
+      "id": "8.3",
+      "question": "D1 and D2 eligibility",
+      "branch_fired": "D1 fails production memory",
+      "reasoning": "Measured 2026-08-15 against the real frozen geometry (6,790 nodes, 107,920 edges, 65 layers). The D1 critic update at the declared batch 4 peaks at 22.796 GiB and OOMs with 4.69 MiB free on a 23.518 GiB card; the generator-through-frozen-critic update at batch 6 peaks at 22.857 GiB and OOMs. The batch-1 forward smoke passes at 0.072 GiB, placing the failure in the update path rather than in allocation.",
+      "outcome": "D1 is resource_blocked; do not plan D1 training on the 4090",
+      "label": "RESOURCE PREFLIGHT FAIL",
+      "d2_status": "independently eligible; its measured memory path is distinct (0.098 GiB critic, 0.092 GiB generator) and does not touch the edge set",
+      "d2_precondition": "D2 is preferred only if profile or correlation discrepancies are shown to be leading, which requires a battery evaluation first",
+      "d1_remaining_lever": "activation checkpointing of the two message blocks and the 65-token Transformer, requiring proof of 1e-6 absolute forward equivalence and float32-tolerance gradient equivalence, plus re-run update-isolation and resume tests. Not implemented; its own authorized step.",
+      "forbidden_workarounds": [
+        "reducing batch size", "sampling edges", "removing message passing",
+        "replacing D1 with a layer-only critic", "shrinking replay",
+        "removing R1 or spectral normalization",
+        "treating gradient accumulation as equivalent"
+      ]
+    },
+    {
+      "id": "8.4",
+      "question": "three seeds and publication",
+      "branch_fired": "B0 remains a single-seed development baseline; no three-seed campaign now",
+      "reasoning": "The frozen rule requires three seeds for each final empirical condition, not for a development baseline. Spending three full horizons on B0 purely to complete bookkeeping is explicitly not the branch, and no final condition has been selected yet.",
+      "outcome": "B0 stays single-seed (20260723); the three-seed protocol applies to whatever retained final condition and matched comparator are eventually chosen, before any final claim or test opening",
+      "publication": "a methods, protocol and negative-results draft may be prepared from validation evidence, must not claim final Geant4 fidelity, and must retain PHYSICS VALIDATION NOT ESTABLISHED"
+    }
+  ],
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

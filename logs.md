@@ -10600,3 +10600,123 @@ run on this hardware.
 Audit twin: `audit/v3_d1_production_graph_preflight_20260815.json`.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+
+### 2026-08-15 (Phase F) -- interpretation corrections, decision branches fired, next tranche prepared but not launched
+
+**Five corrections. Every measurement is unchanged; what changes is the status,
+the label, or the claim attached to it.** Dated audits are deliberately not
+rewritten -- AGENTS.md keeps immutable audits as provenance, including
+superseded labels -- so `audit/v3_interpretation_corrections_20260815.json` is
+the active carrier and the earlier files stand as history.
+
+**C1. The external C2ST corpus is below the frozen event minimum.** The
+2026-08-14 battery behind AUROC 0.843222 +/- 0.011668 used **8,000 examples**
+(4,000 Fast-MC + 4,000 Geant4) against `min_total_evaluation_events: 10000` in
+`configs/gates_primary.yaml`. Relabelled **`FOLLOW-UP QA -- BELOW FROZEN EVENT
+MINIMUM`**: retained as directional evidence, but it may **not** pass or fail
+the 0.65 diagnostic and may **not** select a row. **B0 is not unfrozen.**
+Baseline identity and metric sufficiency are separate statuses; `dicos-f-02`
+epoch 90 remains the immutable development baseline with its structural and
+lineage gate intact.
+
+**C2. S1 carries two conclusions, not one** -- already recorded in the screening
+registry. The ratio wording is fixed: 0.022082 / 0.000654 = 33.8 is **33.8x the
+mean-absolute run-to-run reference**, not a standard error, p-value, confidence
+interval, or 34-sigma significance. My earlier sigma-equivalent phrasing is
+withdrawn.
+
+**C3. Overfitting and loss/fidelity language.** Required: *a growing
+train-validation gap consistent with overfitting is established on the measured
+lineage*; *aggregate validation loss is not a sufficient row-selection
+statistic*; *the loss/fidelity relationship is under-resolved and not shown to
+be anti-correlated*. Not permitted: stating that nearest-neighbour memorization
+is established -- the metric has never been run, and the Phase C battery records
+`computed: false` without a declared train reference.
+
+**C4. C2ST definitions must not be mixed, and one of my claims was wrong.** The
+frozen 0.65 project diagnostic is named `max_high_level_c2st_auc`, and B0's
+value for that name is **0.892897**, not the hybrid 0.843222. The reported
+schedule improvement of -0.019193 is a **hybrid** quantity while the D1
+promotion rule names **low-level** C2ST. **The claim that the learning-rate
+correction "nearly cleared" D1's 0.02 gate is withdrawn**: comparing them
+requires proof that the same feature set, classifier family, corpus, split and
+delta definition were used, and no such proof exists. The D1/D2 required
+absolute improvement of 0.02 is **not** re-derived -- current evidence is
+insufficient, and any change is a separate owner decision with a versioned gate
+carrying old and new hashes and tests. The Phase C battery emits high-level,
+low-level, hybrid and profile-aware separately and never merges them.
+
+**C5. The zero-response excess cannot explain the AUROC.** With
+`AUC_zero_only = 0.5 + |p_fast - p_truth| / 2`, p_fast in 0.015..0.023 and
+p_truth 0.0097 give **0.50265..0.50665**. At most 0.507 against a measured
+0.843, so the marginal zero rate alone is not the driver. My earlier question
+asking whether it was a plausible dominant driver was ill-posed and is
+withdrawn. A second zero atom remains a structural defect worth repairing, which
+is S2's justification -- as a structural repair, not an AUROC fix.
+
+### Decision branches fired
+
+- **8.1 S1** -- branch: *the declared target was never measured*. S1 was launched
+  through `dicos_train.py` rather than the campaign supervisor, so no
+  distribution diagnostics exist for it; the only evidence is validation loss,
+  on which it loses to both references. Axis stays **off**. No compute spent
+  matching optimizer state.
+- **8.2 D3** -- **`D3_TRIGGER_NOT_MET`**. The trigger needs support topology
+  measured against its truth-half floor and ranked among low-level C2ST feature
+  families. Neither had a path to the production bank until Phase C built one,
+  and it has not been run. A trigger never evaluated is not met. Unit 16 stays
+  unimplemented and deferred.
+- **8.3 D1/D2** -- branch: *D1 fails production memory*. **D1 is
+  `resource_blocked`; do not plan D1 training on the 4090.** D2 remains
+  independently eligible, but only becomes preferred once profile or correlation
+  discrepancies are shown to be leading, which needs a battery run first.
+- **8.4 seeds and publication** -- B0 stays a **single-seed development
+  baseline**. Three full horizons are explicitly not spent on it for
+  bookkeeping. The three-seed protocol applies to the eventual retained final
+  condition and its matched comparator, before any final claim or test opening.
+
+### The next tranche is prepared and costed, and none of it is launched
+
+Ordered, with **high** projections governing the budget rule:
+
+    1. M0-fresh                    5.2 h central / 6.8 h high    cumulative high  6.8
+    2. S2-response                 5.4 / 7.0                                     13.8
+    3. S3-first                    5.4 / 7.0                                     20.8
+    4. R1-data4x-fixed-updates     5.6 / 7.5                                     28.3
+
+**These are predictions, not measurements.** They assume the measured v2.2 rate
+of 779.6 s/epoch because none of these rows touches node features -- unlike S1,
+which measured **2.23x** slower. The first epoch of the first launched row is a
+cost checkpoint: if the projection overruns, stop cleanly and re-cost.
+
+**M0-fresh is the cheapest experiment that can close the S1 causal question.**
+It differs from S1 only by replacing computed axis values with zero axis values,
+holding seed, data order, bank, batch, accumulation, schedule, solver steps,
+update count and stopping rule. One run, not two reruns. If it lands near
+dicos-f-03's 4.491971 the fresh optimizer explains most of S1's shortfall; if it
+lands near S1's 4.514053 the optimizer is the dominant term and axis is not the
+story; if near B0, both cost something.
+
+**S3's parent rule is explicit:** if S2 promotes, S3 forks from S2; if S2 does
+not promote, S3 is an isolated B0/M0 plus hierarchical-first-layer row. A failed
+feature is not stacked merely because the original matrix listed a chain.
+
+**R1-data4x** exists because a growing train-validation gap is established and
+**no row in the original 28-row matrix increases data**. It holds optimizer
+updates and examples seen fixed against M0-fresh; epochs are not comparable
+across differently sized banks and must not be compared.
+
+Budget rule: for a numeric budget B, take the **longest prefix whose cumulative
+HIGH projection is at or below B**. Central estimates may never justify an
+overrun. D1 and D2 never enter this tranche automatically, and the original
+28-row matrix is unmodified.
+
+Verification: `pytest` **678 passed**; metrics catalog **131 graphics, PASS**, no
+declared gap, reaching epoch 114.
+
+Audit twins: `audit/v3_interpretation_corrections_20260815.json`,
+`audit/v3_decision_branches_20260815.json`,
+`audit/v3_prepared_tranche_20260815.json`.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.

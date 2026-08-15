@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-prepared-tranche",
+  "recorded_at": "2026-08-15",
+  "authorization": "NONE OF THESE ROWS IS LAUNCHED. This prompt authorized 0 new training-campaign GPU-hours. Each row below is prepared and costed and awaits a separate numeric GPU-hour budget from the owner.",
+  "original_matrix_unmodified": true,
+  "original_matrix": "specs/improvement_v3/experiment_matrix.csv",
+  "original_matrix_sha256": "ecbdf76baa5340615a9976041670255481335a958be743f71a82156396e579a2",
+  "parent_plan": "specs/improvement_v3/executable_plan_20260814.csv",
+  "parent_plan_sha256": "a84a0d8826d435b2f3b37eaf40ecb1d7cd1d38904e5c4b0df14bd689dd5dfdfd",
+  "baseline": {
+    "label": "B0",
+    "run_tag": "dicos-f-02",
+    "epoch": 90,
+    "validation_loss": 4.483767619419238,
+    "frozen_config": "prep/configs/frozen_calibrated_lr3e4_dicos-f-02.yaml",
+    "frozen_config_sha256": "116bc8c220b07ce54ae07196bdd6ed8e835775c8c937182a209a799dc94ae9c5",
+    "checkpoint_sha256": "491284c7423f365230d34b0443f95aa4888ec770bdc673c4c979897bad8acbce"
+  },
+  "throughput_basis": {
+    "measured_v2_2_seconds_per_epoch_4090_batch6_pilot": 779.6,
+    "measured_s1_axis_seconds_per_epoch": 1735.8,
+    "axis_overhead_factor": 2.23,
+    "status_of_row_estimates": "PREDICTION, not measurement. S2, S3, M0 and R1 leave axis_features off and change per-event or per-layer heads rather than node features, so they should run near the v2.2 rate. No row below has been timed. The first epoch of the first launched row is a cost checkpoint: if the projected total exceeds the authorized budget, stop cleanly and re-cost.",
+    "why_the_earlier_5_2_hour_figure_was_wrong": "it extrapolated the v2.2 rate to a row that adds four columns across 6,790 nodes on a 107,920-edge graph; S1 measured 2.23x slower"
+  },
+  "rows": [
+    {
+      "order": 1,
+      "id": "M0-fresh",
+      "purpose": "the cheapest experiment that can close the S1 causal question",
+      "declared_change": "none; a no-axis fresh-optimizer control",
+      "specification": [
+        "starts from the same immutable B0 weights and the same verified v2->v3 migration used for S1",
+        "expanded axis columns present but zero, and every v3 feature mode disabled",
+        "fresh Adam, same seed 20260723, same data order, same pilot bank, same batch 6 and accumulation 4, same LR and cosine schedule, same solver steps, same update count, same stopping rule as S1",
+        "differs from S1 ONLY by replacing computed axis values with zero axis values",
+        "checkpoint format 4, now that the Phase B save-path fix is in"
+      ],
+      "why_this_and_not_two_reruns": "one run isolates the optimizer confound. Re-running both S1 and dicos-f-03 under matched optimizer policy would cost two runs and answer the same question.",
+      "reads": "if M0-fresh lands near dicos-f-03's 4.491971, the fresh optimizer explains most of S1's shortfall and the axis feature is close to neutral. If it lands near S1's 4.514053, the optimizer is the dominant term and axis is not the story. If it lands near B0, both the optimizer and the axis feature cost something.",
+      "horizon_epochs": 24,
+      "projected_gpu_hours_central": 5.2,
+      "projected_gpu_hours_high": 6.8,
+      "status": "PREPARED, NOT LAUNCHED"
+    },
+    {
+      "order": 2,
+      "id": "S2-response",
+      "declared_change": "bounded_positive_response_spline",
+      "model": {"response_mode": "spline"},
+      "target_families": ["zero-cause decomposition", "positive-response distribution"],
+      "requires": "the train-only 25-GeV response envelope, already built: 26,624 events, all twelve bins populated, monotone caps 9.392 -> 63.2215 GeV, zero training exceedances, sha256 722e5acf...",
+      "scientific_motivation": "the v2.2 clamped mixture creates a second zero atom; the bounded conditional spline removes it. The Phase C battery now measures that directly by splitting the zero rate into the visibility hurdle and the positive branch, rather than inferring it from the marginal rate.",
+      "note": "the marginal zero-rate excess cannot itself explain AUROC 0.843 -- the zero-only bound is at most 0.507 -- so S2 is justified as a structural repair, not as an AUROC fix",
+      "parent": "B0 or M0-fresh, whichever the owner selects; NOT S1",
+      "horizon_epochs": 24,
+      "projected_gpu_hours_central": 5.4,
+      "projected_gpu_hours_high": 7.0,
+      "status": "PREPARED, NOT LAUNCHED"
+    },
+    {
+      "order": 3,
+      "id": "S3-first",
+      "declared_change": "hierarchical_ecal_hcal_first",
+      "model": {"first_layer_mode": "hierarchical"},
+      "target_families": ["ECAL-start prevalence and calibration", "layer-0 energy"],
+      "scientific_motivation": "the underproduced ECAL-start prevalence is a named, measured defect, which gives S3 a physics-motivated prior the other rows lack",
+      "parent_rule": "if S2 promotes, S3's parent is S2. If S2 does not promote, S3 must be an isolated B0/M0 plus hierarchical-first-layer row -- NOT S2+S3. A failed feature is not stacked merely because the original matrix listed a chain.",
+      "horizon_epochs": 24,
+      "projected_gpu_hours_central": 5.4,
+      "projected_gpu_hours_high": 7.0,
+      "status": "PREPARED, NOT LAUNCHED"
+    },
+    {
+      "order": 4,
+      "id": "R1-data4x-fixed-updates",
+      "declared_change": "training data scale at fixed optimizer updates",
+      "purpose": "test whether data diversity is higher value than S4/S5, given that a growing train-validation gap is established and no row in the original matrix increases data",
+      "specification": [
+        "parent, initialization, architecture and optimizer policy match M0-fresh",
+        "a deterministic train-only bank of 106,496 events: all 26,624 pilot-training IDs plus 79,872 further canonical-train IDs chosen by frozen hash order and energy stratification",
+        "validation manifest remains the fixed 10,000-pair bank from Phase C",
+        "EXACTLY the same number of optimizer updates and examples seen as M0-fresh",
+        "epochs are NOT comparable across differently sized banks and must not be compared"
+      ],
+      "compares": ["generalization gap", "target and guard metrics", "C2ST by family", "timing", "truth-half floors"],
+      "reads": "if data4x improves validation and fidelity and reduces the generalization gap, prioritize data scaling before S4/S5 or any critic. If it does not, preserve the negative result and return to targeted structural rows.",
+      "horizon": "fixed updates matching M0-fresh, approximately 6 passes over the 4x bank",
+      "projected_gpu_hours_central": 5.6,
+      "projected_gpu_hours_high": 7.5,
+      "note": "wall-clock is set by the update count, not the bank size; the extra cost is loader pressure only",
+      "status": "PREPARED, NOT LAUNCHED"
+    }
+  ],
+  "budget_prefix_rule": {
+    "statement": "For a future numeric budget B in GPU-hours, the campaign builder must select the LONGEST PREFIX of the ordered tranche whose cumulative HIGH projection is <= B. Central estimates may never be used to justify overrunning the budget.",
+    "cumulative_high_gpu_hours": [
+      {"prefix": "M0-fresh", "rows": 1, "cumulative_high": 6.8},
+      {"prefix": "M0-fresh + S2-response", "rows": 2, "cumulative_high": 13.8},
+      {"prefix": "+ S3-first", "rows": 3, "cumulative_high": 20.8},
+      {"prefix": "+ R1-data4x-fixed-updates", "rows": 4, "cumulative_high": 28.3}
+    ],
+    "cumulative_central_gpu_hours": [5.2, 10.6, 16.0, 21.6],
+    "minimum_budget_for_each_prefix_gpu_hours": {"1_row": 6.8, "2_rows": 13.8, "3_rows": 20.8, "4_rows": 28.3},
+    "wall_clock_note": "the whole tranche is roughly 28 GPU-hours high, about 1.2 days on the single 4090 running back to back",
+    "monetary_note": "DiCOS is accounted in ASGC SRUs and is cheap: docs/GPU_BENCHMARKS.md is the single source of truth, and a 24-epoch run is roughly USD $1.60 on the 3090. Cost is not the binding constraint at this scale; wall-clock and GPU availability are.",
+    "critics_excluded": "D1 and D2 are separate multi-day budget decisions and NEVER enter this tranche automatically. D1 is additionally resource_blocked: it does not run on this hardware at the declared shapes.",
+    "s4_s5_gate": "S4 and S5 are prepared only after the production battery identifies their target families as leading discrepancies"
+  },
+  "not_authorized_without_a_separate_decision": [
+    "any row above",
+    "D1 (resource_blocked) and D2 training",
+    "any full-data or FINAL row",
+    "the three-seed final protocol",
+    "opening the test split",
+    "paid cloud compute",
+    "publication"
+  ],
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

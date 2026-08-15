@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-interpretation-corrections",
+  "recorded_at": "2026-08-15",
+  "purpose": "Correct the interpretation of existing measurements without altering any measurement. Every number below is unchanged; what changes is the status, the label, or the claim attached to it. Dated audits are not rewritten -- AGENTS.md keeps superseded strings in immutable audits as provenance -- so this file is the active carrier and the earlier files stand as history.",
+  "corrections": [
+    {
+      "id": "C1",
+      "topic": "the external C2ST corpus is below the frozen event minimum",
+      "measurement_unchanged": {
+        "run_tag": "dicos-f-02",
+        "epoch": 90,
+        "hybrid_c2st_auroc": 0.843222,
+        "hybrid_c2st_auroc_std": 0.011668,
+        "high_level_c2st_auroc": 0.892897,
+        "condition_only_control": 0.5,
+        "energy_relative_rmse": 0.210445,
+        "angular_median_mrad": 9.4417,
+        "corpus_examples": 8000,
+        "corpus_composition": "4000 Fast-MC + 4000 Geant4",
+        "evaluator_seeds": 3
+      },
+      "defect": "8,000 total examples is below the frozen min_total_evaluation_events of 10,000 in configs/gates_primary.yaml.",
+      "new_label": "FOLLOW-UP QA -- BELOW FROZEN EVENT MINIMUM",
+      "consequences": [
+        "retained as directional evidence",
+        "may NOT be used to pass or fail the 0.65 diagnostic",
+        "may NOT be used to select a row",
+        "superseded by the gate-compliant fixed 10,000-pair battery built in Phase C"
+      ],
+      "explicitly_not_done": "B0 is NOT unfrozen or rewritten. Baseline identity and metric sufficiency are separate statuses: dicos-f-02 epoch 90 remains the immutable development baseline with its structural and lineage gate intact."
+    },
+    {
+      "id": "C2",
+      "topic": "S1 carries two distinct conclusions, not one",
+      "measurement_unchanged": {
+        "s1_best_validation_loss": 4.514053317498672,
+        "parent_validation_loss": 4.483767619419238,
+        "control_validation_loss": 4.491971,
+        "delta_vs_parent": 0.030285698079434376,
+        "delta_vs_control": 0.022082317498671955
+      },
+      "labels": {
+        "S1_CONFIGURATION_NOT_PROMOTED": "the completed configuration was worse in validation loss than the available control and remains off in downstream configs unless later evidence satisfies the frozen promotion rule",
+        "S1_AXIS_CAUSAL_EFFECT_UNRESOLVED": "S1 used a fresh Adam while dicos-f-03 resumed optimizer state, and S1 was selected on validation loss alone even though the frozen v3 plan required off-axis/topology targets, paired bootstrap, guard metrics, and C2ST"
+      },
+      "wording_required": "0.022082 / 0.000654 = 33.8 is 33.8x the mean-absolute run-to-run reference. It is NOT a standard error, a p-value, a confidence interval, or a 34-sigma significance.",
+      "wording_withdrawn": "an earlier internal summary described the ratio as sigma-equivalent; that phrasing is withdrawn",
+      "not_permitted": "deleting S1 or relabelling it positive. It is valid negative evidence for the combined executed configuration."
+    },
+    {
+      "id": "C3",
+      "topic": "overfitting and loss/fidelity language",
+      "measurement_unchanged": {
+        "gap_vs_epoch_r": 0.56,
+        "gap_vs_epoch_t": 5.46,
+        "n": 67,
+        "train_total_improvement": 0.13436,
+        "validation_total_improvement": 0.02324,
+        "ratio": 5.8
+      },
+      "required_wording": [
+        "a growing train-validation gap consistent with overfitting is established on the measured lineage",
+        "aggregate validation loss is not a sufficient row-selection statistic",
+        "loss/fidelity relationship is under-resolved and not shown to be anti-correlated"
+      ],
+      "not_permitted": [
+        "stating that nearest-neighbour memorization is established -- the memorization metric has not been run, and the Phase C battery records computed:false without a declared train reference",
+        "restoring the withdrawn claim that lower loss made the physics worse"
+      ]
+    },
+    {
+      "id": "C4",
+      "topic": "C2ST definitions must not be mixed",
+      "facts": {
+        "frozen_project_diagnostic_name": "max_high_level_c2st_auc",
+        "frozen_project_diagnostic_value": 0.65,
+        "b0_value_for_that_name": 0.892897,
+        "b0_hybrid_value": 0.843222,
+        "schedule_delta_reported": -0.019193,
+        "schedule_delta_family": "hybrid",
+        "d1_promotion_rule_family": "low-level"
+      },
+      "withdrawn_claim": "that the learning-rate correction 'nearly cleared' the D1 0.02 acceptance gate",
+      "why_withdrawn": "the -0.019193 delta is a hybrid-C2ST quantity while the D1 promotion rule names low-level C2ST. Comparing them requires proof that the same feature set, classifier family, corpus, split and delta definition were used, and no such proof exists.",
+      "forward_requirement": "report high-level, low-level, hybrid and profile-aware C2ST separately, and compare each only with its matching frozen gate or control. The Phase C battery emits exactly these four families and never merges them.",
+      "gate_unchanged": "the D1/D2 required absolute C2ST improvement of 0.02 is NOT re-derived. Current evidence is insufficient. Any future change is a separate owner decision with a versioned gate carrying old and new hashes and tests."
+    },
+    {
+      "id": "C5",
+      "topic": "the zero-response excess cannot explain the AUROC",
+      "bound": "AUC_zero_only = 0.5 + |p_fast - p_truth| / 2",
+      "inputs": {"p_fast_range": [0.015, 0.023], "p_truth": 0.0097},
+      "result_range": [0.50265, 0.50665],
+      "conclusion": "the marginal zero-rate difference alone yields at most AUROC 0.507 and therefore cannot explain the measured 0.843. It may still be a useful joint feature.",
+      "still_a_defect": "a second zero atom remains a structural model defect worth repairing, which is what the S2 bounded response spline addresses.",
+      "withdrawn_question": "an earlier internal question asked whether the zero excess was a plausible dominant driver of AUROC 0.843; the bound above answers no, and the question is withdrawn as ill-posed.",
+      "implementation": "the Phase C battery decomposes the zero rate into the visibility hurdle and the positive branch, so the S2 target is measured directly rather than inferred from the marginal rate."
+    }
+  ],
+  "carriers_updated": [
+    "audit/current_external_metrics.json -- adds the below-minimum label and the selection prohibition",
+    "docs/HANDOFF.md -- section 4 wording",
+    "exhibition/data/v3_screening_rows.json -- already records both S1 dispositions",
+    "logs.md -- correction entry appended"
+  ],
+  "carriers_deliberately_not_rewritten": [
+    "audit/v3_b0_gate_20260814.json",
+    "audit/lr_anneal_result_20260813_terminal_analysis.json",
+    "audit/v3_software_implementation_terminal.json"
+  ],
+  "reason_for_not_rewriting": "AGENTS.md keeps immutable dated audits as provenance, including superseded field names and labels. Rewriting them would erase the record of what was believed when a decision was taken.",
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

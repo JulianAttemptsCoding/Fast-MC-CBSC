@@ -1,4 +1,6 @@
 {
+  "baseline_identity_unaffected": "dicos-f-02 epoch 90 remains the immutable development baseline; baseline identity and metric sufficiency are separate statuses",
+  "below_frozen_event_minimum": true,
   "cbsc_test_events_used": 0,
   "checkpoint_sha256": "643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035",
   "controller": {
@@ -34,15 +36,23 @@
     "run_tag": "dicos-f-02",
     "schema_version": 1
   },
+  "correction_record": "audit/v3_interpretation_corrections_20260815.json C1",
   "epoch": 90,
+  "evaluator_corpus_examples": 8000,
   "family": "calibrated_lr3e4",
+  "frozen_minimum_total_evaluation_events": 10000,
   "kind": "cbsc-zdc-current-external-metrics-state",
   "local_manifest": "exhibition/current/external_metrics/source_data/dicos-f-02/epoch_0090/manifest.json",
+  "may_pass_or_fail_the_065_diagnostic": false,
+  "may_select_a_row": false,
+  "qa_label": "FOLLOW-UP QA -- BELOW FROZEN EVENT MINIMUM",
   "release_pending": true,
+  "retained_as": "directional evidence only",
   "run_tag": "dicos-f-02",
   "schema_version": 1,
   "selection_role": "descriptive only; may not select or tune CBSC",
   "source_split": "validation",
   "status": "complete",
+  "superseded_by": "the gate-compliant fixed 10,000-pair validation bank and battery (src/cbsc_zdc/eval/v3_battery.py), built 2026-08-15 and not yet run against this checkpoint",
   "validation_loss": 4.483767619419238
 }
