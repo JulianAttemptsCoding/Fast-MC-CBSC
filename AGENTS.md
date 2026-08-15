@@ -32,14 +32,29 @@ The DiCOS shared filesystem is multi-tenant: other groups' data and other
 people's work live beside this project's. These limits were set by the data
 owner and are not negotiable by an agent.
 
+**Complete DiCOS read allowlist — exactly two locations.** This project may
+read, list, inspect, search, stat, or hash only:
+
+- `/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/**`;
+- the single immutable source file
+  `/dicos_ui_home/julianjuan/sharedfs/work/IOP/ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neutron_All.root`.
+
+Everything else on the DiCOS filesystem is out of scope, reading included. Do
+not inspect directory listings, metadata, contents, hashes, symlink targets, or
+filenames anywhere else. In particular, `$HOME`, `/ceph`, `/volumes`, `/tmp`,
+every other directory under `sharedfs/work/IOP/`, and the parent directory of
+the permitted ROOT file are unreadable to this project. Invoking installed
+runtime software is not permission to enumerate or inspect its containing
+directory or any other system file.
+
 17. **One writable location.** Create, edit, move, or delete files *only* under
     `/dicos_ui_home/<account>/sharedfs/work/IOP/julian/Fast MC CBSC`
     (account `julianjuan`; the same directory appears in JupyterLab as
     `sharedfs/work/IOP/julian/Fast MC CBSC`). Everything else on that host —
     including `$HOME` itself, `/ceph`, `/volumes`, and every other directory
-    under `sharedfs/work/IOP/` — is read-only to this project.
-18. **Exactly one permitted data source, and it is immutable.** The only file
-    this project may read is
+    under `sharedfs/work/IOP/` — is unreadable and unwritable to this project.
+18. **Exactly one permitted external data source, and it is immutable.** The
+    only external data file this project may read is
     `/dicos_ui_home/<account>/sharedfs/work/IOP/ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neutron_All.root`.
     Read it and nothing else. Never write, move, rename, truncate,
     re-permission, or delete it, and never write any output into that
@@ -50,10 +65,10 @@ owner and are not negotiable by an agent.
     older 15k/100k/135k files beside it. Do not open, hash, inspect, or import
     them. `scripts/dicos.py` refuses any command that so much as names the
     transformed file.
-20. `scripts/dicos.py` enforces 17 and 18 client-side and must not be weakened
-    to work around them. If a task appears to require writing outside the
-    permitted directory, that is a signal to stop and ask, not to bypass the
-    guard.
+20. `scripts/dicos.py` enforces the read and write allowlists client-side and
+    must not be weakened or bypassed. If a task appears to require any read or
+    write outside the two readable locations, stop; do not inspect the path to
+    diagnose it and do not work around the guard.
 21. `_transformed.root` is a dense-grid rebinning with a different geometry
     (6,400 vs 6,390 HCAL channels) and four fewer events. It is incompatible
     with the frozen geometry and must not be used for training, conversion, or

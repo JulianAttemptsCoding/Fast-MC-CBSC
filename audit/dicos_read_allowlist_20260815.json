@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "kind": "dicos-read-allowlist-enforcement-audit",
+  "timestamp_utc": "2026-08-15T23:13:50.2573907Z",
+  "source_commit": "9d2d8d12c1e762713ce5860a823dd460d43e1ab7",
+  "environment": {
+    "host": "Windows workstation",
+    "python": "3.13.1",
+    "working_copy": "C:/Users/Julia/Desktop/coding/ASIoP/Fast MC CBSC"
+  },
+  "directive": {
+    "readable_project_tree": "/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/**",
+    "readable_immutable_file": "/dicos_ui_home/julianjuan/sharedfs/work/IOP/ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neutron_All.root",
+    "all_other_dicos_paths": "unreadable and unwritable",
+    "test_split_used": false
+  },
+  "implementation": [
+    "Made the exact two-entry read allowlist explicit in AGENTS.md, the focused operating rules, backend guide, handoff, pipeline guide, and walkaway runbook.",
+    "Added read-scope enforcement to ls, get, exec, start, setup, verify, and info command paths in scripts/dicos.py.",
+    "Rejected explicit absolute paths outside scope, parent traversal, transformed or other dataset files, and HOME/tilde expansion.",
+    "Replaced process-filesystem inspection in active campaign, status, verification, and external-metric helpers with ps output or pid liveness checks; process-tree checks fail closed when ps is unavailable.",
+    "Kept runtime invocation distinct from directory inspection: resolving an installed executable does not authorize listing, opening, hashing, or statting its containing system path."
+  ],
+  "failed_attempts": [
+    {
+      "command": "PYTHONPATH=src python -m pytest -q tests/test_dicos_client.py",
+      "result": "8 failed, 67 passed",
+      "diagnosis": "The first absolute-path token regular expression matched slash fragments inside ordinary relative paths such as prep/data; one pre-existing test also encoded the now-forbidden parent traversal and another encoded an out-of-scope system-file read.",
+      "correction": "Required a non-word/non-dot boundary before an absolute path, retained strict parent-traversal rejection, and updated the stale expectations without weakening the allowlist."
+    },
+    {
+      "command": "Get-Date -AsUTC -Format o",
+      "result": "exit 1",
+      "diagnosis": "The installed PowerShell does not provide the AsUTC parameter.",
+      "correction": "Used [DateTime]::UtcNow.ToString('o')."
+    }
+  ],
+  "verification": [
+    {
+      "command": "PYTHONPATH=src python -m pytest -q tests/test_dicos_client.py",
+      "result": "74 passed"
+    },
+    {
+      "command": "PYTHONPATH=src python -m pytest -q tests/test_dicos_client.py tests/test_dicos_external_metrics_controller.py",
+      "result": "83 passed"
+    },
+    {
+      "command": "python -m compileall -q scripts src",
+      "result": "exit 0"
+    },
+    {
+      "command": "PYTHONPATH=src python -m pytest -q tests/test_dicos_client.py tests/test_dicos_external_metrics_controller.py tests/test_qa_policy.py",
+      "result": "87 passed"
+    },
+    {
+      "command": "PYTHONPATH=src python -m pytest -q",
+      "result": "768 passed, 64 warnings"
+    },
+    {
+      "command": "git diff --check",
+      "result": "exit 0; line-ending notices only"
+    },
+    {
+      "command": "python exhibition/build_metrics_catalog.py",
+      "result": "131 graphics, PASS; all PNGs decoded, SVGs parsed, manifest hashes matched, accepted summaries agreed, and current exhibition reached latest observed epoch 114"
+    }
+  ],
+  "output_sha256": {
+    "AGENTS.md": "02db30012fbfcc04106d40fe3a73bfd306645b2a0c17797a44ec1863c6aa95a5",
+    "docs/FOCUSED_OPERATING_RULES.md": "18b624417d700bcc3b8c07e495f59af1100a42c8d679ef2fa5b329452ccede53",
+    "docs/DICOS_BACKEND.md": "fd73821d5641fba231084acf45d8be5bd053d4be5228f23dbf74ceaf9bd005a7",
+    "docs/HANDOFF.md": "0dff7a03b0f05fb27ecdf42f35b888878eaba4660e8e0918c1cafaef4d4ebe6c",
+    "docs/PIPELINES.md": "f67f9ded6ceb560267d12f8e8e0b898c7c84508ce340d5a53e7cd43bb4fe9f85",
+    "docs/WALKAWAY_RUNBOOK.md": "995db54d2be15d2475d8a0d218f1bf5347dec3034be8174a672033169d80a79c",
+    "scripts/dicos.py": "370fbe91e7c86f754b3535deaa061450976bee0716c27e4cc18b8d0ef7120941",
+    "scripts/dicos_campaign.py": "b8ed81f66ad6822f592e2bb50b43aa49e93372b10a2f03dc44b55568828454ab",
+    "scripts/dicos_external_metrics_controller.py": "172d67f4b296bdd220ea042023b7b16fec88985c2e4a342dfce2d50903752a51",
+    "scripts/v3_status.py": "962862281717918b0b764d158e53c1e2b83b748a16684d56b873bd31beaa4b33",
+    "tests/test_dicos_client.py": "c22c64dda98d764d4d0eaddc80c11754df0c7b1962ec613c7d585fd47084c9f2"
+  },
+  "live_state_at_verification": {
+    "watcher_pid": 17320,
+    "watcher_lock_alive": true,
+    "m0_fresh": "complete; best validation loss 4.513572 at epoch 19",
+    "s1_axis": "complete; neutral",
+    "s2_response": "running; epoch 4 imported; best validation loss 4.988013 at epoch 4",
+    "s3_first": "queued"
+  },
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

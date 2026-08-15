@@ -109,7 +109,7 @@ def _stage_state(base: str, stage: str) -> dict:
         f"echo EXIT=$(cat {shlex.quote(exit_path)}); "
         f"elif [ -f {shlex.quote(pid_path)} ]; then "
         f"p=$(cat {shlex.quote(pid_path)}); "
-        'if [ -r "/proc/$p/cmdline" ]; then echo RUNNING=$p; '
+        'if kill -0 "$p" 2>/dev/null; then echo RUNNING=$p; '
         "else echo STALE_PID=$p; fi; else echo NOT_STARTED; fi"
     )
     output = dicos(["exec", command]).strip()

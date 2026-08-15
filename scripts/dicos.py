@@ -26,6 +26,8 @@ failure.
 Access scope is enforced client-side and mirrors the contract in AGENTS.md
 17-21:
 
+  * reads are allowlisted to the configured workdir and exact immutable
+    `data_file`; every other filesystem path is out of scope;
   * `put`/`mkdir` refuse any destination outside the configured workdir,
     after normalising `..` so traversal cannot slip past;
   * `exec` refuses commands that mutate `data_file`, the one permitted dataset;
@@ -166,6 +168,7 @@ class Dicos:
 
     def ls(self, path: str) -> list[dict]:
         target = self._resolve(path)
+        self._assert_readable(target)
         r = self.session.get(
             f"{self.base}/api/contents/{self._contents(target)}",
             params={"content": "1"}, timeout=60,
@@ -178,6 +181,7 @@ class Dicos:
 
     def get(self, remote: str, local: Path) -> int:
         target = self._resolve(remote)
+        self._assert_readable(target)
         r = self.session.get(
             f"{self.base}/api/contents/{self._contents(target)}",
             params={"content": "1"}, timeout=300,
@@ -287,6 +291,19 @@ class Dicos:
             f"  target:  {target}\n  allowed: {self.workdir}/**"
         )
 
+    def _assert_readable(self, target: str) -> None:
+        """Enforce the two-entry filesystem read allowlist."""
+        if target == self.workdir or target.startswith(self.workdir + "/"):
+            return
+        if self.data_file and target == self.data_file:
+            return
+        raise SystemExit(
+            "refusing to read outside the permitted DiCOS allowlist\n"
+            f"  target: {target}\n"
+            f"  allowed tree: {self.workdir}/**\n"
+            f"  allowed file: {self.data_file}"
+        )
+
     #: Shell constructs that create or destroy files. Matched against absolute
     #: paths only; relative paths run with cwd inside the workdir and are fine.
     _WRITE_VERBS = (
@@ -360,6 +377,58 @@ class Dicos:
                 "narrow the command."
             )
 
+    def _assert_reads_stay_in_scope(self, command: str) -> None:
+        """Reject explicit filesystem references outside the read allowlist.
+
+        A shell cannot be fully sandboxed by text inspection, so AGENTS.md
+        remains binding. This guard fails closed on the common accidental
+        escapes: absolute path operands, home-relative paths, and parent
+        traversal. Installed executable lookup and dynamic loading are runtime
+        infrastructure, not permission to inspect their containing paths.
+        """
+        scan = re.sub(r"\w+://\S*", lambda m: " " * len(m.group(0)), command)
+        if re.search(r"\$(?:HOME|\{HOME\})(?:/|\b)", scan) or re.search(
+            r"(^|[\s'\"=])~(?:[A-Za-z0-9_.-]+)?(?=/|\s|$)", scan
+        ):
+            raise SystemExit(
+                "refusing: home-directory expansion is outside the DiCOS read allowlist\n"
+                f"  command: {command}"
+            )
+        if re.search(r"(^|[\s'\"=])\.\.(?:/|$)", scan):
+            raise SystemExit(
+                "refusing: relative parent traversal is outside the DiCOS read allowlist\n"
+                f"  command: {command}"
+            )
+
+        token = r"(?<![\w.])~?/[^\s;|&'\"()}{,\]]+"
+        sinks = {"/dev/null", "/dev/stdout", "/dev/stderr", "/dev/tty", "/dev/zero"}
+        for match in re.finditer(token, scan):
+            raw, position = match.group(0), match.start()
+            if raw in sinks:
+                continue
+            if command.startswith(self.workdir, position):
+                continue
+            if self.data_file and command.startswith(self.data_file, position):
+                end = position + len(self.data_file)
+                if end == len(command) or command[end] in " \t\r\n'\";|&)},]":
+                    continue
+            # CUDA error 803 on this pod is avoided by supplying the system
+            # loader search path. This permits the assignment only; commands
+            # that list, stat, hash, or open /usr/lib64 remain forbidden.
+            prefix = command[max(0, position - 32):position]
+            if raw.startswith("/usr/lib64:") and "LD_LIBRARY_PATH=" in prefix:
+                continue
+            target = raw
+            if target.startswith("~"):
+                target = (self.jupyter_root or "~") + target[1:]
+            raise SystemExit(
+                "refusing: command names a filesystem path outside the DiCOS read allowlist\n"
+                f"  target: {target}\n"
+                f"  allowed tree: {self.workdir}/**\n"
+                f"  allowed file: {self.data_file}\n"
+                f"  command: {command}"
+            )
+
     def _assert_command_safe(self, command: str) -> None:
         # Forbidden paths are off-limits entirely -- a mere mention is refused,
         # since reading them is as much a violation as writing them.
@@ -386,6 +455,7 @@ class Dicos:
                         f"  protected: {protected}\n  command:   {command}"
                     )
         self._assert_writes_stay_in_workdir(command)
+        self._assert_reads_stay_in_scope(command)
 
     # ------------------------------------------------------- detached jobs
     #: Long work cannot run through `exec`: it is synchronous, and a DiCOSApp
@@ -620,12 +690,11 @@ fi
 
 echo "3. base interpreter"
 # pyproject requires >=3.10, so an older interpreter can never build the repo.
-# Candidates are ordered most- to least-preferred; the first that satisfies the
-# floor wins. A GPU image need not ship torch -- step 4 installs it.
+# Resolve an installed interpreter through PATH.  The DiCOS read contract does
+# not permit naming or inspecting system installation directories.
 BASE=""
-for cand in /opt/miniconda3/envs/asgc/bin/python /opt/miniconda3/bin/python \
-            /opt/conda/bin/python3 /usr/local/bin/python3 /usr/bin/python3; do
-  [ -x "$cand" ] || continue
+for cand in python3 python; do
+  command -v "$cand" >/dev/null 2>&1 || continue
   "$cand" -c 'import sys; sys.exit(0 if sys.version_info[:2] >= (3,10) else 1)' 2>/dev/null || continue
   BASE="$cand"; break
 done
@@ -690,7 +759,7 @@ else
 fi
 
 echo "7. source data (read-only)"
-D=~/sharedfs/work/IOP/ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neutron_All.root
+D=/dicos_ui_home/julianjuan/sharedfs/work/IOP/ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neutron_All.root
 [ -r "$D" ] && ok "readable, $(stat -c%s "$D") bytes" || bad "source dataset not readable"
 
 echo "8. prepared corpus"
@@ -817,20 +886,11 @@ if (ck / "calibrated_lr3e4_best_epoch4.pt").exists():
           "3f1022b87361b8a14d9f8432273dcd6c72f6a5e599c1be1575e7f37f4014803d")
 
 print("hygiene")
-mine, pid = set(), os.getpid()
-while pid > 1:
-    mine.add(pid)
-    try:
-        pid = int(Path(f"/proc/{pid}/stat").read_text().split(")")[-1].split()[1])
-    except Exception:
-        break
 alive = []
 for f in Path("_runs").glob("*.pid") if Path("_runs").exists() else []:
     try:
         q = int(f.read_text().strip())
     except ValueError:
-        continue
-    if q in mine:
         continue
     try:
         os.kill(q, 0); alive.append(f.stem)

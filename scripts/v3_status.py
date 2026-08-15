@@ -19,19 +19,16 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 WORKDIR = "/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC"
 
-# Built at runtime so the probe cannot match its own command line.
+# Tokens are assembled by awk so the probe's own command line cannot contain
+# the contiguous strings it searches for.  ``ps`` is the only permitted
+# process-tree interface: process-filesystem inspection is outside scope.
 WRITER_PROBE = (
-    "PYTHONNOUSERSITE=1 {python} -c \""
-    "import glob,os\n"
-    "toks=['dicos_'+'train','dicos_'+'campaign','dicos_'+'diagnostics']\n"
-    "out=[]\n"
-    "for c in glob.glob('/proc/[0-9]*/cmdline'):\n"
-    "    pid=int(c.split('/')[2])\n"
-    "    if pid in (os.getpid(),os.getppid()): continue\n"
-    "    try: s=open(c,'rb').read().decode('utf8','ignore')\n"
-    "    except Exception: continue\n"
-    "    if any(t in s for t in toks): out.append(pid)\n"
-    "print(out)\""
+    "command -v ps >/dev/null 2>&1 || "
+    "{ echo PROCESS_TREE_UNAVAILABLE; exit 2; }; "
+    "ps -eo pid=,ppid=,args= | awk '"
+    "BEGIN { a=\"dicos_\" \"train\"; b=\"dicos_\" \"campaign\"; "
+    "c=\"dicos_\" \"diagnostics\" } "
+    "index($0,a) || index($0,b) || index($0,c) { print }'"
 )
 
 
@@ -58,7 +55,7 @@ def main() -> int:
     section("TRAINING POD (RTX 4090)")
     try:
         print(pod("nvidia-smi --query-gpu=name,utilization.gpu,memory.used --format=csv,noheader"))
-        print("live writers:", pod(WRITER_PROBE.format(python=".venv/bin/python")))
+        print("live writers:", pod(WRITER_PROBE))
         runs = pod(
             "for d in _runs/v3_*/; do "
             "  f=\"$d/logs/history.csv\"; "
@@ -73,8 +70,7 @@ def main() -> int:
     try:
         print(pod("nvidia-smi --query-gpu=name,utilization.gpu,memory.used --format=csv,noheader",
                   config=args.diagnostics_config))
-        print("live writers:", pod(WRITER_PROBE.format(python=".venv_3090/bin/python"),
-                                   config=args.diagnostics_config))
+        print("live writers:", pod(WRITER_PROBE, config=args.diagnostics_config))
         print(pod(
             "for d in _diag/*/; do q=$(ls $d/queue/*.pt 2>/dev/null | wc -l); "
             "m=$(ls $d/metrics_epoch_*.json 2>/dev/null | wc -l); "

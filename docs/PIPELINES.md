@@ -84,17 +84,12 @@ python scripts/dicos.py jobs
 python scripts/watch_v3_outputs.py --status
 ```
 
-Prove there is no live writer before starting anything. The probe builds its
-search token at runtime and excludes its own pid and parent, or it matches
-itself:
+Prove there is no live writer before starting anything. Use `ps`, which reports
+the process tree without inspecting a forbidden filesystem path. The search
+token is assembled at runtime so the probe cannot match its own command line:
 
 ```bash
-python scripts/dicos.py exec "PYTHONNOUSERSITE=1 .venv/bin/python -c \"
-import glob,os
-tok='dicos_'+'train'
-print([int(c.split('/')[2]) for c in glob.glob('/proc/[0-9]*/cmdline')
-       if tok in open(c,'rb').read().decode('utf8','ignore')
-       and int(c.split('/')[2]) not in (os.getpid(),os.getppid())])\""
+python scripts/dicos.py exec "command -v ps >/dev/null 2>&1 || { echo PROCESS_TREE_UNAVAILABLE; exit 2; }; ps -eo pid=,ppid=,args= | awk 'BEGIN { t=\"dicos_\" \"train\" } index(\$0,t) { print }'"
 ```
 
 **A live trainer shows as MANY pids, not one.** `num_workers: 4` means one
@@ -102,19 +97,10 @@ trainer plus its dataloader workers, and workers are recycled between epochs, so
 8–9 matching pids is normal for a single run. Check `ppid`: if they all share one
 parent, that is **one writer**.
 
-```bash
-python scripts/dicos.py exec "PYTHONNOUSERSITE=1 .venv/bin/python -c \"
-import glob,os
-tok='dicos_'+'train'
-for c in glob.glob('/proc/[0-9]*/cmdline'):
-    try:
-        pid=int(c.split('/')[2])
-        if tok in open(c,'rb').read().decode('utf8','ignore') and pid!=os.getpid():
-            print(pid,'ppid',int(open(f'/proc/{pid}/stat').read().split()[3]))
-    except Exception: pass\""
-```
-
-Two distinct parents means two writers. Kill the **shell** first, then its child.
+The first two columns are `pid` and `ppid`. Two distinct trainer parents means
+two writers. Kill the **shell** first, then its child. If `ps` is unavailable,
+the invariant cannot be proved within the read allowlist: do not launch another
+writer.
 
 ---
 

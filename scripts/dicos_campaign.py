@@ -112,8 +112,39 @@ def checkpoint_epoch(path: Path) -> int:
     return int(payload["epoch"])
 
 
+def _process_rows() -> list[tuple[int, int, str]]:
+    """Return the process tree via ``ps`` without reading forbidden paths."""
+    try:
+        result = subprocess.run(
+            ["ps", "-eo", "pid=,ppid=,args="],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except FileNotFoundError as exc:
+        raise CampaignError(
+            "cannot prove the one-writer invariant: ps is unavailable and the "
+            "DiCOS read allowlist forbids process-filesystem inspection"
+        ) from exc
+    if result.returncode != 0:
+        raise CampaignError(
+            "cannot prove the one-writer invariant: ps failed with "
+            f"exit {result.returncode}: {result.stderr.strip()}"
+        )
+    rows: list[tuple[int, int, str]] = []
+    for line in result.stdout.splitlines():
+        fields = line.strip().split(None, 2)
+        if len(fields) != 3:
+            continue
+        try:
+            rows.append((int(fields[0]), int(fields[1]), fields[2]))
+        except ValueError:
+            continue
+    return rows
+
+
 def other_trainer_running() -> list[tuple[int, str]]:
-    """Scan /proc for another trainer, without matching this probe itself.
+    """Inspect ``ps`` output for another trainer without self-matching.
 
     A probe whose command line contains the string it searches for matches its
     own entry. That produced a phantom trainer once, and the kill that followed
@@ -123,25 +154,16 @@ def other_trainer_running() -> list[tuple[int, str]]:
     needle = "dicos_" + "train"
     mine = {os.getpid(), os.getppid()}
     hits: list[tuple[int, str]] = []
-    for entry in Path("/proc").glob("[0-9]*"):
-        try:
-            pid = int(entry.name)
-        except ValueError:
-            continue
+    for pid, _ppid, command in _process_rows():
         if pid in mine:
             continue
-        try:
-            raw = (entry / "cmdline").read_bytes().decode("utf-8", "replace")
-        except OSError:
-            continue
-        command = raw.replace("\0", " ").strip()
         if needle in command and "dicos_campaign" not in command:
             hits.append((pid, command[:160]))
     return hits
 
 
 def other_supervisor_running(plan_name: str) -> list[tuple[int, str]]:
-    """Scan /proc for another dicos_campaign.py supervisor on this same plan.
+    """Inspect ``ps`` for another campaign supervisor on this same plan.
 
     Found the hard way 2026-08-10: a supervisor whose own trainer had already
     crashed can still be alive for minutes afterward doing its own
@@ -157,24 +179,15 @@ def other_supervisor_running(plan_name: str) -> list[tuple[int, str]]:
     Matched on the `--plan` file's own name rather than the campaign_id
     inside it: the id is not yet loaded at the point this must run, but the
     plan path is always present verbatim in every invocation's cmdline.
-    Mirrors `other_trainer_running()`'s discipline: built at runtime so this
-    probe cannot match its own /proc entry.
+    Mirrors `other_trainer_running()`'s discipline: built at runtime and the
+    current process and parent are excluded.
     """
     needle = "dicos_" + "campaign"
     mine = {os.getpid(), os.getppid()}
     hits: list[tuple[int, str]] = []
-    for entry in Path("/proc").glob("[0-9]*"):
-        try:
-            pid = int(entry.name)
-        except ValueError:
-            continue
+    for pid, _ppid, command in _process_rows():
         if pid in mine:
             continue
-        try:
-            raw = (entry / "cmdline").read_bytes().decode("utf-8", "replace")
-        except OSError:
-            continue
-        command = raw.replace("\0", " ").strip()
         if needle in command and plan_name in command:
             hits.append((pid, command[:200]))
     return hits

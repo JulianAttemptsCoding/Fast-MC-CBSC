@@ -339,9 +339,11 @@ prune_superseded_rows(Path("exhibition/data/continuation_history.csv"),
   tell one wrapper from two. Check the process tree before any `start`.
 - **A process probe must not match itself.** Build the search token at runtime
   and exclude your own pid *and* your parent shell. A literal token matches the
-  probe's own `/proc` entry — that produced a phantom trainer, and the `kill -9`
-  that followed killed the probe. The 3090 image has no `ps`; scan `/proc` from
-  that pod's venv interpreter.
+  probe itself — that produced a phantom trainer, and the `kill -9` that
+  followed killed the probe. The current DiCOS read allowlist forbids
+  process-filesystem inspection. Use `ps` output; if the pod does not provide
+  `ps`, fail closed and do not launch another writer until the process tree can
+  be proved within scope.
 - **Never move or delete a run directory while a process holds it.** Paths
   resolve per write, so the live process starts writing wherever the path now
   points.

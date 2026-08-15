@@ -135,9 +135,10 @@ Credentials live in `~/.dicos/config.json`, **outside this repository**:
 }
 ```
 
-`data_file` is the one dataset this project may read; `forbidden_paths` are
-refused outright, reads included. Only `base_url` normally changes between
-sessions.
+`workdir` and the exact `data_file` are the complete read allowlist.
+`data_file` is the one immutable external file this project may read;
+`forbidden_paths` provide additional name-based defense but do not imply that
+unlisted paths are readable. Only `base_url` normally changes between sessions.
 
 ### Two address spaces
 
@@ -148,13 +149,18 @@ and the filesystem path
 `/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC` are the same
 directory. `jupyter_root` in the config is what lets the client translate.
 
-### Write scope
+### Read and write scope
 
 Enforced client-side, matching the contract agreed with the data owner
 (`AGENTS.md` 17-21):
 
 - `put`/`mkdir` refuse any destination outside `workdir`, normalising `..`
   first so traversal cannot slip past;
+- `ls`/`get` refuse every target outside `workdir` except the exact immutable
+  `data_file`; listing the dataset directory itself is forbidden;
+- `exec`/`start` refuse explicit absolute filesystem paths outside `workdir`
+  and the exact `data_file`, including read-only commands such as `cat`, `ls`,
+  `find`, `stat`, and `sha256sum`; relative traversal with `..` is refused;
 - **`exec` and `start` refuse commands that appear to write outside `workdir`**
   — redirections and file-mutating verbs (`rm`, `mv`, `cp`, `mkdir`, `tee`,
   `dd`, …) naming an absolute path elsewhere. `/dev/null` and friends are
@@ -165,8 +171,10 @@ Enforced client-side, matching the contract agreed with the data owner
   entry, because the scope was narrowed to one file and the rest of that
   directory is out of bounds for reading too.
 
-Reads outside `workdir` remain allowed — `setup` has to inspect `/opt`
-interpreters, and the permitted dataset lives elsewhere by definition.
+Reads outside `workdir` are forbidden except for the exact `data_file`. This
+includes directory listings, metadata, hashes, and contents. The client may
+invoke installed runtime software, but that is not permission to enumerate or
+inspect `/opt`, `/usr`, `/etc`, `$HOME`, `/tmp`, `/proc`, or any other path.
 
 **Know what this is and is not.** The command guard is a best-effort textual
 check, not a sandbox: a shell cannot be fully parsed, so a glob, a here-doc, or
@@ -260,24 +268,12 @@ run being compared against the existing epoch-4 checkpoints.
 
 ### Python environment
 
-The pod's default kernel (`/opt/miniconda3`, Python 3.13) has no scientific
-stack. The `asgc` conda env does:
-
-```
-/opt/miniconda3/envs/asgc/bin/python   3.11.13
-  torch 2.8.0+cu128   numpy 2.1.3   scipy 1.15.3   sklearn 1.6.1
-  matplotlib 3.10.0   pyyaml 6.0.2
-  uproot / awkward:  ABSENT
-```
-
-Since `/opt` is not writable, the project uses a venv layered on that env, which
-inherits numpy and adds what is missing:
-
-```bash
-/opt/miniconda3/envs/asgc/bin/python -m venv --system-site-packages .venv
-./.venv/bin/pip install uproot awkward
-./.venv/bin/pip install -e repo
-```
+System installation directories are outside the two-entry DiCOS read
+allowlist. Do not list, stat, hash, or open them, and do not record their
+contents as project evidence. `scripts/dicos.py setup` resolves `python3` or
+`python` through `PATH`, checks the version by invoking it, and creates the
+project-owned `.venv` inside the writable workdir. Runtime resolution is not
+permission to inspect the runtime's containing directory.
 
 **Torch is pinned to `2.6.0+cu124`, not the `asgc` env's 2.8.0+cu128.**
 `scripts/dicos.py setup` installs it explicitly:
@@ -293,6 +289,10 @@ described the pre-pin state and said the 2.8.0 difference was a genuine one to
 record; it is no longer the state. **Do not "upgrade" this pin** — it is a
 backend-portability invariant, and changing it makes every downstream
 continuation a new declared experiment.
+
+Historical notes predating the strict two-entry read rule may name system
+locations as evidence. They are not operator instructions and must not be
+replayed.
 
 **Per-pod venvs.** `.venv` belongs to the training pod. **Never run
 `dicos.py setup` on a second pod** — it rebuilds the shared `.venv` out from

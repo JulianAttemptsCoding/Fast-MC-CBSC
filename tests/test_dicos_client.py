@@ -1,7 +1,7 @@
-"""Guards on the DiCOS client's write scope.
+"""Guards on the DiCOS client's read and write scope.
 
 These encode the filesystem contract in AGENTS.md rules 17-19: exactly one
-writable directory, and two immutable source datasets. They run offline -- no
+writable project tree and one immutable source file. They run offline -- no
 token, no network -- so the contract stays enforced even when the remote host
 is unreachable.
 """
@@ -89,7 +89,6 @@ def test_commands_that_would_mutate_a_source_dataset_are_refused(
 
 @pytest.mark.parametrize("command", [
     f"sha256sum {PLAIN}",
-    f"ls -la {DATASET}",
     f"python -c \"import uproot; uproot.open('{PLAIN}')\"",
 ])
 def test_reading_the_permitted_dataset_is_allowed(client: Dicos, command: str) -> None:
@@ -111,6 +110,27 @@ def test_the_transformed_file_is_refused_even_for_reading(
     (6,400 vs 6,390 HCAL channels) and four fewer events."""
     with pytest.raises(SystemExit, match="out of scope"):
         client._assert_command_safe(command)
+
+
+@pytest.mark.parametrize("target", [
+    DATASET,
+    ROOT,
+    f"{ROOT}/sharedfs/work/IOP/other/file.txt",
+    "/etc/os-release",
+    "/opt",
+    "/tmp/scratch",
+])
+def test_contents_reads_outside_the_two_entry_allowlist_are_refused(
+    client: Dicos, target: str
+) -> None:
+    with pytest.raises(SystemExit, match="outside the permitted DiCOS allowlist"):
+        client._assert_readable(target)
+
+
+def test_exact_dataset_and_project_tree_are_readable(client: Dicos) -> None:
+    client._assert_readable(PLAIN)
+    client._assert_readable(WORKDIR)
+    client._assert_readable(f"{WORKDIR}/repo/AGENTS.md")
 
 
 # --------------------------------------------------------------- exec scope
@@ -135,7 +155,7 @@ def test_exec_refuses_writes_outside_the_workdir(client: Dicos, command: str) ->
     "mkdir -p prep/data",
     "echo hello > _setup/note.txt",
     f"rm -rf {WORKDIR}/_runs",
-    "python -m cbsc_zdc.cli convert --output ../prep/data",
+    "python -m cbsc_zdc.cli convert --output prep/data",
     f"touch {WORKDIR}/prep/marker",
 ])
 def test_exec_allows_writes_inside_the_workdir(client: Dicos, command: str) -> None:
@@ -179,7 +199,6 @@ def test_a_url_does_not_mask_a_real_escape_next_to_it(client: Dicos) -> None:
     [
         "(nvidia-smi --query-gpu=name --format=csv 2>/dev/null) || echo none",
         "{ python3 -V; } >/dev/null 2>&1",
-        "(cat /etc/os-release 2>/dev/null)",
     ],
 )
 def test_a_closing_paren_does_not_stick_to_a_path(client: Dicos, command: str) -> None:
@@ -195,11 +214,57 @@ def test_a_paren_does_not_hide_a_real_escape(client: Dicos) -> None:
         client._assert_command_safe("(echo x > /dicos_ui_home/julianjuan/escape.txt)")
 
 
-def test_reading_outside_the_workdir_is_still_permitted(client: Dicos) -> None:
-    """The rule constrains writes and named datasets, not every read: setup has
-    to inspect /opt interpreters and the venv to do its job."""
-    client._assert_command_safe("/opt/miniconda3/envs/asgc/bin/python -V")
-    client._assert_command_safe("ls /opt")
+@pytest.mark.parametrize("command", [
+    "cat /etc/os-release",
+    "ls /opt",
+    "find /tmp -maxdepth 1",
+    f"ls -la {DATASET}",
+    f"stat {DATASET}",
+    f"sha256sum {ROOT}/sharedfs/work/IOP/other/file.root",
+    "cat ../../../outside.txt",
+    "ls $HOME",
+    "find ${HOME}/scratch -maxdepth 1",
+    "cd ~",
+    "ls ~/sharedfs",
+])
+def test_explicit_reads_outside_the_allowlist_are_refused(
+    client: Dicos, command: str
+) -> None:
+    with pytest.raises(SystemExit, match="read allowlist|outside the DiCOS"):
+        client._assert_command_safe(command)
+
+
+def test_cuda_runtime_assignment_is_not_a_directory_read(client: Dicos) -> None:
+    client._assert_command_safe(
+        "LD_LIBRARY_PATH=/usr/lib64:$LD_LIBRARY_PATH "
+        "PYTHONPATH=repo/src .venv/bin/python repo/scripts/dicos_train.py"
+    )
+
+
+def test_builtin_operational_scripts_respect_the_read_allowlist(client: Dicos) -> None:
+    from dicos import INFO_SCRIPT, SETUP_SCRIPT, VERIFY_SCRIPT
+
+    for script in (INFO_SCRIPT, SETUP_SCRIPT, VERIFY_SCRIPT):
+        client._assert_command_safe(script)
+
+
+def test_active_helpers_do_not_inspect_the_process_filesystem() -> None:
+    import inspect
+
+    import dicos_campaign
+    import dicos_external_metrics_controller
+    import v3_status
+    from dicos import VERIFY_SCRIPT
+
+    active_process_checks = (
+        inspect.getsource(dicos_campaign._process_rows),
+        inspect.getsource(dicos_campaign.other_trainer_running),
+        inspect.getsource(dicos_campaign.other_supervisor_running),
+        inspect.getsource(dicos_external_metrics_controller._stage_state),
+        v3_status.WRITER_PROBE,
+        VERIFY_SCRIPT,
+    )
+    assert all("/proc" not in source for source in active_process_checks)
 
 
 # ------------------------------------------------------- job / transfer shape
@@ -256,10 +321,9 @@ def test_setup_requires_an_interpreter_new_enough_to_build_the_project() -> None
     """pyproject sets requires-python >= 3.10; a 3.9 base can never install it."""
     from dicos import SETUP_SCRIPT
     assert "(3,10)" in SETUP_SCRIPT
-    assert "/opt/miniconda3/bin/python" in SETUP_SCRIPT, (
-        "the GPU image's own interpreter must be a candidate; without it the "
-        "search falls through to /usr/bin/python3, which was 3.9.21"
-    )
+    assert "for cand in python3 python" in SETUP_SCRIPT
+    assert "/opt/" not in SETUP_SCRIPT
+    assert "/usr/" not in SETUP_SCRIPT
 
 
 def test_setup_installs_the_pinned_torch_itself() -> None:

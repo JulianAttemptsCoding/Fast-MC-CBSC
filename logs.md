@@ -11019,3 +11019,51 @@ Verification: `compileall` exit 0; `pytest` **748 passed** (740 -> 748);
 metrics catalog **131 graphics, PASS**.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+- S2-response e3: val 5.033931 best @ e3, 4/24 epochs, invariants 4/4 pass
+  new best for this row: 5.033931 (parent 4.483768, delta +0.550164)
+- S2-response e4: val 4.988013 best @ e4, 5/24 epochs, invariants 5/5 pass
+  new best for this row: 4.988013 (parent 4.483768, delta +0.504246)
+
+
+### 2026-08-15 (DiCOS read scope) — exact two-entry allowlist enforced
+
+Owner directive: on DiCOS this project may read only the project worktree
+`/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/**` and the
+exact immutable source ROOT file
+`/dicos_ui_home/julianjuan/sharedfs/work/IOP/ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neutron_All.root`.
+Every other DiCOS path is unreadable and unwritable; the dataset directory
+itself may not be listed or inspected.
+
+The rule is now explicit in `AGENTS.md`, focused rules, backend guide, handoff,
+pipeline guide, and walkaway runbook. `scripts/dicos.py` enforces it for content
+reads and remote command entry points, including rejection of absolute paths
+outside scope, parent traversal, `$HOME`/`${HOME}`/tilde expansion, and every
+noncanonical dataset name. Active campaign, status, verification, and
+external-metric helpers no longer inspect the process filesystem; process-tree
+proof uses `ps` and fails closed when unavailable. Runtime executable resolution
+does not grant permission to inspect its installation directory.
+
+Failed attempt retained: the first focused guard run was **8 failed, 67
+passed**. The first token regex overmatched slashes in relative paths such as
+`prep/data`; two old expectations also encoded newly forbidden behavior. The
+parser was corrected to require an absolute-path boundary and the stale tests
+were updated without weakening any guard. A timestamp command using unsupported
+PowerShell `Get-Date -AsUTC` also exited 1; `[DateTime]::UtcNow` supplied the
+timestamp instead.
+
+Verification: corrected focused run **74 passed**; final guard/controller run
+**83 passed**; guard/controller/policy run **87 passed**; `compileall` exit 0;
+full `pytest` **768 passed** with 64 known PyTorch warnings; `git diff --check`
+exit 0 with line-ending notices only. Metrics catalog: **131 graphics, PASS**;
+all image, manifest-hash, accepted-summary, gallery-scope, and latest-epoch
+checks passed.
+Audit twins: `audit/dicos_read_allowlist_20260815.{json,md}`. No out-of-scope
+DiCOS path was accessed during this change. Test strings name prohibited paths
+only to prove local, offline refusal.
+
+Live automation was preserved: watcher PID 17320 remained alive; M0-fresh and
+S1-axis are complete; S2-response is running with epoch 4 imported and best
+validation loss 4.988013; S3-first is queued. No duplicate watcher or writer was
+started.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.

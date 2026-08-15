@@ -8,9 +8,20 @@ the continuing-agent handoff.
 
 ## 1. DiCOS scope and GPU roles
 
+**Complete read allowlist — exactly two locations:**
+
+- `/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/**`;
+- `/dicos_ui_home/julianjuan/sharedfs/work/IOP/ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neutron_All.root`.
+
+Do not read, list, inspect, search, stat, or hash anything else on the DiCOS
+filesystem, including the permitted ROOT file's parent directory. Invoking
+runtime software is not permission to enumerate or inspect its containing
+paths.
+
 1. Write, edit, move, and delete only under
    `/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC`.
-   Everything else on the DiCOS host is read-only to this project.
+   Everything else is non-writable and, under the read allowlist above, also
+   unreadable.
 2. The only readable dataset file is the immutable
    `/dicos_ui_home/julianjuan/sharedfs/work/IOP/ZDC_ML_20260620/dataset/myTree_20251117_765k_0to300GeV_neutron_All.root`.
    Do not modify it or write into its directory.
@@ -18,7 +29,7 @@ the continuing-agent handoff.
    name, inspect, hash, convert, train on, or evaluate with `_transformed.root`
    or the older 15k/100k/135k files.
 4. Never weaken or bypass `scripts/dicos.py`. If its guard blocks an operation,
-   stop and inspect the request.
+   stop without inspecting the blocked path or trying an alternate route.
 5. The 4090 is the sole training writer. The 3090 is the per-epoch diagnostic
    consumer/event generator. Both mount the same workdir.
 6. Use `.venv` only from the 4090 and `.venv_3090` only from the 3090. Never run

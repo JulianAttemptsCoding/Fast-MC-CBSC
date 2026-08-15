@@ -155,13 +155,11 @@ prove there is no live writer** — a log that looks empty is not proof, and
 starting a second writer on one run directory has cost this project real time:
 
 ```bash
-python scripts/dicos.py exec "PYTHONNOUSERSITE=1 .venv/bin/python -c \"
-import glob,os
-tok='dicos_'+'train'
-print([int(c.split('/')[2]) for c in glob.glob('/proc/[0-9]*/cmdline')
-       if tok in open(c,'rb').read().decode('utf8','ignore')
-       and int(c.split('/')[2]) not in (os.getpid(),os.getppid())])\""
+python scripts/dicos.py exec "command -v ps >/dev/null 2>&1 || { echo PROCESS_TREE_UNAVAILABLE; exit 2; }; ps -eo pid=,ppid=,args= | awk 'BEGIN { t=\"dicos_\" \"train\" } index(\$0,t) { print }'"
 ```
+
+If this reports `PROCESS_TREE_UNAVAILABLE`, stop: the one-writer invariant
+cannot be proved without reading outside the DiCOS allowlist.
 
 **The pod expired.** Re-auth with the new URL. Do **not** run `setup` on the
 diagnostics pod — it rebuilds the shared venv out from under whatever is
@@ -171,7 +169,9 @@ training.
 first epoch and can take several minutes with no output at all. Normal.
 
 **`dicos.py stop` returned but the GPU is still busy.** Known: `stop` kills the
-wrapper and leaves its children. Scan `/proc` and SIGTERM them explicitly.
+wrapper and can leave its children. Use the `ps` probe above, kill the parent
+shell first, then its children, and verify the process tree is empty. Never
+inspect the process filesystem; it is outside the read allowlist.
 
 **Stopping a chained script needs the shell killed FIRST.** `battery5` and
 `queue2` run several steps in sequence. Killing only the current child lets the
