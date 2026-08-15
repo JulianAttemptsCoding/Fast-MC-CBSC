@@ -10280,3 +10280,117 @@ run is planned.
 `PHYSICS VALIDATION NOT ESTABLISHED`. A classifier still separates Fast-MC from
 Geant4 at AUROC 0.843 against a 0.65 target, and nothing launched here changes
 that.
+
+### 2026-08-15 -- S1-axis is a negative result; the f-03 diagnostics gap is closed; two builder defects fixed
+
+Phase A of the post-2026-08-14 continuation. Starting commit `7bb5c7d`, clean
+worktree, `origin/main...HEAD = 0 0`. **No training launched, no paid compute,
+test split not opened.** Both pods probed and idle: training RTX 4090
+`GPU-9fbcf9a9-8457-2177-cc19-8177274f7e35` 24083/24564 MiB free (UUID matches the
+derived live contract), diagnostics RTX 3090
+`GPU-beccd6d8-09f7-3703-fa70-a9766fdb9813` 23781/24576 MiB free.
+
+**S1-axis did not improve on its parent or its control.**
+
+    B0        dicos-f-02 e90                       4.483768
+    control   dicos-f-03 e111  no axis, 24 ep      4.491971   +0.008203
+    S1-axis   e19              axis, 24 ep         4.514053   +0.030286
+
+Against the matched control S1 is **0.022082** worse. The run is clean --
+24/24 invariant reports pass, every structural count zero, both closure
+residuals inside the report's own effective tolerance, 24 fixed-condition
+visualization payloads at zero test events, `EXIT=0`, 44124.213 s wall,
+26,640 updates, 1735.8 s/epoch.
+
+Two dispositions, deliberately separate. **`S1_CONFIGURATION_NOT_PROMOTED`**:
+the executed configuration lost to both references, so the promotion rule
+retains the simpler parent and axis features stay off downstream.
+**`S1_AXIS_CAUSAL_EFFECT_UNRESOLVED`**: `initialize_from` transfers weights
+only, so S1 ran a fresh Adam while its control resumed one, and S1 was judged on
+validation loss alone where the frozen v3 plan required off-axis/topology
+targets, paired bootstrap, guard metrics and C2ST. The negative is real for what
+was run; the feature's causal question is not closed.
+
+The shortfall is **17.5x the mean-absolute run-to-run reference** of 0.001259.
+That is a magnitude statement about reproducibility -- not a standard error, a
+confidence interval, a p-value, or a sigma -- and it supports no significance
+claim in either direction.
+
+**The declared diagnostics gap is closed.** `dicos-f-03` epochs 91-114 were
+replayed on the 3090 and imported: 24 metrics files, each passing the
+validation-only split contract (train 0 / validation 4000 / test 0) and the full
+diagnostic QA gate; the pod-side queue is drained to `done/`. Coverage is now
+contiguous over **epochs 48-114** with `declared_diagnostic_gap: null`. Both
+stale carriers were removed and both are retained as visible history rather than
+erased. **Selection is unchanged** -- B0 is still `dicos-f-02` e90 at
+4.483767619419238, because f-03's own best 4.491971 does not improve on it. What
+moved is epoch 114 from `unmeasured` to `accepted`, and the family's latest
+accepted epoch to 114 at 4.588262.
+
+The overrides could only be removed *after* the import. Before it they were
+still accurate: the metrics existed on the pod but had never been pulled locally.
+Removing them first would have reported unimported evidence as measured.
+
+**The continuation prompt's "import S1 through `refresh_continuation_outputs.py`"
+was not followed literally, and the reason is recorded.** That script is right
+for `dicos-f-03` and was used for it. For a v3 screening row it is wrong four
+times over: it appends under a **v2.2 family**, and a screening row changes the
+architecture and is *initialized from* rather than *resumed from* its parent, so
+the family figure would show a jump from 4.4838 at epoch 90 to S1's re-heat
+epoch 0 at 4.6659 as though one model had regressed; imported rows compete for
+that family's accepted best; the exhibition builders hold a **closed four-family
+registry** (`build_exhibition.VARIANTS`, `ORDER`/`LABELS`/`COLORS`) so the row
+would have raised or been silently dropped; and the script keys its epoch record
+off per-epoch distribution diagnostics, which S1 does not have.
+
+Built instead: a reusable v3 screening record -- `exhibition/data/v3_screening_rows.json`
+(declared registry), `scripts/import_v3_screening_run.py` (hash-verifying
+importer that re-hashes the row's frozen config and checkpoints **on the pod**
+rather than trusting the registry), `exhibition/data/v3_screening_history.csv`
+(measured aggregate), `exhibition/build_v3_screening_figure.py` (trajectory and
+delta figures plus `screening_summary.json`), and a new `current/v3_screening/`
+exhibition scope. S2, S3, M0-fresh and R1-data4x drop in without further
+structural work. A test asserts no screening variant or run tag can ever reach
+`continuation_history.csv` or `build_exhibition.VARIANTS`.
+
+**Two defects, each caught by a check that existed for the purpose.**
+
+1. The importer's invariant validator required an `epoch` field that per-epoch
+   invariant reports do not carry. Caught on the first real import. The fix goes
+   further than deleting the check: `pass` is now re-derived from the structural
+   counts rather than trusted, and both closure residuals are checked against the
+   report's own **effective** tolerance, `max(absolute, relative * total_response)`,
+   never the 2e-5 absolute floor alone. Comparing against the floor is exactly the
+   misreading that ended `dicos-p10` on a structurally perfect epoch, and a test
+   now pins that a residual above the floor but below the effective bound is
+   accepted.
+2. **The exhibition gallery silently dropped graphics whose category had no
+   section label.** `category()` has always failed closed on an unclassified
+   path, but the gallery's label map failed **open** -- an unlabelled category was
+   still counted in the inventory while never being rendered, so
+   `current_and_archive_galleries_contain_every_graphic` could report a complete
+   set over an incomplete page. Adding the new scope surfaced it. `scoped_gallery`
+   now raises on any cataloged category missing a label; labels hoisted to module
+   scope; two regression tests added.
+
+Verification: `compileall` exit 0; `pytest` **598 passed** (558 -> 598, +40);
+`build_metrics_catalog.py` **131 graphics, status PASS**,
+`declared_diagnostic_gap null`, `current_reaches_latest_observed_epoch 114`;
+exhibition manifest 23 visuals. The exact graphic-count guard moved `current`
+76 -> 78 for the two new screening figures, with the reason recorded beside the
+earlier increases. The count stays exact so an unnoticed addition still fails --
+a declared increase, not a relaxation.
+
+Still open: S1's checkpoint is **format 3 with a null `architecture_version`**
+because the trainer saves a v3 run through the v2.2 path, so it is not a valid
+adversarial-resume source and must never be rewritten (Phase B); S1 has **no
+distribution diagnostics** because it was launched through `dicos_train.py`
+rather than the campaign supervisor, recoverable only by evaluating its retained
+best checkpoint through the validation metric battery (Phase C); and the AUROC
+0.843222 battery used an **8,000-example corpus against the frozen 10,000-event
+minimum**, so it is directional evidence only.
+
+Audit twin: `audit/v3_post_s1_reconciliation_20260815.{json,md}`.
+Import record: `audit/v3_s1_import_20260815.json`.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.

@@ -1,16 +1,18 @@
 {
   "schema_version": 1,
   "purpose": "Epoch ranges that have validation-loss evidence but no per-epoch diagnostics, each with the reason the producer was absent. build_metrics_catalog.py still fails on any gap that is not declared here; a declaration makes the gap visible, it does not excuse it.",
-  "gaps": [
+  "gaps": [],
+  "closed_gaps": [
     {
       "family": "calibrated_lr3e4",
       "first_epoch_without_diagnostics": 91,
       "last_epoch_without_diagnostics": 114,
       "run_tags": ["dicos-f-03"],
       "declared_on": "2026-08-13",
+      "closed_on": "2026-08-15",
       "reason": "The RTX 3090 diagnostics pod ended between epoch 78 and 79 on 2026-08-12 while the L40S kept training to 114. A replacement 3090 replayed dicos-f-02's retained queue on 2026-08-13, closing epochs 79-90 and measuring the accepted best. The replay was stopped before dicos-f-03's queue because those epochs did not improve on epoch 90 and the owner asked for compute to stop.",
-      "consequence": "The accepted best, dicos-f-02 epoch 90, IS measured; this gap no longer touches checkpoint selection. What remains unmeasured is the tail that failed to improve on it, so the distribution-metric trend cannot be extended past epoch 90.",
-      "closes_when": "A diagnostics pod drains _diag/dicos-f-03/queue, which still holds all 24 checkpoints, and the metrics are imported through scripts/refresh_continuation_outputs.py."
+      "closure_evidence": "A later 3090 session drained _diag/dicos-f-03/queue completely; the queue directory now holds only done/. All 24 metrics_epoch_*.json files for epochs 0091-0114 were imported through scripts/refresh_continuation_outputs.py on 2026-08-15 and each passed validate_metric: schema_version 1, kind cbsc-zdc-large-validation-diagnostic, split validation, n_events 4000, split_counts train 0 / validation 4000 / test 0, and the full diagnostic QA gate with test_events_used 0.",
+      "consequence_at_closure": "The diagnostic trend is now continuous over epochs 48-114 with no declared gap. The accepted best is unchanged: dicos-f-02 epoch 90 at 4.483767619419238 remains the family best because dicos-f-03's own best, 4.491971 at epoch 111, does not improve on it. The corresponding unmeasured overrides were removed from exhibition/data/continuation_status.json in the same change."
     }
   ]
 }

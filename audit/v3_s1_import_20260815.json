@@ -1,0 +1,39 @@
+{
+  "aggregate_rows": 24,
+  "beats_control": false,
+  "beats_parent": false,
+  "best_epoch": 19,
+  "best_validation_loss": 4.514053317498672,
+  "control_run_tag": "dicos-f-03",
+  "control_validation_loss": 4.491971,
+  "declared_identity": {
+    "best_sha256": "2235774417fcb916ab3becbfe3eef985bbd90e0ee24a090174736de5afd9ae31",
+    "frozen_config_sha256": "08fc1ec172188530ac4772ebec70679eb2e453516368d1ce73b6958cb1dfed1f",
+    "last_sha256": "e08a2339da58d7df2ed4c66bc7da99a67fc470e60d381219f2a2035072aa0b42"
+  },
+  "declared_identity_verified": true,
+  "delta_vs_control": 0.022082317498671955,
+  "delta_vs_parent": 0.030285698079434376,
+  "distribution_diagnostics_present": false,
+  "epoch_range": [
+    0,
+    23
+  ],
+  "epochs_imported": 24,
+  "fetched": {
+    "history": false,
+    "invariants": [],
+    "visualizations": []
+  },
+  "first_epoch_validation_loss": 4.665887835434206,
+  "invariant_reports": 24,
+  "invariant_reports_all_pass": true,
+  "mode": "remote-import",
+  "parent_validation_loss": 4.483767619419238,
+  "row_id": "S1-axis",
+  "run_tag": "v3-s1-axis",
+  "test_events_used": 0,
+  "training_started_by_import": false,
+  "variant": "v3_s1_axis",
+  "visualization_payloads": 24
+}

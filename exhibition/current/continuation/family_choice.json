@@ -30,13 +30,13 @@
       "best_accepted_epoch": 90,
       "best_accepted_run_tag": "dicos-f-02",
       "best_accepted_validation_loss": 4.483767619419238,
-      "latest_accepted_epoch": 90,
-      "latest_accepted_validation_loss": 4.483767619419238,
+      "latest_accepted_epoch": 114,
+      "latest_accepted_validation_loss": 4.588262041351631,
       "latest_observed_epoch": 114,
-      "latest_observed_status": "unmeasured",
+      "latest_observed_status": "accepted",
       "latest_observed_validation_loss": 4.588262041351631,
       "quarantined_epochs": [],
-      "slope_final_3_accepted_epochs": -0.05133104097441722
+      "slope_final_3_accepted_epochs": 0.039830944723126815
     },
     "calibrated_lr3e5": {
       "best_accepted_epoch": 36,

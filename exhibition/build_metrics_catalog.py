@@ -37,6 +37,34 @@ def read_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+#: One gallery section per category returned by `category()`. Module scope so a
+#: test can assert the two stay in step; `scoped_gallery` raises on any category
+#: missing from here rather than dropping its graphics from the page.
+GALLERY_SECTION_LABELS = {
+    "current_model_and_contract": "Current model and scientific contract",
+    "current_continuation_and_standings": (
+        "Current loss vs epoch and accepted standings"
+    ),
+    "current_validation_diagnostics": (
+        "Current 3090 validation metrics through the latest epoch"
+    ),
+    "current_accepted_best_external_metrics": (
+        "Current accepted-best four-momentum and AUROC monitors"
+    ),
+    "current_external_metric_source_evidence": (
+        "Current accepted-best evaluator source figures"
+    ),
+    "current_presentations": "Current status-update slide decks",
+    "current_v3_architecture_screening": (
+        "Current v3 architecture screening rows against parent and control"
+    ),
+    "historical_common_window_snapshot": "Historical common-window snapshot",
+    "historical_c2st_test_study": "Historical isolated C2ST test study",
+    "historical_paired_test_exception": "Historical paired test exception",
+    "historical_miscellaneous": "Historical miscellaneous visuals",
+}
+
+
 def category(path: Path) -> str:
     relative = path.relative_to(HERE).as_posix()
     if relative.startswith("current/model/"):
@@ -51,6 +79,8 @@ def category(path: Path) -> str:
         return "current_accepted_best_external_metrics"
     if relative.startswith("current/presentations/"):
         return "current_presentations"
+    if relative.startswith("current/v3_screening/"):
+        return "current_v3_architecture_screening"
     if relative.startswith("archive/common_window_20260727/"):
         return "historical_common_window_snapshot"
     if relative.startswith("archive/c2st_20260728/"):
@@ -324,26 +354,17 @@ def scoped_gallery(graphics: list[dict], scope: str, output: Path) -> Path:
             continue
         stem = str(Path(record["path"]).with_suffix(""))
         grouped.setdefault((record["category"], stem), []).append(record)
-    labels = {
-        "current_model_and_contract": "Current model and scientific contract",
-        "current_continuation_and_standings": (
-            "Current loss vs epoch and accepted standings"
-        ),
-        "current_validation_diagnostics": (
-            "Current 3090 validation metrics through the latest epoch"
-        ),
-        "current_accepted_best_external_metrics": (
-            "Current accepted-best four-momentum and AUROC monitors"
-        ),
-        "current_external_metric_source_evidence": (
-            "Current accepted-best evaluator source figures"
-        ),
-        "current_presentations": "Current status-update slide decks",
-        "historical_common_window_snapshot": "Historical common-window snapshot",
-        "historical_c2st_test_study": "Historical isolated C2ST test study",
-        "historical_paired_test_exception": "Historical paired test exception",
-        "historical_miscellaneous": "Historical miscellaneous visuals",
-    }
+    labels = GALLERY_SECTION_LABELS
+    # `category()` fails closed on an unclassified path, but this label map used
+    # to fail OPEN: a category with no entry here was still counted in the
+    # inventory while never being rendered into the gallery, so rule 27's
+    # "current/ must be the complete presently valid set" would report a
+    # passing count over an incomplete page. Fail closed on both sides.
+    unlabelled = sorted({category for category, _ in grouped} - set(labels))
+    if unlabelled:
+        raise ValueError(
+            f"gallery has no section label for cataloged categories: {unlabelled}"
+        )
     sections = []
     for category_name, label in labels.items():
         entries = sorted(

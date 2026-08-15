@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-screening-row-registry",
+  "purpose": "Declared record of the v3 screening rows. A screening row is NOT a continuation of a v2.2 learning-rate family: it changes the architecture and is initialized from -- not resumed from -- a parent checkpoint. Keeping these rows out of exhibition/data/continuation_history.csv is deliberate. Mixing them into calibrated_lr3e4 would place a different architecture on that family's continuous loss axis and would let a v3 row compete for a v2.2 family's accepted best.",
+  "measured_companion": "exhibition/data/v3_screening_history.csv, written by scripts/import_v3_screening_run.py",
+  "derived_outputs": "exhibition/current/v3_screening/, written by exhibition/build_v3_screening_figure.py",
+  "promotion_rule": "Retain the simpler parent when an improvement is statistically unresolved. A screening row is promoted only when its declared target improves AND every declared guard passes.",
+  "selection_role": "Screening rows are development evidence. They do not select or tune any published checkpoint and they never touch the test split.",
+  "baseline": {
+    "label": "B0",
+    "family": "calibrated_lr3e4",
+    "run_tag": "dicos-f-02",
+    "epoch": 90,
+    "validation_loss": 4.483767619419238,
+    "checkpoint_sha256": "491284c7423f365230d34b0443f95aa4888ec770bdc673c4c979897bad8acbce",
+    "queued_copy_sha256": "643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035",
+    "frozen_config_sha256": "116bc8c220b07ce54ae07196bdd6ed8e835775c8c937182a209a799dc94ae9c5",
+    "architecture_version": "cbsc-zdc-v2.2",
+    "seed": 20260723,
+    "immutable": true,
+    "do_not_retrain": true,
+    "gate": "audit/v3_b0_gate_20260814.json"
+  },
+  "rows": [
+    {
+      "row_id": "S1-axis",
+      "variant": "v3_s1_axis",
+      "run_tag": "v3-s1-axis",
+      "run_dir": "_runs/v3_S1_axis",
+      "label": "S1 · incident-axis features",
+      "declared_change": "incident_axis_features",
+      "scientific_question": "Do incident-axis-relative node coordinates lower the validation loss?",
+      "architecture_version": "cbsc-zdc-v3",
+      "features_enabled": {
+        "axis_features": true,
+        "response_mode": "v2",
+        "first_layer_mode": "v2",
+        "count_mode": "v2",
+        "activity_head_mode": "v2"
+      },
+      "loss_weight_schema": "v2.2 keys only; this row adds no loss term",
+      "parent": {
+        "label": "B0",
+        "run_tag": "dicos-f-02",
+        "epoch": 90,
+        "validation_loss": 4.483767619419238
+      },
+      "initialization": {
+        "mode": "initialize_from",
+        "checkpoint": "prep/checkpoints/v3_S1_axis_init.pt",
+        "checkpoint_sha256": "779241f379c411351f5fbf0174070dc1737966c0fc1f996516b6fc80d7aecbeb",
+        "migration": "v2->v3",
+        "migration_behavioural_no_op": true,
+        "optimizer_state_transferred": false,
+        "note": "initialize_from transfers weights only. The row therefore starts with a fresh Adam while its control, dicos-f-03, resumed its optimizer. This is a real confound on any head-to-head loss comparison."
+      },
+      "control": {
+        "run_tag": "dicos-f-03",
+        "family": "calibrated_lr3e4",
+        "best_epoch": 111,
+        "best_validation_loss": 4.491971,
+        "match": "same parent checkpoint (dicos-f-02 e90), same 24-epoch horizon, same re-heat peak learning rate",
+        "mismatch": "resumed optimizer state; no axis features"
+      },
+      "frozen_config": "prep/configs/frozen_v3_S1_axis.yaml",
+      "frozen_config_sha256": "08fc1ec172188530ac4772ebec70679eb2e453516368d1ce73b6958cb1dfed1f",
+      "runtime_config_sha256": "c3f682c48bee83bcf78548833e93329964f48516b531eda5dc8c35e13fb35cee",
+      "seed": 20260723,
+      "horizon_epochs": 24,
+      "early_stopping_patience": 24,
+      "restart_scheduler_on_resume": false,
+      "batch_size": 6,
+      "gradient_accumulation": 4,
+      "status": "complete",
+      "disposition": "S1_CONFIGURATION_NOT_PROMOTED",
+      "causal_status": "S1_AXIS_CAUSAL_EFFECT_UNRESOLVED",
+      "disposition_reason": "The completed configuration was worse in validation loss than both its parent (4.483768) and its matched no-axis control (4.491971). Under the frozen promotion rule the simpler parent is retained and axis features stay off in downstream configs.",
+      "causal_reason": "The row used a fresh optimizer while its control resumed one, and it was selected on validation loss alone even though the frozen v3 plan required off-axis/topology targets, paired bootstrap, guard metrics, and C2ST. The feature-specific causal question is not closed by this run.",
+      "checkpoints": {
+        "best": "_runs/v3_S1_axis/checkpoints/best.pt",
+        "best_sha256": "2235774417fcb916ab3becbfe3eef985bbd90e0ee24a090174736de5afd9ae31",
+        "last": "_runs/v3_S1_axis/checkpoints/last.pt",
+        "last_sha256": "e08a2339da58d7df2ed4c66bc7da99a67fc470e60d381219f2a2035072aa0b42",
+        "checkpoint_format_written": 3,
+        "checkpoint_format_required_for_v3": 4,
+        "format_defect": "The trainer saved this v3 run through the v2.2 path, so architecture_version is null and the format-4 adversarial-resume fields are absent. The weights and frozen config are correct and the run's result stands, but this checkpoint is not a valid adversarial-resume source. Immutable: it must never be rewritten or re-stamped.",
+        "immutable": true
+      },
+      "evidence": {
+        "validation_loss_per_epoch": true,
+        "structural_invariants_per_epoch": true,
+        "fixed_condition_visualizations": true,
+        "distribution_diagnostics": false,
+        "validation_metric_battery": false
+      },
+      "evidence_gap": "This row was launched through dicos_train.py directly rather than the campaign supervisor, so no checkpoints were staged into _diag/ and no per-epoch distribution diagnostics exist. Loss, structural invariants and fixed-condition visualizations are complete. The distribution evidence is recoverable only by evaluating the retained best checkpoint through the validation metric battery.",
+      "wall_seconds": 44124.213,
+      "optimizer_updates": 26640,
+      "measured_seconds_per_epoch": 1735.8,
+      "device": "NVIDIA GeForce RTX 4090"
+    }
+  ]
+}

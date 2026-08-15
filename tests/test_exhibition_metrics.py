@@ -23,6 +23,37 @@ class _LocalReferences(HTMLParser):
                 self.values.append(value)
 
 
+def test_gallery_refuses_a_category_it_has_no_section_for(tmp_path) -> None:
+    """An unlabelled category must fail the build, not vanish from the gallery.
+
+    `category()` has always failed closed on an unclassified path, but the
+    gallery's label map failed open: a category with no section label was still
+    counted in the inventory while never being rendered, so the QA line
+    `current_and_archive_galleries_contain_every_graphic` could report a
+    complete set over an incomplete page. Adding `current/v3_screening/`
+    surfaced it.
+    """
+    graphics = [{
+        "path": "current/unregistered_scope/figure.png",
+        "scope": "current",
+        "category": "current_scope_with_no_section_label",
+        "format": "png",
+        "bytes": 1024,
+        "sha256": "0" * 64,
+    }]
+    try:
+        catalog.scoped_gallery(graphics, "current", tmp_path / "index.html")
+    except ValueError as error:
+        assert "no section label" in str(error)
+    else:
+        raise AssertionError("an unlabelled category was silently dropped")
+
+
+def test_every_cataloged_category_has_a_gallery_section() -> None:
+    for record in catalog.graphic_inventory():
+        assert record["category"] in catalog.GALLERY_SECTION_LABELS, record["path"]
+
+
 def test_every_exhibition_graphic_decodes_or_parses() -> None:
     graphics = catalog.graphic_inventory()
     assert len(graphics) >= 103
@@ -110,10 +141,16 @@ def test_current_gallery_is_complete_and_reaches_latest_evidence() -> None:
     # AUROC and two four-momentum. A new evaluated checkpoint is exactly what
     # this inventory is supposed to grow by.
     #
+    # current 76 -> 78 on 2026-08-15: the v3 architecture screening scope added
+    # its two figures -- the per-row validation-loss trajectory against parent
+    # and matched control, and the delta bars. Screening rows are deliberately
+    # not drawn on the v2.2 continuation axis (a screening row is initialized
+    # from its parent, not resumed from it), so they need their own scope.
+    #
     # The counts stay exact so an unnoticed addition still fails.
     assert payload["graphics"]["count_by_scope"] == {
         "archive": 53,
-        "current": 76,
+        "current": 78,
     }
     # This tracks whichever family is the campaign's current overall champion
     # and moves with every completed epoch -- pinning a specific number here

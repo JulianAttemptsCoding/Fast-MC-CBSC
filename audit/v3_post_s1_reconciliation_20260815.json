@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "kind": "cbsc-zdc-v3-post-s1-reconciliation",
+  "recorded_at": "2026-08-15",
+  "starting_commit": "7bb5c7dec0636193451b6d6b9c3ac8311db4efa8",
+  "worktree_at_start": "clean, origin/main...HEAD = 0 0",
+  "authorization": {
+    "training_campaign": "NOT AUTHORIZED; none launched; 0 new training GPU-hours consumed",
+    "paid_cloud": "NOT AUTHORIZED; none used",
+    "test_split": "NOT OPENED; zero test events used anywhere in this phase"
+  },
+  "hardware_probe": {
+    "training_pod": {
+      "name": "NVIDIA GeForce RTX 4090",
+      "uuid": "GPU-9fbcf9a9-8457-2177-cc19-8177274f7e35",
+      "memory_total_mib": 24564,
+      "memory_free_mib": 24083,
+      "driver": "595.58.03",
+      "matches_derived_contract_uuid": true,
+      "idle": true
+    },
+    "diagnostics_pod": {
+      "name": "NVIDIA GeForce RTX 3090",
+      "uuid": "GPU-beccd6d8-09f7-3703-fa70-a9766fdb9813",
+      "memory_total_mib": 24576,
+      "memory_free_mib": 23781,
+      "driver": "610.43.02",
+      "idle": true
+    }
+  },
+  "s1_import": {
+    "row_id": "S1-axis",
+    "variant": "v3_s1_axis",
+    "run_tag": "v3-s1-axis",
+    "declared_identity_verified_against_pod": true,
+    "frozen_config": "prep/configs/frozen_v3_S1_axis.yaml",
+    "frozen_config_sha256": "08fc1ec172188530ac4772ebec70679eb2e453516368d1ce73b6958cb1dfed1f",
+    "runtime_config_sha256": "c3f682c48bee83bcf78548833e93329964f48516b531eda5dc8c35e13fb35cee",
+    "initialize_from_sha256": "779241f379c411351f5fbf0174070dc1737966c0fc1f996516b6fc80d7aecbeb",
+    "best_checkpoint_sha256": "2235774417fcb916ab3becbfe3eef985bbd90e0ee24a090174736de5afd9ae31",
+    "last_checkpoint_sha256": "e08a2339da58d7df2ed4c66bc7da99a67fc470e60d381219f2a2035072aa0b42",
+    "epochs_imported": 24,
+    "epoch_range": [0, 23],
+    "invariant_reports": 24,
+    "invariant_reports_all_pass": true,
+    "visualization_payloads": 24,
+    "visualization_test_events_used": 0,
+    "first_epoch_validation_loss": 4.665887835434206,
+    "best_epoch": 19,
+    "best_validation_loss": 4.514053317498672,
+    "final_epoch_train_loss": 4.485034537309995,
+    "final_epoch_validation_loss": 4.524821275847898,
+    "final_generalization_gap": 0.039786738537902266,
+    "wall_seconds": 44124.213,
+    "optimizer_updates": 26640,
+    "measured_seconds_per_epoch": 1735.8,
+    "seed": 20260723
+  },
+  "s1_comparison": {
+    "parent": {
+      "label": "B0",
+      "run_tag": "dicos-f-02",
+      "epoch": 90,
+      "validation_loss": 4.483767619419238
+    },
+    "control": {
+      "run_tag": "dicos-f-03",
+      "epoch": 111,
+      "validation_loss": 4.491971,
+      "match": "same parent checkpoint, same 24-epoch horizon, same re-heat peak learning rate",
+      "mismatch": "resumed optimizer state; no axis features"
+    },
+    "delta_vs_parent": 0.030285698079434376,
+    "delta_vs_control": 0.022082317498671955,
+    "beats_parent": false,
+    "beats_control": false,
+    "run_to_run_reference": 0.001259,
+    "run_to_run_reference_meaning": "largest absolute per-epoch validation-loss difference between dicos-f-03 and dicos-f-04 from the same epoch-90 checkpoint on the epochs where their learning rates agree within 2 percent; a reproducibility reference, NOT a standard error, confidence interval, p-value, or sigma",
+    "ratio_to_run_to_run_reference": 17.54,
+    "ratio_statement": "the shortfall against the control is 17.5x the mean-absolute run-to-run reference of 0.001259; this is a magnitude statement and supports no significance claim",
+    "disposition": "S1_CONFIGURATION_NOT_PROMOTED",
+    "causal_status": "S1_AXIS_CAUSAL_EFFECT_UNRESOLVED",
+    "causal_reason": "S1 began with a fresh Adam because initialize_from transfers weights only, while dicos-f-03 resumed its optimizer. S1 was also selected on validation loss alone, whereas the frozen v3 plan required off-axis/topology targets, paired bootstrap, guard metrics, and C2ST. The configuration is a valid negative result; the feature-specific causal question is not closed."
+  },
+  "f03_diagnostics_gap_closure": {
+    "family": "calibrated_lr3e4",
+    "run_tag": "dicos-f-03",
+    "epochs": [91, 114],
+    "metrics_imported": 24,
+    "queue_state_on_pod": "drained; _diag/dicos-f-03/queue holds only done/",
+    "validation_applied": "validate_metric: schema_version 1, kind cbsc-zdc-large-validation-diagnostic, split validation, n_events 4000, split_counts train 0 / validation 4000 / test 0, full diagnostic QA gate, test_events_used 0",
+    "diagnostic_epochs_after_import": [48, 114],
+    "diagnostic_epochs_contiguous": true,
+    "declared_diagnostic_gap_after": null,
+    "carriers_removed": [
+      "exhibition/data/diagnostic_gaps.json gaps[] entry for calibrated_lr3e4 epochs 91-114",
+      "exhibition/data/continuation_status.json 24 unmeasured overrides for dicos-f-03 epochs 91-114"
+    ],
+    "carriers_retained_as_history": [
+      "exhibition/data/diagnostic_gaps.json closed_gaps[] with closure evidence",
+      "exhibition/data/continuation_status.json removed_overrides[] with the reason and the selection effect"
+    ],
+    "effect_on_selection": "none",
+    "accepted_best_before": {"run_tag": "dicos-f-02", "epoch": 90, "validation_loss": 4.483767619419238},
+    "accepted_best_after": {"run_tag": "dicos-f-02", "epoch": 90, "validation_loss": 4.483767619419238},
+    "best_changed": false,
+    "latest_accepted_epoch_before": 90,
+    "latest_accepted_epoch_after": 114,
+    "latest_accepted_validation_loss_after": 4.588262041351631,
+    "epoch_114_status_before": "unmeasured",
+    "epoch_114_status_after": "accepted"
+  },
+  "structural_decision": {
+    "question": "should S1 be imported through scripts/refresh_continuation_outputs.py, as the continuation prompt directed?",
+    "answer": "no, and the prompt's step was not followed literally",
+    "reason": "That script appends to exhibition/data/continuation_history.csv under a v2.2 family and keys its epoch record off that family's per-epoch distribution diagnostics. A v3 screening row changes the architecture and is initialized from -- not resumed from -- its parent. Importing S1 as calibrated_lr3e4 would have placed a different architecture on that family's continuous loss axis, so the figure would show the family jumping from 4.4838 at epoch 90 to S1's re-heat epoch 0 at 4.6659 as though one model had regressed, and it would have let a v3 row compete for a v2.2 family's accepted best. The exhibition builders also hold a closed four-family registry (build_exhibition.VARIANTS, and the ORDER/LABELS/COLORS maps), so the row would have raised or been silently dropped. S1 additionally has no per-epoch distribution diagnostics at all, which that script requires.",
+    "implemented_instead": "a separate, reusable v3 screening record: a declared row registry, a hash-verifying importer, an aggregate history, a figure/summary builder, and a new exhibition scope. S2, S3, M0-fresh and R1-data4x drop into it without further structural work.",
+    "guard_added": "tests/test_v3_screening_record.py asserts no screening variant or run tag ever appears in continuation_history.csv or in build_exhibition.VARIANTS"
+  },
+  "software_changes": [
+    {
+      "path": "scripts/import_v3_screening_run.py",
+      "change": "new; hash-verified import of one screening row's history, invariant reports and visualization payloads, with the row's declared frozen-config and checkpoint hashes re-hashed on the pod rather than trusted"
+    },
+    {
+      "path": "exhibition/build_v3_screening_figure.py",
+      "change": "new; trajectory and delta figures plus screening_summary.json, each row against its parent and matched control"
+    },
+    {
+      "path": "exhibition/data/v3_screening_rows.json",
+      "change": "new; declared row registry",
+      "sha256": "6e5a8fac8d9ad5dea27b75c6672807b34a09d84704d0ac9606bd21be79d21477"
+    },
+    {
+      "path": "exhibition/data/v3_screening_history.csv",
+      "change": "new; measured per-epoch aggregate",
+      "sha256": "2661cd349a3eb77e04a590d196558f335fb2e5ec718a1631b3cd851056691eb0"
+    },
+    {
+      "path": "exhibition/build_metrics_catalog.py",
+      "change": "added the current/v3_screening/ category, hoisted the gallery section labels to module scope, and made an unlabelled category FAIL the build",
+      "defect_fixed": "category() has always failed closed on an unclassified path, but the gallery label map failed OPEN: a category with no section label was still counted in the inventory while never being rendered into the page, so the QA line current_and_archive_galleries_contain_every_graphic could report a complete set over an incomplete gallery. Adding a new scope surfaced it."
+    }
+  ],
+  "defects_found_and_fixed_in_this_phase": [
+    {
+      "defect": "the screening importer's invariant validator required an `epoch` field that per-epoch invariant reports do not carry",
+      "detected_by": "the first real import against S1's 24 reports",
+      "fix": "validate against the filename-supplied epoch, and additionally re-derive `pass` from the structural counts and check both closure residuals against the report's own effective tolerance rather than the absolute floor"
+    },
+    {
+      "defect": "the exhibition gallery silently dropped graphics whose category had no section label",
+      "detected_by": "tests/test_epoch_evidence_pipeline.py::test_complete_gallery_references_every_graphic",
+      "fix": "scoped_gallery raises on any cataloged category missing from GALLERY_SECTION_LABELS; two regression tests added"
+    }
+  ],
+  "exact_count_guard_updated": {
+    "test": "tests/test_exhibition_metrics.py::test_current_gallery_is_complete_and_reaches_latest_evidence",
+    "before": {"archive": 53, "current": 76},
+    "after": {"archive": 53, "current": 78},
+    "reason": "the v3 screening scope added exactly two figures",
+    "note": "the count remains exact, so an unnoticed addition still fails; this is a declared, reasoned increase, not a relaxation"
+  },
+  "verification": {
+    "compileall": {"command": "python -m compileall -q src vertex scripts tests exhibition", "exit": 0},
+    "pytest": {"command": "PYTHONPATH=src python -m pytest -q", "result": "598 passed", "before_this_phase": 558, "added": 40},
+    "metrics_catalog": {"graphics": 131, "status": "PASS", "declared_diagnostic_gap": null, "current_reaches_latest_observed_epoch": 114},
+    "exhibition_manifest_visuals": 23
+  },
+  "artifact_hashes": {
+    "exhibition/data/v3_screening_rows.json": "6e5a8fac8d9ad5dea27b75c6672807b34a09d84704d0ac9606bd21be79d21477",
+    "exhibition/data/v3_screening_history.csv": "2661cd349a3eb77e04a590d196558f335fb2e5ec718a1631b3cd851056691eb0",
+    "exhibition/current/v3_screening/screening_summary.json": "d10c7a38b8135f9f11c42b7eba0cb6bcc83ff44b3c8d2140e3b2022fd5a11c99",
+    "exhibition/data/diagnostic_gaps.json": "bfe480006e0a40f2b770becfcb7dad452a2e8861f029ca05bce5fde13f1a661f",
+    "exhibition/data/continuation_status.json": "6d0ff8ab340d638e60820c68978422d3799eb51ef3b2efb3ff70dd398e0ef133",
+    "exhibition/metrics_catalog.json": "6f16eb6fa034b55652fd48c7477b19a0f6a94589f359c5942cfcbb7dc8e7cbed",
+    "exhibition/manifest.json": "f4656395c6f5ddaa405308177de7433140f34a48afd61f8a70738ac78bd6e67d",
+    "exhibition/current/continuation/family_choice.json": "51c3e6087fad8b94e3fca9d3706ee6dc12fd58c39e28bd5459e4937ba7177acd"
+  },
+  "open_after_this_phase": [
+    "S1's checkpoint was written in format 3 with a null architecture_version because the trainer saves a v3 run through the v2.2 path; it is not a valid adversarial-resume source and must never be rewritten. Phase B fixes the save path for future rows.",
+    "S1 has no per-epoch distribution diagnostics: it was launched through dicos_train.py directly rather than the campaign supervisor, so nothing was staged into _diag/. Recoverable only by evaluating the retained best checkpoint through the validation metric battery, which Phase C builds.",
+    "The external C2ST battery behind AUROC 0.843222 used an 8,000-example corpus, below the frozen 10,000-event minimum. It is directional evidence only and is relabelled in Phase F."
+  ],
+  "status_labels": ["QA PASS", "S1_CONFIGURATION_NOT_PROMOTED", "S1_AXIS_CAUSAL_EFFECT_UNRESOLVED"],
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

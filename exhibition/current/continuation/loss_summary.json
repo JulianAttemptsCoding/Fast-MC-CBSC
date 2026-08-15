@@ -392,10 +392,10 @@
         "dicos-f-02",
         "dicos-f-03"
       ],
-      "latest_accepted_epoch": 90,
-      "latest_accepted_validation_loss": 4.483767619419238,
+      "latest_accepted_epoch": 114,
+      "latest_accepted_validation_loss": 4.588262041351631,
       "latest_observed_epoch": 114,
-      "latest_observed_status": "unmeasured",
+      "latest_observed_status": "accepted",
       "latest_observed_validation_loss": 4.588262041351631,
       "observed_epochs": [
         0,

@@ -1,14 +1,48 @@
 {
   "cbsc_test_events_used": 0,
   "checkpoint_sha256": "643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035",
+  "controller": {
+    "action": "pulled immutable external metric evidence",
+    "bank_ready": true,
+    "cbsc_test_events_used": 0,
+    "cbsc_training_started": false,
+    "checkpoint_sha256": "643819fe42245f1ef2282407c022089703aa8029bb9b7741780f7a33eb034035",
+    "destination": "exhibition/current/external_metrics/source_data/dicos-f-02/epoch_0090",
+    "epoch": 90,
+    "evaluate": {
+      "raw": "EXIT=0",
+      "state": "complete"
+    },
+    "export": {
+      "raw": "EXIT=0",
+      "state": "complete"
+    },
+    "family": "calibrated_lr3e4",
+    "files": [
+      "auroc/figures/auroc_evaluator_training.png",
+      "auroc/figures/auroc_seed_spread.png",
+      "auroc/figures/auroc_vs_energy.png",
+      "auroc/metrics.json",
+      "four_momentum/figures/four_momentum_accuracy.png",
+      "four_momentum/figures/four_momentum_vs_energy.png",
+      "four_momentum/metrics.json",
+      "manifest.json"
+    ],
+    "kind": "cbsc-zdc-external-metric-controller-status",
+    "new_files": [],
+    "results_ready": true,
+    "run_tag": "dicos-f-02",
+    "schema_version": 1
+  },
   "epoch": 90,
   "family": "calibrated_lr3e4",
   "kind": "cbsc-zdc-current-external-metrics-state",
+  "local_manifest": "exhibition/current/external_metrics/source_data/dicos-f-02/epoch_0090/manifest.json",
   "release_pending": true,
   "run_tag": "dicos-f-02",
   "schema_version": 1,
   "selection_role": "descriptive only; may not select or tune CBSC",
   "source_split": "validation",
-  "status": "pending_offline",
+  "status": "complete",
   "validation_loss": 4.483767619419238
 }
