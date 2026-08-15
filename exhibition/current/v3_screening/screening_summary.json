@@ -113,6 +113,28 @@
       "scientific_question": "Does a bounded conditional spline with one zero atom beat the clamped mixture?",
       "status": "queued",
       "variant": "v3_s2_response"
+    },
+    {
+      "causal_status": null,
+      "color": "#b5179e",
+      "declared_change": "hierarchical_ecal_hcal_first",
+      "disposition": null,
+      "epochs_observed": 0,
+      "evidence": {
+        "distribution_diagnostics": false,
+        "fixed_condition_visualizations": false,
+        "structural_invariants_per_epoch": false,
+        "validation_loss_per_epoch": false,
+        "validation_metric_battery": false
+      },
+      "evidence_gap": "not yet started",
+      "horizon_epochs": 24,
+      "optimizer_state_transferred": false,
+      "row_id": "S3-first",
+      "run_tag": "v3-s3-first",
+      "scientific_question": "Does factorizing the first layer fix the underproduced ECAL-start prevalence?",
+      "status": "queued",
+      "variant": "v3_s3_first"
     }
   ],
   "run_to_run_reference": 0.001259,

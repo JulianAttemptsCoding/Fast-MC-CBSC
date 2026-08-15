@@ -276,6 +276,72 @@
         "validation_metric_battery": false
       },
       "evidence_gap": "not yet started"
+    },
+    {
+      "row_id": "S3-first",
+      "variant": "v3_s3_first",
+      "run_tag": "v3-s3-first",
+      "run_dir": "_runs/v3_S3_first",
+      "label": "S3 \u00b7 hierarchical ECAL/HCAL first layer",
+      "declared_change": "hierarchical_ecal_hcal_first",
+      "scientific_question": "Does factorizing the first layer fix the underproduced ECAL-start prevalence?",
+      "architecture_version": "cbsc-zdc-v3",
+      "features_enabled": {
+        "axis_features": false,
+        "response_mode": "v2",
+        "first_layer_mode": "hierarchical",
+        "count_mode": "v2",
+        "activity_head_mode": "v2"
+      },
+      "inherited_features": [],
+      "inheritance_note": "S3 forks from B0 in isolation, not from S2. Stacking a promoted feature is a separate declared experiment and a judgment call on the evidence, which a queue script is not allowed to make. This row measures the hierarchical first layer alone.",
+      "loss_weight_schema": "v2.2 keys plus ecal_start and hcal_first at 0.5 each. Those two terms have never trained before this row, and 0.5 is a deliberate unweighted-first placeholder, not a tuned value.",
+      "parent": {
+        "label": "B0",
+        "run_tag": "dicos-f-02",
+        "epoch": 90,
+        "validation_loss": 4.483767619419238
+      },
+      "comparator": {
+        "row_id": "M0-fresh",
+        "validation_loss": 4.513572058600877,
+        "why": "M0 is the fresh-optimizer control; every screening row pays the same measured 0.021601 optimizer restart, so M0 is the fair yardstick."
+      },
+      "initialization": {
+        "mode": "initialize_from",
+        "checkpoint": "prep/checkpoints/v3_S3_first_init.pt",
+        "checkpoint_sha256": "10bf55c924dd88ae5c04b0e9cce92f58af6966d36d8543a4542ba010f17bc20c",
+        "migration": "v2->v3",
+        "migration_counts": {
+          "copied": 193,
+          "expanded": 0,
+          "initialized": 23,
+          "unexpected": 0
+        },
+        "optimizer_state_transferred": false
+      },
+      "target_families": [
+        "ECAL-start prevalence and calibration",
+        "layer-0 energy"
+      ],
+      "scientific_motivation": "The underproduced ECAL-start prevalence is a named, measured defect, which gives S3 a physics-motivated prior the other rows lack.",
+      "frozen_config": "prep/configs/frozen_v3_S3_first.yaml",
+      "seed": 20260723,
+      "horizon_epochs": 24,
+      "early_stopping_patience": 24,
+      "restart_scheduler_on_resume": false,
+      "batch_size": 6,
+      "gradient_accumulation": 4,
+      "status": "queued",
+      "queued_behind": "S2-response, via _v3/chain_queue.sh, which refuses to start a row until the card is free and refuses to continue past a short row",
+      "evidence": {
+        "validation_loss_per_epoch": false,
+        "structural_invariants_per_epoch": false,
+        "fixed_condition_visualizations": false,
+        "distribution_diagnostics": false,
+        "validation_metric_battery": false
+      },
+      "evidence_gap": "not yet started"
     }
   ],
   "comparator_rule": {
