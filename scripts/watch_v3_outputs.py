@@ -273,8 +273,16 @@ def run_loop(interval_seconds: int) -> int:
             if should_stop():
                 watch_log("stop requested; exiting")
                 return 0
-            if not any(r["status"] == "running" for r in registry_rows()):
-                watch_log("no row is running; exiting")
+            # Keep watching while anything is queued. A queue script starts
+            # the next row minutes after the previous one ends, and exiting on
+            # that gap would stop the figures updating for the rest of the
+            # tranche -- which is exactly what happened when M0 finished and S2
+            # had not yet been marked running.
+            pending = [
+                r for r in registry_rows() if r["status"] in {"running", "queued"}
+            ]
+            if not pending:
+                watch_log("no row is running or queued; exiting")
                 return 0
             time.sleep(interval_seconds)
     except KeyboardInterrupt:

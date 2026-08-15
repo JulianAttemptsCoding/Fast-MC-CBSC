@@ -69,9 +69,19 @@ gap against `dicos-f-02`'s 779.6 is not the axis feature. Note the 3090 battery
 was reading the same shared filesystem throughout, so this run's *timing*
 carries that confound; its loss does not.
 
-**If a row ever starts anywhere near 5.2, suspect the `initialize_from` pointer
-before believing anything about the feature.** That number is what S1's first,
+**If a row that migrates as a behavioural no-op starts anywhere near 5.2,
+suspect the `initialize_from` pointer.** That number is what S1's first,
 discarded launch produced when it trained from random weights.
+
+**But this heuristic does NOT apply to a row that replaces a head.** S2-response
+legitimately began at **5.064650**: the bounded spline replaces the response head
+outright, so 15 of its tensors are freshly initialized and the response NLL --
+one of the largest weighted terms -- starts untrained. A high epoch 0 is expected
+there. Check `initialize_from`, its sha256 and the preflight before concluding
+anything: S2's were all correct.
+
+The rule that always holds: read the migration report. `expanded 0, unexpected 0`
+with a nonzero `initialized` count means a head was replaced on purpose.
 
 **S2-response.** Same initialization signature. Its migration report should read
 `copied 193, expanded 0, initialized 15, unexpected 0` — `expanded 0` is correct

@@ -241,7 +241,7 @@
           "unexpected": 0
         },
         "optimizer_state_transferred": false,
-        "note": "expanded is 0 because this row adds no axis columns; the 15 initialized tensors are the new spline head"
+        "note": "expanded 0 because this row adds no axis columns; the 15 initialized tensors are the new bounded spline response head. That head starts untrained, so this row's epoch 0 is legitimately high (5.064650) -- unlike S1 and M0, whose migrations were behavioural no-ops. initialize_from, its sha256 and preflight were all verified correct."
       },
       "response_envelope": {
         "source": "_v3/envelope_pilot_full.json",
@@ -266,7 +266,7 @@
       "restart_scheduler_on_resume": false,
       "batch_size": 6,
       "gradient_accumulation": 4,
-      "status": "queued",
+      "status": "running",
       "queued_behind": "M0-fresh, via _v3/chain_m0_then_s2.sh, which refuses to start unless M0 completes its full declared horizon",
       "evidence": {
         "validation_loss_per_epoch": false,
@@ -275,7 +275,8 @@
         "distribution_diagnostics": false,
         "validation_metric_battery": false
       },
-      "evidence_gap": "not yet started"
+      "evidence_gap": "not yet started",
+      "launched_at": "2026-08-15T20:33Z"
     },
     {
       "row_id": "S3-first",
