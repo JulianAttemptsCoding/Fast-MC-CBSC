@@ -13,7 +13,7 @@ cost time.
 - condition: neutron four-momentum only;
 - training support comparison: 0–300 GeV versus 50–250 GeV;
 - primary result domain: 50–250 GeV;
-- software QA: 350 source tests pass in the current environment;
+- software QA: 740 source tests pass in the current environment (2026-08-15);
 - production preparation: 764,940 real Geant4 events converted into 187
   content-addressed shards;
 - current optimization evidence: four calibrated joint-training families train
@@ -73,7 +73,8 @@ The decoder guarantees exact zeros outside selected support and exact generated 
 - [Agent operating contract](AGENTS.md)
 - [Documentation map](docs/README.md)
 - [Complete implementation/training/QA/results guide](docs/IMPLEMENTATION_GUIDE.md)
-- [Backend-neutral continuation prompt](docs/AGENT_PROMPT_CONTINUE_ANY_BACKEND_20260728.md)
+- [Pipelines — every operation with its exact command](docs/PIPELINES.md)
+- [The complete v3 record](docs/V3_FULL_REPORT.md)
 - [QA policy: checks are evidence, not progression permission](docs/QA_POLICY.md)
 - [Hardware portability QA](docs/HARDWARE_PORTABILITY_QA.md)
 - [Beginner model walkthrough](docs/MODEL_WALKTHROUGH.md)

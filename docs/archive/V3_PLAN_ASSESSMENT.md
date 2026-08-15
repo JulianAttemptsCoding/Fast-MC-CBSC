@@ -1,3 +1,12 @@
+> **ARCHIVED — SUPERSEDED. DO NOT FOLLOW THIS DOCUMENT.**
+>
+> Superseded 2026-08-15 by `docs/V3_FULL_REPORT.md`. This was the pre-implementation concerns document written before any v3 row ran. Every question it raises is either answered or explicitly still open in the full report, which also carries the measured results it could only speculate about.
+>
+> Current entry point: `docs/HANDOFF.md` → `docs/PIPELINES.md`.
+> Terminal status is unchanged: `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+---
+
 # Assessment of the CBSC-ZDC v3 handoff
 
 Written 2026-08-13 against `CBSC_ZDC_v3_REPO_ROOT_OVERLAY.zip` and

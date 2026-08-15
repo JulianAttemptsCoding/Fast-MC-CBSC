@@ -73,7 +73,8 @@ parent for anything. See §7.
 | `audit/lr_schedule_20260812_terminal_analysis.md` | **start here** — the LR finding in full, with the exact checkpoint state and the recorded per-epoch schedule that proves it |
 | `AGENTS.md` | the binding operating contract, 28 numbered rules |
 | `docs/` | data, model, evaluation, QA, backend and portability contracts |
-| `docs/AGENT_PROMPT_CONTINUE_ANY_BACKEND_20260728.md` | the full self-contained handoff |
+| `docs/HANDOFF.md` | the full self-contained handoff |
+| `docs/PIPELINES.md` | every operation with its exact command |
 | `src/cbsc_zdc/` | all active model, data, training and evaluation code |
 | `src/cbsc_zdc/training/trainer.py` | training loop, optimizer, and the `CosineAnnealingLR` / `_restart_cosine_scheduler` code at the centre of §2's finding |
 | `src/cbsc_zdc/training/checkpoint.py` | checkpoint save/load, including the unconditional `scheduler_state` restore at line 75 |

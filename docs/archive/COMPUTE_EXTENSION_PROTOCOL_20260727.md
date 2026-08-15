@@ -1,3 +1,12 @@
+> **ARCHIVED — SUPERSEDED. DO NOT FOLLOW THIS DOCUMENT.**
+>
+> Superseded 2026-08-15. The four-family two-epoch extension it designs is complete; its result is in `logs.md` and the `audit/` twins. Retained as the design record of a finished experiment.
+>
+> Current entry point: `docs/HANDOFF.md` → `docs/PIPELINES.md`.
+> Terminal status is unchanged: `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+---
+
 # CBSC-ZDC calibrated compute-extension protocol
 
 ## Question

@@ -10963,3 +10963,59 @@ Verification: `pytest` **724 passed**; metrics catalog **131 graphics, PASS**.
   new best for this row: 5.064650 (parent 4.483768, delta +0.580883)
 - S2-response e1: val 5.041588 best @ e1, 2/24 epochs, invariants 2/2 pass
   new best for this row: 5.041588 (parent 4.483768, delta +0.557820)
+- S2-response e2: val 5.037552 best @ e2, 3/24 epochs, invariants 3/3 pass
+  new best for this row: 5.037552 (parent 4.483768, delta +0.553785)
+
+
+### 2026-08-15 (repo cleanup) -- superseded documents archived, every status declared
+
+The owner asked for the repository cleaned so a future agent cannot be confused,
+naming `docs/AGENT_PROMPT_CONTINUE_ANY_BACKEND_20260728.md` as superseded by
+`docs/HANDOFF.md`.
+
+**Moved to `docs/archive/`, each with a supersession banner naming its
+replacement:** the 90 KB Vertex-era self-contained agent prompt, its
+compatibility pointer, the completed compute-extension protocol, the Vertex QA
+checklist, `V3_PLAN_ASSESSMENT.md` (the pre-implementation concerns document,
+superseded by `docs/V3_FULL_REPORT.md`), and the v3 overlay delivery note.
+
+**Moved to `docs/archive/release_bundle_v2_2/`, bytes untouched:** the five
+`CBSC_ZDC_v2_2_*.md` release-bundle snapshots that sat at repository root looking
+authoritative while their `docs/` counterparts were the live documents and had
+diverged. No banner was prepended to these -- they are a delivered artifact, and
+rewriting them would destroy exactly the provenance they exist to carry.
+
+**Two things deliberately did NOT move.** `docs/VERTEX_AI_RUNBOOK.md` describes a
+backend that is not current, but it is **checksum-recorded in
+`SHA256SUMS.txt`**; moving it would break a recorded audit artifact for a
+cosmetic gain, so it stays and is marked `superseded backend` in the index. The
+dated `audit/` files that cite the archived prompt are immutable evidence and
+were left alone.
+
+Verified before moving anything: none of the moved files appears in
+`SHA256SUMS.txt`. `docs/README.md`'s previous claim that the root snapshots were
+"retained for checksum provenance" was **wrong** -- they were never checksummed.
+
+**Every reference updated.** `CLAUDE.md`'s binding contract now names
+`docs/HANDOFF.md` as the self-contained handoff instead of the archived prompt.
+`tests/test_qa_policy.py` asserted the nonblocking-QA rule against the archived
+prompt; it now asserts it against `docs/HANDOFF.md`, and the rule was **added**
+to that document rather than the test being relaxed -- the handoff is now the
+document that must carry it. The root README's stale "350 source tests" became
+740.
+
+`docs/README.md` is rewritten as the authoritative index: every document has
+exactly one declared status -- current contract, current operations, current
+state, superseded-but-retained-in-place, or archived. A document absent from the
+index has no declared status, which is itself the defect.
+
+**Nine tests keep it that way**: every archived guidance file carries a banner,
+every banner names a replacement that exists, the release-bundle snapshots stay
+byte-preserved, no live document cites archived guidance without marking it as
+retired, the moved files are gone from their old paths, every live doc appears in
+the index, and every checksum-recorded path still resolves.
+
+Verification: `compileall` exit 0; `pytest` **748 passed** (740 -> 748);
+metrics catalog **131 graphics, PASS**.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.

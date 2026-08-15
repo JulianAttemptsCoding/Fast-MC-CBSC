@@ -35,6 +35,16 @@ RTX 4090** (22.8 GiB against 23.5). And the **incident-axis feature is neutral**
 — 0.000481 against a 0.001259 reproducibility reference.
 
 Operational page for what is running right now: `docs/WALKAWAY_RUNBOOK.md`.
+Every operation with its exact command: `docs/PIPELINES.md`.
+
+**QA semantics, because this document is now the self-contained handoff.** QA
+identifies trustworthy artifacts, failures and follow-up checks. It **does not
+grant or deny permission** to keep training, change hardware, or run a
+separately declared experiment. Use `QA PASS`, `QA FINDING`,
+`ARTIFACT QUARANTINED`, `FOLLOW-UP QA`, `RESOURCE PREFLIGHT FAIL`,
+`PHYSICS VALIDATION NOT ESTABLISHED`. `configs/gates_primary.yaml` and `--gates`
+are retained names meaning versioned diagnostic thresholds, not progression
+permission.
 
 ---
 
@@ -442,7 +452,7 @@ Re-costed from measurement in
 | D1 arms | 446.6 h | 2.9× a D2 arm |
 | **full matrix** | **6,038.6 h** | about 252 days on one card |
 
-This **supersedes the 2,930.88 h figure** in `V3_PLAN_ASSESSMENT.md`, which was
+This **supersedes the 2,930.88 h figure** in `docs/archive/V3_PLAN_ASSESSMENT.md`, which was
 arithmetically correct but extrapolated pilot supervised throughput to the
 critic paths.
 

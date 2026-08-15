@@ -35,9 +35,10 @@ def test_active_guidance_has_no_hardware_permission_screen() -> None:
 def test_current_policy_is_explicitly_nonblocking() -> None:
     agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
     policy = (ROOT / "docs" / "QA_POLICY.md").read_text(encoding="utf-8")
-    handoff = (
-        ROOT / "docs" / "AGENT_PROMPT_CONTINUE_ANY_BACKEND_20260728.md"
-    ).read_text(encoding="utf-8")
+    # The self-contained Vertex-era prompt was archived on 2026-08-15; the
+    # current handoff is docs/HANDOFF.md. The nonblocking-QA rule must hold in
+    # whatever document actually carries the handoff, not in a retired one.
+    handoff = (ROOT / "docs" / "HANDOFF.md").read_text(encoding="utf-8")
     required = "never grant or deny permission"
     normalized_agents = " ".join(agents.lower().split())
     normalized_policy = " ".join(policy.lower().split())

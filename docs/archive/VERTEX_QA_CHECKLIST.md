@@ -1,3 +1,12 @@
+> **ARCHIVED — SUPERSEDED. DO NOT FOLLOW THIS DOCUMENT.**
+>
+> Superseded 2026-08-15. Per-job Vertex checks. Vertex is not the current backend -- DiCOS is. See `docs/DICOS_BACKEND.md` and `docs/PIPELINES.md`. Retained because a backend move remains legitimate; `docs/VERTEX_AI_RUNBOOK.md` stays in `docs/` because it is checksum-recorded in `SHA256SUMS.txt`.
+>
+> Current entry point: `docs/HANDOFF.md` → `docs/PIPELINES.md`.
+> Terminal status is unchanged: `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+---
+
 # Vertex QA checklist
 
 Use this checklist with `docs/VERTEX_AI_RUNBOOK.md` and

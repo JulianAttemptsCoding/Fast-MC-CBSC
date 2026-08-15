@@ -1,3 +1,14 @@
+> **ARCHIVED — SUPERSEDED. DO NOT FOLLOW THIS DOCUMENT.**
+>
+> Superseded 2026-08-15 by `docs/HANDOFF.md` (current standings and traps), `docs/PIPELINES.md` (every operation with its exact commands) and `docs/V3_FULL_REPORT.md` (the complete v3 record).
+> 
+> It was the self-contained new-chat handoff for the Vertex era. Its backend instructions are wrong for this project now: training runs on DiCOS pods, not Vertex. Several of its numbers also predate the corrections in `HANDOFF.md` section 0.
+>
+> Current entry point: `docs/HANDOFF.md` → `docs/PIPELINES.md`.
+> Terminal status is unchanged: `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+---
+
 # Exact prompt for continuing CBSC-ZDC in a new chat or CLI
 
 Copy everything below the horizontal rule into the new agent. It is intentionally
