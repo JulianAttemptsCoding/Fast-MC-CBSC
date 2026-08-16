@@ -57,7 +57,7 @@ from .metrics import (
 from .topology import topology_report
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 2
+REPORT_SCHEMA_VERSION = 3
 MANIFEST_KIND = "cbsc-zdc-v3-fixed-validation-bank"
 BATTERY_KIND = "cbsc-zdc-v3-validation-battery"
 
@@ -666,8 +666,23 @@ def battery_report(
         "split": EVALUATION_SPLIT,
         "pairs": int(len(truth)),
         "evaluator_corpus_examples": int(2 * len(truth)),
+        "validation_events_used": int(len(truth)),
+        "train_events_used": (
+            int(train_reference.shape[0]) if train_reference is not None else 0
+        ),
         "test_events_used": 0,
-        "train_events_used": 0,
+        "data_usage": {
+            "validation_truth_events": int(len(truth)),
+            "generated_events": int(len(generated)),
+            "training_reference_events": (
+                int(train_reference.shape[0]) if train_reference is not None else 0
+            ),
+            "training_reference_role": (
+                "memorization nearest-neighbour reference only"
+                if train_reference is not None else "not used"
+            ),
+            "test_events": 0,
+        },
         "structural_invariants": invariants,
         "visibility_and_zero_response": {
             "truth": _zero_cause_decomposition(truth_visible, truth_total),

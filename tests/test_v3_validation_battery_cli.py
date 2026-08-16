@@ -472,6 +472,16 @@ def test_battery_report_computes_every_family_on_real_generated_events(
         assert family in report, f"battery omitted {family}"
 
     assert report["split"] == "validation"
+    assert report["schema_version"] == 3
+    assert report["validation_events_used"] == len(truth)
+    assert report["train_events_used"] == 0
+    assert report["data_usage"] == {
+        "validation_truth_events": len(truth),
+        "generated_events": len(generated),
+        "training_reference_events": 0,
+        "training_reference_role": "not used",
+        "test_events": 0,
+    }
     assert report["test_events_used"] == 0
     assert report["evaluator_corpus_examples"] == 2 * len(truth)
     assert report["scientific_status"] == "PHYSICS VALIDATION NOT ESTABLISHED"

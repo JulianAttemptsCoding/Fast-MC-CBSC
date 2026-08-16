@@ -11437,3 +11437,50 @@ S2 remains RUNNING at 12/24 epochs and has no fixed-bank report. This is
 optimization evidence only: no promotion, public accepted-family release, or
 physics-validation claim. Audit twins:
 `audit/s2_response_epoch11_best_20260815.{json,md}`.
+
+### 2026-08-15 (battery schema v3) -- training-reference accounting corrected
+
+Content QA of the accepted schema-v2 B0 report found a provenance contradiction:
+top-level `train_events_used` was 0 while `memorization` correctly recorded a
+2,000-event training reference. The reference is appropriate and used only for
+the nearest-neighbour memorization diagnostic; validation selection/training and
+all metric values were unaffected, and test events remained 0. Nevertheless,
+the inaccurate container is quarantined locally/remotely as
+`dicos-f-02_epoch90.train-reference-accounting.json` (SHA-256 `96f53a74...`),
+with its old sidecar (`f3862775...`).
+
+The hash-pinned migration utility produced schema-v3 report SHA-256
+`0e7cc51d...`, explicitly accounting for 10,000 validation truth events,
+10,000 generated events, 2,000 memorization-only training-reference events, and
+zero test events. Actual payload equivalence passed after removing the new
+metadata and restoring the two source schema fields. The remote evaluator now
+imports schema version 3 and has SHA-256 `1f8b95ac...`; the prior source is
+archived with SHA-256 `3e561d50...`. Controller/presentation hashes are
+`cae0523d...` / `d7f1bfeb...`.
+
+The schema-v2 M0 wrapper PID 28495 was stopped before report creation; surviving
+child PID 28497 was terminated exactly. At 03:35:11Z the unchanged watcher
+accepted schema-v3 B0, created sidecar SHA-256 `d6c9ae3f...`, and launched
+`v3bat3-v3-m0-fresh-e19`; request SHA-256 `06b67520...` matches local/remote,
+wrapper PID 30195 and evaluator PID 30197 are running. Generator training was
+untouched. Focused QA passed 67 tests with one warning; full QA passed 797 with
+64 known warnings; compilation exit 0; test events 0. Audit twins:
+`audit/v3_battery_data_usage_quarantine_20260815.{json,md}`.
+
+Failed attempts retained: initial source patch matched the bank-manifest block
+and failed 17 focused tests before deployment; stopping the wrapper left its
+child; first compact report-inspection syntax failed; `.venv_3090` lacks pytest;
+one combined remote verification command was split by PowerShell; and one
+quoted remote import smoke failed before the corrected import passed.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.
+- S2-response e12: common-measure val 4.931398 best @ e11, 13/24 epochs, invariants 13/13 pass
+- S2-response e13: common-measure val 4.931398 best @ e11, 14/24 epochs, invariants 14/14 pass
+
+- Autonomous v3 battery import: B0; provenance and zero-test contract verified.
+
+- Autonomous v3 battery launched: M0-fresh epoch 19 as `v3bat2-v3-m0-fresh-e19`; selected by validation loss only; test events 0.
+
+- Autonomous v3 battery import: B0; provenance and zero-test contract verified.
+
+- Autonomous v3 battery launched: M0-fresh epoch 19 as `v3bat3-v3-m0-fresh-e19`; selected by validation loss only; test events 0.

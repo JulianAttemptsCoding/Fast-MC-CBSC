@@ -40,10 +40,12 @@ single immutable source ROOT file named in `AGENTS.md`; everything else is
 unreadable as well as unwritable. Two superseded B0 fixed-bank reports are
 quarantined: the first divided by a numerical floor at exactly zero deposited
 truth, and the second still divided by arbitrarily small positive deposited
-truth. Report schema v2 instead defines a paired stochastic detector-response
+truth. Report schema v3 defines a paired stochastic detector-response
 residual normalized by incident kinetic energy; it is explicitly not a
-downstream incident-energy reconstruction metric. The distinct corrected B0
-transaction `v3bat2-dicos-f-02-e90` is active. The workstation watcher imports
+downstream incident-energy reconstruction metric, and explicitly records
+10,000 validation truth events, 10,000 generated events, the 2,000-event
+training reference used only for memorization, and zero test events. The valid
+B0 report is accepted; `v3bat3-v3-m0-fresh-e19` is active. The workstation watcher imports
 and validates each completed battery report and advances B0, M0, S1, then each
 completed screening row without operator intervention. Failed transactions are
 preserved and never silently retried or overwritten.

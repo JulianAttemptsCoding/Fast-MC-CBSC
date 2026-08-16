@@ -3,7 +3,7 @@
   "kind": "v3-validation-battery-autonomy-audit",
   "timestamp_utc": "2026-08-16T00:11:53.5685382Z",
   "source_commit": "20d4c59",
-  "status": "PASS; schema-v2 autonomous battery queue active",
+  "status": "PASS; schema-v3 autonomous battery queue active",
   "contract": {
     "path": "configs/v3_validation_battery_contract.json",
     "sha256": "2b5dad5ebdb9909ada8aa77ba1fedb70d62823f550a2a564261171beb172cd59",
@@ -17,13 +17,13 @@
   },
   "controller": {
     "path": "scripts/v3_battery_controller.py",
-    "sha256": "d86c1e03e85dcf9d722d0a4b07ebc86925f2fa223d53e25c509c347f2fafb3d4",
+    "sha256": "cae0523de38e00e72ff3c82de82a945a8ced4710ee6a82c77663ed0bb8f05aed",
     "eligibility": "B0 passing terminal gate, or screening row with full contiguous declared horizon and all invariant reports",
     "selection": "lowest validation loss only",
     "identity_checks": "checkpoint embedded epoch, best metric, checkpoint hash, frozen-config hash, and frozen-config registry hash; provenance fields are mandatory in imported reports and the epoch check is repeated inside the evaluator",
     "concurrency": "at most one battery5/v3bat* writer on RTX 3090",
     "failure_policy": "failed transaction is not retried or overwritten automatically",
-    "import": "remote/local report hash match, atomic local replace, mandatory conflict-checked provenance sidecar with crash-window self-heal, report schema 2 paired_response normalized by incident kinetic energy, superseded reconstruction family forbidden, structural pass, four separate C2ST families, zero test events",
+    "import": "remote/local report hash match, atomic local replace, mandatory conflict-checked provenance sidecar with crash-window self-heal, report schema 3 paired_response normalized by incident kinetic energy, exact validation/generated/memorization-reference/test accounting, superseded reconstruction family forbidden, structural pass, four separate C2ST families, zero test events",
     "controller_focused_tests": "117 combined battery tests passed with 1 known warning"
   },
   "watcher": {
@@ -39,7 +39,7 @@
   },
   "presentation_guard": {
     "path": "exhibition/build_v3_screening_figure.py",
-    "sha256": "f6d1862493ebe73aa99fea32e79d28326dcc943cfb3a79d9a536f3b9039fb56f",
+    "sha256": "d7f1bfeb2108d2031a6a94434c55a21a1c2779cb31b0ae791d8bb6cf5017b3f5",
     "requires_matching_provenance_sidecar": true,
     "requires_loss_selected_epoch": true
   },
@@ -65,6 +65,18 @@
     "watcher_launch_timestamp_utc": "2026-08-16T02:00:56Z",
     "wrapper_pid": 23257,
     "evaluator_gpu_pid": 23259,
+    "status": "quarantined after train-reference accounting contradiction",
+    "test_events_used": 0
+  },
+  "schema_v3_transaction": {
+    "accepted_b0_report_sha256": "0e7cc51d34e36eef68039bec36acc5f05dc06cc509a4ad70fea2f5d35a044bd5",
+    "accepted_b0_provenance_sha256": "d6c9ae3fb5849c8519ae43d8bb8f2a73138b23a1f7473c9f65184690a21e510f",
+    "next_row": "M0-fresh",
+    "job": "v3bat3-v3-m0-fresh-e19",
+    "request_sha256": "06b67520002a5575e1efc5fb3fa960242166af1023ec0ff633644b4768b46e43",
+    "watcher_launch_timestamp_utc": "2026-08-16T03:35:11Z",
+    "wrapper_pid": 30195,
+    "evaluator_gpu_pid": 30197,
     "status": "running",
     "test_events_used": 0
   },

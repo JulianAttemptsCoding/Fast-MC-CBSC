@@ -17,7 +17,7 @@ full structural/topology and memorization settings, and zero test events. It
 records the validation bank's distinct internal content and byte-file hashes.
 
 Only one `battery5`/`v3bat*` writer may run on the RTX 3090. Reports import
-atomically only after remote/local hash agreement, schema-v2 incident-normalized
+atomically only after remote/local hash agreement, schema-v3 incident-normalized
 paired-response accounting, structural pass, all four separate C2ST families,
 checkpoint provenance, and `test_events_used: 0`. The superseded
 `reconstruction` family is rejected. A failed transaction is never retried or
@@ -50,6 +50,13 @@ guard SHA-256 is `f6d18624...`. At 2026-08-16T02:00:56Z the unchanged watcher
 autonomously launched `v3bat2-dicos-f-02-e90`; local and remote request SHA-256
 both equal `72fdf4fb...`, wrapper PID 23257 is running on the RTX 3090, and its
 evaluator GPU PID is 23259. Test events used remain zero.
+
+The subsequent schema-v2 container was quarantined because it declared zero
+training events despite using a 2,000-event memorization reference. Schema v3
+accounts for that reference explicitly. At 03:35:11Z the watcher accepted B0
+report SHA-256 `0e7cc51d...`, recreated sidecar `d6c9ae3f...`, and launched
+`v3bat3-v3-m0-fresh-e19` under wrapper PID 30195 / evaluator PID 30197.
+Controller SHA-256 is `cae0523d...`; presentation guard is `d7f1bfeb...`.
 
 End-to-end fail-closed proof occurred while B0 was running: the old `battery5`
 wrapper's S1 child had survived the earlier wrapper stop and completed with the

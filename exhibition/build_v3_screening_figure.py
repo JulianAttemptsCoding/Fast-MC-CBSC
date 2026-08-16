@@ -132,17 +132,29 @@ def load_battery_report(run_tag: str) -> dict | None:
     path = candidates[0]
     payload = json.loads(path.read_text(encoding="utf-8"))
     expected = {
-        "schema_version": 2,
+        "schema_version": 3,
         "kind": "cbsc-zdc-v3-validation-battery",
         "split": "validation",
         "pairs": 10_000,
         "evaluator_corpus_examples": 20_000,
+        "validation_events_used": 10_000,
+        "train_events_used": 2_000,
         "test_events_used": 0,
         "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED",
     }
     for field, value in expected.items():
         if payload.get(field) != value:
             raise ValueError(f"{path.name}: expected {field}={value!r}")
+    if payload.get("data_usage") != {
+        "validation_truth_events": 10_000,
+        "generated_events": 10_000,
+        "training_reference_events": 2_000,
+        "training_reference_role": "memorization nearest-neighbour reference only",
+        "test_events": 0,
+    }:
+        raise ValueError(f"{path.name}: data-usage accounting mismatch")
+    if payload.get("memorization", {}).get("train_reference_events") != 2_000:
+        raise ValueError(f"{path.name}: memorization reference accounting mismatch")
     if payload.get("structural_invariants", {}).get("pass") is not True:
         raise ValueError(f"{path.name}: structural battery QA did not pass")
     if "reconstruction" in payload:

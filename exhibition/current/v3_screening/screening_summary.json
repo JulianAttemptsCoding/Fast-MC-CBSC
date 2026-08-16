@@ -1,7 +1,24 @@
 {
   "baseline": {
     "architecture_version": "cbsc-zdc-v2.2",
-    "battery": null,
+    "battery": {
+      "c2st_auroc_mean": {
+        "condition_only": 0.4635906851851852,
+        "high_level": 0.7747664074074074,
+        "low_level": 0.7910063148148149,
+        "profile_aware": 0.8564428148148148
+      },
+      "epoch": 90,
+      "evaluation_role": "diagnostic",
+      "evaluator_corpus_examples": 20000,
+      "pairs": 10000,
+      "report": "exhibition/data/v3_battery/dicos-f-02_epoch90.json",
+      "report_sha256": "0e7cc51d34e36eef68039bec36acc5f05dc06cc509a4ad70fea2f5d35a044bd5",
+      "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED",
+      "selected_validation_loss": 4.483767619419238,
+      "structural_pass": true,
+      "test_events_used": 0
+    },
     "checkpoint_sha256": "491284c7423f365230d34b0443f95aa4888ec770bdc673c4c979897bad8acbce",
     "common_measure_validation_loss": 4.905703973740204,
     "do_not_retrain": true,
@@ -181,7 +198,7 @@
       "direction_vs_comparator": "better",
       "direction_vs_parent": "worse",
       "disposition": null,
-      "epochs_observed": 12,
+      "epochs_observed": 14,
       "evidence": {
         "distribution_diagnostics": false,
         "fixed_condition_visualizations": true,
@@ -189,13 +206,13 @@
         "validation_loss_per_epoch": true,
         "validation_metric_battery": false
       },
-      "evidence_gap": "in progress: 12/24 loss epochs, 12/12 invariant reports, 12/12 visualization payloads; distribution diagnostics and the fixed-bank battery wait for the selected completed checkpoint",
-      "final_epoch": 11,
-      "final_train_loss": 4.942177126099726,
-      "final_validation_loss": 4.931397553942388,
+      "evidence_gap": "in progress: 14/24 loss epochs, 14/14 invariant reports, 14/14 visualization payloads; distribution diagnostics and the fixed-bank battery wait for the selected completed checkpoint",
+      "final_epoch": 13,
+      "final_train_loss": 4.9452977318577815,
+      "final_validation_loss": 5.017628174051533,
       "first_epoch_validation_loss": 5.064650232585946,
       "horizon_epochs": 24,
-      "invariant_reports_observed": 12,
+      "invariant_reports_observed": 14,
       "loss_measure": {
         "common": "deposited_energy_gev_response_density",
         "reported": "deposited_energy_gev_response_density",
@@ -206,16 +223,16 @@
       "parent_validation_loss": 4.905703973740204,
       "raw_best_validation_loss": 4.931397553942388,
       "raw_comparator_validation_loss": 4.513572058600877,
-      "raw_final_validation_loss": 4.931397553942388,
+      "raw_final_validation_loss": 5.017628174051533,
       "raw_first_epoch_validation_loss": 5.064650232585946,
       "raw_parent_validation_loss": 4.483767619419238,
-      "raw_reported_final_generalization_gap": -0.010779572157337824,
+      "raw_reported_final_generalization_gap": 0.07233044219375184,
       "row_id": "S2-response",
       "run_tag": "v3-s2-response",
       "scientific_question": "Does a bounded conditional spline with one zero atom beat the clamped mixture?",
       "status": "running",
       "variant": "v3_s2_response",
-      "visualization_payloads_observed": 12
+      "visualization_payloads_observed": 14
     },
     {
       "battery": null,

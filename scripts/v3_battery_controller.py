@@ -209,17 +209,32 @@ def checkpoint_identity(row: dict) -> dict:
 
 def validate_report(report: dict, row: dict, contract: dict, identity: dict) -> None:
     expected = {
-        "schema_version": 2,
+        "schema_version": 3,
         "kind": "cbsc-zdc-v3-validation-battery",
         "split": "validation",
         "pairs": int(contract["pairs"]),
         "evaluator_corpus_examples": int(contract["evaluator_corpus_examples"]),
+        "validation_events_used": int(contract["pairs"]),
+        "train_events_used": int(contract["memorization_reference_events"]),
         "test_events_used": 0,
         "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED",
     }
     for field, value in expected.items():
         if report.get(field) != value:
             raise ValueError(f"battery report expected {field}={value!r}")
+    expected_usage = {
+        "validation_truth_events": int(contract["pairs"]),
+        "generated_events": int(contract["pairs"]),
+        "training_reference_events": int(contract["memorization_reference_events"]),
+        "training_reference_role": "memorization nearest-neighbour reference only",
+        "test_events": 0,
+    }
+    if report.get("data_usage") != expected_usage:
+        raise ValueError("battery report data-usage accounting mismatch")
+    if report.get("memorization", {}).get("train_reference_events") != int(
+        contract["memorization_reference_events"]
+    ):
+        raise ValueError("battery report memorization reference accounting mismatch")
     if report.get("structural_invariants", {}).get("pass") is not True:
         raise ValueError("battery report structural invariants did not pass")
     if "reconstruction" in report:
@@ -334,7 +349,7 @@ def jobs() -> dict[str, str]:
 
 
 def job_name(row: dict) -> str:
-    return f"v3bat2-{row['run_tag']}-e{row['selected_epoch']}"
+    return f"v3bat3-{row['run_tag']}-e{row['selected_epoch']}"
 
 
 def evaluation_command(row: dict, contract: dict) -> str:

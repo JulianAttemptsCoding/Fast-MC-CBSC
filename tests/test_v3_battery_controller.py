@@ -78,8 +78,18 @@ def test_report_validation_rejects_test_use_and_identity_mismatch() -> None:
     }
     with pytest.raises(ValueError, match="schema_version"):
         CONTROLLER.validate_report(report, row, contract, identity)
-    report["schema_version"] = 2
+    report["schema_version"] = 3
     report.pop("reconstruction")
+    report["validation_events_used"] = 10_000
+    report["train_events_used"] = 2_000
+    report["data_usage"] = {
+        "validation_truth_events": 10_000,
+        "generated_events": 10_000,
+        "training_reference_events": 2_000,
+        "training_reference_role": "memorization nearest-neighbour reference only",
+        "test_events": 0,
+    }
+    report["memorization"] = {"train_reference_events": 2_000}
     report["paired_response"] = {
         "kind": "paired_detector_response_residual",
         "normalization": "incident_kinetic_energy_gev",
@@ -104,8 +114,18 @@ def test_report_validation_requires_checkpoint_and_config_provenance() -> None:
          / "dicos-f-02_epoch90.zero-truth-relative-error.json")
         .read_text(encoding="utf-8")
     )
-    report["schema_version"] = 2
+    report["schema_version"] = 3
     report.pop("reconstruction")
+    report["validation_events_used"] = 10_000
+    report["train_events_used"] = 2_000
+    report["data_usage"] = {
+        "validation_truth_events": 10_000,
+        "generated_events": 10_000,
+        "training_reference_events": 2_000,
+        "training_reference_role": "memorization nearest-neighbour reference only",
+        "test_events": 0,
+    }
+    report["memorization"] = {"train_reference_events": 2_000}
     report["paired_response"] = {
         "kind": "paired_detector_response_residual",
         "normalization": "incident_kinetic_energy_gev",

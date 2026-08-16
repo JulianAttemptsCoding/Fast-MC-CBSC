@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "kind": "v3-battery-data-usage-accounting-quarantine",
+  "timestamp_utc": "2026-08-16T03:27:25Z",
+  "status": "PASS; SCHEMA-V3 B0 ACCEPTED AND AUTONOMOUS M0 ACTIVE",
+  "finding": {
+    "incorrect_field": "train_events_used",
+    "reported_value": 0,
+    "actual_training_reference_events": 2000,
+    "role": "memorization nearest-neighbour reference only",
+    "validation_truth_events": 10000,
+    "generated_events": 10000,
+    "test_events_used": 0,
+    "metric_values_affected": false,
+    "selection_or_training_affected": false
+  },
+  "quarantine": {
+    "report": "exhibition/data/v3_battery/quarantine/dicos-f-02_epoch90.train-reference-accounting.json",
+    "report_sha256": "96f53a747ad0667ccba559701b71fce1792268d0b52eb4532e97c08739d33242",
+    "provenance_sidecar": "exhibition/data/v3_battery/quarantine/dicos-f-02_epoch90.train-reference-accounting.provenance.json",
+    "provenance_sidecar_sha256": "f386277556d1c34522e6236d946c945655c01632d15913956d79ed626736291e",
+    "remote_report": "_v3/battery/quarantine/dicos-f-02_epoch90.train-reference-accounting.json",
+    "remote_hash_matches": true
+  },
+  "schema_v3": {
+    "active_report": "exhibition/data/v3_battery/dicos-f-02_epoch90.json",
+    "active_report_sha256": "0e7cc51d34e36eef68039bec36acc5f05dc06cc509a4ad70fea2f5d35a044bd5",
+    "remote_hash_matches": true,
+    "migration_utility": "scripts/migrate_v3_battery_data_usage.py",
+    "migration_utility_sha256": "a6ef79c9de6da7cc9931db37e191e5690c1cf55cfd3ad1cf4fbc5b896ec04cf3",
+    "actual_payload_equivalence": "PASS after removing schema/accounting metadata and restoring source schema fields",
+    "new_evaluator_sha256": "1f8b95ac16cd38ea92878f9feceabc230167fe6b27b01a12873e8e4c3e5a7f59",
+    "old_evaluator_archive": "_v3/code_archive/v3_battery_before_data_usage_accounting_20260815.py",
+    "old_evaluator_sha256": "3e561d505284aa5e306c447e36347a743db4e16ded52abee80e063c3e96e2cdf",
+    "controller_sha256": "cae0523de38e00e72ff3c82de82a945a8ced4710ee6a82c77663ed0bb8f05aed",
+    "presentation_guard_sha256": "d7f1bfeb2108d2031a6a94434c55a21a1c2779cb31b0ae791d8bb6cf5017b3f5"
+  },
+  "aborted_dependent_transaction": {
+    "job": "v3bat2-v3-m0-fresh-e19",
+    "wrapper_pid": 28495,
+    "child_pid": 28497,
+    "verification": "wrapper stopped; surviving exact child terminated; no report created",
+    "generator_training_affected": false
+  },
+  "verification": {
+    "local_focused_tests": "67 passed, 1 known warning",
+    "local_full_tests": "797 passed, 64 known warnings",
+    "compileall_exit_code": 0,
+    "remote_compileall": "PASS",
+    "remote_import_schema_version": 3,
+    "remote_pytest": "not run: pytest absent from .venv_3090; primary .venv was not used or mutated",
+    "test_events_used": 0
+  },
+  "autonomous_transition": {
+    "timestamp_utc": "2026-08-16T03:35:11Z",
+    "accepted_b0_report_sha256": "0e7cc51d34e36eef68039bec36acc5f05dc06cc509a4ad70fea2f5d35a044bd5",
+    "accepted_b0_provenance_sha256": "d6c9ae3fb5849c8519ae43d8bb8f2a73138b23a1f7473c9f65184690a21e510f",
+    "job": "v3bat3-v3-m0-fresh-e19",
+    "request": "exhibition/data/v3_battery/requests/v3bat3-v3-m0-fresh-e19.json",
+    "request_sha256": "06b67520002a5575e1efc5fb3fa960242166af1023ec0ff633644b4768b46e43",
+    "remote_request_hash_matches": true,
+    "wrapper_pid": 30195,
+    "evaluator_gpu_pid": 30197,
+    "generator_training_affected": false,
+    "test_events_used": 0
+  },
+  "failed_attempts": [
+    "Initial schema-v3 patch matched the bank-manifest accounting block instead of the report block; focused QA failed 17 tests before deployment and the source location was corrected.",
+    "Stopping M0 wrapper PID 28495 left child PID 28497 alive; the exact child was terminated and its disappearance from nvidia-smi verified.",
+    "The first compact local report inspection used an invalid one-line Python function definition; the strict-parser rerun passed.",
+    "Remote pytest could not start because .venv_3090 has no pytest; the 4090 .venv was not used from the 3090.",
+    "One combined remote verification command was split by PowerShell, and one import smoke had broken nested quoting; separate compile/hash/import commands passed."
+  ],
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

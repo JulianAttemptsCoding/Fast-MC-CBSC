@@ -309,7 +309,7 @@ Ordered by how much damage each would have done.
 | Job | Card | State |
 |---|---|---|
 | `queue2` | 4090 | S2 running, S3 queued behind it |
-| `v3bat2-dicos-f-02-e90` | 3090 | schema-v2 B0 rerun; autonomous M0/S1/S2/S3 queue follows |
+| `v3bat3-v3-m0-fresh-e19` | 3090 | schema-v3 M0 battery; autonomous S1/S2/S3 queue follows |
 | `watch_v3_outputs` | workstation | imports epochs/batteries and rebuilds figures/catalog every 15 min |
 
 The queue refuses to start a row until the card is free, refuses to continue
@@ -331,11 +331,15 @@ zero-truth events and reported RMSE 5.332e8. Excluding exact zeros did not cure
 the definition: arbitrarily small positive deposited truth produced RMSE
 123,548.67. The separate B0 external-validation gate is unaffected, and its
 downstream incident-energy reconstruction value is not comparable to this
-paired detector-response residual. Report schema v2 normalizes the paired
+paired detector-response residual. Report schema v3 normalizes the paired
 generated-minus-truth deposited response by incident kinetic energy, includes
-all pairs, and labels the quantity as not downstream reconstruction. It passed
-57 synchronized remote tests and is rerunning B0 under a distinct transaction.
-A watcher-driven controller then queues M0, S1, and every completed row with
+all pairs, labels the quantity as not downstream reconstruction, and explicitly
+accounts for its 2,000-event training reference used only for memorization. The
+schema-v2 container that reported that reference as zero is quarantined; its
+metric payload migrated byte-equivalently after removing the accounting fields.
+B0 is now accepted under schema v3: paired-response RMSE 0.045983, high-level
+C2ST 0.774766, structural invariants pass, and test events 0. A watcher-driven
+controller now evaluates M0, then S1 and every completed row with
 checkpoint and contract provenance.
 The attempted stop of the old S1 wrapper did not kill its child; that child
 completed at 00:26:43Z with the obsolete evaluator. The controller rejected its
@@ -355,8 +359,9 @@ cost, and D1 not fitting the current card.
 performance, downstream reconstruction, diversity/memorization acceptance,
 publication-scale timing on another backend.
 
-**Not yet validly measured:** the schema-v2 full metric battery on any
-checkpoint (the B0 rerun is active); the D3
+**Now validly measured on B0 only:** the schema-v3 full metric battery. M0 is
+active; S1 and completed screening rows remain queued. **Not yet validly
+measured:** those row batteries; the D3
 trigger; any adversarial training.
 
 The gap between the objective and the fidelity metric remains the project's

@@ -20,3 +20,8 @@ Each artifact requires an audit twin that states the exact failure and scope.
   sidecar: excluding exact zero deposits still left arbitrarily small positive
   truth deposits in the denominator, yielding RMSE 123,548.7. See
   `audit/v3_battery_response_denominator_quarantine_20260815.{json,md}`.
+- `dicos-f-02_epoch90.train-reference-accounting.json` and its provenance
+  sidecar: metric values are valid, but report schema v2 incorrectly declared
+  `train_events_used: 0` despite its explicit 2,000-event training reference
+  for memorization. The hash-pinned schema-v3 migration corrects metadata only;
+  see `audit/v3_battery_data_usage_quarantine_20260815.{json,md}`.
