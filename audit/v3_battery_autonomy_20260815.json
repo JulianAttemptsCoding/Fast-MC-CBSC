@@ -53,6 +53,15 @@
     "remote_request_hash_matches": true,
     "status": "running"
   },
+  "late_old_evaluator_rejection": {
+    "row_id": "S1-axis",
+    "cause": "battery5 wrapper stop did not terminate its active evaluation child",
+    "completed_at_utc": "2026-08-16T00:26:43Z",
+    "report_sha256": "619241c7b40048f785b5b7d28a615b83ae0f944fd3b07c52320e7eaa035e77f1",
+    "controller_result": "rejected before local acceptance because corrected zero-truth accounting was absent",
+    "disposition": "quarantined locally and remotely",
+    "corrected_b0_job_affected": false
+  },
   "queue_order_at_activation": ["B0", "M0-fresh", "S1-axis", "S2-response when complete", "S3-first when complete"],
   "verification": {
     "timestamp_utc": "2026-08-16T00:28:49Z",

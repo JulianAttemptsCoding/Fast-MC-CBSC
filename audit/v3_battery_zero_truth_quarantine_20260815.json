@@ -3,7 +3,7 @@
   "kind": "v3-validation-battery-zero-truth-metric-quarantine",
   "timestamp_utc": "2026-08-16T00:11:53.5685382Z",
   "source_commit": "20d4c59",
-  "status": "AFFECTED ARTIFACT QUARANTINED; corrected rerun launched",
+  "status": "B0 AND LATE S1 OLD-EVALUATOR ARTIFACTS QUARANTINED; corrected B0 rerun active",
   "failure": {
     "metric": "reconstruction.energy_relative_rmse",
     "old_definition": "(generated-truth)/max(abs(truth),1e-9) over every event",
@@ -23,14 +23,16 @@
     "local_quarantine_path": "exhibition/data/v3_battery/quarantine/dicos-f-02_epoch90.zero-truth-relative-error.json",
     "status": "QUARANTINED AS A WHOLE; evidence only; must not enter comparison, selection, promotion, or publication"
   },
-  "s1_in_flight_attempt": {
+  "s1_late_completion": {
     "job": "battery5",
     "pid": 10181,
     "loaded_old_module": true,
-    "action": "stopped before report creation",
-    "report_path": "_v3/battery/v3-s1-axis_epoch19.json",
-    "report_exists": false,
-    "artifact_quarantine_needed": false
+    "failed_stop_finding": "the wrapper was stopped but its evaluation child survived and completed",
+    "completed_at_utc": "2026-08-16T00:26:43Z",
+    "report_sha256": "619241c7b40048f785b5b7d28a615b83ae0f944fd3b07c52320e7eaa035e77f1",
+    "remote_quarantine_path": "_v3/battery/quarantine/v3-s1-axis_epoch19.zero-truth-relative-error.json",
+    "local_quarantine_path": "exhibition/data/v3_battery/quarantine/v3-s1-axis_epoch19.zero-truth-relative-error.json",
+    "status": "QUARANTINED AS A WHOLE; rejected by the autonomous importer before local acceptance"
   },
   "unaffected": {
     "b0_checkpoint": "unchanged and frozen",
@@ -52,7 +54,8 @@
   "failed_attempts": [
     "The RTX-3090 evaluation virtual environment has no pytest; the first remote QA command failed before tests ran.",
     "Running the updated tests against the still-old staged evaluator produced 2 failures and 55 passes, correctly identifying the missing zero-truth schema and 3e9 all-zero fixture RMSE.",
-    "The first autonomous launch failed closed because the bank's internal content hash was incorrectly used as its file hash; the contract now records both distinct hashes and no request or job was created by that failed call."
+    "The first autonomous launch failed closed because the bank's internal content hash was incorrectly used as its file hash; the contract now records both distinct hashes and no request or job was created by that failed call.",
+    "Stopping battery5 terminated its wrapper but not the active S1 child; the child completed later with the old evaluator. The autonomous importer rejected the report before acceptance and both local and remote copies are quarantined."
   ],
   "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
 }

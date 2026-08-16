@@ -39,4 +39,10 @@ and metrics catalog after a report import. The first clean transaction,
 equal `72fdf4fb…`. Queue order is B0, M0, S1, then S2/S3 as their horizons
 finish. The controller never starts generator training.
 
+End-to-end fail-closed proof occurred while B0 was running: the old `battery5`
+wrapper's S1 child had survived the earlier wrapper stop and completed with the
+obsolete evaluator. The controller rejected that report before acceptance
+because corrected zero-truth accounting was absent. It is quarantined locally
+and remotely with SHA-256 `619241c7...`; the corrected B0 job was unaffected.
+
 **PHYSICS VALIDATION NOT ESTABLISHED.**

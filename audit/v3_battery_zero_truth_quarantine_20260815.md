@@ -15,10 +15,14 @@ under the respective `quarantine/` directories. It is evidence only and cannot
 enter comparison, selection, promotion, or publication. The B0 checkpoint and
 the separate 4,000-pair external-validation gate are unaffected.
 
-The in-flight S1 `battery5` process had loaded the same old evaluator. PID 10181
-was stopped before it created `_v3/battery/v3-s1-axis_epoch19.json`; remote
-absence was verified, so there is no S1 artifact to quarantine. Generator
-training was untouched.
+The in-flight S1 `battery5` process had loaded the same old evaluator. Stopping
+PID 10181 terminated its wrapper but not the evaluation child. That child
+completed at 2026-08-16T00:26:43Z and wrote the obsolete-schema S1 report. The
+autonomous importer rejected it before local acceptance. The report is now
+quarantined locally and remotely as
+`v3-s1-axis_epoch19.zero-truth-relative-error.json`, SHA-256
+`619241c7b40048f785b5b7d28a615b83ae0f944fd3b07c52320e7eaa035e77f1`.
+Generator training was untouched.
 
 The staged evaluator now has SHA-256 `3312e3e3…`, the identity-checking battery
 CLI `5f9c369f…`, and the checkpoint probe `c265abf9…`. Remote QA passed **57

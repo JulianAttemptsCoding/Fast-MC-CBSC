@@ -11318,3 +11318,31 @@ The corrected B0 battery and sole S2 trainer remained active. Audit twins:
 `audit/v3_battery_autonomy_publication_20260815.{json,md}`.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+
+### 2026-08-15 (battery correction) -- old S1 child survived wrapper stop
+
+At 2026-08-16T00:42:36Z the autonomous controller rejected an active-path
+battery report because it lacked the mandatory corrected zero-truth event
+accounting. Diagnosis found that this was not the clean B0 rerun: the earlier
+`battery5` wrapper stop had not killed its S1 evaluation child. The child
+finished at 00:26:43Z and wrote `_v3/battery/v3-s1-axis_epoch19.json` with the
+old evaluator. This corrects the earlier statement that no S1 report existed.
+
+The controller failed closed before local acceptance. The S1 report, SHA-256
+`619241c7b40048f785b5b7d28a615b83ae0f944fd3b07c52320e7eaa035e77f1`,
+is now quarantined locally and remotely as
+`v3-s1-axis_epoch19.zero-truth-relative-error.json`. Remote/local hashes match;
+the active battery directory again contains no report. The corrected B0 job
+`v3bat-dicos-f-02-e90` remains running and generator training was untouched.
+Test events used: 0.
+
+Failed attempts retained: one PowerShell command containing nested shell/Python
+quotes failed locally before any remote call; a subsequent guarded download
+correctly returned 404 because the path being investigated was B0 rather than
+the actual S1 report; and the 3090 image lacks `ps`, so process-tree inspection
+failed closed and the completed wrapper log plus report/hash evidence were used
+for artifact diagnosis. The known stop-child hazard in the runbook is confirmed,
+not hypothetical.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.

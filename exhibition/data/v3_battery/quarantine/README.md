@@ -12,3 +12,7 @@ Each artifact requires an audit twin that states the exact failure and scope.
   report is quarantined as a whole and B0 is queued for a clean rerun under the
   corrected evaluator. See
   `audit/v3_battery_zero_truth_quarantine_20260815.{json,md}`.
+- `v3-s1-axis_epoch19.zero-truth-relative-error.json`: an old-evaluator child
+  survived the attempted `battery5` wrapper stop and completed later. The
+  autonomous importer rejected it before acceptance; see the same zero-truth
+  quarantine audit twins.

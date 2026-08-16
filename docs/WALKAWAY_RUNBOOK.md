@@ -93,8 +93,10 @@ and expected, because S2 adds no axis columns.
 `test_events_used: 0`, all twelve metric families, and 1,000 bootstrap
 replicates at 95%. There are currently no accepted fixed-bank reports: B0's
 first report is quarantined because zero-truth events inflated relative-energy
-RMSE to 5.332e8, and a corrected B0 rerun is active. The old S1 attempt was
-stopped before report creation. The file originally labeled `dicos-f-03` epoch 111 is under
+RMSE to 5.332e8, and a corrected B0 rerun is active. The old S1 wrapper stop did
+not kill its evaluation child; the obsolete S1 report completed later, was
+rejected by the autonomous importer, and is also quarantined. The file
+originally labeled `dicos-f-03` epoch 111 is under
 `_v3/battery/quarantine/`: that run never beat its inherited epoch-90 parent,
 so `best.pt` was byte-identical to B0 while the launcher supplied epoch 111.
 The intended epoch-111 checkpoint was not retained and may not be reconstructed

@@ -331,6 +331,9 @@ zero-truth events and reported RMSE 5.332e8. The separate B0 external-validation
 gate is unaffected. The corrected evaluator counts excluded zero-truth events,
 passed 57 remote tests, and is rerunning B0. A watcher-driven controller then
 queues M0, S1, and every completed row with checkpoint and contract provenance.
+The attempted stop of the old S1 wrapper did not kill its child; that child
+completed at 00:26:43Z with the obsolete evaluator. The controller rejected its
+report before acceptance, and it is quarantined locally and remotely.
 
 ---
 
