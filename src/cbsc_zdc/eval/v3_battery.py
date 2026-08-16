@@ -57,6 +57,7 @@ from .metrics import (
 from .topology import topology_report
 
 SCHEMA_VERSION = 1
+REPORT_SCHEMA_VERSION = 2
 MANIFEST_KIND = "cbsc-zdc-v3-fixed-validation-bank"
 BATTERY_KIND = "cbsc-zdc-v3-validation-battery"
 
@@ -466,40 +467,40 @@ def _count_report(cell_energy: np.ndarray, layer_index: np.ndarray) -> dict[str,
     }
 
 
-def _reconstruction_report(
+def _paired_response_report(
     kinetic: np.ndarray, truth_total: np.ndarray, generated_total: np.ndarray
 ) -> dict[str, float]:
-    """Relative energy error over events with a positive truth response.
+    """Paired response residual normalized by incident kinetic energy.
 
-    Dividing by `max(|truth|, 1e-9)` across the whole sample is wrong: about 0.9%
-    of validation events have exactly zero truth response, and each of those
-    contributes a ratio of order 1e9. The first run of this battery reported
-    energy_relative_rmse = 5.3e8 for that reason, against the external
-    evaluator's 0.21. Zero-truth events carry no relative error to measure, so
-    they are excluded and counted instead.
+    A detector can have zero or arbitrarily small deposited truth response, so
+    dividing by the event's truth deposit is undefined or numerically unstable.
+    The fixed bank is restricted to positive 50--250 GeV incident kinetic
+    energy, which is the predeclared conditioning scale and is never selected
+    from model output. This is a paired response diagnostic, not downstream
+    four-momentum reconstruction accuracy.
     """
-    positive = truth_total > 0
-    excluded = int((~positive).sum())
-    if not positive.any():
-        return {
-            "energy_relative_rmse": None,
-            "energy_mean_bias_fraction": None,
-            "energy_median_absolute_relative": None,
-            "events_with_positive_truth": 0,
-            "events_excluded_zero_truth": excluded,
-            "mean_kinetic_gev": float(np.mean(kinetic)),
-        }
-    relative = (
-        generated_total[positive] - truth_total[positive]
-    ) / truth_total[positive]
+    kinetic = np.asarray(kinetic, dtype=float)
+    if len(kinetic) == 0 or np.any(~np.isfinite(kinetic)) or np.any(kinetic <= 0):
+        raise BatteryContractError(
+            "paired response normalization requires finite positive kinetic energy"
+        )
+    normalized = (generated_total - truth_total) / kinetic
     return {
-        "energy_relative_rmse": float(np.sqrt(np.mean(relative ** 2))),
-        "energy_mean_bias_fraction": float(np.mean(relative)),
-        "energy_median_absolute_relative": float(np.median(np.abs(relative))),
-        "events_with_positive_truth": int(positive.sum()),
-        "events_excluded_zero_truth": excluded,
-        "zero_truth_fraction": float(excluded / len(truth_total)),
+        "kind": "paired_detector_response_residual",
+        "normalization": "incident_kinetic_energy_gev",
+        "response_delta_over_kinetic_rmse": float(
+            np.sqrt(np.mean(normalized ** 2))
+        ),
+        "response_delta_over_kinetic_mean": float(np.mean(normalized)),
+        "response_delta_over_kinetic_median_absolute": float(
+            np.median(np.abs(normalized))
+        ),
+        "events_included": int(len(kinetic)),
+        "zero_truth_events": int(np.sum(truth_total <= 0)),
         "mean_kinetic_gev": float(np.mean(kinetic)),
+        "interpretation": (
+            "paired stochastic response residual; not downstream reconstruction"
+        ),
     }
 
 
@@ -608,7 +609,7 @@ def battery_report(
     bootstrapped: dict[str, list[float]] = {
         "response_wasserstein_gev": [],
         "hit_count_wasserstein": [],
-        "energy_mean_bias_fraction": [],
+        "response_delta_over_kinetic_mean": [],
         "zero_fraction_difference": [],
     }
     bootstrap_start = __import__("time").perf_counter()
@@ -620,9 +621,10 @@ def battery_report(
         bootstrapped["hit_count_wasserstein"].append(
             float(wasserstein_1d(hits_truth[picks], hits_generated[picks]))
         )
-        scale = np.maximum(np.abs(truth_total[picks]), 1e-9)
-        bootstrapped["energy_mean_bias_fraction"].append(
-            float(np.mean((generated_total[picks] - truth_total[picks]) / scale))
+        bootstrapped["response_delta_over_kinetic_mean"].append(
+            float(np.mean(
+                (generated_total[picks] - truth_total[picks]) / kinetic[picks]
+            ))
         )
         bootstrapped["zero_fraction_difference"].append(
             float(np.mean(generated_total[picks] <= 0) - np.mean(truth_total[picks] <= 0))
@@ -639,7 +641,7 @@ def battery_report(
     }
 
     report = {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": REPORT_SCHEMA_VERSION,
         "kind": BATTERY_KIND,
         "identity": {
             "checkpoint": str(request.checkpoint).replace("\\", "/"),
@@ -704,7 +706,7 @@ def battery_report(
             truth, generated, layer_index, positions, request.generator_seed
         )),
         "c2st": c2st,
-        "reconstruction": _reconstruction_report(
+        "paired_response": _paired_response_report(
             kinetic, truth_total, generated_total
         ),
         "bootstrap": {

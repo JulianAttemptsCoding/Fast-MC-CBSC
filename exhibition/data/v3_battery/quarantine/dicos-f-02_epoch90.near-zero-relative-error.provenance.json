@@ -1,0 +1,16 @@
+{
+  "checkpoint": "_runs/calibrated_lr3e4_dicos-f-02/checkpoints/best.pt",
+  "checkpoint_best_metric": 4.483767619419238,
+  "checkpoint_embedded_epoch": 90,
+  "checkpoint_sha256": "491284c7423f365230d34b0443f95aa4888ec770bdc673c4c979897bad8acbce",
+  "frozen_config": "prep/configs/frozen_calibrated_lr3e4_dicos-f-02.yaml",
+  "frozen_config_sha256": "116bc8c220b07ce54ae07196bdd6ed8e835775c8c937182a209a799dc94ae9c5",
+  "kind": "cbsc-zdc-v3-battery-provenance-sidecar",
+  "report": "dicos-f-02_epoch90.json",
+  "report_sha256": "cfa0b6d02303dfb44d4172e241c8a6565dc7b04218be8372d893302aefaac15f",
+  "schema_version": 1,
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED",
+  "selected_by": "lowest validation loss over the complete declared horizon",
+  "selected_validation_loss": 4.483767619419238,
+  "test_events_used": 0
+}

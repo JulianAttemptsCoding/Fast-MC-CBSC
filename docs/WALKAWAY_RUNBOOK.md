@@ -12,7 +12,7 @@ Three jobs across two cards. None of them needs you.
 | Job | Pod | What it is | Expected |
 |---|---|---|---|
 | `queue2` | RTX 4090 | **S2-response** running, **S3-first** queued behind it | ~12 h each |
-| `v3bat-dicos-f-02-e90` | RTX 3090 | corrected B0 fixed-bank rerun; M0/S1/S2/S3 queue automatically | ~65 min per eligible checkpoint |
+| `v3bat2-dicos-f-02-e90` | RTX 3090 | schema-v2 B0 fixed-bank rerun; M0/S1/S2/S3 queue automatically | ~65 min per eligible checkpoint |
 | `watch_v3_outputs` | workstation | Imports epochs, advances batteries, rebuilds figures/catalog every 15 min | continuous |
 
 **M0-fresh is complete.** Best 4.513572 at epoch 19. It resolved the S1 causal
@@ -55,7 +55,7 @@ python scripts/dicos.py logs queue2
 ```
 
 ```bash
-MSYS_NO_PATHCONV=1 DICOS_CONFIG="C:/Users/Julia/.dicos/config_3090.json" python scripts/dicos.py logs v3bat-dicos-f-02-e90
+MSYS_NO_PATHCONV=1 DICOS_CONFIG="C:/Users/Julia/.dicos/config_3090.json" python scripts/dicos.py logs v3bat2-dicos-f-02-e90
 ```
 
 ## 3. What "good" looks like
@@ -89,11 +89,15 @@ with a nonzero `initialized` count means a head was replaced on purpose.
 `copied 193, expanded 0, initialized 15, unexpected 0` — `expanded 0` is correct
 and expected, because S2 adds no axis columns.
 
-**The battery.** Valid reports under `_v3/battery/` record
-`test_events_used: 0`, all twelve metric families, and 1,000 bootstrap
-replicates at 95%. There are currently no accepted fixed-bank reports: B0's
-first report is quarantined because zero-truth events inflated relative-energy
-RMSE to 5.332e8, and a corrected B0 rerun is active. The old S1 wrapper stop did
+**The battery.** Valid schema-v2 reports under `_v3/battery/` record
+`test_events_used: 0`, all declared metric families, and 1,000 bootstrap
+replicates at 95%. Their `paired_response` family normalizes the generated-minus-
+truth deposited-response residual by incident kinetic energy and is not a
+downstream reconstruction metric. There are currently no accepted fixed-bank
+reports: B0's first report is quarantined because zero-truth events inflated
+relative-energy RMSE to 5.332e8; its first correction is also quarantined
+because arbitrarily small positive deposited truth still made that denominator
+unstable. The distinct schema-v2 B0 rerun is active. The old S1 wrapper stop did
 not kill its evaluation child; the obsolete S1 report completed later, was
 rejected by the autonomous importer, and is also quarantined. The file
 originally labeled `dicos-f-03` epoch 111 is under

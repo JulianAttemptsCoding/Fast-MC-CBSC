@@ -181,7 +181,7 @@
       "direction_vs_comparator": "worse",
       "direction_vs_parent": "worse",
       "disposition": null,
-      "epochs_observed": 8,
+      "epochs_observed": 11,
       "evidence": {
         "distribution_diagnostics": false,
         "fixed_condition_visualizations": true,
@@ -189,13 +189,13 @@
         "validation_loss_per_epoch": true,
         "validation_metric_battery": false
       },
-      "evidence_gap": "in progress: 8/24 loss epochs, 8/8 invariant reports, 8/8 visualization payloads; distribution diagnostics and the fixed-bank battery wait for the selected completed checkpoint",
-      "final_epoch": 7,
-      "final_train_loss": 4.980903795556977,
-      "final_validation_loss": 4.97052683976873,
+      "evidence_gap": "in progress: 11/24 loss epochs, 11/11 invariant reports, 11/11 visualization payloads; distribution diagnostics and the fixed-bank battery wait for the selected completed checkpoint",
+      "final_epoch": 10,
+      "final_train_loss": 4.972886215493247,
+      "final_validation_loss": 4.982505989284152,
       "first_epoch_validation_loss": 5.064650232585946,
       "horizon_epochs": 24,
-      "invariant_reports_observed": 8,
+      "invariant_reports_observed": 11,
       "loss_measure": {
         "common": "deposited_energy_gev_response_density",
         "reported": "deposited_energy_gev_response_density",
@@ -206,16 +206,16 @@
       "parent_validation_loss": 4.905703973740204,
       "raw_best_validation_loss": 4.97052683976873,
       "raw_comparator_validation_loss": 4.513572058600877,
-      "raw_final_validation_loss": 4.97052683976873,
+      "raw_final_validation_loss": 4.982505989284152,
       "raw_first_epoch_validation_loss": 5.064650232585946,
       "raw_parent_validation_loss": 4.483767619419238,
-      "raw_reported_final_generalization_gap": -0.0103769557882476,
+      "raw_reported_final_generalization_gap": 0.00961977379090495,
       "row_id": "S2-response",
       "run_tag": "v3-s2-response",
       "scientific_question": "Does a bounded conditional spline with one zero atom beat the clamped mixture?",
       "status": "running",
       "variant": "v3_s2_response",
-      "visualization_payloads_observed": 8
+      "visualization_payloads_observed": 11
     },
     {
       "battery": null,

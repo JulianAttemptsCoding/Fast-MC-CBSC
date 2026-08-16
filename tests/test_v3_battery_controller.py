@@ -76,13 +76,19 @@ def test_report_validation_rejects_test_use_and_identity_mismatch() -> None:
         "checkpoint_embedded_epoch": 90,
         "frozen_config_sha256": report["identity"].get("frozen_config_sha256", "b" * 64),
     }
-    with pytest.raises(ValueError, match="predates the zero-truth"):
+    with pytest.raises(ValueError, match="schema_version"):
         CONTROLLER.validate_report(report, row, contract, identity)
-    report["reconstruction"].update({
-        "events_with_positive_truth": 9900,
-        "events_excluded_zero_truth": 100,
-        "energy_relative_rmse": 0.25,
-    })
+    report["schema_version"] = 2
+    report.pop("reconstruction")
+    report["paired_response"] = {
+        "kind": "paired_detector_response_residual",
+        "normalization": "incident_kinetic_energy_gev",
+        "response_delta_over_kinetic_rmse": 0.25,
+        "response_delta_over_kinetic_mean": 0.01,
+        "response_delta_over_kinetic_median_absolute": 0.1,
+        "events_included": 10_000,
+        "zero_truth_events": 100,
+    }
     for field in ("checkpoint_sha256", "checkpoint_embedded_epoch",
                   "frozen_config_sha256"):
         report["identity"][field] = identity[field]
@@ -98,11 +104,17 @@ def test_report_validation_requires_checkpoint_and_config_provenance() -> None:
          / "dicos-f-02_epoch90.zero-truth-relative-error.json")
         .read_text(encoding="utf-8")
     )
-    report["reconstruction"].update({
-        "events_with_positive_truth": 9900,
-        "events_excluded_zero_truth": 100,
-        "energy_relative_rmse": 0.25,
-    })
+    report["schema_version"] = 2
+    report.pop("reconstruction")
+    report["paired_response"] = {
+        "kind": "paired_detector_response_residual",
+        "normalization": "incident_kinetic_energy_gev",
+        "response_delta_over_kinetic_rmse": 0.25,
+        "response_delta_over_kinetic_mean": 0.01,
+        "response_delta_over_kinetic_median_absolute": 0.1,
+        "events_included": 10_000,
+        "zero_truth_events": 100,
+    }
     identity = {
         "checkpoint_sha256": "a" * 64,
         "checkpoint_embedded_epoch": 90,

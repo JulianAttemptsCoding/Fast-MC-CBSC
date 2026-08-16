@@ -16,3 +16,7 @@ Each artifact requires an audit twin that states the exact failure and scope.
   survived the attempted `battery5` wrapper stop and completed later. The
   autonomous importer rejected it before acceptance; see the same zero-truth
   quarantine audit twins.
+- `dicos-f-02_epoch90.near-zero-relative-error.json` and its provenance
+  sidecar: excluding exact zero deposits still left arbitrarily small positive
+  truth deposits in the denominator, yielding RMSE 123,548.7. See
+  `audit/v3_battery_response_denominator_quarantine_20260815.{json,md}`.

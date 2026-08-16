@@ -229,6 +229,13 @@ controller selects the lowest validation loss only, verifies `best.pt`'s
 embedded epoch/metric and hashes, permits one RTX-3090 battery writer, imports
 atomically, and never retries or overwrites a failed transaction.
 
+Report schema v2 uses the `paired_response` family for the paired stochastic
+detector-response residual. Its denominator is incident kinetic energy, not
+truth deposited response, so exact and near-zero deposits are both stable. It
+includes every validation pair and must not be described or compared as a
+downstream incident-energy reconstruction metric. The controller rejects the
+superseded top-level `reconstruction` family.
+
 Fourteen inputs fail closed; nothing defaults. The evaluation split is a module
 constant, not a flag — a test parses both source files and fails if the bare
 split literal appears anywhere.

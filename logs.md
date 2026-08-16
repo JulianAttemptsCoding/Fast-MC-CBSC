@@ -11346,3 +11346,58 @@ for artifact diagnosis. The known stop-child hazard in the runbook is confirmed,
 not hypothetical.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+- S2-response e8: common-measure val 4.970527 best @ e7, 9/24 epochs, invariants 9/9 pass
+- S2-response e9: common-measure val 4.970527 best @ e7, 10/24 epochs, invariants 10/10 pass
+- S2-response e10: common-measure val 4.970527 best @ e7, 11/24 epochs, invariants 11/11 pass
+
+- Autonomous v3 battery import: B0; provenance and zero-test contract verified.
+
+- Autonomous v3 battery launched: M0-fresh epoch 19 as `v3bat-v3-m0-fresh-e19`; selected by validation loss only; test events 0.
+
+- Autonomous v3 battery launched: B0 epoch 90 as `v3bat2-dicos-f-02-e90`; selected by validation loss only; test events 0.
+
+### 2026-08-15 (battery schema v2) -- unstable deposited-truth denominator removed
+
+The first corrected B0 battery report was accepted mechanically and triggered
+M0, but content QA found that excluding exactly zero deposited truth was not a
+stable relative-error definition: 9,907 positive-truth events still included
+arbitrarily small denominators, producing response-relative RMSE 123,548.671875
+and mean bias fraction 3,344.763916. The B0 report and provenance sidecar are
+quarantined as `dicos-f-02_epoch90.near-zero-relative-error.{json,provenance.json}`
+with SHA-256 `cfa0b6d0...` and `c96a4b37...`. The external 0.210445 value is a
+downstream incident-energy reconstruction metric and is not comparable to this
+paired detector-response residual.
+
+The dependent old-definition M0 wrapper PID 21912 was stopped; its surviving
+GPU child PID 21914 was then terminated exactly, and no M0 report was created.
+Its request remains evidence with SHA-256 `06b67520...`. Generator training was
+untouched. Report schema v2 replaces `reconstruction` with `paired_response`,
+normalizes generated-minus-truth deposited response by incident kinetic energy,
+includes all 10,000 validation pairs, and explicitly disclaims downstream
+reconstruction meaning. Evaluator SHA-256 is `3e561d50...`, controller
+`d86c1e03...`, and presentation guard `f6d18624...`; the old evaluator is
+archived remotely as evidence. Synchronized remote QA passed 57 tests with one
+known warning; focused local QA passed 117 with one warning; full local QA
+passed 795 with 64 known warnings; `compileall` exited 0; and the 131-graphic
+catalog passed. Test events used: 0.
+
+At 2026-08-16T02:00:56Z the unchanged watcher autonomously launched the
+distinct transaction `v3bat2-dicos-f-02-e90`. Local and remote request SHA-256
+both equal `72fdf4fb...`; 3090 wrapper PID 23257 and exact evaluator GPU PID
+23259 were running. This proves autonomous recovery without an operator advance.
+One health query initially omitted the 3090 config and inspected the 4090
+namespace; no state changed. Narrow `pgrep` and `pstree` probes then failed
+because neither program exists in the 3090 image; wrapper state and the exact
+GPU PID were retained instead, without another broad process listing.
+
+Failed attempts retained: the first remote QA paired updated source with a
+stale staged test and produced 3 expected failures/54 passes; a PowerShell-
+misquoted remote stat command failed locally; stopping the old M0 wrapper left
+its child; the first health query selected the wrong pod; and `pgrep`/`pstree`
+are unavailable. `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+Post-documentation verification: JSON parsing PASS; `compileall` exit 0; full
+QA 795 passed with 64 known warnings; refreshed `screening_validation_loss.png`
+passed visual layout/content inspection through S2 epoch 10. The first pytest
+invocation omitted required `PYTHONPATH=src` and stopped during collection with
+13 import errors before any test ran; the documented-environment rerun passed.

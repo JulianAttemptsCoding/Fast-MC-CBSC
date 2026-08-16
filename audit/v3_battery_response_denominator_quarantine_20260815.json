@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "kind": "v3-battery-response-denominator-quarantine",
+  "timestamp_utc": "2026-08-16T01:52:50Z",
+  "status": "SECOND B0 REPORT QUARANTINED; SCHEMA-V2 INCIDENT-NORMALIZED CORRECTION DEPLOYED",
+  "failure": {
+    "superseded_definition": "(generated deposited response - truth deposited response) / truth deposited response over truth response > 0",
+    "defect": "positive deposited truth response can be arbitrarily close to zero, so the eventwise truth denominator remains numerically unstable after exact zeros are excluded",
+    "observed_events_with_positive_truth": 9907,
+    "observed_events_excluded_zero_truth": 93,
+    "observed_energy_relative_rmse": 123548.671875,
+    "observed_energy_mean_bias_fraction": 3344.763916015625,
+    "conceptual_correction": "the external 0.210445 metric is downstream incident-energy reconstruction and is not comparable to a paired deposited-response residual"
+  },
+  "quarantined_artifacts": {
+    "report": {
+      "local": "exhibition/data/v3_battery/quarantine/dicos-f-02_epoch90.near-zero-relative-error.json",
+      "remote": "_v3/battery/quarantine/dicos-f-02_epoch90.near-zero-relative-error.json",
+      "sha256": "cfa0b6d02303dfb44d4172e241c8a6565dc7b04218be8372d893302aefaac15f"
+    },
+    "provenance_sidecar": {
+      "local": "exhibition/data/v3_battery/quarantine/dicos-f-02_epoch90.near-zero-relative-error.provenance.json",
+      "sha256": "c96a4b378a056415638f14ba12e2f69c1f21b57bfa9c227da7728a41800a80b0"
+    }
+  },
+  "aborted_dependent_transaction": {
+    "job": "v3bat-v3-m0-fresh-e19",
+    "request": "exhibition/data/v3_battery/requests/v3-m0-fresh_epoch19.json",
+    "request_sha256": "06b67520002a5575e1efc5fb3fa960242166af1023ec0ff633644b4768b46e43",
+    "wrapper_pid": 21912,
+    "child_pid": 21914,
+    "verification": "wrapper and exact child terminated; child disappeared from nvidia-smi; no report created",
+    "generator_training_affected": false
+  },
+  "correction": {
+    "report_schema_version": 2,
+    "top_level_family": "paired_response",
+    "normalization": "incident_kinetic_energy_gev",
+    "meaning": "paired stochastic detector-response residual; not downstream reconstruction",
+    "includes_all_validation_pairs": true,
+    "old_evaluator_sha256": "3312e3e3c079da463709155195176756febec7e42c4429a63fa5eab9d9674404",
+    "old_evaluator_archive": "_v3/code_archive/v3_battery_before_incident_normalization_20260815.py",
+    "new_evaluator_sha256": "3e561d505284aa5e306c447e36347a743db4e16ded52abee80e063c3e96e2cdf",
+    "controller_sha256": "d86c1e03e85dcf9d722d0a4b07ebc86925f2fa223d53e25c509c347f2fafb3d4",
+    "presentation_guard_sha256": "f6d1862493ebe73aa99fea32e79d28326dcc943cfb3a79d9a536f3b9039fb56f",
+    "new_transaction_prefix": "v3bat2-",
+    "new_request_namespaced_by_transaction": true
+  },
+  "autonomous_launch": {
+    "timestamp_utc": "2026-08-16T02:00:56Z",
+    "job": "v3bat2-dicos-f-02-e90",
+    "request": "exhibition/data/v3_battery/requests/v3bat2-dicos-f-02-e90.json",
+    "request_sha256": "72fdf4fb5e24709052895deb79da98e7a41e4d6408f83ce73c1fbdef1ea0d2b2",
+    "remote_request_hash_matches": true,
+    "wrapper_pid": 23257,
+    "evaluator_gpu_pid": 23259,
+    "generator_training_affected": false,
+    "test_events_used": 0
+  },
+  "verification": {
+    "local_focused_tests": "117 passed, 1 known warning",
+    "local_full_tests": "795 passed, 64 known warnings",
+    "remote_tests_after_staged_test_update": "57 passed, 1 known warning",
+    "compileall_exit_code": 0,
+    "metrics_catalog": "131 graphics, PASS",
+    "post_documentation_full_tests": "795 passed, 64 known warnings",
+    "refreshed_visual_inspection": "screening_validation_loss.png passed through S2 epoch 10",
+    "test_events_used": 0
+  },
+  "failed_attempts": [
+    "The first remote QA rerun used the updated evaluator with the still-stale staged test file and produced 3 expected failures and 54 passes; after the test deployment was synchronized, 57 passed.",
+    "Stopping the M0 wrapper did not remove its GPU child; the exact observed child PID was then terminated and its disappearance from nvidia-smi was verified.",
+    "A remote stat probe was misquoted by PowerShell and failed locally before remote execution.",
+    "An initial health query omitted the 3090 DICOS_CONFIG and therefore inspected the 4090 namespace; the pod-selection mistake was corrected without changing any process or artifact.",
+    "The 3090 image lacks pgrep and pstree; both narrowly targeted process-tree probes failed, so the recorded wrapper state and exact nvidia-smi evaluator PID were used without a broad process listing.",
+    "The first final local pytest command omitted required PYTHONPATH=src and stopped during collection with 13 import errors before any test body ran; rerunning in the documented environment passed all 795 tests."
+  ],
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

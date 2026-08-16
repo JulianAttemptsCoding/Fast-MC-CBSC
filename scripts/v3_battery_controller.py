@@ -209,7 +209,7 @@ def checkpoint_identity(row: dict) -> dict:
 
 def validate_report(report: dict, row: dict, contract: dict, identity: dict) -> None:
     expected = {
-        "schema_version": 1,
+        "schema_version": 2,
         "kind": "cbsc-zdc-v3-validation-battery",
         "split": "validation",
         "pairs": int(contract["pairs"]),
@@ -222,20 +222,28 @@ def validate_report(report: dict, row: dict, contract: dict, identity: dict) -> 
             raise ValueError(f"battery report expected {field}={value!r}")
     if report.get("structural_invariants", {}).get("pass") is not True:
         raise ValueError("battery report structural invariants did not pass")
-    reconstruction = report.get("reconstruction", {})
-    positive = reconstruction.get("events_with_positive_truth")
-    excluded = reconstruction.get("events_excluded_zero_truth")
-    if not isinstance(positive, int) or not isinstance(excluded, int):
-        raise ValueError(
-            "battery report predates the zero-truth reconstruction correction"
-        )
-    if positive + excluded != int(contract["pairs"]):
-        raise ValueError("reconstruction positive/excluded event accounting mismatch")
-    relative_rmse = reconstruction.get("energy_relative_rmse")
-    if relative_rmse is not None and (
-        not math.isfinite(float(relative_rmse)) or float(relative_rmse) < 0
+    if "reconstruction" in report:
+        raise ValueError("battery report contains superseded truth-relative metric")
+    paired = report.get("paired_response", {})
+    if paired.get("kind") != "paired_detector_response_residual":
+        raise ValueError("battery report is missing the paired-response contract")
+    if paired.get("normalization") != "incident_kinetic_energy_gev":
+        raise ValueError("paired response must be normalized by incident kinetic energy")
+    if paired.get("events_included") != int(contract["pairs"]):
+        raise ValueError("paired-response event accounting mismatch")
+    zero_truth = paired.get("zero_truth_events")
+    if not isinstance(zero_truth, int) or not 0 <= zero_truth <= int(contract["pairs"]):
+        raise ValueError("invalid paired-response zero-truth count")
+    for field in (
+        "response_delta_over_kinetic_rmse",
+        "response_delta_over_kinetic_mean",
+        "response_delta_over_kinetic_median_absolute",
     ):
-        raise ValueError("invalid corrected energy relative RMSE")
+        value = paired.get(field)
+        if value is None or not math.isfinite(float(value)):
+            raise ValueError(f"invalid paired-response field {field}")
+    if float(paired["response_delta_over_kinetic_rmse"]) < 0:
+        raise ValueError("paired-response RMSE cannot be negative")
     if set(report.get("c2st", {})) != REQUIRED_C2ST:
         raise ValueError("battery report does not contain the four separate C2ST families")
     for family in REQUIRED_C2ST:
@@ -326,7 +334,7 @@ def jobs() -> dict[str, str]:
 
 
 def job_name(row: dict) -> str:
-    return f"v3bat-{row['run_tag']}-e{row['selected_epoch']}"
+    return f"v3bat2-{row['run_tag']}-e{row['selected_epoch']}"
 
 
 def evaluation_command(row: dict, contract: dict) -> str:
@@ -362,7 +370,7 @@ def evaluation_command(row: dict, contract: dict) -> str:
 
 
 def write_request(row: dict, contract: dict, identity: dict, command: str) -> Path:
-    path = LOCAL_BATTERY / "requests" / f"{row['run_tag']}_epoch{row['selected_epoch']}.json"
+    path = LOCAL_BATTERY / "requests" / f"{job_name(row)}.json"
     payload = {
         "schema_version": 1,
         "kind": "cbsc-zdc-v3-validation-battery-request",
@@ -398,7 +406,7 @@ def advance() -> dict:
 
     states = jobs()
     active = sorted(name for name, state in states.items()
-                    if state == "RUNNING" and (name == "battery5" or name.startswith("v3bat-")))
+                    if state == "RUNNING" and (name == "battery5" or name.startswith("v3bat")))
     if active:
         return {"action": "wait", "active_battery_jobs": active,
                 "reports_imported": changed, "changed": bool(changed),

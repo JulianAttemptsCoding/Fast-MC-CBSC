@@ -132,6 +132,7 @@ def load_battery_report(run_tag: str) -> dict | None:
     path = candidates[0]
     payload = json.loads(path.read_text(encoding="utf-8"))
     expected = {
+        "schema_version": 2,
         "kind": "cbsc-zdc-v3-validation-battery",
         "split": "validation",
         "pairs": 10_000,
@@ -144,13 +145,15 @@ def load_battery_report(run_tag: str) -> dict | None:
             raise ValueError(f"{path.name}: expected {field}={value!r}")
     if payload.get("structural_invariants", {}).get("pass") is not True:
         raise ValueError(f"{path.name}: structural battery QA did not pass")
-    reconstruction = payload.get("reconstruction", {})
-    positive = reconstruction.get("events_with_positive_truth")
-    excluded = reconstruction.get("events_excluded_zero_truth")
-    if not isinstance(positive, int) or not isinstance(excluded, int):
-        raise ValueError(f"{path.name}: predates zero-truth reconstruction correction")
-    if positive + excluded != int(payload["pairs"]):
-        raise ValueError(f"{path.name}: reconstruction event accounting mismatch")
+    if "reconstruction" in payload:
+        raise ValueError(f"{path.name}: contains superseded truth-relative metric")
+    paired = payload.get("paired_response", {})
+    if paired.get("kind") != "paired_detector_response_residual":
+        raise ValueError(f"{path.name}: paired-response contract is missing")
+    if paired.get("normalization") != "incident_kinetic_energy_gev":
+        raise ValueError(f"{path.name}: paired-response normalization is invalid")
+    if paired.get("events_included") != int(payload["pairs"]):
+        raise ValueError(f"{path.name}: paired-response event accounting mismatch")
     c2st = payload.get("c2st", {})
     if set(c2st) != {"high_level", "low_level", "profile_aware", "condition_only"}:
         raise ValueError(f"{path.name}: incomplete C2ST family set")

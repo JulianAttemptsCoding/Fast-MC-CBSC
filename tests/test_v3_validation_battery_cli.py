@@ -467,7 +467,7 @@ def test_battery_report_computes_every_family_on_real_generated_events(
     for family in (
         "visibility_and_zero_response", "positive_response", "first_layer",
         "activity", "counts", "correlations", "distribution_metrics", "c2st",
-        "reconstruction", "bootstrap", "truth_half_floors", "memorization",
+        "paired_response", "bootstrap", "truth_half_floors", "memorization",
     ):
         assert family in report, f"battery omitted {family}"
 
@@ -620,27 +620,23 @@ def test_stage_timings_reach_the_report():
     assert '"stage_seconds": stage.seconds' in source
 
 
-def test_relative_energy_error_excludes_zero_truth_events():
-    """A zero-truth event has no relative error; dividing by a floor invents one.
-
-    The first real battery run reported energy_relative_rmse = 5.3e8 because
-    ~0.9% of validation events have exactly zero truth response and each
-    contributed a ratio of order 1e9, against the external evaluator's 0.21.
-    """
+def test_paired_response_uses_incident_energy_not_truth_deposit():
+    """Zero and tiny deposits stay finite under the predeclared incident scale."""
     truth = np.array([10.0, 0.0, 20.0, 0.0])
     generated = np.array([11.0, 5.0, 18.0, 3.0])
     kinetic = np.array([100.0, 100.0, 100.0, 100.0])
-    report = battery._reconstruction_report(kinetic, truth, generated)
-    assert report["events_excluded_zero_truth"] == 2
-    assert report["events_with_positive_truth"] == 2
-    # (1.0/10) and (-2.0/20) -> rms of 0.1 and 0.1
-    assert report["energy_relative_rmse"] == pytest.approx(0.1)
-    assert report["energy_relative_rmse"] < 1.0
-
-
-def test_relative_energy_error_is_none_when_no_truth_is_positive():
-    report = battery._reconstruction_report(
-        np.array([1.0]), np.array([0.0]), np.array([3.0])
+    report = battery._paired_response_report(kinetic, truth, generated)
+    assert report["normalization"] == "incident_kinetic_energy_gev"
+    assert report["events_included"] == 4
+    assert report["zero_truth_events"] == 2
+    assert report["response_delta_over_kinetic_rmse"] == pytest.approx(
+        np.sqrt(np.mean(np.array([0.01, 0.05, -0.02, 0.03]) ** 2))
     )
-    assert report["energy_relative_rmse"] is None
-    assert report["events_with_positive_truth"] == 0
+    assert report["response_delta_over_kinetic_mean"] == pytest.approx(0.0175)
+
+
+def test_paired_response_rejects_nonpositive_incident_energy():
+    with pytest.raises(battery.BatteryContractError, match="positive kinetic"):
+        battery._paired_response_report(
+            np.array([0.0]), np.array([0.0]), np.array([3.0])
+        )

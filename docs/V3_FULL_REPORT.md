@@ -309,7 +309,7 @@ Ordered by how much damage each would have done.
 | Job | Card | State |
 |---|---|---|
 | `queue2` | 4090 | S2 running, S3 queued behind it |
-| `v3bat-dicos-f-02-e90` | 3090 | corrected B0 rerun; autonomous M0/S1/S2/S3 queue follows |
+| `v3bat2-dicos-f-02-e90` | 3090 | schema-v2 B0 rerun; autonomous M0/S1/S2/S3 queue follows |
 | `watch_v3_outputs` | workstation | imports epochs/batteries and rebuilds figures/catalog every 15 min |
 
 The queue refuses to start a row until the card is free, refuses to continue
@@ -325,12 +325,18 @@ evaluation epoch 111. Its report is quarantined and excluded from comparison;
 the intended epoch-111 checkpoint was not retained. The battery now fails
 before generation when the requested and embedded checkpoint epochs differ.
 
-The first B0 fixed-bank report is also quarantined as a whole: its old
+Two B0 fixed-bank reports are quarantined as a whole. The original
 reconstruction metric divided relative error by a numerical floor for
-zero-truth events and reported RMSE 5.332e8. The separate B0 external-validation
-gate is unaffected. The corrected evaluator counts excluded zero-truth events,
-passed 57 remote tests, and is rerunning B0. A watcher-driven controller then
-queues M0, S1, and every completed row with checkpoint and contract provenance.
+zero-truth events and reported RMSE 5.332e8. Excluding exact zeros did not cure
+the definition: arbitrarily small positive deposited truth produced RMSE
+123,548.67. The separate B0 external-validation gate is unaffected, and its
+downstream incident-energy reconstruction value is not comparable to this
+paired detector-response residual. Report schema v2 normalizes the paired
+generated-minus-truth deposited response by incident kinetic energy, includes
+all pairs, and labels the quantity as not downstream reconstruction. It passed
+57 synchronized remote tests and is rerunning B0 under a distinct transaction.
+A watcher-driven controller then queues M0, S1, and every completed row with
+checkpoint and contract provenance.
 The attempted stop of the old S1 wrapper did not kill its child; that child
 completed at 00:26:43Z with the obsolete evaluator. The controller rejected its
 report before acceptance, and it is quarantined locally and remotely.
@@ -349,7 +355,7 @@ cost, and D1 not fitting the current card.
 performance, downstream reconstruction, diversity/memorization acceptance,
 publication-scale timing on another backend.
 
-**Not yet validly measured:** the corrected full metric battery on any
+**Not yet validly measured:** the schema-v2 full metric battery on any
 checkpoint (the B0 rerun is active); the D3
 trigger; any adversarial training.
 

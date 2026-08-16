@@ -37,12 +37,16 @@ is **withdrawn** — that delta was hybrid, and D1's rule names low-level.
 autonomous.** On DiCOS, read/list/inspect/search/stat/hash only the project tree
 `/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/**` and the
 single immutable source ROOT file named in `AGENTS.md`; everything else is
-unreadable as well as unwritable. The first B0 fixed-bank report is quarantined
-because its obsolete reconstruction definition included zero-truth events in a
-relative error. A corrected B0 rerun is active. The workstation watcher now
-imports and validates each completed battery report and advances B0, M0, S1,
-then each completed screening row without operator intervention. Failed
-transactions are preserved and never silently retried or overwritten.
+unreadable as well as unwritable. Two superseded B0 fixed-bank reports are
+quarantined: the first divided by a numerical floor at exactly zero deposited
+truth, and the second still divided by arbitrarily small positive deposited
+truth. Report schema v2 instead defines a paired stochastic detector-response
+residual normalized by incident kinetic energy; it is explicitly not a
+downstream incident-energy reconstruction metric. The distinct corrected B0
+transaction `v3bat2-dicos-f-02-e90` is active. The workstation watcher imports
+and validates each completed battery report and advances B0, M0, S1, then each
+completed screening row without operator intervention. Failed transactions are
+preserved and never silently retried or overwritten.
 
 Also since this document was written: the 8,000-example external battery is
 **below the frozen 10,000 minimum**, so it is `FOLLOW-UP QA — BELOW FROZEN EVENT

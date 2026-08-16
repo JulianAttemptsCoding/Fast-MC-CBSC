@@ -465,6 +465,7 @@ def test_battery_summary_requires_a_matching_provenance_sidecar(
     battery_dir.mkdir(parents=True)
     report_path = battery_dir / "x_epoch7.json"
     report = {
+        "schema_version": 2,
         "kind": "cbsc-zdc-v3-validation-battery",
         "split": "validation",
         "pairs": 10_000,
@@ -472,9 +473,11 @@ def test_battery_summary_requires_a_matching_provenance_sidecar(
         "test_events_used": 0,
         "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED",
         "structural_invariants": {"pass": True},
-        "reconstruction": {
-            "events_with_positive_truth": 9900,
-            "events_excluded_zero_truth": 100,
+        "paired_response": {
+            "kind": "paired_detector_response_residual",
+            "normalization": "incident_kinetic_energy_gev",
+            "events_included": 10_000,
+            "zero_truth_events": 100,
         },
         "c2st": {name: {"auroc_mean": 0.5} for name in (
             "high_level", "low_level", "profile_aware", "condition_only"
