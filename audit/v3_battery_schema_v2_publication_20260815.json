@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "kind": "v3-battery-schema-v2-publication",
+  "timestamp_utc": "2026-08-16T02:07:36Z",
+  "commit": "9bcc2fdba9740de4e22b46fe308324a58757d9c9",
+  "commit_subject": "fix(eval): normalize paired response",
+  "push": "f7a3f31..9bcc2fd main -> origin/main",
+  "pre_push_divergence_origin_main_vs_head": [0, 1],
+  "correction": {
+    "report_schema_version": 2,
+    "metric_family": "paired_response",
+    "normalization": "incident_kinetic_energy_gev",
+    "meaning": "paired stochastic detector-response residual; not downstream incident-energy reconstruction",
+    "evaluator_sha256": "3e561d505284aa5e306c447e36347a743db4e16ded52abee80e063c3e96e2cdf",
+    "controller_sha256": "d86c1e03e85dcf9d722d0a4b07ebc86925f2fa223d53e25c509c347f2fafb3d4",
+    "presentation_guard_sha256": "f6d1862493ebe73aa99fea32e79d28326dcc943cfb3a79d9a536f3b9039fb56f"
+  },
+  "live_state": {
+    "battery_job": "v3bat2-dicos-f-02-e90",
+    "battery_wrapper_pid": 23257,
+    "battery_state": "RUNNING on RTX 3090",
+    "watcher_pid": 24260,
+    "watcher_lock_alive": true,
+    "s2_response": "running through imported epoch 10; accepted best remains epoch 7 at 4.97052683976873 common measure",
+    "s3_first": "queued",
+    "test_events_used": 0
+  },
+  "verification": {
+    "local_json_validation": "PASS",
+    "local_compileall_exit_code": 0,
+    "local_full_tests": "795 passed, 64 known warnings",
+    "remote_synchronized_tests": "57 passed, 1 known warning",
+    "metrics_catalog": "131 graphics, PASS",
+    "visual_inspection": "screening_validation_loss.png passed through S2 epoch 10",
+    "git_diff_check": "PASS with line-ending notices only"
+  },
+  "failed_attempts": [
+    "Initial remote QA used the updated evaluator with a stale staged test file: 3 failures, 54 passes; synchronized deployment passed 57 tests.",
+    "Initial final local pytest omitted required PYTHONPATH=src and stopped during collection with 13 import errors; documented-environment rerun passed 795 tests.",
+    "One health query omitted the 3090 config and inspected the 4090 namespace; no state changed.",
+    "Narrow pgrep and pstree probes were unavailable in the 3090 image."
+  ],
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

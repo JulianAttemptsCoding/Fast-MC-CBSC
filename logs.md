@@ -11401,3 +11401,21 @@ QA 795 passed with 64 known warnings; refreshed `screening_validation_loss.png`
 passed visual layout/content inspection through S2 epoch 10. The first pytest
 invocation omitted required `PYTHONPATH=src` and stopped during collection with
 13 import errors before any test ran; the documented-environment rerun passed.
+
+### 2026-08-15 (publication) -- battery schema v2 pushed
+
+Committed the incident-kinetic normalization, schema-v2 importer/presentation
+guards, second B0 quarantine, corrected autonomous transaction, synchronized
+current-state docs, tests, and S2 epoch 8-10 evidence as `9bcc2fd`
+(`fix(eval): normalize paired response`). Pre-push divergence was `0 1`; push
+succeeded as `f7a3f31..9bcc2fd main -> origin/main`.
+
+Publication verification: JSON PASS; compilation exit 0; full QA 795 passed
+with 64 known warnings; synchronized remote QA 57 passed with one warning;
+metrics catalog 131 graphics PASS; refreshed loss figure visually passed
+through S2 epoch 10; test events 0. At publication, B0 schema-v2 job
+`v3bat2-dicos-f-02-e90` remained RUNNING on the RTX 3090, watcher PID 24260
+held its lock, S2 was running, and S3 was queued. Audit twins:
+`audit/v3_battery_schema_v2_publication_20260815.{json,md}`.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.
