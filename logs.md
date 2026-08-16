@@ -7945,7 +7945,6 @@ selection rule are untouched. This establishes nothing about Geant4 fidelity.
 `PHYSICS VALIDATION NOT ESTABLISHED`.
 
 
-
 `dicos-p10` epoch 40 **remains `ARTIFACT QUARANTINED`.** It was quarantined
 under the old rule, and re-auditing it under the new one is a separate declared
 act that has not been performed. It is not a valid parent.
@@ -11198,3 +11197,107 @@ An offline importer replay then confirmed S2 epochs 0–6, 7/7 invariant reports
 `audit/s2_response_common_measure_import_20260815.{json,md}`.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+
+
+### 2026-08-15 (publication) — common response-loss measure pushed
+
+Committed the target-Jacobian correction, exact validation audit, raw/common
+comparison contract, importer/watcher/figure changes, documentation, tests, and
+S2 epoch-6 evidence as `20d4c59` (`fix(loss): unify response NLL measure`). A
+pre-push fetch showed origin/local divergence `0 1`; push succeeded:
+`29acf43..20d4c59 main -> main`.
+
+Verification before publication: focused QA 90 passed; full QA 782 passed with
+64 known warnings; remote response QA 3 passed; compilation exit 0; metrics
+catalog 131 graphics PASS; offline S2 import 7/7 invariants and seven visuals;
+two corrected figures visually inspected; test events used 0. Sole watcher PID:
+28344. Audit twins:
+`audit/response_loss_measure_publication_20260815.{json,md}`.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.
+
+
+### 2026-08-15 (battery QA/autonomy) — zero-truth defect quarantined; clean queue active
+
+Remote deployment QA exposed that the staged fixed-bank evaluator predated the
+zero-truth reconstruction fix. The old definition divided relative energy error
+by a `1e-9` floor for truth-zero events, producing B0 RMSE 533,203,392 and mean
+bias 31,026,830. The containing B0 report (SHA-256 `c0600caf…`) is quarantined
+locally and remotely as
+`dicos-f-02_epoch90.zero-truth-relative-error.json`; none of its fields may
+enter comparison or publication. B0's frozen checkpoint and separate corrected
+external-validation gate are unaffected.
+
+The old-code S1 `battery5` process (PID 10181) was stopped before report
+creation; remote absence of `v3-s1-axis_epoch19.json` was verified. Generator
+training was untouched. The staged evaluator was replaced (`3312e3e3…`), along
+with the identity-checking battery CLI (`5f9c369f…`) and checkpoint probe
+(`c265abf9…`). Remote QA now passes 57 tests with one known warning.
+
+Autonomous battery control is active. Contract SHA-256 `2b5dad5e…` fixes the
+10,000-pair validation bank, its distinct content/file hashes, three evaluator
+seeds, 1,000 bootstraps, topology/memorization settings, and zero test events.
+Rows require a full contiguous horizon plus every invariant report; selection
+is validation loss only; checkpoint embedded epoch/metric and hashes are checked
+before and during evaluation. One 3090 battery writer is allowed; failed jobs
+are never silently retried or overwritten. Reports import atomically and must
+pass the corrected reconstruction schema, structural QA, separate four-family
+C2ST, provenance, and zero-test guards.
+
+Sole workstation watcher PID 24260 now follows queued S3 and runs the controller
+every 900 seconds. The first clean job, `v3bat-dicos-f-02-e90`, is running; its
+local/remote request SHA-256 is `72fdf4fb…`. M0, S1, S2 when complete, and S3
+when complete follow automatically. Audit twins:
+`audit/v3_battery_zero_truth_quarantine_20260815.{json,md}` and
+`audit/v3_battery_autonomy_20260815.{json,md}`. Test events used: 0.
+
+Failed attempts retained: the 3090 environment lacked pytest; corrected tests
+then found 2 failures against the old evaluator; the first controller advance
+failed closed because internal-content and byte-file bank hashes were initially
+conflated, before creating any request or job; and queued S3 initially lacked a
+registry config hash, which was added from the remote frozen file before launch.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.
+
+
+### 2026-08-15 (continuity QA) -- strict read scope and live queues reconciled
+
+The self-contained handoff now states the exact two-entry DiCOS read allowlist
+and the autonomous corrected battery lifecycle alongside the already binding
+`AGENTS.md`, focused rules, backend guide, client guard, and guard tests. No
+DiCOS filesystem path outside the project worktree or the one immutable ROOT
+source was read by this continuation.
+
+At 2026-08-16T00:19:27Z, 4090 evidence showed `chain` PID 9152 and waiting
+`queue2` PID 12933 alive. The sole trainer was S2-response PID 12233 plus its
+worker children; S3 had not started. S2 completed epoch 7 with validation loss
+**4.97052683976873**, a new row best. The apparently finished `queue2` state in
+the battery controller status came from querying the 3090 process namespace;
+the authoritative 4090 `jobs` result reports it RUNNING. The corrected B0
+battery remained alive on the 3090 under its own configured client. Test events
+used: 0.
+
+Failed command evidence: the installed PowerShell does not support
+`Get-Date -AsUTC`; `[DateTime]::UtcNow` was used. Two first remote probes were
+misquoted by the local shell and failed before their intended inspection. One
+raw process-list probe was immediately retired because process arguments can
+contain credentials; no credential value was copied into repository evidence,
+and subsequent process proofs must filter sensitive service parents.
+
+Controller review found that the first importer implementation compared
+checkpoint/config provenance only when the report supplied those fields. It
+was tightened before any corrected report completed: all provenance fields are
+now mandatory, the frozen-config hash must match the row registry, and B0's
+checkpoint must match its frozen registry hash. A matching provenance sidecar
+is mandatory and conflict checked; the controller repairs only the narrow
+report-written/sidecar-not-yet-written crash window, while the figure builder
+independently rejects a missing/mismatched sidecar or a non-selected epoch.
+Controller SHA-256 is `55544d93...`; figure-builder SHA-256 is `082f66fe...`.
+Focused QA passed 153 tests, including 10 controller/identity tests; full
+repository QA passed **795 tests** with 64 known warnings, and `compileall`
+exited 0. The 131-graphic catalog passed, and both S2 epoch-7 screening figures
+passed visual layout/content inspection.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.
+- S2-response e7: common-measure val 4.970527 best @ e7, 8/24 epochs, invariants 8/8 pass
+  new best for this row: 4.970527 common (v3-m0-fresh comparator, delta +0.035018); raw reported 4.970527

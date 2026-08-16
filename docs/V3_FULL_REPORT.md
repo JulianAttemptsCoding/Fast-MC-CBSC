@@ -57,7 +57,7 @@ silently contain S2's and S4's changes.
 | `dicos-f-03` | v2.2, 24-ep re-heat, **resumed** optimizer | 4.491971 | 4.913907 | 111 |
 | **M0-fresh** | v3, zero axis, **fresh** optimizer | **4.513572** | **4.935508** | 19 |
 | **S1-axis** | v3, real axis, **fresh** optimizer | **4.514053** | **4.935990** | 19 |
-| S2-response | bounded spline; already GeV-density | 4.988013 | 4.988013 | 4 so far |
+| S2-response | bounded spline; already GeV-density | 4.970527 | 4.970527 | 8 so far |
 | S3-first | hierarchical first layer | *queued* | *queued* | — |
 
 The historical v2-family values were logged in `y=log1p(T/s)` density units.
@@ -309,8 +309,8 @@ Ordered by how much damage each would have done.
 | Job | Card | State |
 |---|---|---|
 | `queue2` | 4090 | S2 running, S3 queued behind it |
-| `battery5` | 3090 | B0 valid; f-03 mislabeled artifact quarantined; S1 running |
-| `watch_v3_outputs` | workstation | imports epochs, rebuilds figures every 15 min |
+| `v3bat-dicos-f-02-e90` | 3090 | corrected B0 rerun; autonomous M0/S1/S2/S3 queue follows |
+| `watch_v3_outputs` | workstation | imports epochs/batteries and rebuilds figures/catalog every 15 min |
 
 The queue refuses to start a row until the card is free, refuses to continue
 past a row that stopped short of its horizon or never reached postflight, and
@@ -324,6 +324,13 @@ SHA-256 `491284c7…`), because no f-03 epoch beat B0. The launcher labeled that
 evaluation epoch 111. Its report is quarantined and excluded from comparison;
 the intended epoch-111 checkpoint was not retained. The battery now fails
 before generation when the requested and embedded checkpoint epochs differ.
+
+The first B0 fixed-bank report is also quarantined as a whole: its old
+reconstruction metric divided relative error by a numerical floor for
+zero-truth events and reported RMSE 5.332e8. The separate B0 external-validation
+gate is unaffected. The corrected evaluator counts excluded zero-truth events,
+passed 57 remote tests, and is rerunning B0. A watcher-driven controller then
+queues M0, S1, and every completed row with checkpoint and contract provenance.
 
 ---
 
@@ -339,7 +346,8 @@ cost, and D1 not fitting the current card.
 performance, downstream reconstruction, diversity/memorization acceptance,
 publication-scale timing on another backend.
 
-**Not yet measured at all:** the full metric battery on any checkpoint; the D3
+**Not yet validly measured:** the corrected full metric battery on any
+checkpoint (the B0 rerun is active); the D3
 trigger; any adversarial training.
 
 The gap between the objective and the fidelity metric remains the project's

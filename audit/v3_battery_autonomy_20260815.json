@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "kind": "v3-validation-battery-autonomy-audit",
+  "timestamp_utc": "2026-08-16T00:11:53.5685382Z",
+  "source_commit": "20d4c59",
+  "status": "PASS; autonomous battery queue active",
+  "contract": {
+    "path": "configs/v3_validation_battery_contract.json",
+    "sha256": "2b5dad5ebdb9909ada8aa77ba1fedb70d62823f550a2a564261171beb172cd59",
+    "state": "immutable after first autonomous launch",
+    "validation_manifest_content_sha256": "1bc3a6b21f736fc71551580a93207128c043833c6848627fb16f07475931690a",
+    "validation_manifest_file_sha256": "ee77517bed095621b88876ce7ebd9708d301b1429aca744304c073c154ff93bb",
+    "pairs": 10000,
+    "evaluator_seeds": [20260804, 20260805, 20260806],
+    "bootstrap_replicates": 1000,
+    "test_events_used": 0
+  },
+  "controller": {
+    "path": "scripts/v3_battery_controller.py",
+    "sha256": "55544d93cfd36729fa10e0448f5bb43c8bfe5b3f9b137db28bc7e017571b18af",
+    "eligibility": "B0 passing terminal gate, or screening row with full contiguous declared horizon and all invariant reports",
+    "selection": "lowest validation loss only",
+    "identity_checks": "checkpoint embedded epoch, best metric, checkpoint hash, frozen-config hash, and frozen-config registry hash; provenance fields are mandatory in imported reports and the epoch check is repeated inside the evaluator",
+    "concurrency": "at most one battery5/v3bat writer on RTX 3090",
+    "failure_policy": "failed transaction is not retried or overwritten automatically",
+    "import": "remote/local report hash match, atomic local replace, mandatory conflict-checked provenance sidecar with crash-window self-heal, corrected reconstruction schema, structural pass, four separate C2ST families, zero test events",
+    "controller_focused_tests": "10 passed"
+  },
+  "watcher": {
+    "path": "scripts/watch_v3_outputs.py",
+    "sha256": "31e36392c5cffa03a96c428e48a25417360e303fc53bb39eb3a28092f3c56647",
+    "pid": 24260,
+    "parent_pid": 20384,
+    "single_python_process_proved": true,
+    "interval_seconds": 900,
+    "follows_queued_rows": true,
+    "advances_batteries": true,
+    "rebuilds_figures_summary_and_catalog_after_import": true
+  },
+  "presentation_guard": {
+    "path": "exhibition/build_v3_screening_figure.py",
+    "sha256": "082f66fee83d3974c027d03acb245c17fb695f0239bc4d4288a4bb71fada7b59",
+    "requires_matching_provenance_sidecar": true,
+    "requires_loss_selected_epoch": true
+  },
+  "first_transaction": {
+    "row_id": "B0",
+    "run_tag": "dicos-f-02",
+    "epoch": 90,
+    "job": "v3bat-dicos-f-02-e90",
+    "request": "exhibition/data/v3_battery/requests/dicos-f-02_epoch90.json",
+    "request_sha256": "72fdf4fb5e24709052895deb79da98e7a41e4d6408f83ce73c1fbdef1ea0d2b2",
+    "remote_request_hash_matches": true,
+    "status": "running"
+  },
+  "queue_order_at_activation": ["B0", "M0-fresh", "S1-axis", "S2-response when complete", "S3-first when complete"],
+  "verification": {
+    "timestamp_utc": "2026-08-16T00:28:49Z",
+    "combined_focused_tests": "153 passed",
+    "full_repository_tests": "795 passed, 64 known warnings",
+    "compileall_exit_code": 0,
+    "metrics_catalog": "131 graphics, PASS",
+    "visual_inspection": "screening_validation_loss.png and screening_deltas.png passed layout/content inspection through S2 epoch 7"
+  },
+  "training_started_by_controller": false,
+  "test_events_used": 0,
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

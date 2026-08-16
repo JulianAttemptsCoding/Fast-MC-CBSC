@@ -20,7 +20,10 @@ checkpoint, publishes, or reads the test split.
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
+import math
+import re
 from pathlib import Path
 
 import matplotlib
@@ -109,6 +112,93 @@ def load_history() -> dict[str, list[dict]]:
     return series
 
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        while chunk := handle.read(1 << 20):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def load_battery_report(run_tag: str) -> dict | None:
+    """Load one accepted fixed-bank diagnostic report for a screening row."""
+    root = DATA / "v3_battery"
+    candidates = sorted(root.glob(f"{run_tag}_epoch*.json"))
+    candidates = [p for p in candidates if not p.name.endswith(".provenance.json")]
+    if not candidates:
+        return None
+    if len(candidates) != 1:
+        raise ValueError(f"{run_tag} has multiple active battery reports")
+    path = candidates[0]
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    expected = {
+        "kind": "cbsc-zdc-v3-validation-battery",
+        "split": "validation",
+        "pairs": 10_000,
+        "evaluator_corpus_examples": 20_000,
+        "test_events_used": 0,
+        "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED",
+    }
+    for field, value in expected.items():
+        if payload.get(field) != value:
+            raise ValueError(f"{path.name}: expected {field}={value!r}")
+    if payload.get("structural_invariants", {}).get("pass") is not True:
+        raise ValueError(f"{path.name}: structural battery QA did not pass")
+    reconstruction = payload.get("reconstruction", {})
+    positive = reconstruction.get("events_with_positive_truth")
+    excluded = reconstruction.get("events_excluded_zero_truth")
+    if not isinstance(positive, int) or not isinstance(excluded, int):
+        raise ValueError(f"{path.name}: predates zero-truth reconstruction correction")
+    if positive + excluded != int(payload["pairs"]):
+        raise ValueError(f"{path.name}: reconstruction event accounting mismatch")
+    c2st = payload.get("c2st", {})
+    if set(c2st) != {"high_level", "low_level", "profile_aware", "condition_only"}:
+        raise ValueError(f"{path.name}: incomplete C2ST family set")
+    means = {name: float(row["auroc_mean"]) for name, row in c2st.items()}
+    if any(not math.isfinite(v) or not 0 <= v <= 1 for v in means.values()):
+        raise ValueError(f"{path.name}: invalid C2ST AUROC")
+    identity = payload.get("identity", {})
+    for field in ("checkpoint_sha256", "frozen_config_sha256"):
+        value = identity.get(field)
+        if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
+            raise ValueError(f"{path.name}: missing or invalid {field}")
+    embedded_epoch = identity.get("checkpoint_embedded_epoch")
+    if embedded_epoch != identity.get("epoch"):
+        raise ValueError(f"{path.name}: embedded and reported epochs disagree")
+    name_match = re.fullmatch(re.escape(run_tag) + r"_epoch([0-9]+)\.json", path.name)
+    if not name_match or int(name_match.group(1)) != int(identity["epoch"]):
+        raise ValueError(f"{path.name}: filename and reported epochs disagree")
+    sidecar_path = path.with_suffix(".provenance.json")
+    if not sidecar_path.is_file():
+        raise ValueError(f"{path.name}: provenance sidecar is missing")
+    sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
+    for field, value in {
+        "kind": "cbsc-zdc-v3-battery-provenance-sidecar",
+        "report": path.name,
+        "report_sha256": sha256_file(path),
+        "test_events_used": 0,
+        "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED",
+        "checkpoint_sha256": identity["checkpoint_sha256"],
+        "checkpoint_embedded_epoch": identity["checkpoint_embedded_epoch"],
+        "frozen_config_sha256": identity["frozen_config_sha256"],
+    }.items():
+        if sidecar.get(field) != value:
+            raise ValueError(f"{sidecar_path.name}: expected {field}={value!r}")
+    return {
+        "report": path.relative_to(ROOT).as_posix(),
+        "report_sha256": sha256_file(path),
+        "epoch": int(payload["identity"]["epoch"]),
+        "pairs": int(payload["pairs"]),
+        "evaluator_corpus_examples": int(payload["evaluator_corpus_examples"]),
+        "structural_pass": True,
+        "c2st_auroc_mean": means,
+        "evaluation_role": payload["identity"]["evaluation_role"],
+        "selected_validation_loss": float(sidecar["selected_validation_loss"]),
+        "test_events_used": 0,
+        "scientific_status": payload["scientific_status"],
+    }
+
+
 def classify(delta: float) -> str:
     """Direction of a row against a reference, using the reproducibility band."""
     if delta < -RUN_TO_RUN_REFERENCE:
@@ -124,10 +214,29 @@ def summarize(registry: dict, series: dict[str, list[dict]]) -> dict:
     baseline["common_measure_validation_loss"] = common_loss(
         baseline["validation_loss"], baseline
     )
+    baseline["battery"] = load_battery_report(baseline["run_tag"])
+    if baseline["battery"] is not None:
+        if baseline["battery"]["epoch"] != int(baseline["epoch"]):
+            raise ValueError("baseline battery did not evaluate the frozen B0 epoch")
+        if not math.isclose(
+            baseline["battery"]["selected_validation_loss"],
+            float(baseline["validation_loss"]), rel_tol=0.0, abs_tol=1e-12,
+        ):
+            raise ValueError("baseline battery selection loss disagrees with B0")
     rows = []
     for index, row in enumerate(registry["rows"]):
         history = series.get(row["variant"], [])
         offset = loss_measure_offset(row)
+        battery = load_battery_report(row["run_tag"])
+        if battery is not None:
+            if not history:
+                raise ValueError(f"{row['row_id']} battery has no local history")
+            best = min(history, key=lambda point: (point["validation_loss"], point["epoch"]))
+            if battery["epoch"] != best["epoch"] or not math.isclose(
+                battery["selected_validation_loss"], best["validation_loss"],
+                rel_tol=0.0, abs_tol=1e-12,
+            ):
+                raise ValueError(f"{row['row_id']} battery is not the loss-selected best")
         local_run = DATA / "v3_screening" / row["run_tag"]
         invariant_count = len(list((local_run / "invariants").glob("invariant_epoch_*.json")))
         visualization_count = len(list((local_run / "visualization").glob("epoch_*.json")))
@@ -138,6 +247,8 @@ def summarize(registry: dict, series: dict[str, list[dict]]) -> dict:
                 "structural_invariants_per_epoch": invariant_count >= len(history),
                 "fixed_condition_visualizations": visualization_count >= len(history),
             })
+        if battery is not None:
+            observed_evidence["validation_metric_battery"] = True
         evidence_gap = row.get("evidence_gap")
         if history and row["status"] == "running":
             evidence_gap = (
@@ -165,6 +276,7 @@ def summarize(registry: dict, series: dict[str, list[dict]]) -> dict:
             "evidence_gap": evidence_gap,
             "invariant_reports_observed": invariant_count,
             "visualization_payloads_observed": visualization_count,
+            "battery": battery,
             "loss_measure": row["loss_measure"],
             "loss_measure_offset": offset,
         }

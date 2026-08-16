@@ -12,8 +12,8 @@ Three jobs across two cards. None of them needs you.
 | Job | Pod | What it is | Expected |
 |---|---|---|---|
 | `queue2` | RTX 4090 | **S2-response** running, **S3-first** queued behind it | ~12 h each |
-| `battery5` | RTX 3090 | B0 valid; mislabeled `dicos-f-03` report quarantined; S1 e19 running | ~3–4 h |
-| `watch_v3_outputs` | workstation | Imports epochs and rebuilds figures every 15 min | continuous |
+| `v3bat-dicos-f-02-e90` | RTX 3090 | corrected B0 fixed-bank rerun; M0/S1/S2/S3 queue automatically | ~65 min per eligible checkpoint |
+| `watch_v3_outputs` | workstation | Imports epochs, advances batteries, rebuilds figures/catalog every 15 min | continuous |
 
 **M0-fresh is complete.** Best 4.513572 at epoch 19. It resolved the S1 causal
 question: the axis feature is neutral, and S1's shortfall was the fresh
@@ -55,7 +55,7 @@ python scripts/dicos.py logs queue2
 ```
 
 ```bash
-MSYS_NO_PATHCONV=1 DICOS_CONFIG="C:/Users/Julia/.dicos/config_3090.json" python scripts/dicos.py logs battery5
+MSYS_NO_PATHCONV=1 DICOS_CONFIG="C:/Users/Julia/.dicos/config_3090.json" python scripts/dicos.py logs v3bat-dicos-f-02-e90
 ```
 
 ## 3. What "good" looks like
@@ -91,13 +91,19 @@ and expected, because S2 adds no axis columns.
 
 **The battery.** Valid reports under `_v3/battery/` record
 `test_events_used: 0`, all twelve metric families, and 1,000 bootstrap
-replicates at 95%. The file originally labeled `dicos-f-03` epoch 111 is under
+replicates at 95%. There are currently no accepted fixed-bank reports: B0's
+first report is quarantined because zero-truth events inflated relative-energy
+RMSE to 5.332e8, and a corrected B0 rerun is active. The old S1 attempt was
+stopped before report creation. The file originally labeled `dicos-f-03` epoch 111 is under
 `_v3/battery/quarantine/`: that run never beat its inherited epoch-90 parent,
 so `best.pt` was byte-identical to B0 while the launcher supplied epoch 111.
 The intended epoch-111 checkpoint was not retained and may not be reconstructed
 or replaced by epoch 114 under the old label. Future batteries compare the
 requested epoch to the checkpoint's embedded epoch before generation and record
-the checkpoint/config hashes.
+the checkpoint/config hashes. `scripts/v3_battery_controller.py` now queues B0,
+M0, S1, and each completed screening row automatically. It requires a full
+horizon and every invariant report, permits one 3090 battery writer, and refuses
+to retry or overwrite a failed transaction.
 
 ## 4. What each result means
 

@@ -419,6 +419,7 @@
       ],
       "scientific_motivation": "The underproduced ECAL-start prevalence is a named, measured defect, which gives S3 a physics-motivated prior the other rows lack.",
       "frozen_config": "prep/configs/frozen_v3_S3_first.yaml",
+      "frozen_config_sha256": "74e19b50705daf33437a2abcacb2e9c68cbcde958a18c1fd5b6c7a4ec18b6de8",
       "seed": 20260723,
       "horizon_epochs": 24,
       "early_stopping_patience": 24,

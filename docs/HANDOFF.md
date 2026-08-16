@@ -14,7 +14,8 @@ project real time. It does not replace the binding contracts — `AGENTS.md`,
 **`docs/V3_FULL_REPORT.md` is the complete v3 record** — every number, all
 eleven defects with how each was caught, the five wrong diagnoses that were made
 and corrected, and the honest status. Read it before acting on anything below,
-because two of its results change how the rest of this document must be read.
+because the current comparison, filesystem, and evaluation contracts change how
+the rest of this document must be read.
 
 **1. The comparator rule.** Every v3 screening row uses `initialize_from`, which
 transfers weights but **not** optimizer state. That fresh Adam costs a measured
@@ -31,6 +32,17 @@ and does not change any historical run's selected epoch.
 and both are in the record; they answer to different gates and must never be
 mixed. The claim that the learning-rate correction nearly cleared D1's 0.02 gate
 is **withdrawn** — that delta was hybrid, and D1's rule names low-level.
+
+**3. DiCOS has an exact two-entry read allowlist, and fixed-bank evaluation is
+autonomous.** On DiCOS, read/list/inspect/search/stat/hash only the project tree
+`/dicos_ui_home/julianjuan/sharedfs/work/IOP/julian/Fast MC CBSC/**` and the
+single immutable source ROOT file named in `AGENTS.md`; everything else is
+unreadable as well as unwritable. The first B0 fixed-bank report is quarantined
+because its obsolete reconstruction definition included zero-truth events in a
+relative error. A corrected B0 rerun is active. The workstation watcher now
+imports and validates each completed battery report and advances B0, M0, S1,
+then each completed screening row without operator intervention. Failed
+transactions are preserved and never silently retried or overwritten.
 
 Also since this document was written: the 8,000-example external battery is
 **below the frozen 10,000 minimum**, so it is `FOLLOW-UP QA — BELOW FROZEN EVENT

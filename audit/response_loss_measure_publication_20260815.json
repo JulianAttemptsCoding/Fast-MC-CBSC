@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "kind": "repository-publication-audit",
+  "timestamp_utc": "2026-08-15T23:56:00Z",
+  "commit": "20d4c59",
+  "subject": "fix(loss): unify response NLL measure",
+  "pre_push_divergence": {
+    "origin_only": 0,
+    "local_only": 1
+  },
+  "push": "29acf43..20d4c59 main -> main",
+  "verification_before_publication": {
+    "focused_tests": "90 passed",
+    "full_tests": "782 passed, 64 known PyTorch warnings",
+    "remote_response_tests": "3 passed",
+    "compileall": "exit 0",
+    "metrics_catalog": "131 graphics, PASS",
+    "offline_s2_import": "7 epochs; 7/7 invariants; 7 visualizations; test_events_used 0",
+    "visual_qa": "two corrected screening figures inspected and legible",
+    "git_diff_check": "exit 0"
+  },
+  "live_state": {
+    "watcher_pid": 28344,
+    "watcher_single_process_proved": true,
+    "s2_best_through_epoch_6": 4.978104135477002,
+    "s2_delta_vs_common_m0": 0.0425957225551592,
+    "s3_status": "queued",
+    "s1_battery_status": "running"
+  },
+  "test_events_used": 0,
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

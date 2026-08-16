@@ -439,6 +439,74 @@ def test_summary_reports_the_reference_as_a_reproducibility_figure(builder):
     assert summary["scientific_status"] == "PHYSICS VALIDATION NOT ESTABLISHED"
 
 
+def test_baseline_battery_is_exposed_without_collapsing_c2st_families(builder):
+    summary = builder.summarize(builder.load_registry(), builder.load_history())
+    battery = summary["baseline"]["battery"]
+    if battery is None:
+        quarantined = (
+            ROOT / "exhibition" / "data" / "v3_battery" / "quarantine"
+            / "dicos-f-02_epoch90.zero-truth-relative-error.json"
+        )
+        assert quarantined.is_file()
+        return
+    assert battery["pairs"] == 10_000
+    assert battery["evaluator_corpus_examples"] == 20_000
+    assert battery["test_events_used"] == 0
+    assert set(battery["c2st_auroc_mean"]) == {
+        "high_level", "low_level", "profile_aware", "condition_only"
+    }
+
+
+def test_battery_summary_requires_a_matching_provenance_sidecar(
+    builder, monkeypatch, tmp_path
+):
+    data = tmp_path / "exhibition" / "data"
+    battery_dir = data / "v3_battery"
+    battery_dir.mkdir(parents=True)
+    report_path = battery_dir / "x_epoch7.json"
+    report = {
+        "kind": "cbsc-zdc-v3-validation-battery",
+        "split": "validation",
+        "pairs": 10_000,
+        "evaluator_corpus_examples": 20_000,
+        "test_events_used": 0,
+        "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED",
+        "structural_invariants": {"pass": True},
+        "reconstruction": {
+            "events_with_positive_truth": 9900,
+            "events_excluded_zero_truth": 100,
+        },
+        "c2st": {name: {"auroc_mean": 0.5} for name in (
+            "high_level", "low_level", "profile_aware", "condition_only"
+        )},
+        "identity": {
+            "run_tag": "x", "epoch": 7, "checkpoint_embedded_epoch": 7,
+            "checkpoint_sha256": "a" * 64, "frozen_config_sha256": "b" * 64,
+            "evaluation_role": "diagnostic",
+        },
+    }
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    sidecar = {
+        "kind": "cbsc-zdc-v3-battery-provenance-sidecar",
+        "report": report_path.name,
+        "report_sha256": builder.sha256_file(report_path),
+        "selected_validation_loss": 4.2,
+        "test_events_used": 0,
+        "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED",
+        "checkpoint_sha256": "a" * 64,
+        "checkpoint_embedded_epoch": 7,
+        "frozen_config_sha256": "b" * 64,
+    }
+    sidecar_path = report_path.with_suffix(".provenance.json")
+    sidecar_path.write_text(json.dumps(sidecar), encoding="utf-8")
+    monkeypatch.setattr(builder, "DATA", data)
+    monkeypatch.setattr(builder, "ROOT", tmp_path)
+    assert builder.load_battery_report("x")["selected_validation_loss"] == 4.2
+    sidecar_path.unlink()
+    with pytest.raises(ValueError, match="provenance sidecar is missing"):
+        builder.load_battery_report("x")
+
+
 def test_summary_deltas_match_the_registry_and_history(builder):
     registry = builder.load_registry()
     series = builder.load_history()

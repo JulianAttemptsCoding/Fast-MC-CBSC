@@ -206,7 +206,8 @@ statistically unresolved.** A negative result is a result. Compare against
 
 ### B1. Freeze the bank (once; already done)
 
-Bank `_v3/validation_bank_10k.json`, sha256 `1bc3a6b2…`, 10,000 pairs = 20,000
+Bank `_v3/validation_bank_10k.json`, internal content sha256 `1bc3a6b2…`, byte-
+file sha256 `ee77517b…`, 10,000 pairs = 20,000
 evaluator examples, every bin 1,182–1,310 against a floor of 500.
 
 Built from the **canonical** split. The pilot split holds only 6,656 validation
@@ -214,11 +215,19 @@ events — below the frozen 10,000 minimum. Cross-tabulation proved pilot train 
 100% canonical train and pilot validation → 100% canonical validation, so B0 has
 seen none of the 10,000.
 
-### B2. Evaluate a checkpoint
+### B2. Evaluate completed checkpoints automatically
 
 ```bash
-MSYS_NO_PATHCONV=1 DICOS_CONFIG="C:/Users/Julia/.dicos/config_3090.json" python scripts/dicos.py start "sh '<WORKDIR>/_v3/run_battery_all.sh'" --name battery
+PYTHONPATH=src python scripts/v3_battery_controller.py --status
+PYTHONPATH=src python scripts/v3_battery_controller.py --advance
 ```
+
+The workstation watcher calls `--advance` every 900 seconds; operators do not
+need to issue it. B0 must have its passing terminal gate. A screening row must
+have its full contiguous declared horizon and every invariant report. The
+controller selects the lowest validation loss only, verifies `best.pt`'s
+embedded epoch/metric and hashes, permits one RTX-3090 battery writer, imports
+atomically, and never retries or overwrites a failed transaction.
 
 Fourteen inputs fail closed; nothing defaults. The evaluation split is a module
 constant, not a flag — a test parses both source files and fails if the bare
@@ -259,8 +268,9 @@ python scripts/watch_v3_outputs.py --status
 python scripts/watch_v3_outputs.py --stop
 ```
 
-Every pass imports new epochs, rebuilds the screening figures, summary and
-metrics catalog, and appends a line to `logs.md`. It keeps watching while any row
+Every pass imports new epochs, advances/imports fixed-bank batteries, rebuilds
+the screening figures, summary and metrics catalog, and appends evidence to
+`logs.md`. It keeps watching while any row
 is **running or queued** — exiting in the gap between rows once stopped the
 figures updating for a whole tranche.
 

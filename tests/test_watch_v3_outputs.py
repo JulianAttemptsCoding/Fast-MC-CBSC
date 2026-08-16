@@ -56,10 +56,10 @@ def test_pid_alive_rejects_a_nonsense_pid(watcher):
     assert watcher.pid_alive(0) is False
 
 
-def test_the_watcher_only_touches_running_rows(watcher):
-    """A completed row's evidence is immutable; re-importing it is not the job."""
+def test_the_watcher_follows_running_and_queued_rows(watcher):
+    """A queued row must start importing automatically when its trainer appears."""
     source = (ROOT / "scripts" / "watch_v3_outputs.py").read_text(encoding="utf-8")
-    assert 'row["status"] != "running"' in source
+    assert 'row["status"] not in {"running", "queued"}' in source
 
 
 def test_the_watcher_never_writes_to_a_pod(watcher):
@@ -81,3 +81,11 @@ def test_a_completed_horizon_asks_for_a_disposition_not_a_verdict(watcher):
     source = (ROOT / "scripts" / "watch_v3_outputs.py").read_text(encoding="utf-8")
     assert "a negative result is a result" in source
     assert "retains the\n                \"simpler parent" in source or "simpler parent" in source
+
+
+def test_battery_failure_does_not_kill_the_metric_loop(watcher, monkeypatch, tmp_path):
+    monkeypatch.setattr(watcher, "run", lambda *a, **k: (1, "", "battery boom"))
+    monkeypatch.setattr(watcher, "STATE_DIR", tmp_path)
+    monkeypatch.setattr(watcher, "LOG_PATH", tmp_path / "watch.log")
+    assert watcher.advance_batteries() is None
+    assert "battery controller failed" in (tmp_path / "watch.log").read_text()

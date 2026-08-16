@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "kind": "v3-validation-battery-zero-truth-metric-quarantine",
+  "timestamp_utc": "2026-08-16T00:11:53.5685382Z",
+  "source_commit": "20d4c59",
+  "status": "AFFECTED ARTIFACT QUARANTINED; corrected rerun launched",
+  "failure": {
+    "metric": "reconstruction.energy_relative_rmse",
+    "old_definition": "(generated-truth)/max(abs(truth),1e-9) over every event",
+    "defect": "zero-truth events have no defined relative error and contributed ratios of order 1e9",
+    "observed_energy_relative_rmse": 533203392.0,
+    "observed_energy_mean_bias_fraction": 31026830.0,
+    "correct_definition": "relative error over truth_total_gev > 0, with zero-truth events excluded and counted",
+    "schema_guard": [
+      "events_with_positive_truth is present",
+      "events_excluded_zero_truth is present",
+      "positive plus excluded equals all 10000 pairs"
+    ]
+  },
+  "affected_b0_report": {
+    "sha256": "c0600cafcb571e4a6960b731d4b972d5bc62e8f4ac1423271422d90e51f0b214",
+    "remote_quarantine_path": "_v3/battery/quarantine/dicos-f-02_epoch90.zero-truth-relative-error.json",
+    "local_quarantine_path": "exhibition/data/v3_battery/quarantine/dicos-f-02_epoch90.zero-truth-relative-error.json",
+    "status": "QUARANTINED AS A WHOLE; evidence only; must not enter comparison, selection, promotion, or publication"
+  },
+  "s1_in_flight_attempt": {
+    "job": "battery5",
+    "pid": 10181,
+    "loaded_old_module": true,
+    "action": "stopped before report creation",
+    "report_path": "_v3/battery/v3-s1-axis_epoch19.json",
+    "report_exists": false,
+    "artifact_quarantine_needed": false
+  },
+  "unaffected": {
+    "b0_checkpoint": "unchanged and frozen",
+    "b0_external_validation_gate": "unaffected; separate corrected 4000-pair evaluator reports energy relative RMSE 0.210445",
+    "battery_c2st_fields": "not independently invalidated, but the containing report is quarantined under fail-closed artifact policy",
+    "training": "no generator training process stopped or modified",
+    "test_events_used": 0
+  },
+  "correction": {
+    "remote_old_evaluator_sha256": "b3bc1d67ef32d5d88825099c00f840b33413dcc07c4f474a78fea010448ae137",
+    "remote_old_copy": "_v3/code_archive/v3_battery_before_zero_truth_fix_20260815.py",
+    "remote_new_evaluator_sha256": "3312e3e3c079da463709155195176756febec7e42c4429a63fa5eab9d9674404",
+    "remote_new_battery_cli_sha256": "5f9c369f1de6848e2f3c90935b6794d8ccc14a1794c7dad6786ec5892cd5c07a",
+    "remote_new_identity_probe_sha256": "c265abf91b79ffcabff0c72de2644734ab5779810e3fc0454b86d002d9ae80e4",
+    "remote_tests": "57 passed, 1 known PyTorch warning",
+    "clean_b0_rerun_job": "v3bat-dicos-f-02-e90",
+    "clean_b0_rerun_status": "running"
+  },
+  "failed_attempts": [
+    "The RTX-3090 evaluation virtual environment has no pytest; the first remote QA command failed before tests ran.",
+    "Running the updated tests against the still-old staged evaluator produced 2 failures and 55 passes, correctly identifying the missing zero-truth schema and 3e9 all-zero fixture RMSE.",
+    "The first autonomous launch failed closed because the bank's internal content hash was incorrectly used as its file hash; the contract now records both distinct hashes and no request or job was created by that failed call."
+  ],
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

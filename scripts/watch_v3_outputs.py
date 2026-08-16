@@ -165,7 +165,7 @@ def run(script: str, *args: str) -> tuple[int, str, str]:
     return result.returncode, result.stdout, result.stderr
 
 
-def refresh_row(row_id: str) -> dict | None:
+def refresh_row(row_id: str, *, quiet_missing: bool = False) -> dict | None:
     """Import one row's epochs. Returns the import record, or None on failure.
 
     A failure is logged and swallowed rather than raised: a watcher that dies
@@ -174,12 +174,27 @@ def refresh_row(row_id: str) -> dict | None:
     """
     code, out, err = run("scripts/import_v3_screening_run.py", "--row", row_id)
     if code != 0:
-        watch_log(f"{row_id}: import failed: {(err or out).strip().splitlines()[-1:]}")
+        detail = (err or out).strip().splitlines()[-1:]
+        if not (quiet_missing and "history missing" in " ".join(detail)):
+            watch_log(f"{row_id}: import failed: {detail}")
         return None
     try:
         return json.loads(out)
     except json.JSONDecodeError:
         watch_log(f"{row_id}: import produced unparseable output")
+        return None
+
+
+def advance_batteries() -> dict | None:
+    """Import or launch at most one fixed-bank transaction on the RTX 3090."""
+    code, out, err = run("scripts/v3_battery_controller.py", "--advance")
+    if code != 0:
+        watch_log(f"battery controller failed: {(err or out).strip()[-500:]}")
+        return None
+    try:
+        return json.loads(out)
+    except json.JSONDecodeError:
+        watch_log("battery controller produced unparseable output")
         return None
 
 
@@ -201,10 +216,10 @@ def run_once(seen: dict) -> dict:
     changed = False
 
     for row in registry_rows():
-        if row["status"] != "running":
+        if row["status"] not in {"running", "queued"}:
             continue
         row_id = row["row_id"]
-        record = refresh_row(row_id)
+        record = refresh_row(row_id, quiet_missing=row["status"] == "queued")
         if record is None:
             continue
 
@@ -269,6 +284,27 @@ def run_once(seen: dict) -> dict:
                 "simpler parent when an improvement is unresolved.\n"
             )
             watch_log(f"{row_id}: horizon complete, awaiting a disposition")
+
+    battery = advance_batteries()
+    if battery is not None:
+        imported = battery.get("reports_imported") or []
+        if imported:
+            append_logs_md(
+                "\n- Autonomous v3 battery import: " + ", ".join(imported)
+                + "; provenance and zero-test contract verified.\n"
+            )
+            watch_log(f"battery reports imported: {', '.join(imported)}")
+        if battery.get("action") == "launched":
+            append_logs_md(
+                f"\n- Autonomous v3 battery launched: {battery['row_id']} "
+                f"epoch {battery['epoch']} as `{battery['job']}`; selected by "
+                "validation loss only; test events 0.\n"
+            )
+            watch_log(
+                f"battery launched: {battery['row_id']} e{battery['epoch']} "
+                f"({battery['job']})"
+            )
+        changed = changed or bool(battery.get("changed"))
 
     if changed:
         if rebuild():
