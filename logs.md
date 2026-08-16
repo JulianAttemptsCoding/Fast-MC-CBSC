@@ -11419,3 +11419,21 @@ held its lock, S2 was running, and S3 was queued. Audit twins:
 `audit/v3_battery_schema_v2_publication_20260815.{json,md}`.
 
 `PHYSICS VALIDATION NOT ESTABLISHED`.
+- S2-response e11: common-measure val 4.931398 best @ e11, 12/24 epochs, invariants 12/12 pass
+  new best for this row: 4.931398 common (v3-m0-fresh comparator, delta -0.004111); raw reported 4.931398
+
+### 2026-08-15 (S2 live evidence) -- epoch 11 becomes the running best
+
+The sole watcher imported S2-response epoch 11 at 02:16:15Z and rebuilt the
+screening figures, summary, and 131-graphic catalog by 02:16:31Z. Common-measure
+validation loss **4.931397553942388** is the row's new accepted running best,
+0.0041108589794545125 better than declared M0-fresh and 0.025693580202184485
+worse than B0. Epoch 11 invariants pass with zero nonfinite, negative, support,
+count, and requested/realized mismatches; 12/12 invariant and visualization
+payloads are synchronized; test events used 0. Both changed screening figures
+passed visual layout/content inspection.
+
+S2 remains RUNNING at 12/24 epochs and has no fixed-bank report. This is
+optimization evidence only: no promotion, public accepted-family release, or
+physics-validation claim. Audit twins:
+`audit/s2_response_epoch11_best_20260815.{json,md}`.

@@ -57,7 +57,7 @@ silently contain S2's and S4's changes.
 | `dicos-f-03` | v2.2, 24-ep re-heat, **resumed** optimizer | 4.491971 | 4.913907 | 111 |
 | **M0-fresh** | v3, zero axis, **fresh** optimizer | **4.513572** | **4.935508** | 19 |
 | **S1-axis** | v3, real axis, **fresh** optimizer | **4.514053** | **4.935990** | 19 |
-| S2-response | bounded spline; already GeV-density | 4.970527 | 4.970527 | 8 so far |
+| S2-response | bounded spline; already GeV-density | 4.931398 | 4.931398 | 11 so far |
 | S3-first | hierarchical first layer | *queued* | *queued* | — |
 
 The historical v2-family values were logged in `y=log1p(T/s)` density units.

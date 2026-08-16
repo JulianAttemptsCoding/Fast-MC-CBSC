@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "kind": "v3-screening-running-best-audit",
+  "timestamp_utc": "2026-08-16T02:16:31Z",
+  "row_id": "S2-response",
+  "run_tag": "v3-s2-response",
+  "status": "RUNNING; NEW ROW BEST; NOT PROMOTED",
+  "epoch": 11,
+  "epochs_observed": 12,
+  "horizon_epochs": 24,
+  "train_loss": 4.942177126099726,
+  "common_measure_validation_loss": 4.931397553942388,
+  "accepted_running_best_epoch": 11,
+  "accepted_running_best_validation_loss": 4.931397553942388,
+  "declared_comparator": {
+    "row_id": "M0-fresh",
+    "common_measure_validation_loss": 4.935508412921843,
+    "delta": -0.0041108589794545125,
+    "direction": "better"
+  },
+  "parent": {
+    "row_id": "B0",
+    "common_measure_validation_loss": 4.905703973740204,
+    "delta": 0.025693580202184485,
+    "direction": "worse"
+  },
+  "qa": {
+    "invariant_reports_observed": 12,
+    "visualization_payloads_observed": 12,
+    "epoch_11_invariants_pass": true,
+    "epoch_11_negative": 0,
+    "epoch_11_nonfinite": 0,
+    "epoch_11_outside_valid_support": 0,
+    "epoch_11_support_mask_mismatch": 0,
+    "epoch_11_count_mismatch_max": 0,
+    "epoch_11_requested_realized_mismatch_max": 0,
+    "test_events_used": 0,
+    "visual_inspection": "screening_validation_loss.png and screening_deltas.png passed layout/content inspection"
+  },
+  "hashes": {
+    "invariant_epoch_0011_sha256": "fc2a77ec711bcbebc603ad784a49fdc834ee6f1b54bd9a33c2b8e75853e70277",
+    "visualization_epoch_0011_sha256": "f88a5a743c8fe6c1e63e769a20c6aabe7956825c914571e0eec1d56c2daac1e0",
+    "screening_summary_sha256": "af0deae43bb441c6d32ec995ffac057edf3e2815c3ffec10051207b4aab7d663",
+    "screening_validation_loss_png_sha256": "3b7dbc16a90ec720f52276e37af62f8a3a0c94259f0bd826e5e4991dec91a631",
+    "screening_deltas_png_sha256": "cfe03f43bf5e37477e6c8599604db2c75d29a432ebe889a6d6f68a1739864264"
+  },
+  "decision": "Optimization evidence improved, but the row is incomplete and has no fixed-bank battery. No promotion or public accepted-family release is valid yet.",
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}
