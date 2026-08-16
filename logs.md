@@ -11484,3 +11484,21 @@ quoted remote import smoke failed before the corrected import passed.
 - Autonomous v3 battery import: B0; provenance and zero-test contract verified.
 
 - Autonomous v3 battery launched: M0-fresh epoch 19 as `v3bat3-v3-m0-fresh-e19`; selected by validation loss only; test events 0.
+
+### 2026-08-15 (publication) -- battery schema v3 pushed
+
+Committed schema-v3 data-usage accounting, the hash-pinned B0 migration,
+strict controller/presentation guards, quarantine evidence, tests, current
+docs, and S2 epochs 12-13 as `dce4455` (`fix(eval): account battery data usage`).
+Pre-push divergence was `0 1`; push succeeded as
+`5083904..dce4455 main -> origin/main`.
+
+Publication verification: focused QA 67 passed with one warning; full QA 797
+passed with 64 known warnings; compilation exit 0; remote compilation and
+schema import PASS; metrics catalog 131 graphics PASS; refreshed loss figure
+visually passed through S2 epoch 13; JSON and diff checks PASS; test events 0.
+Watcher PID 24260 remained sole updater, M0 schema-v3 battery wrapper PID 30195
+was RUNNING, S2 was training, and S3 was queued. Audit twins:
+`audit/v3_battery_schema_v3_publication_20260815.{json,md}`.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.

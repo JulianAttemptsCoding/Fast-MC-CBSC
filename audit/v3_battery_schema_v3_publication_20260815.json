@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "kind": "v3-battery-schema-v3-publication",
+  "timestamp_utc": "2026-08-16T03:40:55Z",
+  "commit": "dce44556c4aabaade6be729021156d488dd16e77",
+  "commit_subject": "fix(eval): account battery data usage",
+  "push": "5083904..dce4455 main -> origin/main",
+  "pre_push_divergence_origin_main_vs_head": [0, 1],
+  "accepted_b0": {
+    "report_schema_version": 3,
+    "report_sha256": "0e7cc51d34e36eef68039bec36acc5f05dc06cc509a4ad70fea2f5d35a044bd5",
+    "provenance_sha256": "d6c9ae3fb5849c8519ae43d8bb8f2a73138b23a1f7473c9f65184690a21e510f",
+    "validation_truth_events": 10000,
+    "generated_events": 10000,
+    "memorization_training_reference_events": 2000,
+    "test_events_used": 0,
+    "paired_response_rmse": 0.04598280936800564,
+    "high_level_c2st_auroc_mean": 0.7747664074074074,
+    "structural_invariants_pass": true,
+    "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+  },
+  "automation": {
+    "watcher_pid": 24260,
+    "watcher_lock_alive": true,
+    "battery_job": "v3bat3-v3-m0-fresh-e19",
+    "battery_wrapper_pid": 30195,
+    "battery_state": "RUNNING on RTX 3090",
+    "s2_response": "running through imported epoch 13; accepted best epoch 11 at 4.931397553942388 common measure",
+    "s3_first": "queued"
+  },
+  "verification": {
+    "local_focused_tests": "67 passed, 1 known warning",
+    "local_full_tests": "797 passed, 64 known warnings",
+    "compileall_exit_code": 0,
+    "remote_compileall": "PASS",
+    "remote_schema_import": 3,
+    "metrics_catalog": "131 graphics, PASS",
+    "visual_inspection": "screening_validation_loss.png passed through S2 epoch 13",
+    "json_validation": "PASS",
+    "git_diff_check": "PASS with line-ending notices only"
+  },
+  "failed_attempts": "retained in audit/v3_battery_data_usage_quarantine_20260815.json",
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}
