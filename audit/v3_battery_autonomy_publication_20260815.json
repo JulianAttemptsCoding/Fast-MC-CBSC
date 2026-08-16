@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "kind": "v3-validation-battery-autonomy-publication",
+  "timestamp_utc": "2026-08-16T00:30:38Z",
+  "commit": "222f1b6cd6de3eec73af98340f65ce4367b12563",
+  "commit_subject": "fix(eval): automate guarded v3 batteries",
+  "push": "20d4c59..222f1b6 main -> main",
+  "status": "PASS; published while corrected B0 battery and S2 training remain active",
+  "audit_twins": {
+    "audit/v3_battery_autonomy_20260815.json": "34a271a1a0b9244e449501bafee4fbae498728d01841fd62773532ff926f2654",
+    "audit/v3_battery_autonomy_20260815.md": "621d79ef77b2caf191df59217df34684b71adca17a24ad58eec69e6647e15e65",
+    "audit/v3_battery_zero_truth_quarantine_20260815.json": "4d38e145dcdd07d58aeb829a20579652e8e4073f2841055b5bf18935188ae4aa",
+    "audit/v3_battery_zero_truth_quarantine_20260815.md": "c0265cacf430e0ffb662d25c36df15695dd35238d5458ef8e4d3f0bd32f124d3"
+  },
+  "verification": {
+    "focused_tests": "153 passed",
+    "full_repository_tests": "795 passed, 64 known warnings",
+    "compileall_exit_code": 0,
+    "metrics_catalog": "131 graphics, PASS",
+    "visual_inspection": "both S2 epoch-7 screening figures passed"
+  },
+  "live_state": {
+    "training": "S2-response active on the sole RTX-4090 trainer; epoch 7 imported; S3-first queued",
+    "battery": "corrected B0 fixed-bank job v3bat-dicos-f-02-e90 active on RTX 3090",
+    "watcher": "PID 24260; 900-second interval; imported and rebuilt S2 epoch 7 without intervention",
+    "test_events_used": 0
+  },
+  "scientific_status": "PHYSICS VALIDATION NOT ESTABLISHED"
+}

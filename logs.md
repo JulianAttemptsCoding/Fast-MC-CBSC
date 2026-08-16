@@ -11301,3 +11301,20 @@ passed visual layout/content inspection.
 `PHYSICS VALIDATION NOT ESTABLISHED`.
 - S2-response e7: common-measure val 4.970527 best @ e7, 8/24 epochs, invariants 8/8 pass
   new best for this row: 4.970527 common (v3-m0-fresh comparator, delta +0.035018); raw reported 4.970527
+
+
+### 2026-08-15 (publication) -- guarded autonomous batteries pushed
+
+Committed and pushed `222f1b6` (`fix(eval): automate guarded v3 batteries`),
+including the corrected validation-only battery contract, strict checkpoint /
+config / sidecar provenance, one-writer advancement, watcher integration,
+zero-truth quarantine, docs, tests, and S2 epoch-7 evidence. Pre-push divergence
+was `0 1`; push succeeded as `20d4c59..222f1b6 main -> main`.
+
+Publication verification: 153 focused tests passed; full QA passed 795 tests
+with 64 known warnings; compilation exited 0; metrics catalog 131 graphics PASS;
+both S2 epoch-7 screening figures passed visual inspection; test events used 0.
+The corrected B0 battery and sole S2 trainer remained active. Audit twins:
+`audit/v3_battery_autonomy_publication_20260815.{json,md}`.
+
+`PHYSICS VALIDATION NOT ESTABLISHED`.
