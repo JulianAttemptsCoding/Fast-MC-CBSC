@@ -1,9 +1,9 @@
 {
   "all_invariants_pass": true,
   "all_visualization_qa_pass": true,
-  "best_epoch": 1,
-  "best_validation_loss": 6.383510050277933,
-  "epochs_observed": 2,
+  "best_epoch": 11,
+  "best_validation_loss": 6.255986270583391,
+  "epochs_observed": 14,
   "history": [
     {
       "epoch": 0,
@@ -20,13 +20,109 @@
       "train_loss": 6.508749387542057,
       "validation_loss": 6.383510050277933,
       "visualization_sha256": "ae01e1534392994b991c35e8ca952a88656d4f27d3bc30188e8f5a3407d0ffe4"
+    },
+    {
+      "epoch": 2,
+      "invariant_sha256": "4911d522c49f492423e78ebc4c0165ba0c1260da116c54751727ef71b00e339d",
+      "stage": "joint",
+      "train_loss": 6.456271477908413,
+      "validation_loss": 6.374751474986488,
+      "visualization_sha256": "6c2caae3aa893023389d7b87e779bb5cf5e5af5edddab0c905f6618dddc345eb"
+    },
+    {
+      "epoch": 3,
+      "invariant_sha256": "98293cabb071213978cdc2fbc69b1e4c87cb190166e62e58b574d534fbd05097",
+      "stage": "joint",
+      "train_loss": 6.447945102152589,
+      "validation_loss": 6.3680887536458,
+      "visualization_sha256": "5404942d77027fb99beab077024e84737b7e256ed51a569bb48ed518c1a96039"
+    },
+    {
+      "epoch": 4,
+      "invariant_sha256": "88635ad0cf44d68ffe60c03b095370c9cc0c84e34daeaefc969ee635890000f7",
+      "stage": "joint",
+      "train_loss": 6.458378785522182,
+      "validation_loss": 6.33591646924724,
+      "visualization_sha256": "8bb1da94a14d57b26efe1bcb10f4537b176d65b0828c96cc07a66d001b04e796"
+    },
+    {
+      "epoch": 5,
+      "invariant_sha256": "b477317aa3475da17f3ea06ea300a604149c3695de916bb17cccd9627d2cc2bd",
+      "stage": "joint",
+      "train_loss": 6.4219051313368025,
+      "validation_loss": 6.3579091055326895,
+      "visualization_sha256": "fbf9d103d62eb9528e44fab5b023667e424c973f4679c4519de3a49fcfbcd461"
+    },
+    {
+      "epoch": 6,
+      "invariant_sha256": "501146171aa8e329a6c664f94b0163b22c30b01244b91f6432665925d77e6e08",
+      "stage": "joint",
+      "train_loss": 6.42859774122696,
+      "validation_loss": 6.307944739021982,
+      "visualization_sha256": "c5418b9a6150d3f73077d663af8516aa5dd5763c7982a5f077fde01942c190de"
+    },
+    {
+      "epoch": 7,
+      "invariant_sha256": "553eaa4d796b0c8049fc461b9499a40ad354ccc84fa1daa071536538aacd9e5f",
+      "stage": "joint",
+      "train_loss": 6.398392046467796,
+      "validation_loss": 6.3056176951479594,
+      "visualization_sha256": "459302fdc339aeb2edf4c655c63f35f6b0b91b0e06242a7deb07e2a59c8b32ed"
+    },
+    {
+      "epoch": 8,
+      "invariant_sha256": "ece610084020576060f7d0c95632ee219817c7aac68282e9d2451e61220abe96",
+      "stage": "joint",
+      "train_loss": 6.379225615851106,
+      "validation_loss": 6.293215613763119,
+      "visualization_sha256": "0e8faec4c7b967bffe7255a4be2fa2aa8c1449074915aacd63a0f9d331289211"
+    },
+    {
+      "epoch": 9,
+      "invariant_sha256": "74dc6a41c579fbb23c3b1174097d03aa368951672cb6623e109044c216ccf466",
+      "stage": "joint",
+      "train_loss": 6.36912038784616,
+      "validation_loss": 6.347030026671827,
+      "visualization_sha256": "db60992eefc585ee99e31a6582629ff116974ec13a82ed11086e104260ecc417"
+    },
+    {
+      "epoch": 10,
+      "invariant_sha256": "d0fa8e5b291456a3968170784fa7c973f3310d75c9559e2c521613cf85e9510b",
+      "stage": "joint",
+      "train_loss": 6.382616204239642,
+      "validation_loss": 6.322661390067194,
+      "visualization_sha256": "8784762e99934bb889313164ee94678b163b3173610519664317b6648b72af43"
+    },
+    {
+      "epoch": 11,
+      "invariant_sha256": "b3b974c67d9ab5e9213f428ea09533e580c34bfa000d59b53b9ccabbceedb28c",
+      "stage": "joint",
+      "train_loss": 6.351745719170285,
+      "validation_loss": 6.255986270583391,
+      "visualization_sha256": "dcd0c16e7aa3ec2c5c2f1e2284cc6d4fc6fb4874c901b3ef57eda47db96e7b8d"
+    },
+    {
+      "epoch": 12,
+      "invariant_sha256": "236555f62c0fe9dd4e1a7f59398d3d6c69267ea9e211f81b8aa980188c51892e",
+      "stage": "joint",
+      "train_loss": 6.350804048372277,
+      "validation_loss": 6.304740425433805,
+      "visualization_sha256": "05e784a684bd8ac0e8b6cfc7fa553e05ae959f8735089de826de56acae57205b"
+    },
+    {
+      "epoch": 13,
+      "invariant_sha256": "bcf27325c146645916f828cf46dca67d00f2d0e423c21e28cf5c795b52752395",
+      "stage": "joint",
+      "train_loss": 6.351376196165087,
+      "validation_loss": 6.339856016862794,
+      "visualization_sha256": "8c98a88177a9299b27383f6079000b26ce4862c115097a2f020b2c77c379abb6"
     }
   ],
   "kind": "cbsc-zdc-v3-live-metrics",
-  "latest_epoch": 1,
+  "latest_epoch": 13,
   "physics_validation_established": false,
   "run_tag": "v3-s4-activity-span",
   "schema_version": 1,
   "test_events_used": 0,
-  "updated_utc": "2026-08-21T16:48:16.715573Z"
+  "updated_utc": "2026-08-21T22:50:01.076203Z"
 }
