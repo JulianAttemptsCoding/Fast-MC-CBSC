@@ -1,0 +1,32 @@
+{
+  "all_invariants_pass": true,
+  "all_visualization_qa_pass": true,
+  "best_epoch": 1,
+  "best_validation_loss": 6.383510050277933,
+  "epochs_observed": 2,
+  "history": [
+    {
+      "epoch": 0,
+      "invariant_sha256": "6c469a4484c4d8626458993f60621fb1444b7e9ffd896fce6590b5c6240845f1",
+      "stage": "joint",
+      "train_loss": 6.635553486153218,
+      "validation_loss": 6.418086080565111,
+      "visualization_sha256": "ef97dd3ce7470e06e5ad7f3329f5243d638e978973512a3aa107ea646975bdac"
+    },
+    {
+      "epoch": 1,
+      "invariant_sha256": "defb35d8069117e621c5ea60db82241037511c3db329f119f9a72eb15a050d87",
+      "stage": "joint",
+      "train_loss": 6.508749387542057,
+      "validation_loss": 6.383510050277933,
+      "visualization_sha256": "ae01e1534392994b991c35e8ca952a88656d4f27d3bc30188e8f5a3407d0ffe4"
+    }
+  ],
+  "kind": "cbsc-zdc-v3-live-metrics",
+  "latest_epoch": 1,
+  "physics_validation_established": false,
+  "run_tag": "v3-s4-activity-span",
+  "schema_version": 1,
+  "test_events_used": 0,
+  "updated_utc": "2026-08-21T16:48:16.715573Z"
+}
