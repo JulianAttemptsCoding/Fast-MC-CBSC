@@ -13361,3 +13361,45 @@ yet. Did not alter the live pod checkout. Audit twin:
 - 2026-08-22T03:47:43.610319Z remote v3 controller `COMMAND_END`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T034743610319Z_1512_000011_command_end.{json,md}`; test events used: 0; physics validation established: no.
 
 - 2026-08-22T03:47:43.830307Z remote v3 controller `COMMAND_START`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T034743830307Z_1512_000012_command_start.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:51:53.550582Z remote v3 controller `COMMAND_END`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095153550582Z_1512_000013_command_end.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:51:53.690389Z remote v3 controller `BATTERY_VERIFIED`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095153690389Z_1512_000014_battery_verified.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:51:53.706590Z remote v3 controller `MATCHED_ABLATION_RECORDED`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095153706590Z_1512_000015_matched_ablation_recorded.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:51:53.814185Z remote v3 controller `PROMOTION_DECISION`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095153814185Z_1512_000016_promotion_decision.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:51:53.831774Z remote v3 controller `STABLE_BLOCKER`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095153831774Z_1512_000017_stable_blocker.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:51:53.863620Z remote v3 controller `DEPENDENT_SUPERVISED_CHAIN_SKIPPED`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095153863620Z_1512_000018_dependent_supervised_chain_skipped.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:51:54.737185Z remote v3 controller `COMMAND_START`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095154737185Z_1512_000019_command_start.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:52:24.430086Z remote v3 controller `COMMAND_END`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095224430086Z_1512_000020_command_end.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:52:24.782892Z remote v3 controller `COMMAND_START`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095224782892Z_1512_000021_command_start.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:52:36.428406Z remote v3 controller `COMMAND_END`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095236428406Z_1512_000022_command_end.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:52:36.497811Z remote v3 controller `PREPARATION_VERIFIED`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095236497811Z_1512_000023_preparation_verified.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:52:36.566416Z remote v3 controller `COMMAND_START`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095236566416Z_1512_000024_command_start.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:53:16.137046Z remote v3 controller `COMMAND_END`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095316137046Z_1512_000025_command_end.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:53:16.537492Z remote v3 controller `COMMAND_START`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095316537492Z_1512_000026_command_start.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:53:18.390786Z remote v3 controller `COMMAND_END`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095318390786Z_1512_000027_command_end.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:53:18.447527Z remote v3 controller `COMMAND_START`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095318447527Z_1512_000028_command_start.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:53:29.892007Z remote v3 controller `COMMAND_END`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095329892007Z_1512_000029_command_end.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:53:29.955698Z remote v3 controller `PREPARATION_VERIFIED`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095329955698Z_1512_000030_preparation_verified.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:53:30.002912Z remote v3 controller `RUN_AUTHORIZED`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095330002912Z_1512_000031_run_authorized.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:53:30.066583Z remote v3 controller `TRAIN_LAUNCH`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095330066583Z_1512_000032_train_launch.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T09:53:40.087345Z remote v3 controller `ONE_WRITER_PROVED`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095340087345Z_1512_000033_one_writer_proved.{json,md}`; test events used: 0; physics validation established: no.
