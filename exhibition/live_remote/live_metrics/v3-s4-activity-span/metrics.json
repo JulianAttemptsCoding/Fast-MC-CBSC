@@ -1,9 +1,9 @@
 {
   "all_invariants_pass": true,
   "all_visualization_qa_pass": true,
-  "best_epoch": 11,
-  "best_validation_loss": 6.255986270583391,
-  "epochs_observed": 14,
+  "best_epoch": 19,
+  "best_validation_loss": 6.24646381892013,
+  "epochs_observed": 24,
   "history": [
     {
       "epoch": 0,
@@ -116,13 +116,93 @@
       "train_loss": 6.351376196165087,
       "validation_loss": 6.339856016862794,
       "visualization_sha256": "8c98a88177a9299b27383f6079000b26ce4862c115097a2f020b2c77c379abb6"
+    },
+    {
+      "epoch": 14,
+      "invariant_sha256": "c202c0ae816e0e024423d931d6e756cc898d37c07b8b3a1837014a4b24f52679",
+      "stage": "joint",
+      "train_loss": 6.35253817862639,
+      "validation_loss": 6.279185400874862,
+      "visualization_sha256": "9791acfdec4e58f31f65cf2b18cc4b09c49ff59331a9eaab2b94f95f3a2040ee"
+    },
+    {
+      "epoch": 15,
+      "invariant_sha256": "aafc679fa84462626b5a33df4829842061cff1f1fc571cf3e32c3cf802f6902a",
+      "stage": "joint",
+      "train_loss": 6.317363050732496,
+      "validation_loss": 6.265306388302045,
+      "visualization_sha256": "829a044a5b938091ec180061a2655f38ce8d4e707b5b3b7127afdae9c751ff51"
+    },
+    {
+      "epoch": 16,
+      "invariant_sha256": "d921e64ef70d69f697e1c76d3cf7c547b33e7f368b57d41a216d0286da8b510b",
+      "stage": "joint",
+      "train_loss": 6.313114492641206,
+      "validation_loss": 6.303500412149276,
+      "visualization_sha256": "673b67def725eb569007ef989e140a1c38bd382314c1761528cb826a41a8dcd4"
+    },
+    {
+      "epoch": 17,
+      "invariant_sha256": "85b85136cd49187f25b98db246486827bdb990b7a79e9d5956beadac0eaa6f83",
+      "stage": "joint",
+      "train_loss": 6.318225492785206,
+      "validation_loss": 6.295127740192553,
+      "visualization_sha256": "9b7debad6cc5de7e7444830f195e0881807cd6e36803094955a6693a8fe902c5"
+    },
+    {
+      "epoch": 18,
+      "invariant_sha256": "e4347514c2e6cadb156da91674016fa025ed3a829bb27945192da8ad48cbe195",
+      "stage": "joint",
+      "train_loss": 6.309521138788962,
+      "validation_loss": 6.272800727260584,
+      "visualization_sha256": "7c6d91dabf5d21780d091ccbc0e239b5669d61632b8affeb775b2b2788416909"
+    },
+    {
+      "epoch": 19,
+      "invariant_sha256": "f805a700610c6e9a9ef356023a941d9bc220dc823cc9eea0932594b09fd30ead",
+      "stage": "joint",
+      "train_loss": 6.304177989072028,
+      "validation_loss": 6.24646381892013,
+      "visualization_sha256": "ca3acbe06c78a62f2a6eaae22ddd51aeea1b9b66b1f11f6cd49ad8770655e630"
+    },
+    {
+      "epoch": 20,
+      "invariant_sha256": "c8d6e751b2417b4fde43bd8703c52bea1184f4a46a2eed47adb6bf8039652556",
+      "stage": "joint",
+      "train_loss": 6.304869980164039,
+      "validation_loss": 6.252171488841491,
+      "visualization_sha256": "7e40d3faec3893efb9849efeaaaaab16174ae82841b4d904f2ff3d1f19b59366"
+    },
+    {
+      "epoch": 21,
+      "invariant_sha256": "d196df518d15b776572e625d42011c331314c002d2116a7298af50fffff66dc8",
+      "stage": "joint",
+      "train_loss": 6.310111863617965,
+      "validation_loss": 6.283486217216726,
+      "visualization_sha256": "ac78b8fb7e9fd8a318b05cf0b5c87b0ab666aa3c56ed22f3b315a5e0d770404b"
+    },
+    {
+      "epoch": 22,
+      "invariant_sha256": "b5b633161eb7056a405dd00706f78849eda0016ce12fb2616bd98bea0e6778b3",
+      "stage": "joint",
+      "train_loss": 6.291392623666226,
+      "validation_loss": 6.281671960741325,
+      "visualization_sha256": "a925a75442ca4aa44b9680db9af15179f4eabf341c201ef9f8143d43e82d0615"
+    },
+    {
+      "epoch": 23,
+      "invariant_sha256": "c3007293731c6c9abec5c7d9d952986fdec3e064b941c1f5195255a0a16983d1",
+      "stage": "joint",
+      "train_loss": 6.260789231993955,
+      "validation_loss": 6.256466061269556,
+      "visualization_sha256": "9d81c16dbc32d23d22b7a157c253216b0e513345b105f54ebea4284cf0b3fede"
     }
   ],
   "kind": "cbsc-zdc-v3-live-metrics",
-  "latest_epoch": 13,
+  "latest_epoch": 23,
   "physics_validation_established": false,
   "run_tag": "v3-s4-activity-span",
   "schema_version": 1,
   "test_events_used": 0,
-  "updated_utc": "2026-08-21T22:50:01.076203Z"
+  "updated_utc": "2026-08-22T03:47:43.512038Z"
 }
