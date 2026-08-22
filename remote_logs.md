@@ -13403,3 +13403,5 @@ yet. Did not alter the live pod checkout. Audit twin:
 - 2026-08-22T09:53:30.066583Z remote v3 controller `TRAIN_LAUNCH`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095330066583Z_1512_000032_train_launch.{json,md}`; test events used: 0; physics validation established: no.
 
 - 2026-08-22T09:53:40.087345Z remote v3 controller `ONE_WRITER_PROVED`; evidence twin `_autonomous/v3_full_pipeline_v26/audit/event_20260822T095340087345Z_1512_000033_one_writer_proved.{json,md}`; test events used: 0; physics validation established: no.
+
+- 2026-08-22T20:03:32.650102Z remote live metrics `v3-sup` epoch 0 verified and published; metrics `2b7d26a6d8fb6b68fc7baafec62c5f04e1ec73cbec04065b62cff958aed7a20f`; catalog `9f6c01595b555d1f57260dda21a5fd350a7e71dc612fdb99727d5f8b5478a35e`; source invariant `d0e7e20519b597ea5a6963fa3328f1218f493925c49038212c7f990ed512f112`; source visualization `32d46b6e1fe3a83377471ba6e76b04b54cc5a42e15095aa726274d179f234e84`; evidence twin `_autonomous/v3_full_pipeline_v26/live_metrics/v3-sup/audit/epoch_0000.{json,md}`; test events used: 0; physics validation established: no.

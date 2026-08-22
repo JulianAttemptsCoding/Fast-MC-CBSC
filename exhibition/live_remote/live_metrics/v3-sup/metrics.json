@@ -1,0 +1,24 @@
+{
+  "all_invariants_pass": true,
+  "all_visualization_qa_pass": true,
+  "best_epoch": 0,
+  "best_validation_loss": 5.005662118460772,
+  "epochs_observed": 1,
+  "history": [
+    {
+      "epoch": 0,
+      "invariant_sha256": "d0e7e20519b597ea5a6963fa3328f1218f493925c49038212c7f990ed512f112",
+      "stage": "joint",
+      "train_loss": 5.0429775920459425,
+      "validation_loss": 5.005662118460772,
+      "visualization_sha256": "32d46b6e1fe3a83377471ba6e76b04b54cc5a42e15095aa726274d179f234e84"
+    }
+  ],
+  "kind": "cbsc-zdc-v3-live-metrics",
+  "latest_epoch": 0,
+  "physics_validation_established": false,
+  "run_tag": "v3-sup",
+  "schema_version": 1,
+  "test_events_used": 0,
+  "updated_utc": "2026-08-22T20:03:32.630469Z"
+}
