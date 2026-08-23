@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
 <rect width="100%" height="100%" fill="#fbfcfe"/><text x="78" y="27" font-family="sans-serif" font-size="20">v3-sup · joint — live verified loss</text>
 <line x1="78" y1="472" x2="930" y2="472" stroke="#333"/><line x1="78" y1="42" x2="78" y2="472" stroke="#333"/>
-<polyline points="78.00,71.66 930.00,271.46" fill="none" stroke="#3977b5" stroke-width="3"/><polyline points="78.00,259.18 930.00,442.34" fill="none" stroke="#d4562d" stroke-width="3"/>
+<polyline points="78.00,71.66 504.00,271.46 930.00,357.55" fill="none" stroke="#3977b5" stroke-width="3"/><polyline points="78.00,259.18 504.00,442.34 930.00,430.76" fill="none" stroke="#d4562d" stroke-width="3"/>
 <text x="78" y="515" font-family="sans-serif" font-size="15">completed epoch</text><text x="258" y="515" font-family="sans-serif" font-size="15" fill="#3977b5">train</text><text x="318" y="515" font-family="sans-serif" font-size="15" fill="#d4562d">validation</text>
 <text x="78" y="495" font-family="sans-serif" font-size="14">best validation 4.969215 at epoch 1 · invariants and visualization QA pass · test events 0</text>
 <text transform="translate(20 270.0) rotate(-90)" font-family="sans-serif" font-size="15">reported loss</text></svg>
