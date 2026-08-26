@@ -3,7 +3,7 @@
   "all_visualization_qa_pass": true,
   "best_epoch": 7,
   "best_validation_loss": 4.9401585412194144,
-  "epochs_observed": 9,
+  "epochs_observed": 10,
   "history": [
     {
       "epoch": 0,
@@ -76,13 +76,21 @@
       "train_loss": 4.95200909948731,
       "validation_loss": 4.946683869187562,
       "visualization_sha256": "21ab96bd7e3be5f850de44a13bacc652177bfc6e82395fada256e4577aa482b1"
+    },
+    {
+      "epoch": 9,
+      "invariant_sha256": "2b392d297b725e2abdc52f90ea72ecf0da8363a4d5c76e34fa27d2dac52a4061",
+      "stage": "joint",
+      "train_loss": 4.948931531407761,
+      "validation_loss": 4.947991455978943,
+      "visualization_sha256": "5b09e952b442628e05e127ca81623125dd38bb62fde8a6451a23b41722b005d8"
     }
   ],
   "kind": "cbsc-zdc-v3-live-metrics",
-  "latest_epoch": 8,
+  "latest_epoch": 9,
   "physics_validation_established": false,
   "run_tag": "v3-sup",
   "schema_version": 1,
   "test_events_used": 0,
-  "updated_utc": "2026-08-26T07:28:38.778956Z"
+  "updated_utc": "2026-08-26T18:34:22.184163Z"
 }

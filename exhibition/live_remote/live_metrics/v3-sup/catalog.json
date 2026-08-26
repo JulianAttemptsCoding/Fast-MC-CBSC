@@ -1,6 +1,6 @@
 {
   "kind": "cbsc-zdc-v3-live-visual-catalog",
-  "latest_epoch": 8,
+  "latest_epoch": 9,
   "schema_version": 1,
   "source_artifacts": [
     {
@@ -47,6 +47,11 @@
       "epoch": 8,
       "invariant_sha256": "dcd6ed677ba5c0bd71def180d10e7624b71f9594c6ea7db90af83c78f831ca01",
       "visualization_sha256": "21ab96bd7e3be5f850de44a13bacc652177bfc6e82395fada256e4577aa482b1"
+    },
+    {
+      "epoch": 9,
+      "invariant_sha256": "2b392d297b725e2abdc52f90ea72ecf0da8363a4d5c76e34fa27d2dac52a4061",
+      "visualization_sha256": "5b09e952b442628e05e127ca81623125dd38bb62fde8a6451a23b41722b005d8"
     }
   ],
   "status": "PASS",
@@ -54,7 +59,7 @@
   "visuals": [
     {
       "path": "exhibition/current/live_loss.svg",
-      "sha256": "a16fcf27f667ed1553badb0cc05834cb469dd69ae83e5c725027e7778484b0a9"
+      "sha256": "803deecdc5bf8a131f0a4d70cfce29fdda8b25f85297fbb4401cfe3e43bfa018"
     }
   ]
 }
